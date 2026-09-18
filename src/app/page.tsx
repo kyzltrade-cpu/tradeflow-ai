@@ -241,11 +241,30 @@ export default function HomePage() {
                       {/* Dynamic Island */}
                       <div className="absolute top-[8px] left-1/2 -translate-x-1/2 w-[84px] h-[24px] rounded-full z-10" style={{ background: '#000000' }} />
                       {/* Status bar */}
-                      <div className="h-[42px] px-4 flex items-end justify-between pb-1 shrink-0">
-                        <span className="text-[9px] font-semibold text-black/70">9:41</span>
-                        <div className="flex items-center gap-1">
-                          <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 5.5C1.8 3.5 3.5 2 5.5 2s3.7 1.5 4.5 3.5" stroke="black" strokeWidth="1" strokeLinecap="round" opacity="0.7"/><circle cx="5.5" cy="6" r="1" fill="black" opacity="0.7"/></svg>
-                          <svg width="14" height="8" viewBox="0 0 14 8" fill="none"><rect x="0.5" y="0.5" width="11" height="7" rx="1.5" stroke="black" opacity="0.7"/><rect x="2" y="2" width="7" height="4" rx="0.5" fill="black" opacity="0.7"/><path d="M12.5 2.5V5.5" stroke="black" strokeWidth="1" strokeLinecap="round" opacity="0.7"/></svg>
+                      <div className="h-[42px] px-5 flex items-end justify-between pb-2 shrink-0">
+                        <span className="text-[10px] font-semibold text-black/80">9:41</span>
+                        <div className="flex items-center gap-[5px]">
+                          {/* Signal bars */}
+                          <div className="flex items-end gap-[1.5px]">
+                            <div className="w-[3px] h-[3px] rounded-[0.5px] bg-black/70" />
+                            <div className="w-[3px] h-[4.5px] rounded-[0.5px] bg-black/70" />
+                            <div className="w-[3px] h-[6px] rounded-[0.5px] bg-black/70" />
+                            <div className="w-[3px] h-[8px] rounded-[0.5px] bg-black/70" />
+                          </div>
+                          {/* WiFi */}
+                          <svg width="11" height="9" viewBox="0 0 11 9" fill="none">
+                            <path d="M0.5 2.5C2.5 0.8 5 0 5.5 0C6 0 8.5 0.8 10.5 2.5" stroke="black" strokeWidth="1.2" strokeLinecap="round" opacity="0.75"/>
+                            <path d="M2 4.5C3.2 3.5 4.5 3 5.5 3C6.5 3 7.8 3.5 9 4.5" stroke="black" strokeWidth="1.2" strokeLinecap="round" opacity="0.75"/>
+                            <path d="M3.5 6.5C4.2 5.8 4.8 5.5 5.5 5.5C6.2 5.5 6.8 5.8 7.5 6.5" stroke="black" strokeWidth="1.2" strokeLinecap="round" opacity="0.75"/>
+                            <circle cx="5.5" cy="8" r="0.8" fill="black" opacity="0.75"/>
+                          </svg>
+                          {/* Battery */}
+                          <div className="flex items-center">
+                            <div className="relative w-[20px] h-[9px] rounded-[2px] border border-black/60">
+                              <div className="absolute inset-[1px] rounded-[1px] bg-black/75" />
+                            </div>
+                            <div className="w-[1.5px] h-[4px] rounded-r-[1px] bg-black/50 ml-[1px]" />
+                          </div>
                         </div>
                       </div>
                       {/* WhatsApp header */}
