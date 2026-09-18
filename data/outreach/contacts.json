@@ -1,0 +1,207 @@
+[
+  {
+    "company_name": "Anker Innovations",
+    "website": "https://anker.com",
+    "industry": "Consumer Electronics",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.588Z"
+  },
+  {
+    "company_name": "Belkin International",
+    "website": "https://belkin.com",
+    "industry": "Consumer Electronics",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Pela Case",
+    "website": "https://pelacase.com",
+    "industry": "Consumer Electronics",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "IKEA Hong Kong",
+    "website": "https://ikea.com",
+    "industry": "Home & Garden",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "DeLonghi",
+    "website": "https://delonghi.com",
+    "industry": "Home & Garden",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Li & Fung",
+    "website": "https://lifung.com",
+    "industry": "Textiles",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Crystal International",
+    "website": "https://crystalintl.com",
+    "industry": "Textiles",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Swire Coca-Cola",
+    "website": "https://swirecocacola.com",
+    "industry": "Food & Beverage",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Vitasoy International",
+    "website": "https://vitasoy.com",
+    "industry": "Food & Beverage",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "K. Wah International",
+    "website": "https://kwah.com",
+    "industry": "Building Materials",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Logic International",
+    "website": "https://logicinternational.com",
+    "industry": "Toys",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Hoga Toys",
+    "website": "https://hogatoys.com",
+    "industry": "Toys",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Jebsen Group",
+    "website": "https://jebsen.com",
+    "industry": "General Trading",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Swire Group",
+    "website": "https://swire.com",
+    "industry": "General Trading",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Hutchison Holdings",
+    "website": "https://hutchison.com",
+    "industry": "General Trading",
+    "source": "google-research",
+    "scraped_at": "2026-09-15T14:55:44.589Z"
+  },
+  {
+    "company_name": "Pacific Trading Co.",
+    "company_name_zh": "太平洋貿易有限公司",
+    "email": "info@pacifictrading.com.hk",
+    "phone": "+852 2543 XXXX",
+    "website": "https://pacifictrading.com.hk",
+    "industry": "Consumer Electronics",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "Golden Source International",
+    "company_name_zh": "金源國際有限公司",
+    "email": "enquiry@goldensource.com.hk",
+    "phone": "+852 2332 XXXX",
+    "website": "https://goldensource.com.hk",
+    "industry": "Consumer Electronics",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "Wellway Trading",
+    "company_name_zh": "偉利貿易公司",
+    "email": "info@wellwaytrading.com",
+    "phone": "+852 2367 XXXX",
+    "website": "https://wellwaytrading.com",
+    "industry": "Home & Garden",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "Crownway International",
+    "company_name_zh": "冠威國際有限公司",
+    "email": "info@crownway.com.hk",
+    "phone": "+852 2789 XXXX",
+    "website": "https://crownway.com.hk",
+    "industry": "Textiles",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "First Bright Trading",
+    "company_name_zh": "_FIRST BRIGHT 貿易公司",
+    "email": "sales@firstbright.com.hk",
+    "phone": "+852 2356 XXXX",
+    "website": "https://firstbright.com.hk",
+    "industry": "Toys",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "Sun Hing Trading",
+    "company_name_zh": "新興貿易公司",
+    "email": "info@sunhingtrading.com",
+    "phone": "+852 2393 XXXX",
+    "website": "https://sunhingtrading.com",
+    "industry": "General Trading",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "Cheung Wah Trading",
+    "company_name_zh": "昌華貿易公司",
+    "email": "info@cheungwah.com.hk",
+    "phone": "+852 2544 XXXX",
+    "website": "https://cheungwah.com.hk",
+    "industry": "Building Materials",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "Wong's Trading",
+    "company_name_zh": "黃氏貿易公司",
+    "email": "wongstrading@gmail.com",
+    "phone": "+852 9234 XXXX",
+    "website": "",
+    "industry": "Food & Beverage",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "Lee Hing Trading",
+    "company_name_zh": "利興貿易公司",
+    "email": "info@leehingtrading.com",
+    "phone": "+852 2386 XXXX",
+    "website": "https://leehingtrading.com",
+    "industry": "Consumer Electronics",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  },
+  {
+    "company_name": "Chinacho Trading",
+    "company_name_zh": "佳華貿易公司",
+    "email": "chinacho@biznetvigator.com",
+    "phone": "+852 2675 XXXX",
+    "website": "",
+    "industry": "Home & Garden",
+    "location": "Hong Kong",
+    "source": "manual-research"
+  }
+]

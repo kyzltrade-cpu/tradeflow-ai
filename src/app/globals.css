@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  /* Landing: warm cream + teal */
+  --bg: #FAF9F6;
+  --surface: #FFFFFF;
+  --text: #111111;
+  --text-muted: #626260;
+  --border: #E8E5E1;
+  --accent: #0A6E5C;
+  --accent-hover: #085A4A;
+  --accent-light: #E8F5F1;
+  --success: #038153;
+  --error: #CC3340;
+  --warning: #AD5918;
+}
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Dashboard mode */
+.dashboard-mode {
+  --bg: #F8FAFD;
+  --surface: #FFFFFF;
+  --text: #061B31;
+  --text-muted: #50617A;
+  --border: #E5EDF5;
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --accent-light: #EFF6FF;
+}
+
+/* Focus rings */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Smooth transitions on interactive elements */
+button, a, input, select, textarea {
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+
+/* Prevent iOS zoom on inputs */
+@media screen and (max-width: 768px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="password"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Toast animation */
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-slide-in {
+  animation: slide-in 0.2s ease-out;
+}
+
+/* Hide scrollbar */
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+html {
+  scrollbar-width: none;
+}

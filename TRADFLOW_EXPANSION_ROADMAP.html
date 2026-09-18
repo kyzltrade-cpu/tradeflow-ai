@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>TradeFlow AI — Expansion Roadmap</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; color: #1a1a1a; line-height: 1.6; }
+  h1 { color: #0A6E5C; border-bottom: 2px solid #0A6E5C; padding-bottom: 10px; }
+  h2 { color: #0A6E5C; margin-top: 30px; }
+  h3 { color: #333; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+  th { background: #f5f5f5; }
+  code { background: #f0f0f0; padding: 2px 6px; border-radius: 3px; }
+  strong { color: #0A6E5C; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 30px 0; }
+  @media print { body { padding: 20px 40px; } }
+</style>
+</head>
+<body>
+
+<h1>TradeFlow AI — Expansion Roadmap</h1>
+
+<p><strong>Date:</strong> September 15, 2026<br>
+<strong>Status:</strong> MVP Live</p>
+
+<hr>
+
+<h2>Current State (MVP)</h2>
+
+<ul>
+<li>WhatsApp AI auto-reply via Twilio</li>
+<li>Web admin dashboard (products, conversations, FAQ, knowledge base)</li>
+<li>NVIDIA NIM (Llama 3.2) for AI responses</li>
+<li>English, Mandarin, Cantonese language support</li>
+<li>Human takeover / bookmark system</li>
+<li>HKD $500/month flat pricing</li>
+</ul>
+
+<hr>
+
+<h2>Phase 1 — Near-term (1-3 months)</h2>
+
+<h3>WeChat Work Integration</h3>
+
+<ul>
+<li>Full webhook support (already coded, awaiting credentials)</li>
+<li>WeChat Work enterprise account setup</li>
+<li>XML message parsing and AES-256-CBC decryption</li>
+<li>DB columns for per-company WeChat credentials</li>
+</ul>
+
+<h3>Stripe Billing</h3>
+
+<ul>
+<li>Subscription management (HKD $500/mo)</li>
+<li>Invoice generation</li>
+<li>Upgrade/downgrade flow between tiers</li>
+</ul>
+
+<h3>Email Auth &amp; Multi-user</h3>
+
+<ul>
+<li>Supabase Auth (email/password) — already implemented</li>
+<li>Multi-user dashboard (Professional tier)</li>
+<li>Role-based access (admin vs viewer)</li>
+</ul>
+
+<hr>
+
+<h2>Phase 2 — Growth (3-6 months)</h2>
+
+<h3>Professional Tier — HKD $1,500/mo</h3>
+
+<ul>
+<li>WeChat Work integration</li>
+<li>Better AI responses (GPT-4o or Claude upgrade path)</li>
+<li>Priority support</li>
+<li>Multi-user dashboard</li>
+<li>Analytics &amp; reporting</li>
+</ul>
+
+<h3>Analytics Dashboard</h3>
+
+<ul>
+<li>Conversation volume trends</li>
+<li>AI response accuracy metrics</li>
+<li>Customer inquiry patterns</li>
+<li>Peak hours analysis</li>
+<li>Language distribution</li>
+</ul>
+
+<h3>AI Quality Improvements</h3>
+
+<ul>
+<li>Fine-tuning on company-specific data</li>
+<li>Better Cantonese handling</li>
+<li>Context-aware responses (conversation history weighting)</li>
+<li>Sentiment analysis for escalation</li>
+</ul>
+
+<hr>
+
+<h2>Phase 3 — Scale (6-12 months)</h2>
+
+<h3>Enterprise Tier — HKD $3,500/mo</h3>
+
+<ul>
+<li>AI sourcing &amp; supplier matching</li>
+<li>Automated quote generation</li>
+<li>Dedicated account manager</li>
+<li>Custom integrations</li>
+</ul>
+
+<h3>AI Sourcing &amp; Supplier Matching</h3>
+
+<ul>
+<li>Connect to Alibaba, Global Sources, HKTDC</li>
+<li>Auto-match buyer inquiries to supplier catalogs</li>
+<li>Price comparison across suppliers</li>
+<li>Quality score ranking</li>
+</ul>
+
+<h3>Automated Quote Generation</h3>
+
+<ul>
+<li>Pull product data + pricing rules</li>
+<li>Generate PDF/Excel quotes automatically</li>
+<li>Send via WhatsApp/WeChat</li>
+<li>Track quote status (viewed, accepted, expired)</li>
+</ul>
+
+<h3>Custom Integrations</h3>
+
+<ul>
+<li>ERP connectors (SAP, Oracle, Microsoft Dynamics)</li>
+<li>CRM sync (Salesforce, HubSpot)</li>
+<li>Accounting software (Xero, QuickBooks)</li>
+<li>Custom API webhooks</li>
+</ul>
+
+<hr>
+
+<h2>Phase 4 — Platform (12+ months)</h2>
+
+<h3>Multi-language Expansion</h3>
+
+<ul>
+<li>Japanese, Korean, Thai</li>
+<li>Vietnamese, Indonesian</li>
+<li>Arabic</li>
+</ul>
+
+<h3>White-label Solution</h3>
+
+<ul>
+<li>Reseller program</li>
+<li>Custom branding per company</li>
+<li>Multi-tenant architecture</li>
+</ul>
+
+<h3>Mobile App</h3>
+
+<ul>
+<li>iOS &amp; Android native apps</li>
+<li>Push notifications for new inquiries</li>
+<li>Quick reply templates</li>
+<li>Offline mode</li>
+</ul>
+
+<h3>AI Training Portal</h3>
+
+<ul>
+<li>Custom model fine-tuning per company</li>
+<li>Upload training data (past conversations)</li>
+<li>A/B testing different AI personalities</li>
+<li>Performance benchmarks</li>
+</ul>
+
+<hr>
+
+<h2>Revenue Projections</h2>
+
+<table>
+<thead>
+<tr><th>Phase</th><th>Timeline</th><th>MRR Target</th><th>Customers</th></tr>
+</thead>
+<tbody>
+<tr><td>MVP</td><td>Month 1-3</td><td>HKD 5,000</td><td>10</td></tr>
+<tr><td>Phase 1</td><td>Month 3-6</td><td>HKD 25,000</td><td>50</td></tr>
+<tr><td>Phase 2</td><td>Month 6-12</td><td>HKD 100,000</td><td>200</td></tr>
+<tr><td>Phase 3</td><td>Month 12-18</td><td>HKD 500,000</td><td>500+</td></tr>
+</tbody>
+</table>
+
+<hr>
+
+<h2>Key Metrics to Track</h2>
+
+<ul>
+<li><strong>Conversations per day</strong> (per company)</li>
+<li><strong>AI resolution rate</strong> (auto-resolved vs human takeover)</li>
+<li><strong>Response time</strong> (AI vs human)</li>
+<li><strong>Customer satisfaction</strong> (optional rating)</li>
+<li><strong>Churn rate</strong> (monthly)</li>
+<li><strong>CAC vs LTV</strong></li>
+</ul>
+
+<hr>
+
+<h2>Technical Debt to Address</h2>
+
+<ol>
+<li>Supabase generated types (currently using <code>any</code>)</li>
+<li>Automated testing (Jest/Playwright)</li>
+<li>Error monitoring (Sentry)</li>
+<li>Rate limiting on API routes</li>
+<li>Redis caching for frequently accessed data</li>
+</ol>
+
+<hr>
+
+<p><em>Generated by TradeFlow AI — September 2026</em></p>
+
+</body>
+</html>

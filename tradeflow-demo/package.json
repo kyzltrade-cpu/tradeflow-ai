@@ -1,0 +1,25 @@
+{
+  "name": "tradeflow-demo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts TradeFlowDemo out/tradeflow-demo.mp4",
+    "build": "remotion render src/index.ts TradeFlowDemo out/tradeflow-demo.mp4"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@remotion/cli": "^4.0.525",
+    "@remotion/google-fonts": "^4.0.525",
+    "@remotion/transitions": "^4.0.525",
+    "@types/react": "^19.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "remotion": "^4.0.525",
+    "typescript": "^7.0.2"
+  }
+}
