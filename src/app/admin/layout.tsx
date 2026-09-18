@@ -9,19 +9,55 @@ import { CompanyProvider, useCompany } from '@/lib/company';
 import { authFetch } from '@/lib/auth-fetch';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-const NAV_ITEMS = [
-  { href: '/admin', en: 'Dashboard', zh: '控制台', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
-  { href: '/admin/inquiries', en: 'Inquiries', zh: '詢價', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-  { href: '/admin/opportunities', en: 'Opportunities', zh: '商機', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-  { href: '/admin/quotes', en: 'Quotes', zh: '報價', icon: 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z' },
-  { href: '/admin/suppliers', en: 'Suppliers', zh: '供應商', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-  { href: '/admin/conversations', en: 'Conversations', zh: '對話', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
-  { href: '/admin/products', en: 'Products', zh: '產品', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-  { href: '/admin/follow-ups', en: 'Follow-ups', zh: '跟進', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-  { href: '/admin/knowledge', en: 'Knowledge Base', zh: '知識庫', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-  { href: '/admin/faq', en: 'FAQ Rules', zh: 'FAQ 規則', icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-  { href: '/admin/settings', en: 'Settings', zh: '設定', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+type NavItem = { href: string; en: string; zh: string; icon: string };
+type NavSection = { label: string; labelZh: string; items: NavItem[] };
+
+const NAV_SECTIONS: NavSection[] = [
+  {
+    label: 'Overview',
+    labelZh: '總覽',
+    items: [
+      { href: '/admin', en: 'Dashboard', zh: '控制台', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+    ],
+  },
+  {
+    label: 'Sales',
+    labelZh: '銷售',
+    items: [
+      { href: '/admin/inquiries', en: 'Inquiries', zh: '詢價', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
+      { href: '/admin/opportunities', en: 'Opportunities', zh: '商機', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
+      { href: '/admin/quotes', en: 'Quotes', zh: '報價', icon: 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z' },
+      { href: '/admin/follow-ups', en: 'Follow-ups', zh: '跟進', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
+      { href: '/admin/conversations', en: 'Conversations', zh: '對話', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
+    ],
+  },
+  {
+    label: 'Catalog',
+    labelZh: '目錄',
+    items: [
+      { href: '/admin/products', en: 'Products', zh: '產品', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
+      { href: '/admin/suppliers', en: 'Suppliers', zh: '供應商', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
+    ],
+  },
+  {
+    label: 'Knowledge',
+    labelZh: '知識',
+    items: [
+      { href: '/admin/knowledge', en: 'Knowledge Base', zh: '知識庫', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
+      { href: '/admin/faq', en: 'FAQ Rules', zh: 'FAQ 規則', icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+    ],
+  },
+  {
+    label: 'Config',
+    labelZh: '設定',
+    items: [
+      { href: '/admin/settings', en: 'Settings', zh: '設定', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+    ],
+  },
 ];
+
+// Flat list for quick matching
+const NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -183,29 +219,43 @@ function AdminShell({ children }: { children: React.ReactNode }) {
           </button>
           {!collapsed && <LangToggle />}
         </div>
-        <nav className="flex-1 py-3">
-          {NAV_ITEMS.map((item) => {
-            const isActive = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 py-2.5 text-[14px] ${collapsed ? 'justify-center px-0' : 'px-5'}`}
-                title={collapsed ? t(item.en, item.zh) : undefined}
-                style={{
-                  color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-                  fontWeight: isActive ? 500 : 400,
-                  background: isActive ? 'var(--accent-light)' : 'transparent',
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                  <path d={item.icon} />
-                </svg>
-                {!collapsed && t(item.en, item.zh)}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 py-3 overflow-y-auto">
+          {NAV_SECTIONS.map((section, si) => (
+            <div key={section.label} className={si > 0 ? 'mt-3' : ''}>
+              {!collapsed && (
+                <div className="px-5 mb-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
+                    {t(section.label, section.labelZh)}
+                  </p>
+                </div>
+              )}
+              {collapsed && si > 0 && (
+                <div className="mx-3 mb-1 border-t" style={{ borderColor: 'var(--border)' }} />
+              )}
+              {section.items.map((item) => {
+                const isActive = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className={`flex items-center gap-3 py-2.5 text-[14px] ${collapsed ? 'justify-center px-0' : 'px-5'}`}
+                    title={collapsed ? t(item.en, item.zh) : undefined}
+                    style={{
+                      color: isActive ? 'var(--accent)' : 'var(--text-muted)',
+                      fontWeight: isActive ? 500 : 400,
+                      background: isActive ? 'var(--accent-light)' : 'transparent',
+                    }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
+                      <path d={item.icon} />
+                    </svg>
+                    {!collapsed && t(item.en, item.zh)}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
         <div className={`border-t ${collapsed ? 'px-2 py-3' : 'px-3 py-3'}`} style={{ borderColor: 'var(--border)' }}>
           {!collapsed ? (
