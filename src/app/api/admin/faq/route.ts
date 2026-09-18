@@ -6,10 +6,10 @@ import { requireAuth } from '@/lib/api-auth';
 export async function GET(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
-    const companyId = req.nextUrl.searchParams.get('company_id') || auth.companyId;
+    const companyId = auth.companyId || req.nextUrl.searchParams.get('company_id');
 
-    if (companyId !== auth.companyId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!companyId) {
+      return NextResponse.json({ error: 'No company associated with this account' }, { status: 400 });
     }
 
     const { data, error } = await supabaseAdmin
