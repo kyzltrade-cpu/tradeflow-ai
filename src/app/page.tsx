@@ -117,7 +117,7 @@ export default function HomePage() {
     {
       id: 'welcome-1',
       role: 'ai',
-      content: "Welcome to TradeFlow! I'm an AI assistant that handles customer inquiries 24/7 on WhatsApp & WeChat.\n\nTry pasting your website link below to see what I can do for your business.",
+      content: "Welcome to TradeFlow! I'm an AI assistant that turns inquiries into quotes.\n\nI can:\n• Extract requirements from messages\n• Send RFQs to suppliers\n• Compare supplier quotes\n• Build customer quotes with margin controls\n\nTry pasting your website link below to see what I can do for your trading business.",
       timestamp: '9:41',
     },
   ];
@@ -174,12 +174,12 @@ export default function HomePage() {
                 </span>
               </div>
               <h1 className="text-[32px] md:text-[52px] leading-[1.1] md:leading-[1.05] font-semibold tracking-[-1px] md:tracking-[-1.5px] mb-5 md:mb-6" style={{ color: '#FFFFFF' }}>
-                {t('The 24/7 AI Sales Assistant for HK Trading Companies', '香港貿易公司的 24/7 AI 銷售助手')}
+                {t('AI Inquiry-to-Quote Desk for Trading Companies', '貿易公司的 AI 查詢到報價平台')}
               </h1>
               <p className="text-[16px] md:text-[19px] leading-[1.6] md:leading-[1.65] mb-8 md:mb-10 max-w-[520px]" style={{ color: 'rgba(255,255,255,0.75)' }}>
                 {t(
-                  'Instantly qualify overseas WhatsApp inquiries. Your team sleeps, your AI closes deals.',
-                  '即時篩選海外 WhatsApp 查詢。您的團隊休息時，AI 繼續成交。'
+                  'Turn every WhatsApp, email, and WeChat inquiry into a quote. Extract requirements, send RFQs to suppliers, compare quotes, and close deals — all in one place.',
+                  '將每個 WhatsApp、電郵和企業微信查詢轉化為報價。提取需求、向供應商發送 RFQ、比較報價並成交——全部在一個平台完成。'
                 )}
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-6 mt-12">
@@ -437,28 +437,35 @@ export default function HomePage() {
           {t('How it works', '運作方式')}
         </p>
         <h2 className="text-[26px] md:text-[32px] font-semibold tracking-[-0.8px] mb-10 md:mb-12">
-          {t('Three steps. No code required.', '三個步驟，無需編程。')}
+          {t('From inquiry to quote in minutes.', '從查詢到報價只需幾分鐘。')}
         </h2>
-        <div className="grid md:grid-cols-3 gap-12">
+        <div className="grid md:grid-cols-4 gap-10">
           <div>
             <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-[14px] font-semibold text-white mb-4" style={{ background: 'var(--accent)' }}>1</div>
-            <h3 className="text-[17px] font-semibold mb-2">{t('Connect your WhatsApp', '連接您的 WhatsApp')}</h3>
+            <h3 className="text-[17px] font-semibold mb-2">{t('Inquiry arrives', '查詢到達')}</h3>
             <p className="text-[15px] leading-[1.6]" style={{ color: 'var(--text-muted)' }}>
-              {t('Link your WhatsApp Business number in 2 minutes. Customers message you as normal — the AI answers in the background.', '2分鐘內連結您的 WhatsApp 商業號碼。客戶照常發訊息——AI 在背景自動回覆。')}
+              {t('Buyers message via WhatsApp, email, or WeChat. The AI captures every inquiry automatically.', '買家透過 WhatsApp、電郵或企業微信發送訊息。AI 自動捕獲每個查詢。')}
             </p>
           </div>
           <div>
             <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-[14px] font-semibold text-white mb-4" style={{ background: 'var(--accent)' }}>2</div>
-            <h3 className="text-[17px] font-semibold mb-2">{t('Add your products', '新增您的產品')}</h3>
+            <h3 className="text-[17px] font-semibold mb-2">{t('AI extracts requirements', 'AI 提取需求')}</h3>
             <p className="text-[15px] leading-[1.6]" style={{ color: 'var(--text-muted)' }}>
-              {t('Upload your catalog — product names, MOQ, pricing, specs. The AI learns your business and answers accurately.', '上傳您的產品目錄——產品名稱、MOQ、價格、規格。AI 學習您的業務並準確回答。')}
+              {t('Product specs, quantity, destination, delivery date — all extracted and structured automatically.', '產品規格、數量、目的地、交貨日期——全部自動提取並結構化。')}
             </p>
           </div>
           <div>
             <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-[14px] font-semibold text-white mb-4" style={{ background: 'var(--accent)' }}>3</div>
-            <h3 className="text-[17px] font-semibold mb-2">{t('Deals close while you sleep', '您睡覺時，AI 成交訂單')}</h3>
+            <h3 className="text-[17px] font-semibold mb-2">{t('Suppliers quote back', '供應商報價')}</h3>
             <p className="text-[15px] leading-[1.6]" style={{ color: 'var(--text-muted)' }}>
-              {t('The AI responds instantly to every inquiry, qualifies leads, and hands off complex negotiations to your team.', 'AI 即時回覆每個查詢、篩選潛在客戶，並將複雜談判交給您的團隊。')}
+              {t('Send RFQs to multiple suppliers, receive and compare quotes side by side with margin analysis.', '向多個供應商發送 RFQ，接收並比較報價，附帶利潤分析。')}
+            </p>
+          </div>
+          <div>
+            <div className="w-8 h-8 rounded-[4px] flex items-center justify-center text-[14px] font-semibold text-white mb-4" style={{ background: 'var(--accent)' }}>4</div>
+            <h3 className="text-[17px] font-semibold mb-2">{t('Quote sent, deal closed', '報價發出，成交訂單')}</h3>
+            <p className="text-[15px] leading-[1.6]" style={{ color: 'var(--text-muted)' }}>
+              {t('Generate a professional quote with margin controls, send it, and track follow-ups automatically.', '生成帶有利潤控制的專業報價，發送並自動跟進。')}
             </p>
           </div>
         </div>
@@ -568,88 +575,88 @@ export default function HomePage() {
             {t('Features', '功能')}
           </p>
           <h2 className="text-[26px] md:text-[32px] font-semibold tracking-[-0.8px] mb-4">
-            {t('Everything you need to manage AI conversations', '管理 AI 對話所需的一切')}
+            {t('Everything from inquiry to delivered order', '從查詢到交付訂單的完整流程')}
           </h2>
           <p className="text-[16px] mb-12 max-w-[600px]" style={{ color: 'var(--text-muted)' }}>
-            {t('A powerful AI platform built for trading companies. From instant replies to automated quotations.', '專為貿易公司打造的強大 AI 平台。從即時回覆到自動化報價。')}
+            {t('Built for HK trading companies handling RFQs, supplier quotes, and customer negotiations. One platform replaces spreadsheets, email chains, and manual tracking.', '專為處理 RFQ、供應商報價和客戶談判的香港貿易公司打造。一個平台取代電子表格、電郵鏈和手動跟蹤。')}
           </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Conversations */}
+            {/* Unified Inbox */}
             <div className="border rounded-[8px] p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="w-10 h-10 rounded-[6px] flex items-center justify-center mb-4" style={{ background: 'var(--accent-light)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  <path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                 </svg>
               </div>
-              <h3 className="text-[16px] font-semibold mb-2">{t('Conversations', '對話')}</h3>
+              <h3 className="text-[16px] font-semibold mb-2">{t('Unified Inquiry Inbox', '統一查詢收件箱')}</h3>
               <p className="text-[14px] leading-[1.5]" style={{ color: 'var(--text-muted)' }}>
-                {t('Live chat view with every customer conversation. See AI responses in real-time, jump in manually when needed, and bookmark conversations for follow-up.', '即時查看每個客戶對話。實時觀看 AI 回覆，需要時手動介入，並標記對話以便跟進。')}
+                {t('Every inquiry from WhatsApp, email, and WeChat flows into one inbox. AI captures sender info, detects language, and assigns priority.', '每個來自 WhatsApp、電郵和企業微信的查詢匯入一個收件箱。AI 捕獲發送者資訊、偵測語言並分配優先級。')}
               </p>
             </div>
 
-            {/* Products */}
+            {/* AI Extraction */}
             <div className="border rounded-[8px] p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="w-10 h-10 rounded-[6px] flex items-center justify-center mb-4" style={{ background: 'var(--accent-light)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
                 </svg>
               </div>
-              <h3 className="text-[16px] font-semibold mb-2">{t('Products', '產品')}</h3>
+              <h3 className="text-[16px] font-semibold mb-2">{t('AI Requirement Extraction', 'AI 需求提取')}</h3>
               <p className="text-[14px] leading-[1.5]" style={{ color: 'var(--text-muted)' }}>
-                {t('Manage your full product catalog — names, descriptions, MOQ, pricing, categories. The AI uses this to answer customer inquiries accurately.', '管理完整產品目錄——名稱、描述、MOQ、價格、類別。AI 使用這些資料準確回答客戶查詢。')}
+                {t('AI parses product specs, quantity, destination, and delivery dates from free-text messages. Structured data ready for RFQ.', 'AI 從自由文本訊息中解析產品規格、數量、目的地和交貨日期。結構化資料準備用於 RFQ。')}
               </p>
             </div>
 
-            {/* Knowledge Base */}
+            {/* Supplier RFQ */}
             <div className="border rounded-[8px] p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="w-10 h-10 rounded-[6px] flex items-center justify-center mb-4" style={{ background: 'var(--accent-light)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                  <path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
               </div>
-              <h3 className="text-[16px] font-semibold mb-2">{t('Knowledge Base', '知識庫')}</h3>
+              <h3 className="text-[16px] font-semibold mb-2">{t('Supplier RFQ & Quotes', '供應商 RFQ 與報價')}</h3>
               <p className="text-[14px] leading-[1.5]" style={{ color: 'var(--text-muted)' }}>
-                {t('Upload documents, specs, and certifications. The AI reads your knowledge base to answer detailed technical and compliance questions.', '上傳文件、規格和認證。AI 讀取知識庫以回答技術和合規問題。')}
+                {t('Send RFQs to multiple suppliers, receive quotes, and compare side-by side with unit price, MOQ, lead time, and total cost.', '向多個供應商發送 RFQ，接收報價並進行並排比較，包括單價、MOQ、交貨期和總成本。')}
               </p>
             </div>
 
-            {/* FAQ Rules */}
+            {/* Cost & Margin */}
             <div className="border rounded-[8px] p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="w-10 h-10 rounded-[6px] flex items-center justify-center mb-4" style={{ background: 'var(--accent-light)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
                 </svg>
               </div>
-              <h3 className="text-[16px] font-semibold mb-2">{t('FAQ Rules', 'FAQ 規則')}</h3>
+              <h3 className="text-[16px] font-semibold mb-2">{t('Cost Build-Up & Margin', '成本明細與利潤')}</h3>
               <p className="text-[14px] leading-[1.5]" style={{ color: 'var(--text-muted)' }}>
-                {t('Set keyword triggers and canned answers for common questions. Priority-based matching ensures the right answer every time.', '為常見問題設定關鍵詞觸發和預設回答。優先級匹配確保每次給出正確答案。')}
+                {t('Deterministic cost calculator with min-margin rules, FX conversion, and incoterm-aware pricing. Never sell below your floor.', '確定性成本計算器，帶有最低利潤規則、匯率轉換和貿易術語感知定價。絕不低於底價出售。')}
               </p>
             </div>
 
-            {/* Settings */}
+            {/* Customer Quote */}
             <div className="border rounded-[8px] p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="w-10 h-10 rounded-[6px] flex items-center justify-center mb-4" style={{ background: 'var(--accent-light)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  <path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/>
                 </svg>
               </div>
-              <h3 className="text-[16px] font-semibold mb-2">{t('Settings', '設定')}</h3>
+              <h3 className="text-[16px] font-semibold mb-2">{t('Customer Quote Builder', '客戶報價生成器')}</h3>
               <p className="text-[14px] leading-[1.5]" style={{ color: 'var(--text-muted)' }}>
-                {t('Customize your AI personality, system prompt, and connected channels. Switch between AI and human mode per conversation.', '自訂 AI 個性、系統提示詞和已連接渠道。按對話切換 AI 和人手模式。')}
+                {t('Generate professional quotes with line items, cost breakdowns, and version history. Requires approval before sending to customers.', '生成帶有明細項目、成本明細和版本歷史的專業報價。發送給客戶前需要審批。')}
               </p>
             </div>
 
-            {/* Human Takeover */}
+            {/* Follow-ups */}
             <div className="border rounded-[8px] p-6" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="w-10 h-10 rounded-[6px] flex items-center justify-center mb-4" style={{ background: 'var(--accent-light)' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                 </svg>
               </div>
-              <h3 className="text-[16px] font-semibold mb-2">{t('Human Takeover', '人手接管')}</h3>
+              <h3 className="text-[16px] font-semibold mb-2">{t('Automated Follow-ups', '自動跟進')}</h3>
               <p className="text-[14px] leading-[1.5]" style={{ color: 'var(--text-muted)' }}>
-                {t('One click to switch any conversation from AI to human. Your team steps in for complex negotiations while AI handles the rest.', '一鍵將任何對話從 AI 切換到人手。您的團隊處理複雜談判，AI 處理其餘。')}
+                {t('Schedule follow-up sequences after sending quotes. Nudge customers at the right time without manual tracking.', '發送報價後安排跟進序列。在適當時間提醒客戶，無需手動跟蹤。')}
               </p>
             </div>
           </div>
@@ -672,10 +679,11 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6 items-stretch">
-            {/* TradeFlow AI - HK$880 */}
+            {/* Lead Desk - HK$880 */}
             <div className="border rounded-[8px] p-6 flex flex-col" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="mb-3">
-                <h3 className="text-[17px] font-semibold">Starter SDR</h3>
+                <h3 className="text-[17px] font-semibold">Lead Desk</h3>
+                <p className="text-[12px] mt-1" style={{ color: 'var(--text-muted)' }}>{t('Inquiry capture & AI response', '查詢捕獲與 AI 回覆')}</p>
                 <div className="flex items-baseline gap-1 mt-2">
                   <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>HK$</span>
                   <span className="text-[28px] font-semibold tracking-[-1px]">880</span>
@@ -684,12 +692,12 @@ export default function HomePage() {
               </div>
               <div className="space-y-2 mt-4 flex-1">
                 {[
-                  'Unlimited WhatsApp conversations',
-                  'Unlimited products & FAQ rules',
-                  'English, Mandarin, Cantonese, Spanish',
-                  'Human override anytime',
-                  'Knowledge base & documents',
-                  'Custom AI personality',
+                  t('Unified inquiry inbox (WhatsApp, email, WeChat)', '統一查詢收件箱（WhatsApp、電郵、企業微信）'),
+                  t('AI auto-response & requirement extraction', 'AI 自動回覆與需求提取'),
+                  t('English, Mandarin, Cantonese auto-detect', '英語、普通話、廣東話自動偵測'),
+                  t('Unlimited products & FAQ rules', '無限產品與 FAQ 規則'),
+                  t('Knowledge base & documents', '知識庫與文件'),
+                  t('Human takeover anytime', '隨時人手接管'),
                 ].map((item) => (
                   <div key={item} className="flex items-center gap-2">
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -706,13 +714,14 @@ export default function HomePage() {
               </Link>
             </div>
 
-            {/* Growth Trading Desk - HK$2,480 - Coming Soon */}
-            <div className="border rounded-[8px] p-6 relative overflow-hidden opacity-60 flex flex-col" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'var(--border)', color: 'var(--text-muted)' }}>
-                {t('COMING SOON', '即將推出')}
+            {/* Quote Desk - HK$2,480 */}
+            <div className="border rounded-[8px] p-6 flex flex-col" style={{ borderColor: 'var(--accent)', background: 'var(--bg)', boxShadow: '0 0 0 1px var(--accent)' }}>
+              <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                {t('POPULAR', '最受歡迎')}
               </div>
               <div className="mb-3">
-                <h3 className="text-[17px] font-semibold">Growth Trading Desk</h3>
+                <h3 className="text-[17px] font-semibold">Quote Desk</h3>
+                <p className="text-[12px] mt-1" style={{ color: 'var(--text-muted)' }}>{t('Full RFQ workflow', '完整 RFQ 流程')}</p>
                 <div className="flex items-baseline gap-1 mt-2">
                   <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>HK$</span>
                   <span className="text-[28px] font-semibold tracking-[-1px]">2,480</span>
@@ -721,28 +730,36 @@ export default function HomePage() {
               </div>
               <div className="space-y-2 mt-4 flex-1">
                 {[
-                  'WeChat Work integration',
-                  'Multi-user dashboard',
-                  'Analytics & reporting',
-                  'Priority support',
-                  'Lead Ingestion (Email & WhatsApp)',
-                  'Quote Engine (PDF RFQ)',
+                  t('Everything in Lead Desk', 'Lead Desk 所有功能'),
+                  t('AI requirement extraction & structured data', 'AI 需求提取與結構化資料'),
+                  t('Supplier RFQ management', '供應商 RFQ 管理'),
+                  t('Side-by-side quote comparison', '並排報價比較'),
+                  t('Cost build-up & margin controls', '成本明細與利潤控制'),
+                  t('Customer quote builder (PDF)', '客戶報價生成器（PDF）'),
+                  t('Approval workflow', '審批流程'),
+                  t('Automated follow-up sequences', '自動跟進序列'),
+                  t('Multi-user dashboard', '多用戶儀表板'),
                 ].map((item, i) => (
-                  <div key={item} className={`flex items-center gap-2 ${i >= 4 ? 'opacity-50' : ''}`}>
+                  <div key={item} className={`flex items-center gap-2 ${i >= 5 ? 'opacity-70' : ''}`}>
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     <span className="text-[13px]">{item}</span>
                   </div>
                 ))}
               </div>
+              <Link
+                href="/login"
+                className="block w-full text-center text-[13px] font-medium py-2.5 rounded-[4px] mt-6 text-white"
+                style={{ background: 'var(--accent)' }}
+              >
+                {t('Get started', '開始使用')}
+              </Link>
             </div>
 
-            {/* Enterprise - HK$4,880 - Coming Soon */}
-            <div className="border rounded-[8px] p-6 relative overflow-hidden opacity-60 flex flex-col" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'var(--border)', color: 'var(--text-muted)' }}>
-                {t('COMING SOON', '即將推出')}
-              </div>
+            {/* Trade Operations - HK$4,880 */}
+            <div className="border rounded-[8px] p-6 flex flex-col" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
               <div className="mb-3">
-                <h3 className="text-[17px] font-semibold">Enterprise</h3>
+                <h3 className="text-[17px] font-semibold">Trade Operations</h3>
+                <p className="text-[12px] mt-1" style={{ color: 'var(--text-muted)' }}>{t('Full back-office automation', '完整後台自動化')}</p>
                 <div className="flex items-baseline gap-1 mt-2">
                   <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>HK$</span>
                   <span className="text-[28px] font-semibold tracking-[-1px]">4,880</span>
@@ -751,16 +768,26 @@ export default function HomePage() {
               </div>
               <div className="space-y-2 mt-4 flex-1">
                 {[
-                  'AI sourcing & supplier matching',
-                  'Automated quote generation',
-                  'Dedicated account manager',
-                  'Custom integrations',
-                ].map((item) => (
-                  <div key={item} className="flex items-center gap-2">
+                  t('Everything in Quote Desk', 'Quote Desk 所有功能'),
+                  t('AI supplier matching & sourcing', 'AI 供應商匹配與採購'),
+                  t('Automated quote generation', '自動報價生成'),
+                  t('Email inbox integration', '電郵收件箱整合'),
+                  t('Analytics & reporting', '分析與報告'),
+                  t('Dedicated account manager', '專屬客戶經理'),
+                  t('Custom integrations', '自訂整合'),
+                  t('Priority support', '優先支援'),
+                ].map((item, i) => (
+                  <div key={item} className={`flex items-center gap-2 ${i >= 4 ? 'opacity-60' : ''}`}>
                     <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     <span className="text-[13px]">{item}</span>
                   </div>
                 ))}
+              </div>
+              <div
+                className="block w-full text-center text-[13px] font-medium py-2.5 rounded-[4px] mt-6 border"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                {t('Coming soon', '即將推出')}
               </div>
             </div>
           </div>
@@ -906,10 +933,10 @@ export default function HomePage() {
       <section style={{ background: 'linear-gradient(135deg, #0A6E5C 0%, #064E3B 100%)' }}>
         <div className="max-w-[1200px] mx-auto px-6 py-14 md:py-20 text-center">
           <h2 className="text-[26px] md:text-[36px] font-semibold tracking-[-1px] mb-4" style={{ color: '#FFFFFF' }}>
-            {t('Ready to never miss a lead?', '準備好不再錯過任何客戶？')}
+            {t('Ready to stop losing deals to slow replies?', '準備好不再因回覆太慢而失去訂單？')}
           </h2>
           <p className="text-[15px] md:text-[16px] mb-8" style={{ color: '#a7f3d0' }}>
-            {t('Set up in 5 minutes. Card required for trial.', '5 分鐘設定，試用需要信用卡。')}
+            {t('From inquiry to quote in minutes. Start free today.', '從查詢到報價只需幾分鐘。今天免費開始。')}
           </p>
           <Link
             href="/signup"
