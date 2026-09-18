@@ -105,7 +105,7 @@ export default function HomePage() {
         addAiMessage("Hello! I'm TradeFlow AI. I can help you with:\n\n- RFQ quotes with Incoterms\n- Visual catalog search\n- Product & pricing info\n\nTry pasting your website link to see what I can do for your business!");
       } else {
         addAiMessage(
-          "I can help with that. Try pasting your website URL above — I'll analyze your business and show you how TradeFlow automates customer inquiries on WhatsApp & WeChat."
+          "I can help with that. Try pasting your website URL above — I'll analyze your business and show you how TradeFlow automates customer inquiries on WhatsApp."
         );
       }
     }
@@ -222,80 +222,134 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right: workflow visualization */}
+            {/* Right: phone */}
             <div className="hidden lg:flex w-[44%] justify-center pt-2">
               <div className="relative">
-                {/* Glow */}
-                <div className="absolute -inset-12 rounded-full opacity-15 blur-3xl" style={{ background: 'radial-gradient(circle, #34d399, transparent)' }} />
-                {/* Workflow card */}
-                <div className="relative rounded-[16px] p-6 shadow-[0_20px_60px_-10px_rgba(0,0,0,0.35)]" style={{ background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.12)' }}>
-                  <div className="text-[11px] font-medium uppercase tracking-wider mb-5" style={{ color: '#a7f3d0' }}>
-                    {t('Your workflow', '您的工作流程')}
-                  </div>
-                  <div className="space-y-3">
-                    {/* Step 1 */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0" style={{ background: 'rgba(52,211,153,0.2)' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                {/* Glow behind phone */}
+                <div className="absolute -inset-8 rounded-full opacity-20 blur-3xl" style={{ background: 'radial-gradient(circle, #34d399, transparent)' }} />
+                {/* iPhone frame */}
+                <div className="relative">
+                  {/* Side buttons */}
+                  <div className="absolute -left-[3px] top-[70px] w-[3px] h-[26px] rounded-l-sm" style={{ background: '#2A2A2C' }} />
+                  <div className="absolute -left-[3px] top-[110px] w-[3px] h-[44px] rounded-l-sm" style={{ background: '#2A2A2C' }} />
+                  <div className="absolute -left-[3px] top-[164px] w-[3px] h-[44px] rounded-l-sm" style={{ background: '#2A2A2C' }} />
+                  <div className="absolute -right-[3px] top-[114px] w-[3px] h-[56px] rounded-r-sm" style={{ background: '#2A2A2C' }} />
+                  {/* Phone body */}
+                  <div className="w-[230px] rounded-[40px] p-[10px] shadow-[0_20px_60px_-10px_rgba(0,0,0,0.3)]" style={{ background: 'linear-gradient(145deg, #3A3A3C, #1C1C1E)' }}>
+                    {/* Screen */}
+                    <div className="rounded-[30px] overflow-hidden relative flex flex-col" style={{ background: '#ECE5DD', height: '460px' }}>
+                      {/* Dynamic Island */}
+                      <div className="absolute top-[8px] left-1/2 -translate-x-1/2 w-[84px] h-[24px] rounded-full z-10" style={{ background: '#000000' }} />
+                      {/* Status bar */}
+                      <div className="h-[42px] px-4 flex items-end justify-between pb-1 shrink-0">
+                        <span className="text-[9px] font-semibold text-black/70">9:41</span>
+                        <div className="flex items-center gap-1">
+                          <svg width="12" height="8" viewBox="0 0 12 8" fill="none"><path d="M1 5.5C1.8 3.5 3.5 2 5.5 2s3.7 1.5 4.5 3.5" stroke="black" strokeWidth="1" strokeLinecap="round" opacity="0.7"/><circle cx="5.5" cy="6" r="1" fill="black" opacity="0.7"/></svg>
+                          <svg width="14" height="8" viewBox="0 0 14 8" fill="none"><rect x="0.5" y="0.5" width="11" height="7" rx="1.5" stroke="black" opacity="0.7"/><rect x="2" y="2" width="7" height="4" rx="0.5" fill="black" opacity="0.7"/><path d="M12.5 2.5V5.5" stroke="black" strokeWidth="1" strokeLinecap="round" opacity="0.7"/></svg>
+                        </div>
                       </div>
-                      <div className="flex-1 rounded-[6px] px-3 py-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                        <p className="text-[11px] font-medium text-white">{t('Inquiry arrives', '查詢到達')}</p>
-                        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{t('WhatsApp · Email · WeChat', 'WhatsApp · 電郵 · 企業微信')}</p>
+                      {/* WhatsApp header */}
+                      <div className="px-3 py-2 flex items-center gap-2 shrink-0" style={{ background: '#075E54' }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                        <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-semibold text-white">HK</div>
+                        <div className="flex-1">
+                          <p className="text-[10px] font-medium text-white">HK Trading Co.</p>
+                          <p className="text-[8px]" style={{ color: '#a7f3d0' }}>● online</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M15.05 5A5 5 0 0119 8.95M15.05 1A9 9 0 0123 8.94M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.362 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex justify-center"><div className="w-px h-2" style={{ background: 'rgba(255,255,255,0.15)' }} /></div>
-                    {/* Step 2 */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0" style={{ background: 'rgba(52,211,153,0.2)' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                      {/* Chat */}
+                      <div className="px-2.5 py-2 space-y-1.5 flex-1 overflow-hidden" style={{ background: '#ECE5DD' }}>
+                        <div className="flex justify-end">
+                          <div className="rounded-[8px] rounded-tr-none px-2.5 py-1.5 max-w-[82%] text-[9px] leading-[1.35]" style={{ background: '#DCF8C6' }}>
+                            Price for 1000 water bottles?
+                          </div>
+                        </div>
+                        <div className="flex justify-start">
+                          <div className="rounded-[8px] rounded-tl-none px-2.5 py-1.5 max-w-[82%] text-[9px] leading-[1.35]" style={{ background: '#FFFFFF' }}>
+                            <p>304 SS 500ml: MOQ 500, $2.80–3.50</p>
+                            <p>316 SS 750ml: MOQ 300, $4.20–5.00</p>
+                            <p className="mt-0.5 text-[8px]" style={{ color: '#666' }}>FDA certified. Samples free.</p>
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <div className="rounded-[8px] rounded-tr-none px-2.5 py-1.5 max-w-[82%] text-[9px] leading-[1.35]" style={{ background: '#DCF8C6' }}>
+                            Custom logo 2000 pcs?
+                          </div>
+                        </div>
+                        <div className="flex justify-start">
+                          <div className="rounded-[8px] rounded-tl-none px-2.5 py-1.5 max-w-[82%] text-[9px] leading-[1.35]" style={{ background: '#FFFFFF' }}>
+                            <p>USD 2.70/pc, free silk screen</p>
+                            <p>Total: USD 5,400 FOB Shenzhen</p>
+                            <p className="mt-0.5 text-[8px]" style={{ color: '#666' }}>Shall I prepare a quote?</p>
+                          </div>
+                        </div>
+                        <div className="flex justify-end">
+                          <div className="rounded-[8px] rounded-tr-none px-2.5 py-1.5 max-w-[82%] text-[9px] leading-[1.35]" style={{ background: '#DCF8C6' }}>
+                            Yes please, CIF London
+                          </div>
+                        </div>
+                        <div className="flex justify-start">
+                          <div className="rounded-[8px] rounded-tl-none px-2.5 py-1.5 max-w-[82%] text-[9px] leading-[1.35]" style={{ background: '#FFFFFF' }}>
+                            <p>CIF London: +18% freight</p>
+                            <p>Total: USD 6,372 CIF London</p>
+                            <p className="mt-0.5 text-[8px]" style={{ color: '#666' }}>ETA 25–30 days. Confirm?</p>
+                          </div>
+                        </div>
+                        {/* Rich media: Product photo */}
+                        <div className="flex justify-start">
+                          <div className="rounded-[8px] rounded-tl-none overflow-hidden max-w-[82%]" style={{ background: '#FFFFFF' }}>
+                            <div className="w-full h-[60px] flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f0f0f0, #e0e0e0)' }}>
+                              <div className="flex flex-col items-center gap-1">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                                <span className="text-[7px]" style={{ color: '#999' }}>304-SS-WaterBottle.jpg</span>
+                              </div>
+                            </div>
+                            <div className="px-2.5 py-1.5">
+                              <p className="text-[9px] font-medium">304 Stainless Steel 500ml</p>
+                              <p className="text-[8px]" style={{ color: '#666' }}>MOQ 500 · $2.80–3.50</p>
+                            </div>
+                          </div>
+                        </div>
+                        {/* Rich media: PDF spec sheet */}
+                        <div className="flex justify-start">
+                          <div className="rounded-[8px] rounded-tl-none overflow-hidden max-w-[82%]" style={{ background: '#FFFFFF' }}>
+                            <div className="px-2.5 py-2 flex items-center gap-2">
+                              <div className="w-8 h-10 rounded-[3px] flex items-center justify-center shrink-0" style={{ background: '#E53E3E' }}>
+                                <span className="text-[7px] font-bold text-white">PDF</span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-[9px] font-medium truncate">Product-Spec-Sheet.pdf</p>
+                                <p className="text-[7px]" style={{ color: '#666' }}>FDA · CE · RoHS certifications</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex-1 rounded-[6px] px-3 py-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                        <p className="text-[11px] font-medium text-white">{t('AI extracts requirements', 'AI 提取需求')}</p>
-                        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{t('Specs · Qty · Destination', '規格 · 數量 · 目的地')}</p>
+                      {/* Input bar */}
+                      <div className="px-2 py-2 flex items-center gap-1.5 shrink-0" style={{ background: '#F0F0F0' }}>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: '#FFFFFF' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8696A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+                        </div>
+                        <div className="flex-1 rounded-full px-3 py-1.5 flex items-center" style={{ background: '#FFFFFF' }}>
+                          <span className="text-[9px]" style={{ color: '#8696A0' }}>Message</span>
+                        </div>
+                        <div className="w-7 h-7 rounded-full flex items-center justify-center shrink-0" style={{ background: '#FFFFFF' }}>
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8696A0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex justify-center"><div className="w-px h-2" style={{ background: 'rgba(255,255,255,0.15)' }} /></div>
-                    {/* Step 3 */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0" style={{ background: 'rgba(52,211,153,0.2)' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
-                      </div>
-                      <div className="flex-1 rounded-[6px] px-3 py-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                        <p className="text-[11px] font-medium text-white">{t('Suppliers quote back', '供應商報價')}</p>
-                        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{t('RFQ sent · Quotes compared', 'RFQ 發送 · 報價比較')}</p>
-                      </div>
-                    </div>
-                    <div className="flex justify-center"><div className="w-px h-2" style={{ background: 'rgba(255,255,255,0.15)' }} /></div>
-                    {/* Step 4 */}
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-[6px] flex items-center justify-center shrink-0" style={{ background: 'rgba(52,211,153,0.2)' }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"/></svg>
-                      </div>
-                      <div className="flex-1 rounded-[6px] px-3 py-2" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                        <p className="text-[11px] font-medium text-white">{t('Quote sent, deal closed', '報價發出，成交訂單')}</p>
-                        <p className="text-[10px]" style={{ color: 'rgba(255,255,255,0.5)' }}>{t('PDF quote · Auto follow-up', 'PDF 報價 · 自動跟進')}</p>
+                      {/* Home indicator */}
+                      <div className="h-[16px] flex items-center justify-center shrink-0">
+                        <div className="w-[80px] h-[4px] rounded-full bg-black/20" />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Trust bar */}
-      <section className="border-b" style={{ borderColor: 'var(--border)' }}>
-        <div className="max-w-[1200px] mx-auto px-6 py-6 md:py-7 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[12px] font-medium uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>
-            {t('Trusted by trading companies across Hong Kong', '深受香港貿易公司信賴')}
-          </p>
-          <div className="flex items-center gap-6 md:gap-8">
-            {['Pacific Trading', 'HK Global', 'Shenzhen Direct'].map((name) => (
-              <span key={name} className="text-[13px] font-medium" style={{ color: 'var(--text-muted)', opacity: 0.5 }}>
-                {name}
-              </span>
-            ))}
           </div>
         </div>
       </section>
@@ -361,8 +415,8 @@ export default function HomePage() {
                   ),
                   title_en: 'Inquiry arrives',
                   title_zh: '查詢到達',
-                  desc_en: 'Buyers message via WhatsApp, email, or WeChat. Every inquiry is captured automatically.',
-                  desc_zh: '買家透過 WhatsApp、電郵或企業微信發送訊息。每個查詢都被自動捕獲。',
+                  desc_en: 'Buyers message via WhatsApp or email. Every inquiry is captured automatically.',
+                  desc_zh: '買家透過 WhatsApp 或電郵發送訊息。每個查詢都被自動捕獲。',
                 },
                 {
                   num: '2',
@@ -538,8 +592,8 @@ export default function HomePage() {
                 ),
                 title_en: 'Unified Inquiry Inbox',
                 title_zh: '統一查詢收件箱',
-                desc_en: 'Every inquiry from WhatsApp, email, and WeChat flows into one inbox. AI captures sender info, detects language, and assigns priority.',
-                desc_zh: '每個來自 WhatsApp、電郵和企業微信的查詢匯入一個收件箱。AI 捕獲發送者資訊、偵測語言並分配優先級。',
+                desc_en: 'Every inquiry from WhatsApp and email flows into one inbox. AI captures sender info, detects language, and assigns priority.',
+                desc_zh: '每個來自 WhatsApp 和電郵的查詢匯入一個收件箱。AI 捕獲發送者資訊、偵測語言並分配優先級。',
               },
               {
                 icon: (

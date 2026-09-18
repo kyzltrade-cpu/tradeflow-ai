@@ -25,8 +25,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "TradeFlow AI — WhatsApp + WeChat Sales Assistant for Trading Companies",
-  description: "AI that answers customer inquiries on WhatsApp and WeChat instantly. Built for Hong Kong trading companies.",
+  title: "TradeFlow AI — WhatsApp Sales Assistant for Trading Companies",
+  description: "AI that answers customer inquiries on WhatsApp instantly. Built for Hong Kong trading companies.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
