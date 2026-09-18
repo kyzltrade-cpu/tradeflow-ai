@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
 import WhatsAppConnect from '@/components/WhatsAppConnect';
+import EmailConnect from '@/components/EmailConnect';
 
 const ADMIN_EMAIL = 'tradeflow.hk@gmail.com';
 
@@ -191,14 +192,7 @@ export default function SettingsPage() {
                 <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Transactional emails</p>
               </div>
             </div>
-            <p className="text-[12px] mb-2" style={{ color: 'var(--text-muted)' }}>
-              {t('Send quotes and follow-ups via email', '透過電郵發送報價和跟進')}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: '#D1FAE5', color: '#059669' }}>
-                {t('Configured', '已配置')}
-              </span>
-            </div>
+            <EmailConnect />
           </div>
 
           {/* Stripe */}

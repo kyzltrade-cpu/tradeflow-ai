@@ -81,6 +81,9 @@ export async function POST(req: NextRequest) {
       wechat_work_secret,
       wechat_work_token,
       wechat_work_encoding_aes_key,
+      email_api_key,
+      email_from_email,
+      email_from_name,
     } = body;
 
     // During onboarding, company_id is passed in body (auth.companyId may be null yet)
@@ -100,6 +103,10 @@ export async function POST(req: NextRequest) {
       industry,
       response_delay_seconds: response_delay_seconds ?? 2,
       image_response_prompt: image_response_prompt || null,
+      email_api_key: email_api_key || null,
+      email_from_email: email_from_email || null,
+      email_from_name: email_from_name || null,
+      email_configured: !!(email_from_email && email_from_name),
       updated_at: new Date().toISOString(),
     };
     // Only include chat_widget_enabled if it's explicitly passed
