@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 import { createDefaultSequence } from '@/lib/follow-up-engine';
+import { generateQuoteHTML, generateQuotePDF } from '@/lib/quote-generator';
+import { sendEmail } from '@/lib/email';
 
 // POST /api/admin/quotes/[id]/send
 export async function POST(
@@ -22,6 +24,7 @@ export async function POST(
       return NextResponse.json({ error: 'id is required' }, { status: 400 });
     }
 
+    // ── Fetch quote with line items ──────────────────────────────────
     const { data: quote, error: quoteError } = await supabaseAdmin
       .from('quotes')
       .select('*, quote_line_items(*)')
@@ -33,7 +36,7 @@ export async function POST(
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 });
     }
 
-    // Validate quote status
+    // ── Validate quote status ────────────────────────────────────────
     if (quote.status !== 'APPROVED' && quote.status !== 'DRAFT') {
       return NextResponse.json(
         { error: `Cannot send quote in "${quote.status}" status. Quote must be APPROVED or DRAFT.` },
@@ -41,7 +44,6 @@ export async function POST(
       );
     }
 
-    // Validate quote has line items
     if (!quote.quote_line_items || quote.quote_line_items.length === 0) {
       return NextResponse.json(
         { error: 'Quote has no line items. Add items before sending.' },
@@ -49,7 +51,6 @@ export async function POST(
       );
     }
 
-    // Validate currency is set
     if (!quote.currency) {
       return NextResponse.json(
         { error: 'Quote currency is not set.' },
@@ -57,7 +58,6 @@ export async function POST(
       );
     }
 
-    // Validate validity date
     if (!quote.valid_until) {
       return NextResponse.json(
         { error: 'Quote validity date is not set.' },
@@ -73,20 +73,20 @@ export async function POST(
       );
     }
 
-    // Fetch company info for email
+    // ── Fetch company info ───────────────────────────────────────────
     const { data: company } = await supabaseAdmin
       .from('companies')
-      .select('name, email_domain, email_sender_name')
+      .select('id, name, email_domain, email_sender_name')
       .eq('id', companyId)
       .single();
 
-    // Fetch customer/contact email
+    // ── Resolve recipient email ──────────────────────────────────────
     let toEmail = recipient_email || null;
 
     if (!toEmail && quote.contact_id) {
       const { data: contact } = await supabaseAdmin
         .from('contacts')
-        .select('email')
+        .select('email, name')
         .eq('id', quote.contact_id)
         .single();
       toEmail = contact?.email || null;
@@ -95,24 +95,101 @@ export async function POST(
     if (!toEmail && quote.customer_id) {
       const { data: customer } = await supabaseAdmin
         .from('customers')
-        .select('email')
+        .select('email, name')
         .eq('id', quote.customer_id)
         .single();
       toEmail = customer?.email || null;
     }
 
-    // Fetch opportunity for follow-up context
-    const { data: opportunity } = quote.opportunity_id
-      ? await supabaseAdmin
-          .from('opportunities')
-          .select('id')
-          .eq('id', quote.opportunity_id)
-          .single()
-      : { data: null };
+    if (!toEmail) {
+      return NextResponse.json(
+        { error: 'No recipient email found. Provide recipient_email or link a contact/customer with an email.' },
+        { status: 400 }
+      );
+    }
+
+    // ── Build HTML email + PDF attachment ─────────────────────────────
+    const lineItems = (quote.quote_line_items || []).map((li: Record<string, unknown>) => ({
+      id: li.id as string,
+      quoteId: li.quote_id as string,
+      productName: li.product_name as string,
+      description: (li.description as string) || null,
+      specifications: (li.specifications as string) || null,
+      quantity: li.quantity as number,
+      unit: li.unit as string,
+      unitPrice: li.unit_price as number,
+      totalPrice: li.total_price as number,
+      currency: li.currency as string,
+      sourceSupplierId: (li.source_supplier_id as string) || null,
+      sourceSupplierQuoteId: (li.source_supplier_quote_id as string) || null,
+      costBreakdown: [],
+      margin: (li.margin as number) || null,
+      marginPercent: (li.margin_percent as number) || null,
+      notes: (li.notes as string) || null,
+      createdAt: li.created_at as string,
+      updatedAt: li.updated_at as string,
+    }));
+
+    const quoteObj = {
+      id: quote.id,
+      opportunityId: quote.opportunity_id || '',
+      status: quote.status as 'DRAFT' | 'SENT' | 'APPROVED' | 'OPENED' | 'ACCEPTED' | 'REJECTED',
+      version: quote.current_version || 1,
+      currency: quote.currency,
+      validUntil: quote.valid_until,
+      paymentTerms: quote.payment_terms || null,
+      deliveryTerms: quote.delivery_terms || null,
+      incoterms: quote.incoterms || null,
+      notes: quote.notes || null,
+      internalNotes: null,
+      lineItems,
+      costComponents: [],
+      totalCost: quote.total_cost || 0,
+      margin: quote.margin || 0,
+      marginPercent: quote.margin_percent || 0,
+      sentAt: null,
+      openedAt: null,
+      acceptedAt: null,
+      rejectedAt: null,
+      createdAt: quote.created_at,
+      updatedAt: quote.updated_at,
+    };
+
+    const companyName = company?.name || 'TradeFlow';
+    const companyLogoUrl = null;
+
+    const emailHtml = generateQuoteHTML(quoteObj, { id: companyId, name: companyName, logoUrl: companyLogoUrl }, lineItems);
+
+    // Generate PDF as attachment
+    let pdfBuffer: Buffer | null = null;
+    try {
+      pdfBuffer = await generateQuotePDF(quoteObj, { id: companyId, name: companyName, logoUrl: companyLogoUrl }, lineItems);
+    } catch (pdfErr) {
+      console.error('[quotes/[id]/send] PDF generation failed (non-fatal):', pdfErr);
+    }
+
+    // ── Send email via Resend ────────────────────────────────────────
+    const emailSubject = subject || `Quotation ${quote.id} from ${companyName}`;
+    const customHtml = message
+      ? `<div style="padding: 24px 32px; color: #374151; font-size: 14px; line-height: 1.6; border-bottom: 1px solid #e5e7eb;">${message.replace(/\n/g, '<br>')}</div>\n${emailHtml.split('</body>')[0]}</body>`
+      : emailHtml;
+
+    const emailResult = await sendEmail({
+      to: toEmail,
+      subject: emailSubject,
+      html: customHtml,
+      from: company?.email_sender_name
+        ? `${company.email_sender_name} <onboarding@resend.dev>`
+        : undefined,
+      replyTo: company?.email_domain ? `noreply@${company.email_domain}` : undefined,
+      attachments: pdfBuffer
+        ? [{ filename: `${quote.id}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }]
+        : undefined,
+    });
 
     const now = new Date().toISOString();
 
-    // Update quote status to SENT
+    // ── Update quote status to SENT ──────────────────────────────────
     const { error: updateError } = await supabaseAdmin
       .from('quotes')
       .update({
@@ -127,24 +204,23 @@ export async function POST(
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    // Create follow-up sequence automatically if opportunity exists
+    // ── Create follow-up sequence automatically ──────────────────────
     let followUpSequence = null;
-    if (opportunity) {
+    if (quote.opportunity_id) {
       try {
         followUpSequence = await createDefaultSequence({
           companyId,
-          opportunityId: opportunity.id,
+          opportunityId: quote.opportunity_id,
           quoteId: id,
           channel: 'email',
           createdBy: auth.user.id,
         });
       } catch (fuErr) {
         console.error('[quotes/[id]/send:POST] Follow-up creation failed:', fuErr);
-        // Non-fatal — continue without follow-up
       }
     }
 
-    // Update opportunity stage
+    // ── Update opportunity stage ─────────────────────────────────────
     if (quote.opportunity_id) {
       await supabaseAdmin
         .from('opportunities')
@@ -156,7 +232,7 @@ export async function POST(
         .eq('id', quote.opportunity_id);
     }
 
-    // Log audit event
+    // ── Log audit event ──────────────────────────────────────────────
     await supabaseAdmin.from('audit_events').insert({
       company_id: companyId,
       event_type: 'sent',
@@ -165,10 +241,13 @@ export async function POST(
       actor_id: auth.user.id,
       actor_email: auth.user.email,
       metadata: {
-        quote_number: quote.quote_number,
+        quote_number: quote.id,
         recipient_email: toEmail,
         total_amount: quote.total_amount,
         currency: quote.currency,
+        email_sent: emailResult.success,
+        email_id: emailResult.id || null,
+        email_error: emailResult.error || null,
         follow_up_created: !!followUpSequence,
       },
     });
@@ -176,6 +255,11 @@ export async function POST(
     return NextResponse.json({
       quote: { ...quote, status: 'SENT', sent_at: now },
       sent_to: toEmail,
+      email: {
+        success: emailResult.success,
+        id: emailResult.id || null,
+        error: emailResult.error || null,
+      },
       follow_up_sequence: followUpSequence
         ? { id: followUpSequence.id, items_count: followUpSequence.items?.length || 0 }
         : null,
