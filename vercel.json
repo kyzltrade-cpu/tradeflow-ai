@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/follow-ups",
+      "schedule": "0,15,30,45 * * * *"
+    },
+    {
+      "path": "/api/cron/workflow",
+      "schedule": "0,10,20,30,40,50 * * * *"
+    }
+  ]
+}
