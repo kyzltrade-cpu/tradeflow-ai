@@ -1,24 +1,31 @@
 import Link from 'next/link';
+import { MessageCircle, Quote, Timer, Bot, ArrowRight, Languages } from 'lucide-react';
+import Reveal from '@/components/landing/Reveal';
+import HeroDemo from '@/components/landing/HeroDemo';
 
 /* ── Data ───────────────────────────────────────────────────────────────── */
 
 const FEATURES = [
   {
+    icon: Bot,
     title: 'Company Brain',
     desc: 'AI learns your products, suppliers, margins, and certifications. Every quote it builds gets smarter.',
     detail: 'Upload specs, pricing sheets, and supplier docs. Backtide builds a knowledge graph that powers every future quote.',
   },
   {
+    icon: MessageCircle,
     title: 'Email + WhatsApp Inbox',
     desc: 'Works over email and WhatsApp — the channels you already use. An inquiry lands in your inbox, and Backtide drives it through the whole sourcing pipeline.',
     detail: 'Works with the email and WhatsApp you already use. No new software for your team, customers, or suppliers to learn. Supports English, Chinese, and mixed-language threads.',
   },
   {
+    icon: Quote,
     title: 'Cited Quotes',
     desc: 'Every number on your quote has a source. Supplier price, margin, FX rate — all traceable.',
     detail: 'AI cites where every data point came from. Show customers confidence, not guesswork.',
   },
   {
+    icon: Timer,
     title: 'Smart Follow-ups',
     desc: 'Auto-scheduled follow-ups that stop the moment a customer replies. No embarrassing double-texts.',
     detail: 'AI drafts messages in the customer\'s language. Human approves before send.',
@@ -149,7 +156,10 @@ export default function LandingPage() {
 
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.08] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
             From inquiry to quote.<br />
-            <span style={{ color: '#0A6E5C' }}>End to end.</span>
+            <span className="relative inline-block" style={{ color: '#0A6E5C' }}>
+              End to end.
+              <span className="absolute left-0 -bottom-1 h-[3px] w-full rounded-full btk-anim-rise" style={{ background: '#0A6E5C', opacity: 0.35 }} />
+            </span>
           </h1>
 
           <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#626260' }}>
@@ -157,63 +167,29 @@ export default function LandingPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Link href="/signup" className="w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium text-white transition-all active:translate-y-px active:scale-[0.99]" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+            <Link href="/signup" className="group w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium text-white transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
               Start Free Trial
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <Link href="/login" className="w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium border transition-colors hover:bg-black/[0.03]" style={{ borderColor: '#D9D7CB', color: '#374151' }}>
+            <Link href="#see-it-in-action" className="w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium border transition-all hover:bg-black/[0.03] hover:-translate-y-0.5 active:translate-y-px" style={{ borderColor: '#D9D7CB', color: '#374151' }}>
               See a Live Demo
             </Link>
           </div>
 
-          <div className="max-w-4xl mx-auto rounded-2xl border p-6 md:p-8 text-left" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: '0 24px 60px -30px rgba(10,110,92,0.18)' }}>
-            <div className="grid md:grid-cols-4 gap-4 md:gap-0">
-              {[
-                {
-                  icon: (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>),
-                  label: 'Inquiry',
-                  sub: 'Extract specs',
-                },
-                {
-                  icon: (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" /></svg>),
-                  label: 'Clarify',
-                  sub: 'AI flags gaps',
-                },
-                {
-                  icon: (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 6.75v-1.5a4.5 4.5 0 00-9 0v1.5h9z" /></svg>),
-                  label: 'RFQ',
-                  sub: 'Batch suppliers',
-                },
-                {
-                  icon: (<svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>),
-                  label: 'Quote',
-                  sub: 'Cited & ready',
-                },
-              ].map((step, i) => (
-                <div key={step.label} className="flex items-center gap-4 md:gap-0">
-                  <div className="flex-1 flex md:flex-col items-center md:items-start gap-3 md:text-left">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>{step.icon}</div>
-                      <div className="md:hidden">
-                        <div className="text-sm font-semibold">{step.label}</div>
-                        <div className="text-xs" style={{ color: '#9CA3AF' }}>{step.sub}</div>
-                      </div>
-                    </div>
-                    <div className="hidden md:block">
-                      <div className="text-sm font-semibold">{step.label}</div>
-                      <div className="text-xs" style={{ color: '#9CA3AF' }}>{step.sub}</div>
-                    </div>
-                  </div>
-                  {i < 3 && (
-                    <svg className="hidden md:block w-4 h-4 shrink-0 mx-1" style={{ color: '#C8C6BF' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                    </svg>
-                  )}
+          <HeroDemo />
+
+          <div className="mt-14 overflow-hidden" aria-hidden="true">
+            <div className="flex gap-3 text-xs font-semibold uppercase tracking-[0.2em] whitespace-nowrap btk-marquee" style={{ color: '#B0ADA8' }}>
+              {[0, 1].map((n) => (
+                <div key={n} className="flex shrink-0 items-center gap-3 pr-3">
+                  {['English', '简体中文', '繁體中文', 'Español', 'English', '简体中文', '繁體中文', 'Español', 'English', '简体中文', '繁體中文', 'Español'].map((lang, i) => (
+                    <span key={`${n}-${i}`} className="flex items-center gap-2">
+                      <Languages className="w-3.5 h-3.5" style={{ color: '#0A6E5C' }} />
+                      {lang}
+                    </span>
+                  ))}
                 </div>
               ))}
-            </div>
-            <div className="mt-6 pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderColor: '#EFEDE8' }}>
-              <span className="text-xs" style={{ color: '#9CA3AF' }}>Every step is a draft you approve before it goes out.</span>
-              <span className="text-xs font-semibold" style={{ color: '#0A6E5C' }}>Email · WhatsApp</span>
             </div>
           </div>
         </div>
@@ -222,22 +198,32 @@ export default function LandingPage() {
       {/* ── Features ── */}
       <section id="features" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
+          <Reveal className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Everything you need. Nothing you don&apos;t.
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#626260' }}>
               Built for the way traders actually work — citation-backed, human-approved.
             </p>
-          </div>
+          </Reveal>
           <div className="grid md:grid-cols-2 gap-6">
-            {FEATURES.map((f) => (
-              <div key={f.title} className="group p-8 rounded-2xl border transition-all hover:shadow-xl hover:-translate-y-1" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
-                <h3 className="text-xl font-bold mb-2">{f.title}</h3>
-                <p className="text-sm leading-relaxed mb-4" style={{ color: '#626260' }}>{f.desc}</p>
-                <p className="text-xs leading-relaxed px-4 py-3 rounded-lg" style={{ background: '#F8FAFD', color: '#50617A' }}>{f.detail}</p>
-              </div>
-            ))}
+            {FEATURES.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <Reveal key={f.title} delay={i * 90}>
+                  <div className="group h-full p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+                    <div className="flex items-center gap-3.5 mb-4">
+                      <span className="w-11 h-11 rounded-xl flex items-center justify-center transition-colors duration-300" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+                        <Icon className="w-5 h-5" />
+                      </span>
+                      <h3 className="text-xl font-bold">{f.title}</h3>
+                    </div>
+                    <p className="text-sm leading-relaxed mb-4" style={{ color: '#626260' }}>{f.desc}</p>
+                    <p className="text-xs leading-relaxed px-4 py-3 rounded-lg border" style={{ background: '#F8FAFD', color: '#50617A', borderColor: '#E5EDF5' }}>{f.detail}</p>
+                  </div>
+                </Reveal>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -245,40 +231,50 @@ export default function LandingPage() {
       {/* ── How It Works ── */}
       <section id="how-it-works" className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
+          <Reveal className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               From inquiry to quote in 4 steps
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#626260' }}>
               The whole sourcing pipeline, with you approving every message.
             </p>
-          </div>
+          </Reveal>
           <div className="grid md:grid-cols-4 gap-8">
-            {STEPS.map((s) => (
-              <div key={s.num} className="text-center">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-white mx-auto mb-4" style={{ background: '#0A6E5C' }}>{s.num}</div>
-                <h3 className="text-base font-bold mb-2">{s.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: '#626260' }}>{s.desc}</p>
-              </div>
+            {STEPS.map((s, i) => (
+              <Reveal key={s.num} delay={i * 110}>
+                <div className="group text-center">
+                  <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-white mx-auto mb-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-105" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -3px 0 0 #085a4a' }}>
+                    {s.num}
+                    {i < 3 && (
+                      <span aria-hidden="true" className="hidden md:block absolute left-full top-1/2 -translate-y-1/2 w-[calc(100%+2rem)] h-px">
+                        <span className="block h-full" style={{ background: '#B8DDD3', transform: 'scaleX(0)', transformOrigin: 'left', animationName: 'btk-trace', animationDuration: '1.2s', animationDelay: `${i * 160}ms`, animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)', animationFillMode: 'forwards' }} />
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-base font-bold mb-2">{s.title}</h3>
+                  <p className="text-sm leading-relaxed" style={{ color: '#626260' }}>{s.desc}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── See It In Action ── */}
-      <section className="py-24 px-6">
+      <section id="see-it-in-action" className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
+          <Reveal className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               See it in action
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#626260' }}>
               A real RFQ, 10 minutes later. Here&apos;s the whole flow.
             </p>
-          </div>
+          </Reveal>
 
           <div className="space-y-6">
-            <div className="p-8 rounded-2xl border" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+            <Reveal>
+            <div className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#0A6E5C' }}>1</div>
                 <div>
@@ -291,8 +287,10 @@ export default function LandingPage() {
                 Hi, we need 10,000 pcs of 500ml stainless steel vacuum bottles for a corporate order. Please quote with logo printing and your best lead time. Preference for double-wall, 304 food grade. We also need a sample before mass production. Thank you!
               </div>
             </div>
+            </Reveal>
 
-            <div className="p-8 rounded-2xl border" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+            <Reveal delay={120}>
+            <div className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#0A6E5C' }}>2</div>
                 <div>
@@ -320,8 +318,10 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
+            </Reveal>
 
-            <div className="p-8 rounded-2xl border" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+            <Reveal delay={240}>
+            <div className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#0A6E5C' }}>3</div>
                 <div>
@@ -351,6 +351,7 @@ export default function LandingPage() {
                 You review, adjust, approve. The quote goes out in your voice, with your margins intact.
               </p>
             </div>
+            </Reveal>
           </div>
         </div>
       </section>
@@ -358,16 +359,19 @@ export default function LandingPage() {
       {/* ── Pricing ── */}
       <section id="pricing" className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-            Simple, transparent pricing
-          </h2>
-          <p className="text-lg mb-12" style={{ color: '#626260' }}>
-            Start with a 14-day free trial. Scale when you&apos;re ready.
-          </p>
+          <Reveal>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+              Simple, transparent pricing
+            </h2>
+            <p className="text-lg mb-12" style={{ color: '#626260' }}>
+              Start with a 14-day free trial. Scale when you&apos;re ready.
+            </p>
+          </Reveal>
           <div className="grid md:grid-cols-3 gap-6">
-            {PLANS.map((plan) => (
-              <div key={plan.name} className="p-8 rounded-2xl border-2 text-left transition-all hover:shadow-xl" style={{ background: '#fff', borderColor: plan.accent ? '#0A6E5C' : '#E8E5E1' }}>
-                {plan.accent && <div className="text-xs font-bold uppercase tracking-widest mb-4" style={{ color: '#0A6E5C' }}>Most Popular</div>}
+            {PLANS.map((plan, i) => (
+              <Reveal key={plan.name} delay={i * 110}>
+              <div className="p-8 rounded-2xl border-2 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ background: '#fff', borderColor: plan.accent ? '#0A6E5C' : '#E8E5E1' }}>
+                {plan.accent && <div className="flex items-center justify-between mb-4"><div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0A6E5C' }}>Most Popular</div></div>}
                 <div className="text-base font-semibold mb-2" style={{ color: '#626260' }}>{plan.name}</div>
                 <div className="flex items-baseline gap-1 mb-6">
                   <span className="text-2xl font-bold" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{plan.price}</span>
@@ -384,8 +388,9 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 {plan.available ? (
-                  <Link href="/signup" className="block w-full text-center py-3 rounded-lg text-sm font-medium transition-all" style={{ background: '#0A6E5C', color: '#fff', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+                  <Link href="/signup" className="group/cta block w-full text-center py-3 rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', color: '#fff', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
                     {plan.cta}
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
                   </Link>
                 ) : (
                   <div className="block w-full text-center py-3 rounded-lg text-sm font-medium" style={{ background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' }}>
@@ -393,6 +398,7 @@ export default function LandingPage() {
                   </div>
                 )}
               </div>
+              </Reveal>
             ))}
           </div>
           <p className="text-xs mt-8" style={{ color: '#626260' }}>
@@ -404,17 +410,18 @@ export default function LandingPage() {
       {/* ── FAQ ── */}
       <section className="py-24 px-6">
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-16">
+          <Reveal className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Questions, answered
             </h2>
             <p className="text-lg" style={{ color: '#626260' }}>
               Everything traders ask us before starting.
             </p>
-          </div>
+          </Reveal>
           <div className="space-y-3">
-            {FAQS.map((faq) => (
-              <details key={faq.q} className="group rounded-2xl border overflow-hidden" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+            {FAQS.map((faq, i) => (
+              <Reveal key={faq.q} delay={Math.min(i, 6) * 60}>
+              <details key={faq.q} className="group rounded-2xl border transition-colors duration-300 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
                 <summary className="flex items-center justify-between gap-4 px-8 py-5 text-base font-medium cursor-pointer select-none list-none" style={{ color: '#111' }}>
                   {faq.q}
                   <svg className="w-4 h-4 shrink-0 transition-transform group-open:rotate-180" style={{ color: '#9CA3AF' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -425,30 +432,35 @@ export default function LandingPage() {
                   {faq.a}
                 </div>
               </details>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center">
+      <section className="py-24 px-6 relative overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-bold leading-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#F1EFE9', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
+          Backtide
+        </div>
+        <Reveal className="relative max-w-3xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
             Stop copy-pasting quotes.<br />
             <span style={{ color: '#0A6E5C' }}>Start closing deals.</span>
           </h2>
           <p className="text-lg mb-10" style={{ color: '#626260' }}>
-            Join trading companies in HK, Shenzhen, and beyond who are already using AI to quote faster and win more deals.
+            Backtide helps trading companies in HK, Shenzhen, and beyond quote faster and win more deals.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup" className="w-full sm:w-auto px-8 py-4 rounded-lg text-sm font-medium text-white transition-all active:translate-y-px active:scale-[0.99]" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+            <Link href="/signup" className="group w-full sm:w-auto px-8 py-4 rounded-lg text-sm font-medium text-white transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
               Get Started Free
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-lg text-sm font-medium border transition-colors hover:bg-black/[0.03]" style={{ borderColor: '#D9D7CB', color: '#374151' }}>
+            <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-lg text-sm font-medium border transition-all hover:bg-black/[0.03] hover:-translate-y-0.5" style={{ borderColor: '#D9D7CB', color: '#374151' }}>
               Book a Demo
             </Link>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* ── Footer ── */}
