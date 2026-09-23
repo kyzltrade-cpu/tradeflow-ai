@@ -12,6 +12,8 @@ import {
   AlertTriangle,
   Users,
   BadgeCheck,
+  Play,
+  Pause,
 } from 'lucide-react';
 
 const STAGES = [
@@ -206,28 +208,33 @@ function QuoteScene() {
 export default function HeroDemo() {
   const [stage, setStage] = useState(0);
   const [interacting, setInteracting] = useState(false);
+  const [paused, setPaused] = useState(false);
   const reduceMotion = useRef(false);
 
   useEffect(() => {
     reduceMotion.current = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduceMotion.current) {
-      setStage(STAGES.length - 1);
-      return;
-    }
+    if (reduceMotion.current) setPaused(true);
+  }, []);
 
+  useEffect(() => {
+    if (reduceMotion.current || paused || interacting) return;
     const id = setInterval(() => {
-      if (document.hidden || interacting) return;
+      if (document.hidden) return;
       setStage((s) => (s + 1) % STAGES.length);
     }, SCENE_DURATION);
 
     return () => clearInterval(id);
-  }, [interacting]);
+  }, [paused, interacting]);
 
   const scenes = [<InquiryScene key="i" />, <ClarifyScene key="c" />, <RfqScene key="r" />, <QuoteScene key="q" />];
-  const shown = reduceMotion.current ? STAGES.length - 1 : stage;
 
   const hold = () => setInteracting(true);
   const release = () => setInteracting(false);
+  const selectStage = (i: number) => {
+    setStage(i);
+    setPaused(true);
+  };
+  const autoplaying = !reduceMotion.current && !paused && !interacting;
 
   return (
     <div className="max-w-4xl mx-auto rounded-2xl border p-5 md:p-7 text-left btk-anim-rise" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: '0 24px 60px -30px rgba(10,110,92,0.18)' }}>
@@ -237,34 +244,63 @@ export default function HeroDemo() {
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#A9CEA8' }} />
         <span className="ml-3 text-xs font-semibold" style={{ color: '#111' }}>Backtide</span>
         <span className="hidden sm:inline text-[11px]" style={{ color: '#9CA3AF' }}>· Pacific Trading inbox</span>
-        <span className="ml-auto inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
-          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0A6E5C' }} />
-          LIVE
+        <span className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPaused((p) => !p)}
+            aria-label={paused ? 'Play demo' : 'Pause demo'}
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full transition-colors hover:bg-black/[0.04] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6E5C]/40"
+            style={{ color: '#0A6E5C' }}
+          >
+            {paused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
+            {paused || reduceMotion.current ? 'Play' : 'Pause'}
+          </button>
+          {!paused && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0A6E5C' }} />
+              LIVE
+            </span>
+          )}
         </span>
       </div>
 
       <div className="grid grid-cols-4 gap-2 mb-6" onMouseEnter={hold} onMouseLeave={release} onTouchStart={hold} onTouchEnd={release}>
         {STAGES.map((s, i) => {
           const Icon = s.icon;
-          const active = i === shown;
+          const active = i === stage;
           return (
-            <div
+            <button
               key={s.key}
-              className="flex items-center justify-center gap-2 rounded-xl px-2 py-2.5 text-xs font-semibold transition-all duration-300"
+              type="button"
+              onClick={() => selectStage(i)}
+              aria-pressed={active}
+              aria-label={`Show ${s.label} step`}
+              className="flex flex-col items-center gap-1 rounded-xl px-2 pt-2.5 pb-1.5 text-xs font-semibold cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6E5C]/40"
               style={{
                 background: active ? '#E6F4F0' : 'transparent',
                 color: active ? '#0A6E5C' : '#9CA3AF',
               }}
             >
-              <Icon className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">{s.label}</span>
-            </div>
+              <span className="flex items-center gap-2">
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">{s.label}</span>
+              </span>
+              <span className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: active ? 'rgba(10,110,92,0.15)' : 'transparent' }}>
+                {active && autoplaying && (
+                  <span
+                    key={`progress-${stage}`}
+                    className="block h-full rounded-full"
+                    style={{ background: '#0A6E5C', animation: `btk-progress ${SCENE_DURATION}ms linear forwards` }}
+                  />
+                )}
+              </span>
+            </button>
           );
         })}
       </div>
 
-      <div key={shown} className="min-h-[300px] md:min-h-[286px]" onMouseEnter={hold} onMouseLeave={release} onTouchStart={hold} onTouchEnd={release}>
-        {scenes[shown]}
+      <div key={stage} className="min-h-[300px] md:min-h-[286px]" onMouseEnter={hold} onMouseLeave={release} onTouchStart={hold} onTouchEnd={release}>
+        {scenes[stage]}
       </div>
 
       <div className="mt-6 pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderColor: '#EFEDE8' }}>

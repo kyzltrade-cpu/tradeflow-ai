@@ -42,50 +42,21 @@ const STEPS = [
 const PLANS = [
   {
     name: 'Starter SDR',
-    tagline: 'For solo traders getting off spreadsheets',
+    tagline: 'One plan, everything included — for solo traders getting off spreadsheets',
     price: 'HK$880',
     period: '/mo',
     features: [
-      'Unlimited WhatsApp conversations',
+      '1 WhatsApp number & email inbox',
+      '1,000 AI conversations a month',
       'Unlimited products & FAQ rules',
       'English, Mandarin, Cantonese, Spanish',
-      'Knowledge base & documents',
-      'Human override anytime',
+      'Human override & takeover anytime',
+      'Knowledge base & website sync',
       'Custom AI personality',
     ],
     cta: 'Start Free Trial',
     accent: true,
     available: true,
-  },
-  {
-    name: 'Growth Trading Desk',
-    tagline: 'For teams quoting at volume',
-    price: 'HK$1,942',
-    period: '/mo',
-    features: [
-      'WeChat Work integration',
-      'Multi-user dashboard',
-      'Analytics & reporting',
-      'Priority support',
-    ],
-    cta: 'Coming soon',
-    accent: false,
-    available: false,
-  },
-  {
-    name: 'Enterprise',
-    tagline: 'For full desks & custom workflows',
-    price: 'HK$4,880',
-    period: '/mo',
-    features: [
-      'AI sourcing & supplier matching',
-      'Automated quote generation',
-      'Dedicated account manager',
-      'Custom integrations',
-    ],
-    cta: 'Coming soon',
-    accent: false,
-    available: false,
   },
 ];
 
@@ -363,61 +334,56 @@ export default function LandingPage() {
               Simple, transparent pricing
             </h2>
             <p className="text-lg mb-16" style={{ color: '#626260' }}>
-              Start with a 14-day free trial. Scale when you&apos;re ready.
+              One plan, everything included. Start your free trial — cancel anytime.
             </p>
           </Reveal>
-          <div className="grid md:grid-cols-3 gap-5 md:gap-6">
-            {PLANS.map((plan, i) => (
-              <Reveal key={plan.name} delay={i * 110} className="h-full">
-                <div
-                  className="relative flex h-full flex-col p-8 rounded-2xl text-left transition-all duration-300 md:hover:-translate-y-1"
-                  style={{
-                    background: '#fff',
-                    border: plan.accent ? '1.5px solid #0A6E5C' : '1px solid #E8E5E1',
-                    boxShadow: plan.accent
-                      ? '0 24px 60px -24px rgba(10,110,92,0.45)'
-                      : '0 1px 2px rgba(17,17,17,0.04)',
-                  }}
-                >
-                  {plan.accent && (
-                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white" style={{ background: '#0A6E5C', boxShadow: '0 6px 18px -6px rgba(10,110,92,0.6)' }}>
-                      Most Popular
+          <Reveal className="max-w-[440px] mx-auto">
+            <div
+              className="relative flex h-full flex-col p-8 rounded-2xl text-left transition-all duration-300 md:hover:-translate-y-1"
+              style={{
+                background: '#fff',
+                border: '1.5px solid #0A6E5C',
+                boxShadow: '0 24px 60px -24px rgba(10,110,92,0.45)',
+              }}
+            >
+              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white" style={{ background: '#0A6E5C', boxShadow: '0 6px 18px -6px rgba(10,110,92,0.6)' }}>
+                Most Popular
+              </span>
+              <div className="text-base font-semibold" style={{ color: '#111' }}>{PLANS[0].name}</div>
+              <div className="text-xs mt-1 mb-6" style={{ color: '#9CA3AF' }}>{PLANS[0].tagline}</div>
+              <div className="flex items-baseline gap-1.5 mb-4">
+                <span className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{PLANS[0].price}</span>
+                <span className="text-sm" style={{ color: '#626260' }}>{PLANS[0].period}</span>
+              </div>
+              <p className="text-[11px] uppercase tracking-wider font-semibold mb-4 text-left" style={{ color: '#9CA3AF' }}>
+                What&apos;s included
+              </p>
+              <ul className="space-y-3 mb-8 flex-1">
+                {PLANS[0].features.map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm leading-snug" style={{ color: '#374151' }}>
+                    <span className="w-5 h-5 mt-px rounded-full flex items-center justify-center shrink-0" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                      </svg>
                     </span>
-                  )}
-                  <div className="text-base font-semibold" style={{ color: '#111' }}>{plan.name}</div>
-                  <div className="text-xs mt-1 mb-6" style={{ color: '#9CA3AF' }}>{plan.tagline}</div>
-                  <div className="flex items-baseline gap-1.5 mb-8">
-                    <span className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{plan.price}</span>
-                    {plan.period && <span className="text-sm" style={{ color: '#626260' }}>{plan.period}</span>}
-                  </div>
-                  <ul className="space-y-3 mb-8 flex-1">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2.5 text-sm leading-snug" style={{ color: '#374151' }}>
-                        <span className="w-5 h-5 mt-px rounded-full flex items-center justify-center shrink-0" style={{ background: plan.accent ? '#E6F4F0' : '#F3F4F6', color: plan.accent ? '#0A6E5C' : '#9CA3AF' }}>
-                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                          </svg>
-                        </span>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  {plan.available ? (
-                    <Link href="/signup" className="group/cta w-full text-center py-3 rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', color: '#fff', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
-                      {plan.cta}
-                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
-                    </Link>
-                  ) : (
-                    <div className="w-full text-center py-3 rounded-lg text-sm font-medium" style={{ background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' }}>
-                      {plan.cta}
-                    </div>
-                  )}
-                </div>
-              </Reveal>
-            ))}
-          </div>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/signup" className="group/cta w-full text-center py-3 rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', color: '#fff', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+                Start Free Trial
+                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
+              </Link>
+            </div>
+          </Reveal>
           <p className="text-xs mt-10" style={{ color: '#626260' }}>
             14-day free trial · Card required · 50 AI responses included · Cancel anytime.
+          </p>
+          <p className="text-xs mt-3" style={{ color: '#9CA3AF' }}>
+            Need extra WhatsApp numbers, a bigger team, or custom workflows? We do custom plans —{' '}
+            <a href="mailto:tradeflow.hk@gmail.com" className="font-medium underline underline-offset-2" style={{ color: '#0A6E5C' }}>
+              tradeflow.hk@gmail.com
+            </a>
           </p>
         </div>
       </section>

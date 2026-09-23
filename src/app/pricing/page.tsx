@@ -13,38 +13,13 @@ const PLANS = [
     monthly: 880,
     annual: 704,
     features: [
-      'Unlimited WhatsApp conversations',
+      '1 WhatsApp number & email inbox',
+      '1,000 AI conversations a month',
       'Unlimited products & FAQ rules',
       'English, Mandarin, Cantonese, Spanish',
-      'Human override anytime',
-      'Knowledge base & documents',
+      'Human override & takeover anytime',
+      'Knowledge base & website sync',
       'Custom AI personality',
-    ],
-  },
-  {
-    id: 'growth',
-    name: 'Growth Trading Desk',
-    monthly: 1942,
-    annual: 1984,
-    comingSoon: true,
-    features: [
-      'WeChat Work integration',
-      'Multi-user dashboard',
-      'Analytics & reporting',
-      'Priority support',
-    ],
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    monthly: 4880,
-    annual: 3904,
-    comingSoon: true,
-    features: [
-      'AI sourcing & supplier matching',
-      'Automated quote generation',
-      'Dedicated account manager',
-      'Custom integrations',
     ],
   },
 ];
@@ -98,10 +73,10 @@ export default function PricingPage() {
             {t('Pricing', '定價')}
           </p>
           <h1 className="text-[28px] md:text-[36px] font-semibold tracking-[-1px] mb-4">
-            {t('Simple pricing for every team size', '簡單定價，適合各種團隊規模')}
+            {t('One simple plan, everything included', '一個簡單方案，包含所有功能')}
           </h1>
           <p className="text-[16px] max-w-[600px] mx-auto mb-8" style={{ color: 'var(--text-muted)' }}>
-            {t('Start free, scale when ready. No setup fees, no surprises.', '免費開始，準備好再升級。無設置費，無隱藏費用。')}
+            {t('Start free, pay HK$880/month when ready. No setup fees, no surprises.', '免費開始，準備好再按每月 HK$880 付費。無設置費，無隱藏費用。')}
           </p>
 
           {/* Billing toggle */}
@@ -129,23 +104,20 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 items-stretch">
+        <div className="max-w-[440px] mx-auto">
           {PLANS.map((plan) => (
               <div
               key={plan.id}
-              className={`border rounded-[8px] p-6 flex flex-col relative overflow-hidden ${
-                plan.comingSoon ? 'opacity-60' : ''
-              }`}
+              className="border rounded-[8px] p-8 flex flex-col relative overflow-hidden"
               style={{
-                borderColor: 'var(--border)',
+                borderColor: 'var(--accent)',
                 background: 'var(--surface)',
+                boxShadow: '0 24px 60px -24px rgba(10,110,92,0.25)',
               }}
             >
-              {plan.comingSoon && (
-                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'var(--border)', color: 'var(--text-muted)' }}>
-                  {t('COMING SOON', '即將推出')}
-                </div>
-              )}
+              <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                {t('MOST POPULAR', '最受歡迎')}
+              </div>
 
               <div className="mb-3">
                 <h2 className="text-[18px] font-semibold">{plan.name}</h2>
@@ -159,6 +131,10 @@ export default function PricingPage() {
                 <span className="text-[14px]" style={{ color: 'var(--text-muted)' }}>/mo</span>
               </div>
 
+              <p className="text-[12px] font-medium uppercase tracking-[0.08em] mb-3" style={{ color: 'var(--text-muted)' }}>
+                {t("What's included", '包含內容')}
+              </p>
+
               <div className="space-y-3 mb-8 flex-1">
                 {plan.features.map((item) => (
                   <div key={item} className="flex items-center gap-3">
@@ -171,23 +147,20 @@ export default function PricingPage() {
               </div>
 
               <button
-                onClick={() => !plan.comingSoon && handleCheckout(plan.id)}
-                disabled={loadingTier === plan.id || plan.comingSoon}
+                onClick={() => handleCheckout(plan.id)}
+                disabled={loadingTier === plan.id}
                 className="w-full text-center text-[14px] font-medium py-3 rounded-[4px] transition-opacity"
                 style={{
-                  background: !plan.comingSoon ? 'var(--accent)' : 'transparent',
-                  color: !plan.comingSoon ? '#fff' : 'var(--text-muted)',
-                  border: plan.comingSoon ? '1px solid var(--border)' : 'none',
-                  opacity: plan.comingSoon ? 0.7 : (loadingTier === plan.id ? 0.7 : 1),
+                  background: 'var(--accent)',
+                  color: '#fff',
+                  opacity: loadingTier === plan.id ? 0.7 : 1,
                 }}
               >
-                {plan.comingSoon
-                  ? t('Coming soon', '即將推出')
-                  : loadingTier === plan.id
-                    ? t('Redirecting…', '跳轉中…')
-                    : isLoggedIn
-                      ? t('Go to billing', '前往帳單')
-                      : t('Get started', '立即開始')}
+                {loadingTier === plan.id
+                  ? t('Redirecting…', '跳轉中…')
+                  : isLoggedIn
+                    ? t('Go to billing', '前往帳單')
+                    : t('Get started', '立即開始')}
               </button>
             </div>
           ))}
