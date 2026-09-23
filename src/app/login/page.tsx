@@ -70,10 +70,18 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center mb-8">
-          <Link href="/" className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-            Backtide
+          <Link href="/" className="inline-flex items-center gap-2.5 group">
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white transition-transform duration-200 group-hover:scale-105"
+              style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)', fontSize: 13 }}
+            >
+              BT
+            </span>
+            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
+              Backtide
+            </span>
           </Link>
-          <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-4">{t('Sign in', '登入')}</h1>
+          <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-5">{t('Sign in', '登入')}</h1>
           <p className="text-[14px]" style={{ color: 'var(--text-muted)' }}>
             {t('Access your dashboard', '存取您的控制台')}
           </p>
@@ -81,7 +89,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="text-[13px] px-4 py-3 rounded-[4px]" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
+            <div className="text-[13px] px-4 py-3 rounded-lg" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
               {error}
             </div>
           )}
@@ -93,7 +101,7 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full border rounded-[4px] px-3 py-2.5 text-[14px] focus:outline-none"
+              className="w-full border rounded-lg px-3 py-2.5 text-[14px] focus:outline-none transition-all"
               style={{ borderColor: 'var(--border)' }}
             />
           </div>
@@ -105,7 +113,7 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full border rounded-[4px] px-3 py-2.5 text-[14px] focus:outline-none"
+              className="w-full border rounded-lg px-3 py-2.5 text-[14px] focus:outline-none"
               style={{ borderColor: 'var(--border)' }}
             />
           </div>
@@ -113,8 +121,8 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-[14px] font-medium py-3 rounded-[4px] text-white disabled:opacity-50"
-            style={{ background: 'var(--accent)' }}
+            className="w-full text-[14px] font-medium py-3 rounded-lg text-white disabled:opacity-50 transition-all hover:-translate-y-px active:translate-y-0 active:scale-[0.99]"
+            style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)' }}
           >
             {loading ? t('Signing in...', '登入中...') : t('Sign in', '登入')}
           </button>
@@ -139,8 +147,8 @@ export default function LoginPage() {
                 const result = await signInWithGoogle();
                 if (result.error) setError(result.error);
               }}
-              className="flex items-center justify-center gap-2 border rounded-[4px] py-2.5 text-[13px] font-medium hover:opacity-80 transition"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+className="flex items-center justify-center gap-2 border rounded-lg py-2.5 text-[13px] font-medium transition-all hover:-translate-y-px active:translate-y-0 hover:opacity-90"
+      style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -156,8 +164,8 @@ export default function LoginPage() {
                 const result = await signInWithMicrosoft();
                 if (result.error) setError(result.error);
               }}
-              className="flex items-center justify-center gap-2 border rounded-[4px] py-2.5 text-[13px] font-medium hover:opacity-80 transition"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+className="flex items-center justify-center gap-2 border rounded-lg py-2.5 text-[13px] font-medium transition-all hover:-translate-y-px active:translate-y-0 hover:opacity-90"
+      style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
             >
               <svg width="18" height="18" viewBox="0 0 23 23">
                 <path fill="#F35325" d="M1 1h10v10H1z"/>

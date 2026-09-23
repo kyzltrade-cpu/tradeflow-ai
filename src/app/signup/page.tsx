@@ -46,10 +46,16 @@ export default function SignupPage() {
     return (
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
         <div className="w-full max-w-[400px] text-center">
-          <Link href="/" className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-            Backtide
+          <Link href="/" className="inline-flex items-center gap-2.5 group">
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white transition-transform duration-200 group-hover:scale-105"
+              style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)', fontSize: 13 }}
+            >
+              BT
+            </span>
+            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>Backtide</span>
           </Link>
-          <div className="mt-8 p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <div className="mt-8 p-6 border rounded-lg" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" />
@@ -61,8 +67,8 @@ export default function SignupPage() {
             </p>
             <Link
               href="/login"
-              className="inline-block text-[14px] font-medium px-6 py-2.5 rounded-[4px] text-white"
-              style={{ background: 'var(--accent)' }}
+              className="inline-block text-[14px] font-medium px-6 py-2.5 rounded-lg text-white transition-all hover:-translate-y-px active:translate-y-0"
+              style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)' }}
             >
               {t('Go to sign in', '前往登入')}
             </Link>
@@ -90,10 +96,18 @@ export default function SignupPage() {
         </div>
 
         <div className="text-center mb-8">
-          <Link href="/" className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-            Backtide
+          <Link href="/" className="inline-flex items-center gap-2.5 group">
+            <span
+              className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white transition-transform duration-200 group-hover:scale-105"
+              style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)', fontSize: 13 }}
+            >
+              BT
+            </span>
+            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
+              Backtide
+            </span>
           </Link>
-          <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-4">{t('Create account', '建立帳戶')}</h1>
+          <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-5">{t('Create account', '建立帳戶')}</h1>
           <p className="text-[14px]" style={{ color: 'var(--text-muted)' }}>
             {t('Start your free trial', '開始免費試用')}
           </p>
@@ -101,7 +115,7 @@ export default function SignupPage() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="text-[13px] px-4 py-3 rounded-[4px]" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
+            <div className="text-[13px] px-4 py-3 rounded-lg" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
               {error}
             </div>
           )}
@@ -113,7 +127,7 @@ export default function SignupPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full border rounded-[4px] px-3 py-2.5 text-[14px] focus:outline-none"
+              className="w-full border rounded-lg px-3 py-2.5 text-[14px] focus:outline-none"
               style={{ borderColor: 'var(--border)' }}
             />
           </div>
@@ -126,7 +140,7 @@ export default function SignupPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={6}
-              className="w-full border rounded-[4px] px-3 py-2.5 text-[14px] focus:outline-none"
+              className="w-full border rounded-lg px-3 py-2.5 text-[14px] focus:outline-none"
               style={{ borderColor: 'var(--border)' }}
             />
           </div>
@@ -138,7 +152,7 @@ export default function SignupPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className="w-full border rounded-[4px] px-3 py-2.5 text-[14px] focus:outline-none"
+              className="w-full border rounded-lg px-3 py-2.5 text-[14px] focus:outline-none"
               style={{ borderColor: 'var(--border)' }}
             />
           </div>
@@ -146,8 +160,8 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full text-[14px] font-medium py-3 rounded-[4px] text-white disabled:opacity-50"
-            style={{ background: 'var(--accent)' }}
+            className="w-full text-[14px] font-medium py-3 rounded-lg text-white disabled:opacity-50 transition-all hover:-translate-y-px active:translate-y-0 active:scale-[0.99]"
+            style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)' }}
           >
             {loading ? t('Creating account...', '建立中...') : t('Create account', '建立帳戶')}
           </button>
@@ -172,7 +186,7 @@ export default function SignupPage() {
                 const result = await signInWithGoogle();
                 if (result.error) setError(result.error);
               }}
-              className="flex items-center justify-center gap-2 border rounded-[4px] py-2.5 text-[13px] font-medium hover:opacity-80 transition"
+              className="flex items-center justify-center gap-2 border rounded-lg py-2.5 text-[13px] font-medium transition-all hover:-translate-y-px active:translate-y-0 hover:opacity-90"
               style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
@@ -189,7 +203,7 @@ export default function SignupPage() {
                 const result = await signInWithMicrosoft();
                 if (result.error) setError(result.error);
               }}
-              className="flex items-center justify-center gap-2 border rounded-[4px] py-2.5 text-[13px] font-medium hover:opacity-80 transition"
+              className="flex items-center justify-center gap-2 border rounded-lg py-2.5 text-[13px] font-medium transition-all hover:-translate-y-px active:translate-y-0 hover:opacity-90"
               style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
             >
               <svg width="18" height="18" viewBox="0 0 23 23">

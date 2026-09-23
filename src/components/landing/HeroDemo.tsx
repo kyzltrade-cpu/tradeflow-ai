@@ -11,7 +11,7 @@ import {
   Globe,
   AlertTriangle,
   Users,
-  BadgeCheck,
+  Bot,
   Play,
   Pause,
 } from 'lucide-react';
@@ -67,8 +67,16 @@ function InquiryScene() {
       </Stagger>
 
       <Stagger delay={450}>
-        <div className="text-xs" style={{ color: '#9CA3AF' }}>
-          Draft reply ready — extracted the specs, flagged 3 gaps. You approve before it&apos;s sent.
+        <div className="rounded-xl rounded-tl-sm px-5 py-4 text-sm leading-relaxed border" style={{ background: '#FFF', color: '#111', borderColor: '#E8E5E1', boxShadow: '0 8px 24px -16px rgba(10,110,92,0.25)' }}>
+          <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold" style={{ color: '#0A6E5C' }}>
+            <span className="inline-flex items-center gap-1"><Bot className="w-3 h-3" /> AI draft</span>
+            <span className="text-[#9CA3AF] font-medium">· awaiting approval</span>
+          </div>
+          <div className="leading-relaxed" style={{ color: '#374151' }}>
+            Hi Sarah — thanks for the inquiry. Glad to quote the 500ml double-wall 304 bottles with logo printing.
+            Before pricing: could you share a target price or budget, the Incoterm, and the delivery destination &amp; date?
+            A sample can ship before mass production.
+          </div>
         </div>
       </Stagger>
     </div>
@@ -115,7 +123,7 @@ function ClarifyScene() {
       <Stagger delay={700}>
         <div className="flex flex-wrap items-center justify-between gap-3">
           <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
-            <Globe className="w-3 h-3" /> Draft answer in 繁體中文 · 待您批准
+            <Globe className="w-3 h-3" /> Draft reply · English · awaiting your approval
           </span>
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
             <Send className="w-3 h-3" /> Approve &amp; ask

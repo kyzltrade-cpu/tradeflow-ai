@@ -1,22 +1,47 @@
 import Link from 'next/link';
-import { MessageCircle, Quote, Timer, Bot, ArrowRight, Languages } from 'lucide-react';
+import {
+  Inbox,
+  ScanSearch,
+  MessageCircleQuestion,
+  Users,
+  Quote,
+  Timer,
+  ShieldCheck,
+  Layers,
+  Languages,
+  LayoutDashboard,
+  ArrowRight,
+} from 'lucide-react';
 import Reveal from '@/components/landing/Reveal';
 import HeroDemo from '@/components/landing/HeroDemo';
+import SiteHeader from '@/components/landing/SiteHeader';
 
-/* ── Data ───────────────────────────────────────────────────────────────── */
+/* ── The pipeline: the core loop the product runs ───────────────────────── */
 
-const FEATURES = [
+const CORE_FEATURES = [
   {
-    icon: Bot,
-    title: 'Company Brain',
-    desc: 'AI learns your products, suppliers, margins, and certifications. Every quote it builds gets smarter.',
-    detail: 'Upload specs, pricing sheets, and supplier docs. Backtide builds a knowledge graph that powers every future quote.',
+    icon: Inbox,
+    title: 'Email + WhatsApp inbox',
+    desc: 'An inquiry lands in the channel the customer uses — email or WhatsApp. Backtide drives it through the whole sourcing pipeline from there.',
+    detail: 'No new software for your team, customers, or suppliers to learn. Supports English, Chinese, and mixed-language threads.',
   },
   {
-    icon: MessageCircle,
-    title: 'Email + WhatsApp Inbox',
-    desc: 'Works over email and WhatsApp — the channels you already use. An inquiry lands in your inbox, and Backtide drives it through the whole sourcing pipeline.',
-    detail: 'Works with the email and WhatsApp you already use. No new software for your team, customers, or suppliers to learn. Supports English, Chinese, and mixed-language threads.',
+    icon: ScanSearch,
+    title: 'Specs, extracted',
+    desc: 'Every spec, quantity, and requirement is pulled out and pinned to where it came from — so nothing is guessed.',
+    detail: 'Quantities, materials, certifications, lead times. Each extracted spec cites the line it came from.',
+  },
+  {
+    icon: MessageCircleQuestion,
+    title: 'Gaps get clarified',
+    desc: 'AI flags what\u2019s missing and drafts a clarification question in the customer\u2019s language. You approve before it\u2019s sent.',
+    detail: 'Never quote on assumptions — target price, Incoterm, and destination are caught before you commit.',
+  },
+  {
+    icon: Users,
+    title: 'Suppliers get RFQed',
+    desc: 'A batch RFQ goes to your shortlisted suppliers on their preferred channel — email or WhatsApp, in their language.',
+    detail: 'You approve every send. Suppliers reply in place; no chasing spreadsheet threads.',
   },
   {
     icon: Quote,
@@ -26,11 +51,38 @@ const FEATURES = [
   },
   {
     icon: Timer,
-    title: 'Smart Follow-ups',
+    title: 'Smart follow-ups',
     desc: 'Auto-scheduled follow-ups that stop the moment a customer replies. No embarrassing double-texts.',
-    detail: 'AI drafts messages in the customer\'s language. Human approves before send.',
+    detail: 'AI drafts messages in the customer\u2019s language. Human approves before send.',
   },
 ];
+
+/* ── The control layer: how you stay in charge ──────────────────────────── */
+
+const CONTROL_FEATURES = [
+  {
+    icon: ShieldCheck,
+    title: 'Approve everything',
+    desc: 'Every reply, RFQ, and quote is a draft until you say go.',
+  },
+  {
+    icon: Layers,
+    title: 'Products & knowledge base',
+    desc: 'Your products, margins, FAQ rules, and certifications power every draft.',
+  },
+  {
+    icon: Languages,
+    title: 'English · 中文 · Español',
+    desc: 'Answers in the customer\u2019s language, including HK and mainland channels.',
+  },
+  {
+    icon: LayoutDashboard,
+    title: 'Live dashboard',
+    desc: 'One live overview of inquiries, pipeline, and where each deal stands.',
+  },
+];
+
+/* ── How it works ───────────────────────────────────────────────────────── */
 
 const STEPS = [
   { num: '01', title: 'Inquiry comes in', desc: 'From email or WhatsApp. Every spec, quantity, and requirement is extracted with source citations.' },
@@ -38,6 +90,8 @@ const STEPS = [
   { num: '03', title: 'Suppliers get RFQed', desc: 'A batch RFQ goes to your shortlisted suppliers on their preferred channel. You approve every send.' },
   { num: '04', title: 'Quote is drafted', desc: 'Responses are compared, landed cost is calculated, and a quote is drafted. You approve, one click to send.' },
 ];
+
+/* ── Pricing ────────────────────────────────────────────────────────────── */
 
 const PLANS = [
   {
@@ -58,6 +112,8 @@ const PLANS = [
     available: true,
   },
 ];
+
+/* ── FAQ ────────────────────────────────────────────────────────────────── */
 
 const FAQS = [
   {
@@ -81,6 +137,14 @@ const FAQS = [
     a: 'You do. Every quote is a draft until you approve it. AI cites where each number came from — supplier price, margin rule, FX rate — so you can verify fast.',
   },
   {
+    q: 'Why not just use ChatGPT or a generic AI add-on?',
+    a: 'Backtide is a pipeline, not a chat window. It ties each step to your data — your products, suppliers, margins, and FX rates — and keeps a human approving every outbound message. A generic chatbot can write a reply; it can\'t RFQ your suppliers, compare landed costs, or draft a quote you can trace.',
+  },
+  {
+    q: 'Do I need to be technical to set it up?',
+    a: 'No. Self-serve setup is guided: connect WhatsApp or email, upload your products, and approve your first draft. There\'s also an optional done-for-you setup for HK$1,288 one-time where our team does all of it for you.',
+  },
+  {
     q: 'Is my supplier and pricing data safe?',
     a: 'Your knowledge base is private to your company. Data is stored encrypted, access is per-user, and it is never used to train models shared with other customers.',
   },
@@ -99,47 +163,33 @@ const FAQS = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: '#FAF9F6', color: '#111' }}>
-      {/* ── Nav ── */}
-      <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b" style={{ background: 'rgba(250,249,246,0.85)', borderColor: '#E8E5E1' }}>
-        <div className="max-w-7xl mx-auto px-6 h-16 grid grid-cols-[1fr_auto_1fr] items-center">
-          <div className="justify-self-start text-base font-semibold tracking-tight" style={{ color: '#111' }}>Backtide</div>
-          <div className="hidden md:flex items-center justify-center gap-8 text-sm font-medium" style={{ color: '#626260' }}>
-            <a href="#features" className="hover:text-black transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-black transition-colors">How It Works</a>
-            <a href="#pricing" className="hover:text-black transition-colors">Pricing</a>
-          </div>
-          <div className="justify-self-end flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium px-4 py-2 rounded-lg transition-colors" style={{ color: '#626260' }}>
-              Log in
-            </Link>
-            <Link href="/signup" className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-all" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
-              Start Free
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <SiteHeader />
 
       {/* ── Hero ── */}
-      <section className="pt-32 pb-20 px-6">
-        <div className="max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: '#E6F4F0', color: '#0A6E5C', borderColor: '#B8DDD3' }}>
+      <section className="pt-36 pb-20 px-6 relative overflow-hidden">
+        <div aria-hidden="true" className="pointer-events-none absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(10,110,92,0.10), rgba(10,110,92,0) 70%)', animation: 'btk-blob-a 14s ease-in-out infinite' }} />
+        <div aria-hidden="true" className="pointer-events-none absolute top-40 -right-32 w-[560px] h-[560px] rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(10,110,92,0.07), rgba(10,110,92,0) 70%)', animation: 'btk-blob-b 18s ease-in-out infinite' }} />
+        <div className="max-w-5xl mx-auto text-center relative">
+          <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: '#E6F4F0', color: '#0A6E5C', borderColor: '#B8DDD3', animationDelay: '0ms' }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0A6E5C' }}></span>
             Built for HK &amp; SZ trading companies
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.08] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-            From inquiry to quote.<br />
-            <span className="relative inline-block" style={{ color: '#0A6E5C' }}>
+            <span className="btk-anim-rise block" style={{ animationDelay: '90ms' }}>
+              From inquiry to quote.
+            </span>
+            <span className="relative inline-block btk-anim-rise" style={{ color: '#0A6E5C', animationDelay: '210ms' }}>
               End to end.
-              <span className="absolute left-0 -bottom-1 h-[3px] w-full rounded-full btk-anim-rise" style={{ background: '#0A6E5C', opacity: 0.35 }} />
+              <span className="absolute left-0 -bottom-1 h-[3px] w-full rounded-full" style={{ background: '#0A6E5C', opacity: 0.35, animation: 'btk-trace 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s backwards' }} />
             </span>
           </h1>
 
-          <p className="text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#626260' }}>
+          <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#626260', animationDelay: '330ms' }}>
             Backtide is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, RFQs your suppliers, compares their responses with cited landed costs, and drafts a ready-to-send quote — in hours, not days.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+          <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center gap-4 mb-16" style={{ animationDelay: '450ms' }}>
             <Link href="/signup" className="group w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium text-white transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
               Start Free Trial
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -149,7 +199,9 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <HeroDemo />
+          <div className="btk-anim-rise" style={{ animationDelay: '540ms' }}>
+            <HeroDemo />
+          </div>
 
           <div className="mt-14 overflow-hidden" aria-hidden="true">
             <div className="flex gap-3 text-xs font-semibold uppercase tracking-[0.2em] whitespace-nowrap btk-marquee" style={{ color: '#B0ADA8' }}>
@@ -168,7 +220,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Features ── */}
+      {/* ── Features: the pipeline ── */}
       <section id="features" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-16">
@@ -179,17 +231,17 @@ export default function LandingPage() {
               Built for the way traders actually work — citation-backed, human-approved.
             </p>
           </Reveal>
-          <div className="grid md:grid-cols-2 gap-6">
-            {FEATURES.map((f, i) => {
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {CORE_FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
-                <Reveal key={f.title} delay={i * 90}>
-                  <div className="group h-full p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+                <Reveal key={f.title} delay={(i % 3) * 90}>
+                  <div className="group h-full p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30 hover:shadow-[0_24px_48px_-28px_rgba(10,110,92,0.25)]" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
                     <div className="flex items-center gap-3.5 mb-4">
-                      <span className="w-11 h-11 rounded-xl flex items-center justify-center transition-colors duration-300" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+                      <span className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
                         <Icon className="w-5 h-5" />
                       </span>
-                      <h3 className="text-xl font-bold">{f.title}</h3>
+                      <h3 className="text-lg font-bold">{f.title}</h3>
                     </div>
                     <p className="text-sm leading-relaxed mb-4" style={{ color: '#626260' }}>{f.desc}</p>
                     <p className="text-xs leading-relaxed px-4 py-3 rounded-lg border" style={{ background: '#F8FAFD', color: '#50617A', borderColor: '#E5EDF5' }}>{f.detail}</p>
@@ -201,8 +253,38 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── You stay in control ── */}
+      <section className="py-24 px-6" style={{ background: '#F8FAFD' }}>
+        <div className="max-w-6xl mx-auto">
+          <Reveal className="text-center mb-14">
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-3" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+              AI does the legwork. You stay in control.
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: '#626260' }}>
+              Every message is a draft until you approve it — your margins, your voice, your relationships.
+            </p>
+          </Reveal>
+          <div className="grid md:grid-cols-4 gap-6">
+            {CONTROL_FEATURES.map((f, i) => {
+              const Icon = f.icon;
+              return (
+                <Reveal key={f.title} delay={i * 90}>
+                  <div className="h-full rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+                    <span className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+                      <Icon className="w-5 h-5" />
+                    </span>
+                    <h3 className="text-base font-bold mb-1.5">{f.title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: '#626260' }}>{f.desc}</p>
+                  </div>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
       {/* ── How It Works ── */}
-      <section id="how-it-works" className="py-24 px-6" style={{ background: '#F8FAFD' }}>
+      <section id="how-it-works" className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
           <Reveal className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
@@ -229,7 +311,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── See It In Action ── */}
-      <section id="see-it-in-action" className="py-24 px-6">
+      <section id="see-it-in-action" className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-5xl mx-auto">
           <Reveal className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
@@ -338,7 +420,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="py-24 px-6 relative overflow-hidden" style={{ background: '#F8FAFD' }}>
+      <section id="pricing" className="py-24 px-6 relative overflow-hidden">
         <div aria-hidden="true" className="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 w-[820px] h-[460px] rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(10,110,92,0.09), rgba(10,110,92,0) 70%)' }} />
         <div className="max-w-4xl mx-auto text-center relative">
           <Reveal>
@@ -362,6 +444,9 @@ export default function LandingPage() {
               <div className="flex items-baseline gap-1.5 mt-1 mb-6">
                 <span className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{PLANS[0].price}</span>
                 <span className="text-sm" style={{ color: '#626260' }}>{PLANS[0].period}</span>
+                <span className="ml-auto text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: '#F8FAFD', color: '#50617A', border: '1px solid #E5EDF5' }}>
+                  Save 20% annually
+                </span>
               </div>
               <p className="text-[11px] uppercase tracking-wider font-semibold mb-4 text-left" style={{ color: '#9CA3AF' }}>
                 What&apos;s included
@@ -387,6 +472,10 @@ export default function LandingPage() {
           <p className="text-xs mt-10" style={{ color: '#626260' }}>
             14-day free trial · Card required · 50 AI responses included · Cancel anytime.
           </p>
+          <p className="text-xs mt-4 max-w-xl mx-auto" style={{ color: '#626260' }}>
+            Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#111' }}>HK$1,288</span> one-time we connect WhatsApp, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,264/month —{' '}
+            <Link href="/pricing" className="font-medium underline underline-offset-2" style={{ color: '#0A6E5C' }}>see pricing</Link>.
+          </p>
           <p className="text-xs mt-3" style={{ color: '#9CA3AF' }}>
             Need extra WhatsApp numbers, a bigger team, or custom workflows? We do custom plans —{' '}
             <a href="mailto:tradeflow.hk@gmail.com" className="font-medium underline underline-offset-2" style={{ color: '#0A6E5C' }}>
@@ -397,7 +486,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-24 px-6">
+      <section className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-3xl mx-auto">
           <Reveal className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
@@ -453,15 +542,38 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-12 px-6 border-t" style={{ borderColor: '#E8E5E1' }}>
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="text-sm font-semibold" style={{ color: '#111' }}>Backtide</div>
-          <div className="flex items-center gap-6 text-sm" style={{ color: '#626260' }}>
-            <a href="/privacy" className="hover:text-black transition-colors">Privacy</a>
-            <Link href="/pricing" className="hover:text-black transition-colors">Pricing</Link>
-            <Link href="/login" className="hover:text-black transition-colors">Log in</Link>
+      <footer className="py-14 px-6 border-t" style={{ borderColor: '#E8E5E1' }}>
+        <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
+          <div>
+            <div className="flex items-center gap-2.5 mb-3">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold text-white" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+                BT
+              </span>
+              <span className="text-sm font-semibold" style={{ color: '#111' }}>Backtide</span>
+            </div>
+            <p className="text-sm max-w-[280px]" style={{ color: '#626260' }}>
+              The AI copilot for HK and Shenzhen trading companies — inquiry to quote, end to end.
+            </p>
+            <p className="text-xs mt-6" style={{ color: '#B0ADA8' }}>© 2026 Backtide. All rights reserved.</p>
           </div>
-          <div className="text-xs" style={{ color: '#B0ADA8' }}>© 2026 Backtide. All rights reserved.</div>
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: '#9CA3AF' }}>Product</div>
+            <ul className="space-y-2.5 text-sm" style={{ color: '#626260' }}>
+              <li><a href="#features" className="hover:text-black transition-colors">Features</a></li>
+              <li><a href="#how-it-works" className="hover:text-black transition-colors">How It Works</a></li>
+              <li><a href="#see-it-in-action" className="hover:text-black transition-colors">Live Demo</a></li>
+              <li><Link href="/pricing" className="hover:text-black transition-colors">Pricing</Link></li>
+            </ul>
+          </div>
+          <div>
+            <div className="text-[11px] font-semibold uppercase tracking-wider mb-4" style={{ color: '#9CA3AF' }}>Company</div>
+            <ul className="space-y-2.5 text-sm" style={{ color: '#626260' }}>
+              <li><Link href="/login" className="hover:text-black transition-colors">Log in</Link></li>
+              <li><Link href="/signup" className="hover:text-black transition-colors">Start Free</Link></li>
+              <li><a href="/privacy" className="hover:text-black transition-colors">Privacy</a></li>
+              <li><a href="mailto:tradeflow.hk@gmail.com" className="hover:text-black transition-colors">Contact</a></li>
+            </ul>
+          </div>
         </div>
       </footer>
     </div>

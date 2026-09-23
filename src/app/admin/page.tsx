@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { MessageSquareText, UserPlus, Bookmark, Package, Inbox } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
@@ -155,27 +156,47 @@ export default function AdminPage() {
         ) : (
           <>
             <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em] mb-1.5 md:mb-2" style={{ color: 'var(--text-muted)' }}>
-                {t('Total conversations', '總對話數')}
-              </p>
+              <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em]" style={{ color: 'var(--text-muted)' }}>
+                  {t('Total conversations', '總對話數')}
+                </p>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                  <MessageSquareText className="w-3.5 h-3.5" />
+                </span>
+              </div>
               <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]">{data?.totalConversations ?? 0}</p>
             </div>
             <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em] mb-1.5 md:mb-2" style={{ color: 'var(--text-muted)' }}>
-                {t('New clients this week', '本週新客戶')}
-              </p>
+              <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em]" style={{ color: 'var(--text-muted)' }}>
+                  {t('New clients this week', '本週新客戶')}
+                </p>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                  <UserPlus className="w-3.5 h-3.5" />
+                </span>
+              </div>
               <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]">{data?.newClientsThisWeek ?? 0}</p>
             </div>
             <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em] mb-1.5 md:mb-2" style={{ color: 'var(--text-muted)' }}>
-                {t('Bookmarked', '已加書籤')}
-              </p>
+              <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em]" style={{ color: 'var(--text-muted)' }}>
+                  {t('Bookmarked', '已加書籤')}
+                </p>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
+                  <Bookmark className="w-3.5 h-3.5" />
+                </span>
+              </div>
               <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]" style={{ color: 'var(--error)' }}>{data?.bookmarkedCount ?? 0}</p>
             </div>
             <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em] mb-1.5 md:mb-2" style={{ color: 'var(--text-muted)' }}>
-                {t('Products listed', '已上架產品')}
-              </p>
+              <div className="flex items-center justify-between mb-1.5 md:mb-2">
+                <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em]" style={{ color: 'var(--text-muted)' }}>
+                  {t('Products listed', '已上架產品')}
+                </p>
+                <span className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                  <Package className="w-3.5 h-3.5" />
+                </span>
+              </div>
               <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]">{data?.productsCount ?? 0}</p>
             </div>
           </>
@@ -186,9 +207,7 @@ export default function AdminPage() {
       {!loading && (data?.totalConversations ?? 0) === 0 && (
         <div className="surface-card mb-4 p-6 md:p-8 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
+            <Inbox className="w-[22px] h-[22px]" style={{ color: 'var(--accent)' }} />
           </div>
           <h2 className="text-[16px] font-semibold mb-1">{t('Connect your inbox to get started', '連接收件箱開始使用')}</h2>
           <p className="text-[13px] mb-5 max-w-[420px] mx-auto" style={{ color: 'var(--text-muted)' }}>
