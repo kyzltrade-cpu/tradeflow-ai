@@ -42,7 +42,6 @@ const STEPS = [
 const PLANS = [
   {
     name: 'Starter SDR',
-    tagline: 'One plan, everything included — for solo traders getting off spreadsheets',
     price: 'HK$880',
     period: '/mo',
     features: [
@@ -334,7 +333,7 @@ export default function LandingPage() {
               Simple, transparent pricing
             </h2>
             <p className="text-lg mb-16" style={{ color: '#626260' }}>
-              One plan, everything included. Start your free trial — cancel anytime.
+              14-day free trial, then HK$880/month. Cancel anytime.
             </p>
           </Reveal>
           <Reveal className="max-w-[440px] mx-auto">
@@ -346,12 +345,8 @@ export default function LandingPage() {
                 boxShadow: '0 24px 60px -24px rgba(10,110,92,0.45)',
               }}
             >
-              <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white" style={{ background: '#0A6E5C', boxShadow: '0 6px 18px -6px rgba(10,110,92,0.6)' }}>
-                Most Popular
-              </span>
               <div className="text-base font-semibold" style={{ color: '#111' }}>{PLANS[0].name}</div>
-              <div className="text-xs mt-1 mb-6" style={{ color: '#9CA3AF' }}>{PLANS[0].tagline}</div>
-              <div className="flex items-baseline gap-1.5 mb-4">
+              <div className="flex items-baseline gap-1.5 mt-1 mb-6">
                 <span className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{PLANS[0].price}</span>
                 <span className="text-sm" style={{ color: '#626260' }}>{PLANS[0].period}</span>
               </div>

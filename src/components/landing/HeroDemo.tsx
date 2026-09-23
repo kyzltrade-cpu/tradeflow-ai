@@ -155,7 +155,7 @@ function RfqScene() {
         <div>
           <div className="flex justify-between text-[11px] font-semibold mb-1.5" style={{ color: '#9CA3AF' }}>
             <span>3 / 3 suppliers replied</span>
-            <span style={{ color: '#0A6E5C' }}>best landed FOB <span className="font-bold">USD 4.10</span>/pc</span>
+            <span style={{ color: '#0A6E5C' }}>best landed <span className="font-bold">USD 4.00</span>/pc</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#EEEBE6' }}>
             <div className="h-full rounded-full btk-anim-rise" style={{ background: '#0A6E5C', width: '100%', transformOrigin: 'left', animationName: 'btk-trace', animationDuration: '1.2s' }} />
@@ -167,38 +167,70 @@ function RfqScene() {
 }
 
 const QUOTE_LINES = [
-  { label: '500ml Vacuum Bottle, Double-Wall 304', price: 'USD 4.80 / pc', src: 'SO-2091 · Global Stainless' },
-  { label: 'Logo Printing (single-color laser)', price: 'USD 0.35 / pc', src: 'SO-2091' },
-  { label: 'Sample (air freight)', price: 'USD 25.00', src: 'Ctn 2026-03 · FX 7.82' },
+  { qty: '10,000 pcs', label: '500ml Vacuum Bottle, Double-Wall 304', unit: 'USD 5.00 / pc', total: 'USD 50,000', src: 'SO-2091 · Global Stainless' },
+  { qty: '10,000 pcs', label: 'Logo Printing (single-color laser)', unit: 'USD 0.35 / pc', total: 'USD 3,500', src: 'SO-2091' },
+  { qty: '1 pc', label: 'Sample (air freight)', unit: 'USD 25.00', total: 'USD 25', src: 'Ctn 2026-03 · FX 7.82' },
 ];
 
+const QUOTE_TOTAL = 'USD 53,525';
+
 function QuoteScene() {
+  const [sent, setSent] = useState(false);
+
   return (
     <div className="space-y-3">
       {QUOTE_LINES.map((line, i) => (
         <Stagger key={line.label} delay={i * 180}>
           <div className="rounded-xl px-4 py-3" style={{ background: '#F8FAFD', border: '1px solid #E5EDF5' }}>
-            <div className="flex justify-between items-baseline gap-4 text-sm">
-              <span className="font-medium" style={{ color: '#111' }}>{line.label}</span>
-              <span className="font-bold shrink-0" style={{ color: '#0A6E5C' }}>{line.price}</span>
+            <div className="flex items-baseline justify-between gap-4 text-sm">
+              <span className="font-medium" style={{ color: '#111' }}>
+                <span className="text-xs font-semibold" style={{ color: '#9CA3AF' }}>{line.qty} · </span>
+                {line.label}
+              </span>
+              <span className="shrink-0 font-bold tabular-nums" style={{ color: '#0A6E5C' }}>{line.unit}</span>
             </div>
-            <div className="text-[11px] mt-1 flex items-center gap-1.5" style={{ color: '#9CA3AF' }}>
-              <BadgeCheck className="w-3 h-3" style={{ color: '#0A6E5C' }} /> Source: {line.src}
+            <div className="flex items-center justify-between mt-1 text-[11px]" style={{ color: '#9CA3AF' }}>
+              <span className="flex items-center gap-1.5">
+                <FileText className="w-3 h-3" style={{ color: '#0A6E5C' }} /> {line.src}
+              </span>
+              <span className="font-semibold tabular-nums">{line.total}</span>
             </div>
           </div>
         </Stagger>
       ))}
       <Stagger delay={620}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="text-[11px]" style={{ color: '#9CA3AF' }}>
-            <span className="inline-flex items-center gap-1.5 font-semibold" style={{ color: '#0A6E5C' }}>
-              <FileText className="w-3 h-3" /> Cited
-            </span>
-            {' '}· 32% target margin · validity 15 days
-          </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg text-white animate-pulse" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
-            <Send className="w-3 h-3" /> Approve &amp; send to Sarah
-          </span>
+        <div className="rounded-xl px-4 py-3 flex items-center justify-between text-sm font-bold" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+          <span>Subtotal</span>
+          <span className="tabular-nums">{QUOTE_TOTAL}</span>
+        </div>
+      </Stagger>
+      <Stagger delay={700}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <p className="text-[11px] leading-relaxed" style={{ color: '#626260' }}>
+            Bottles: 20% margin (USD 4.00 → 5.00/pc). Printing &amp; sample at cost. FX 7.82 — quote holds for 15 days.
+          </p>
+          <button
+            type="button"
+            onClick={() => setSent(true)}
+            disabled={sent}
+            aria-live="polite"
+            className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg text-white transition-all active:scale-[0.98] disabled:cursor-default shrink-0"
+            style={
+              sent
+                ? { background: '#E6F4F0', color: '#0A6E5C', boxShadow: 'inset 0 0 0 1px #0A6E5C' }
+                : { background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }
+            }
+          >
+            {sent ? (
+              <>
+                <Check className="w-3.5 h-3.5" strokeWidth={3} /> Sent to Sarah
+              </>
+            ) : (
+              <>
+                <Send className="w-3 h-3" /> Approve &amp; send to Sarah
+              </>
+            )}
+          </button>
         </div>
       </Stagger>
     </div>

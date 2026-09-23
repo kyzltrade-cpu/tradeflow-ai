@@ -73,10 +73,10 @@ export default function PricingPage() {
             {t('Pricing', '定價')}
           </p>
           <h1 className="text-[28px] md:text-[36px] font-semibold tracking-[-1px] mb-4">
-            {t('One simple plan, everything included', '一個簡單方案，包含所有功能')}
+            {t('Simple pricing', '簡單定價')}
           </h1>
           <p className="text-[16px] max-w-[600px] mx-auto mb-8" style={{ color: 'var(--text-muted)' }}>
-            {t('Start free, pay HK$880/month when ready. No setup fees, no surprises.', '免費開始，準備好再按每月 HK$880 付費。無設置費，無隱藏費用。')}
+            {t('Start free, pay HK$880/month when ready. No setup fee.', '免費開始，準備好再按每月 HK$880 付費。無設置費。')}
           </p>
 
           {/* Billing toggle */}
@@ -115,9 +115,6 @@ export default function PricingPage() {
                 boxShadow: '0 24px 60px -24px rgba(10,110,92,0.25)',
               }}
             >
-              <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-                {t('MOST POPULAR', '最受歡迎')}
-              </div>
 
               <div className="mb-3">
                 <h2 className="text-[18px] font-semibold">{plan.name}</h2>
