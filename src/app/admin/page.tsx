@@ -42,7 +42,7 @@ function formatTimeAgo(dateStr: string): string {
 
 function SkeletonCard() {
   return (
-    <div className="border rounded-[4px] p-4 md:p-5 animate-pulse" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+    <div className="surface-elevated p-4 md:p-5 animate-pulse" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
       <div className="h-3 w-24 rounded mb-3" style={{ background: 'var(--border)' }} />
       <div className="h-7 w-12 rounded" style={{ background: 'var(--border)' }} />
     </div>
@@ -154,25 +154,25 @@ export default function AdminPage() {
           </>
         ) : (
           <>
-            <div className="border rounded-[4px] p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em] mb-1.5 md:mb-2" style={{ color: 'var(--text-muted)' }}>
                 {t('Total conversations', '總對話數')}
               </p>
               <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]">{data?.totalConversations ?? 0}</p>
             </div>
-            <div className="border rounded-[4px] p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em] mb-1.5 md:mb-2" style={{ color: 'var(--text-muted)' }}>
                 {t('New clients this week', '本週新客戶')}
               </p>
               <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]">{data?.newClientsThisWeek ?? 0}</p>
             </div>
-            <div className="border rounded-[4px] p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em] mb-1.5 md:mb-2" style={{ color: 'var(--text-muted)' }}>
                 {t('Bookmarked', '已加書籤')}
               </p>
               <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]" style={{ color: 'var(--error)' }}>{data?.bookmarkedCount ?? 0}</p>
             </div>
-            <div className="border rounded-[4px] p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+            <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em] mb-1.5 md:mb-2" style={{ color: 'var(--text-muted)' }}>
                 {t('Products listed', '已上架產品')}
               </p>
@@ -184,7 +184,7 @@ export default function AdminPage() {
 
       {/* Empty state — get connected */}
       {!loading && (data?.totalConversations ?? 0) === 0 && (
-        <div className="border rounded-[4px] mb-4 p-6 md:p-8 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <div className="surface-card mb-4 p-6 md:p-8 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
           <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -195,10 +195,10 @@ export default function AdminPage() {
             {t('Backtide needs a conversation channel before inquiries can arrive. Connect WhatsApp or an email, then upload your products.', 'Backtide 需要一個對話渠道才能接收查詢。請先連接 WhatsApp 或電郵，然後上載產品。')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/admin/settings" className="text-[13px] font-medium px-5 py-2.5 rounded-[4px] text-white hover:opacity-90 transition-opacity" style={{ background: 'var(--accent)' }}>
+            <Link href="/admin/settings" className="accent-btn inline-flex items-center justify-center">
               {t('Connect channel', '連接渠道')}
             </Link>
-            <Link href="/admin/products" className="text-[13px] font-medium px-5 py-2.5 rounded-[4px] border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+            <Link href="/admin/products" className="secondary-btn inline-flex items-center justify-center">
               {t('Add products', '新增產品')}
             </Link>
           </div>
@@ -206,7 +206,7 @@ export default function AdminPage() {
       )}
 
       {/* Bookmarked — needs attention */}
-      <div className="border rounded-[4px] mb-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <div className="surface-card mb-4">
         <div className="px-4 md:px-5 py-3 md:py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
           <div className="flex items-center gap-2">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--error)" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -278,7 +278,7 @@ export default function AdminPage() {
       </div>
 
       {/* Recent conversations */}
-      <div className="border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <div className="surface-card">
         <div className="px-4 md:px-5 py-3 md:py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-[14px] md:text-[15px] font-semibold">{t('Recent conversations', '最近對話')}</h2>
           <Link href="/admin/conversations" className="text-[12px] md:text-[13px] font-medium" style={{ color: 'var(--accent)' }}>

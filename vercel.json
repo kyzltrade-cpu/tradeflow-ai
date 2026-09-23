@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/follow-ups",
-      "schedule": "0,15,30,45 * * * *"
+      "schedule": "0 2 * * *"
     },
     {
       "path": "/api/cron/workflow",
-      "schedule": "0,10,20,30,40,50 * * * *"
+      "schedule": "30 2 * * *"
     }
   ]
 }

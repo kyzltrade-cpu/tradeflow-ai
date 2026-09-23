@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useCallback, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLang, LangToggle } from '@/lib/lang';
@@ -9,58 +9,263 @@ import { CompanyProvider, useCompany } from '@/lib/company';
 import { authFetch } from '@/lib/auth-fetch';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 
-type NavItem = { href: string; en: string; zh: string; icon: string };
-type NavSection = { label: string; labelZh: string; items: NavItem[] };
+/* ── Navigation config ──────────────────────────────────────────────────── */
 
-const NAV_SECTIONS: NavSection[] = [
+interface NavItem {
+  href: string;
+  en: string;
+  zh: string;
+  icon: string;
+}
+
+interface NavGroup {
+  label: { en: string; zh: string };
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
   {
-    label: 'Overview',
-    labelZh: '總覽',
+    label: { en: 'Primary', zh: '主要' },
     items: [
-      { href: '/admin', en: 'Dashboard', zh: '控制台', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
+      {
+        href: '/admin',
+        en: 'Dashboard',
+        zh: '控制台',
+        icon: 'M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75',
+      },
+      {
+        href: '/admin/inquiries',
+        en: 'Inquiries',
+        zh: '詢價',
+        icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75',
+      },
+      {
+        href: '/admin/opportunities',
+        en: 'Opportunities',
+        zh: '商機',
+        icon: 'M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z',
+      },
+      {
+        href: '/admin/quotes',
+        en: 'Quotes',
+        zh: '報價',
+        icon: 'M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z',
+      },
+      {
+        href: '/admin/rfqs',
+        en: 'Supplier RFQs',
+        zh: '供應商詢價',
+        icon: 'M6.429 9.75L2.25 12l4.179 2.25m0-4.5l5.571 3 5.571-3m-11.142 0L2.25 7.5 12 2.25l9.75 5.25-4.179 2.25m0 0L12 12.75 6.429 9.75m11.142 0l4.179 2.25-9.75 5.25-9.75-5.25 4.179-2.25',
+      },
+      {
+        href: '/admin/follow-ups',
+        en: 'Follow-ups',
+        zh: '跟進',
+        icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z',
+      },
+      {
+        href: '/admin/conversations',
+        en: 'Conversations',
+        zh: '對話',
+        icon: 'M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z',
+      },
     ],
   },
   {
-    label: 'Sales',
-    labelZh: '銷售',
+    label: { en: 'Secondary', zh: '次要' },
     items: [
-      { href: '/admin/inquiries', en: 'Inquiries', zh: '詢價', icon: 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z' },
-      { href: '/admin/opportunities', en: 'Opportunities', zh: '商機', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' },
-      { href: '/admin/rfqs', en: 'Supplier RFQs', zh: '供應商詢價', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
-      { href: '/admin/quotes', en: 'Quotes', zh: '報價', icon: 'M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z' },
-      { href: '/admin/follow-ups', en: 'Follow-ups', zh: '跟進', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
-      { href: '/admin/conversations', en: 'Conversations', zh: '對話', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
-    ],
-  },
-  {
-    label: 'Catalog',
-    labelZh: '目錄',
-    items: [
-      { href: '/admin/products', en: 'Products', zh: '產品', icon: 'M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4' },
-      { href: '/admin/suppliers', en: 'Suppliers', zh: '供應商', icon: 'M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4' },
-    ],
-  },
-  {
-    label: 'Knowledge',
-    labelZh: '知識',
-    items: [
-      { href: '/admin/knowledge', en: 'Knowledge Base', zh: '知識庫', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
-      { href: '/admin/faq', en: 'FAQ Rules', zh: 'FAQ 規則', icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-    ],
-  },
-  {
-    label: 'Config',
-    labelZh: '設定',
-    items: [
-      { href: '/admin/settings', en: 'Settings', zh: '設定', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+      {
+        href: '/admin/products',
+        en: 'Products',
+        zh: '產品',
+        icon: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z',
+      },
+      {
+        href: '/admin/suppliers',
+        en: 'Suppliers',
+        zh: '供應商',
+        icon: 'M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z',
+      },
+      {
+        href: '/admin/knowledge',
+        en: 'Knowledge Base',
+        zh: '知識庫',
+        icon: 'M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25',
+      },
+      {
+        href: '/admin/faq',
+        en: 'FAQ Rules',
+        zh: 'FAQ 規則',
+        icon: 'M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z',
+      },
+      {
+        href: '/admin/billing',
+        en: 'Billing',
+        zh: '帳單',
+        icon: 'M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z',
+      },
+      {
+        href: '/admin/settings',
+        en: 'Settings',
+        zh: '設定',
+        icon: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z',
+      },
     ],
   },
 ];
 
-// Flat list for quick matching
-const NAV_ITEMS = NAV_SECTIONS.flatMap((s) => s.items);
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function SidebarItem({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
+  const pathname = usePathname();
+  const { t } = useLang();
+  const active = pathname === item.href || pathname.startsWith(item.href + '/');
+
+  return (
+    <Link
+      href={item.href}
+      title={collapsed ? t(item.en, item.zh) : undefined}
+      className="flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] font-medium transition-colors"
+      style={{
+        background: active ? 'var(--accent-light)' : 'transparent',
+        color: active ? 'var(--accent)' : 'var(--text-muted)',
+      }}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        className="h-5 w-5 shrink-0"
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
+      </svg>
+      {!collapsed && <span>{t(item.en, item.zh)}</span>}
+    </Link>
+  );
+}
+
+function Sidebar({
+  collapsed,
+  onClose,
+  email,
+  onSignOut,
+}: {
+  collapsed: boolean;
+  onClose: () => void;
+  email: string | null;
+  onSignOut: () => void;
+}) {
+  const { t } = useLang();
+  const initial = (email || 'B').charAt(0).toUpperCase();
+
+  return (
+    <>
+      {/* Mobile overlay */}
+      <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={onClose} />
+
+      <aside
+        className="fixed left-0 top-0 z-50 flex h-full flex-col border-r transition-all duration-200 lg:static lg:z-auto"
+        style={{
+          width: collapsed ? 60 : 240,
+          background: 'var(--surface)',
+          borderColor: 'var(--border)',
+        }}
+      >
+        {/* Logo */}
+        <div className="flex h-14 items-center gap-2.5 border-b px-4" style={{ borderColor: 'var(--border)' }}>
+          <Link
+            href="/"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold text-white text-sm"
+            style={{ background: 'var(--accent)' }}
+          >
+            BT
+          </Link>
+          {!collapsed && (
+            <Link
+              href="/"
+              className="text-[15px] font-semibold"
+              style={{ color: 'var(--text)' }}
+            >
+              Backtide
+            </Link>
+          )}
+        </div>
+
+        {/* Nav groups */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? 'mt-6' : ''}>
+              {!collapsed && (
+                <div
+                  className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {t(group.label.en, group.label.zh)}
+                </div>
+              )}
+              <div className="space-y-0.5">
+                {group.items.map((item) => (
+                  <SidebarItem key={item.href} item={item} collapsed={collapsed} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* User badge */}
+        <div className="border-t px-3 py-3" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-2 group">
+            <Link
+              href="/admin/settings"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
+              style={{ background: '#6366F1' }}
+              title={email || t('Account', '帳戶')}
+            >
+              {initial}
+            </Link>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[13px] font-medium" style={{ color: 'var(--text)' }}>
+                  {email}
+                </div>
+                <Link
+                  href="/admin/settings"
+                  className="truncate text-[11px] hover:underline"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  {t('Settings', '設定')}
+                </Link>
+              </div>
+            )}
+            <button
+              onClick={onSignOut}
+              className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-red-50"
+              title={t('Sign out', '登出')}
+              style={{ color: 'var(--error, #ef4444)' }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="h-4 w-4"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+/* ── Admin shell ─────────────────────────────────────────────────────────── */
+
+export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
     <CompanyProvider>
       <ErrorBoundary>
@@ -70,14 +275,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 }
 
-function AdminShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
+function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { t } = useLang();
   const { user, loading, signOut } = useAuth();
   const { companyId, companyStatus, loading: companyLoading } = useCompany();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -96,23 +300,17 @@ function AdminShell({ children }: { children: React.ReactNode }) {
     router.push('/login');
   };
 
-  if (loading) {
+  const toggleCollapse = useCallback(() => setCollapsed((c) => !c), []);
+
+  if (loading || companyLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFD' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
         <div className="text-[14px]" style={{ color: 'var(--text-muted)' }}>Loading...</div>
       </div>
     );
   }
 
   if (!user) return null;
-
-  if (companyLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8FAFD' }}>
-        <div className="text-[14px]" style={{ color: 'var(--text-muted)' }}>Loading...</div>
-      </div>
-    );
-  }
 
   // Show pending approval page if company is not approved
   // Admin email always gets approved automatically — also auto-fix DB status
@@ -128,7 +326,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         window.location.reload();
       });
       return (
-        <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#F8FAFD' }}>
+        <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
           <div className="w-full max-w-[400px] text-center">
             <div className="mb-6">
               <img src="/logo.svg" alt="Backtide" className="h-7 mx-auto" />
@@ -148,197 +346,109 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
       );
     } else {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#F8FAFD' }}>
-        <div className="w-full max-w-[400px] text-center">
-          <div className="mb-6">
-            <img src="/logo.svg" alt="Backtide" className="h-7 mx-auto" />
-          </div>
-          <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#FEF3C7' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-              </svg>
+      return (
+        <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
+          <div className="w-full max-w-[400px] text-center">
+            <div className="mb-6">
+              <img src="/logo.svg" alt="Backtide" className="h-7 mx-auto" />
             </div>
-            <h1 className="text-[20px] font-semibold mb-2">{t('Account pending approval', '帳戶待審批')}</h1>
-            <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
-              {t('Your account is being reviewed. We\'ll notify you once approved — typically within 24 hours.', '您的帳戶正在審核中。審批通過後我們會通知您 — 通常在 24 小時內。')}
-            </p>
-            <div className="space-y-3">
-              <button
-                onClick={async () => {
-                  await signOut();
-                  router.push('/login');
-                }}
-                className="w-full text-[14px] font-medium py-2.5 rounded-[4px] border"
-                style={{ borderColor: 'var(--border)' }}
-              >
-                {t('Sign out', '登出')}
-              </button>
-            </div>
-          </div>
-          <p className="text-[12px] mt-6" style={{ color: 'var(--text-muted)' }}>
-            {t('Questions? Email tradeflow.hk@gmail.com', '有問題？請電郵 tradeflow.hk@gmail.com')}
-          </p>
-        </div>
-      </div>
-    );
-    }
-  }
-
-  const sidebarWidth = collapsed ? 'w-[60px]' : 'w-[240px]';
-
-  return (
-    <div className="dashboard-mode min-h-screen flex" style={{ background: '#F8FAFD' }}>
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/40 z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 ${sidebarWidth} flex flex-col border-r transform transition-all duration-200 ease-in-out md:relative md:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
-        style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
-      >
-        <div className="h-14 px-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--border)' }}>
-          {!collapsed && (
-            <Link href="/" className="flex items-center overflow-hidden">
-              <img src="/logo.svg" alt="Backtide" className="h-7 w-auto max-w-none" style={{ width: '100px' }} />
-            </Link>
-          )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="hidden md:flex p-1.5 rounded-md hover:bg-black/5 shrink-0"
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
-              <path d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          {!collapsed && <LangToggle />}
-        </div>
-        <nav className="flex-1 py-3 overflow-y-auto">
-          {NAV_SECTIONS.map((section, si) => (
-            <div key={section.label} className={si > 0 ? 'mt-3' : ''}>
-              {!collapsed && (
-                <div className="px-5 mb-1">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)', opacity: 0.6 }}>
-                    {t(section.label, section.labelZh)}
-                  </p>
-                </div>
-              )}
-              {collapsed && si > 0 && (
-                <div className="mx-3 mb-1 border-t" style={{ borderColor: 'var(--border)' }} />
-              )}
-              {section.items.map((item) => {
-                const isActive = item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`flex items-center gap-3 py-2.5 text-[14px] ${collapsed ? 'justify-center px-0' : 'px-5'}`}
-                    title={collapsed ? t(item.en, item.zh) : undefined}
-                    style={{
-                      color: isActive ? 'var(--accent)' : 'var(--text-muted)',
-                      fontWeight: isActive ? 500 : 400,
-                      background: isActive ? 'var(--accent-light)' : 'transparent',
-                    }}
-                  >
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                      <path d={item.icon} />
-                    </svg>
-                    {!collapsed && t(item.en, item.zh)}
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
-        </nav>
-        <div className={`border-t ${collapsed ? 'px-2 py-3' : 'px-3 py-3'}`} style={{ borderColor: 'var(--border)' }}>
-          {!collapsed ? (
-            <div className="border rounded-[4px] p-3" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-              <div className="flex items-center gap-2.5 mb-3">
-                <div className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium shrink-0" style={{ background: 'var(--accent)', color: '#fff' }}>
-                  {user?.email?.charAt(0).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[12px] font-medium truncate">{user?.email}</p>
-                </div>
+            <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+              <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#FEF3C7' }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
               </div>
-              <div className="space-y-1">
-                <Link
-                  href="/admin/settings"
-                  className="flex items-center gap-2 text-[12px] w-full px-2 py-1.5 rounded-[4px] hover:bg-black/5 transition-colors"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <circle cx="12" cy="12" r="3" />
-                  </svg>
-                  {t('Settings', '設定')}
-                </Link>
+              <h1 className="text-[20px] font-semibold mb-2">{t('Account pending approval', '帳戶待審批')}</h1>
+              <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
+                {t('Your account is being reviewed. We\'ll notify you once approved — typically within 24 hours.', '您的帳戶正在審核中。審批通過後我們會通知您 — 通常在 24 小時內。')}
+              </p>
+              <div className="space-y-3">
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2 text-[12px] w-full px-2 py-1.5 rounded-[4px] hover:bg-red-50 transition-colors"
-                  style={{ color: 'var(--error, #ef4444)' }}
+                  className="w-full text-[14px] font-medium py-2.5 rounded-[4px] border"
+                  style={{ borderColor: 'var(--border)' }}
                 >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-                  </svg>
                   {t('Sign out', '登出')}
                 </button>
               </div>
             </div>
-          ) : (
-            <div className="space-y-1">
-              <Link
-                href="/admin/settings"
-                className="flex items-center justify-center w-full p-2 rounded-[4px] hover:bg-black/5 transition-colors"
-                style={{ color: 'var(--text-muted)' }}
-                title={t('Settings', '設定')}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </Link>
-              <button
-                onClick={handleLogout}
-                className="flex items-center justify-center w-full p-2 rounded-[4px] hover:bg-red-50 transition-colors"
-                style={{ color: 'var(--error, #ef4444)' }}
-                title={t('Sign out', '登出')}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-              </button>
-            </div>
-          )}
+            <p className="text-[12px] mt-6" style={{ color: 'var(--text-muted)' }}>
+              {t('Questions? Email tradeflow.hk@gmail.com', '有問題？請電郵 tradeflow.hk@gmail.com')}
+            </p>
+          </div>
         </div>
-      </aside>
+      );
+    }
+  }
 
-      <main className="flex-1 min-w-0" style={{ background: 'var(--bg)' }}>
-        <div className="h-14 border-b px-4 md:px-6 flex items-center gap-3" style={{ borderColor: 'var(--border)' }}>
+  return (
+    <div className="dashboard-mode flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
+      {/* Mobile sidebar */}
+      {mobileOpen && (
+        <div className="lg:hidden">
+          <Sidebar collapsed={false} onClose={() => setMobileOpen(false)} email={user?.email ?? null} onSignOut={handleLogout} />
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <div className="hidden lg:block">
+        <Sidebar collapsed={collapsed} onClose={() => {}} email={user?.email ?? null} onSignOut={handleLogout} />
+      </div>
+
+      {/* Main content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <header
+          className="sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4"
+          style={{
+            background: 'var(--surface)',
+            borderColor: 'var(--border)',
+          }}
+        >
           <button
-            className="md:hidden p-1.5 -ml-1 rounded-md hover:bg-black/5"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
+            onClick={() => setMobileOpen(true)}
+            className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-gray-100 lg:hidden"
+            aria-label="Open sidebar"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 6h16M4 12h16M4 18h16" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-5 w-5"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
           </button>
-          <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
-            {t('Admin', '管理後台')}
-          </p>
-        </div>
-        <div className="p-4 md:p-6 max-w-[1280px]">
-          {children}
-        </div>
-      </main>
+
+          <button
+            onClick={toggleCollapse}
+            className="hidden h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-gray-100 lg:flex"
+            aria-label="Collapse sidebar"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-5 w-5"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <LangToggle />
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="mx-auto max-w-[1280px]">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }
