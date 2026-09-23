@@ -268,23 +268,23 @@ export default function OnboardingPage() {
           {step === 'welcome' && (
             <div>
               <h1 className="text-[28px] font-semibold tracking-[-0.8px] mb-3">
-                {t('Get started with TradeFlow', '開始使用 TradeFlow')}
+                {t('Get started with Backtide', '開始使用 Backtide')}
               </h1>
               <p className="text-[15px] leading-[1.6] mb-8" style={{ color: 'var(--text-muted)' }}>
-                {t('Your AI sales assistant for WhatsApp and WeChat. Answers customer inquiries instantly, 24/7.', '您的 WhatsApp 和微信 AI 銷售助手。即時回覆客戶查詢，全天候服務。')}
+                {t('Your AI copilot for trading companies. An inquiry lands in your inbox and Backtide drives it through the whole sourcing pipeline — extract, clarify, RFQ, quote.', '您的貿易公司 AI 副駕駛。詢盤進入您的收件匣後，Backtide 將它推進整個採購流程 — 抽取、澄清、RFQ、報價。')}
               </p>
               <div className="space-y-3 mb-8">
                 <div className="flex items-center gap-3 text-[14px]">
                   <span style={{ color: 'var(--success)' }}>✓</span>
-                  <span>{t('Instant replies to customer questions', '即時回覆客戶問題')}</span>
+                  <span>{t('Every spec extracted with source citations', '每個規格都附來源引用')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[14px]">
                   <span style={{ color: 'var(--success)' }}>✓</span>
-                  <span>{t('Knows your products, pricing, and MOQ', '了解您的產品、價格和 MOQ')}</span>
+                  <span>{t('Batch RFQ to your suppliers, you approve every send', '批次 RFQ 給供應商，每次發送由您審批')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[14px]">
                   <span style={{ color: 'var(--success)' }}>✓</span>
-                  <span>{t('Works on WhatsApp + WeChat', '支援 WhatsApp + 微信')}</span>
+                  <span>{t('Works on Email + WhatsApp', '支援 Email + WhatsApp')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[14px]">
                   <span style={{ color: 'var(--success)' }}>✓</span>

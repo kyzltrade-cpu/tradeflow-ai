@@ -16,19 +16,19 @@ function getStripe() {
 
 const TIERS = {
   starter: {
-    name: 'TradeFlow Starter',
+    name: 'Backtide Starter',
     description: '1 WhatsApp number · 1,000 AI conversations/mo',
     monthly: 88000, // HKD HK$880.00
     annual: 70400, // HKD HK$704.00/mo (20% off)
   },
   growth: {
-    name: 'TradeFlow Growth',
+    name: 'Backtide Growth',
     description: '3 WhatsApp numbers · 5,000 AI conversations/mo · WeChat',
     monthly: 248000, // HKD HK$2,480.00
     annual: 155400, // HKD HK$1,554.00/mo (20% off)
   },
   enterprise: {
-    name: 'TradeFlow Enterprise',
+    name: 'Backtide Enterprise',
     description: 'Unlimited WhatsApp · Unlimited AI · Dedicated manager',
     monthly: 467200, // HKD HK$4,672.00
     annual: 373800, // HKD HK$3,738.00/mo (20% off)

@@ -138,7 +138,7 @@ export default function AdminPage() {
         <div>
           <h1 className="text-[20px] md:text-[24px] font-semibold tracking-[-0.5px]">{t('Dashboard', '控制台')}</h1>
           <p className="text-[13px] md:text-[14px] mt-1" style={{ color: 'var(--text-muted)' }}>
-            {t('Overview of your AI assistant performance', 'AI 助手表現概覽')}
+            {t('Live overview of your inbox, pipeline, and catalog', '收件箱、管道與目錄的實時概覽')}
           </p>
         </div>
       </div>
@@ -181,6 +181,29 @@ export default function AdminPage() {
           </>
         )}
       </div>
+
+      {/* Empty state — get connected */}
+      {!loading && (data?.totalConversations ?? 0) === 0 && (
+        <div className="border rounded-[4px] mb-4 p-6 md:p-8 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </div>
+          <h2 className="text-[16px] font-semibold mb-1">{t('Connect your inbox to get started', '連接收件箱開始使用')}</h2>
+          <p className="text-[13px] mb-5 max-w-[420px] mx-auto" style={{ color: 'var(--text-muted)' }}>
+            {t('Backtide needs a conversation channel before inquiries can arrive. Connect WhatsApp or an email, then upload your products.', 'Backtide 需要一個對話渠道才能接收查詢。請先連接 WhatsApp 或電郵，然後上載產品。')}
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/admin/settings" className="text-[13px] font-medium px-5 py-2.5 rounded-[4px] text-white hover:opacity-90 transition-opacity" style={{ background: 'var(--accent)' }}>
+              {t('Connect channel', '連接渠道')}
+            </Link>
+            <Link href="/admin/products" className="text-[13px] font-medium px-5 py-2.5 rounded-[4px] border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+              {t('Add products', '新增產品')}
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Bookmarked — needs attention */}
       <div className="border rounded-[4px] mb-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>

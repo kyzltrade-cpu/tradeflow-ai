@@ -432,7 +432,7 @@ export default function SettingsPage() {
           </span>
         </div>
         <p className="text-[13px] mb-3" style={{ color: 'var(--text-muted)' }}>
-          {t('Let our team set up TradeFlow for you. We\'ll connect WhatsApp, upload your products, and configure the AI. This is a one-time fee on top of your subscription plan.', '讓我們的團隊為您設定 TradeFlow。我們會連接 WhatsApp、上傳產品並配置 AI。此為訂閱方案外的一次性費用。')}
+          {t('Let our team set up Backtide for you. We\'ll connect WhatsApp, upload your products, and configure the AI. This is a one-time fee on top of your subscription plan.', '讓我們的團隊為您設定 Backtide。我們會連接 WhatsApp、上傳產品並配置 AI。此為訂閱方案外的一次性費用。')}
         </p>
         <div className="flex items-center justify-between p-3 rounded-[4px]" style={{ background: 'var(--bg)' }}>
           <div>

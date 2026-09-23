@@ -131,7 +131,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#F8FAFD' }}>
           <div className="w-full max-w-[400px] text-center">
             <div className="mb-6">
-              <img src="/logo.svg" alt="TradeFlow" className="h-7 mx-auto" />
+              <img src="/logo.svg" alt="Backtide" className="h-7 mx-auto" />
             </div>
             <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#D1FAE5' }}>
@@ -152,7 +152,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: '#F8FAFD' }}>
         <div className="w-full max-w-[400px] text-center">
           <div className="mb-6">
-            <img src="/logo.svg" alt="TradeFlow" className="h-7 mx-auto" />
+            <img src="/logo.svg" alt="Backtide" className="h-7 mx-auto" />
           </div>
           <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#FEF3C7' }}>
@@ -206,7 +206,7 @@ function AdminShell({ children }: { children: React.ReactNode }) {
         <div className="h-14 px-4 flex items-center justify-between border-b" style={{ borderColor: 'var(--border)' }}>
           {!collapsed && (
             <Link href="/" className="flex items-center overflow-hidden">
-              <img src="/logo.svg" alt="TradeFlow" className="h-7 w-auto max-w-none" style={{ width: '100px' }} />
+              <img src="/logo.svg" alt="Backtide" className="h-7 w-auto max-w-none" style={{ width: '100px' }} />
             </Link>
           )}
           <button
@@ -267,7 +267,6 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-[12px] font-medium truncate">{user?.email}</p>
-                  <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Free plan</p>
                 </div>
               </div>
               <div className="space-y-1">

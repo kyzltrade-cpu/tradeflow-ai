@@ -47,7 +47,7 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
         <div className="w-full max-w-[400px] text-center">
           <Link href="/" className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-            TradeFlow
+            Backtide
           </Link>
           <div className="mt-8 p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
@@ -91,7 +91,7 @@ export default function SignupPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-            TradeFlow
+            Backtide
           </Link>
           <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-4">{t('Create account', '建立帳戶')}</h1>
           <p className="text-[14px]" style={{ color: 'var(--text-muted)' }}>

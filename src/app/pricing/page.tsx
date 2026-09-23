@@ -79,7 +79,7 @@ export default function PricingPage() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
         <Link href="/" className="flex items-center gap-2">
-          <img src="/logo.svg" alt="TradeFlow" className="h-7" />
+          <img src="/logo.svg" alt="Backtide" className="h-7" />
         </Link>
         <div className="flex items-center gap-4">
           <a href="#pricing" className="text-[14px] font-medium" style={{ color: 'var(--text-muted)' }}>
@@ -207,7 +207,7 @@ export default function PricingPage() {
         <div className="max-w-[600px] mx-auto px-6 py-12 text-center">
           <h2 className="text-[22px] font-semibold mb-3">{t('Need help getting started?', '需要幫助開始？')}</h2>
           <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
-            {t('Let our team set up TradeFlow for you. We\'ll connect WhatsApp, upload your products, and configure the AI.', '讓我們的團隊為您設定 TradeFlow。我們會連接 WhatsApp、上傳產品並配置 AI。')}
+            {t('Let our team set up Backtide for you. We\'ll connect WhatsApp, upload your products, and configure the AI.', '讓我們的團隊為您設定 Backtide。我們會連接 WhatsApp、上傳產品並配置 AI。')}
           </p>
           <div className="inline-block p-5 rounded-[4px] border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
             <p className="text-[14px] font-medium mb-1">{t('Done-for-you setup', '代客設定')}</p>
@@ -223,7 +223,7 @@ export default function PricingPage() {
       <footer className="px-6 py-8" style={{ borderTop: '1px solid var(--border)' }}>
         <div className="max-w-[1100px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
-            © 2026 TradeFlow AI
+            © 2026 Backtide
           </p>
           <div className="flex items-center gap-6">
             <Link href="/" className="text-[13px]" style={{ color: 'var(--text-muted)' }}>

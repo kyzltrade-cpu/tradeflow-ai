@@ -4,7 +4,6 @@ import "./globals.css";
 import { LangProvider } from "@/lib/lang";
 import { AuthProvider } from "@/lib/auth";
 import { ToastProvider } from "@/components/Toast";
-import { ConditionalChatWidget } from "@/components/ConditionalChatWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,12 +24,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "TradeFlow AI — WhatsApp Sales Assistant for Trading Companies",
-  description: "AI that answers customer inquiries on WhatsApp instantly. Built for Hong Kong trading companies.",
+  title: "Backtide — Inquiry to Quote, End to End",
+  description: "AI copilot for trading companies. Extract specs, batch RFQ suppliers, compare landed costs, and draft cited quotes — in hours, not days.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "TradeFlow",
+    title: "Backtide",
   },
 };
 
@@ -59,7 +58,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <AuthProvider>
             <ToastProvider>
               {children}
-              <ConditionalChatWidget />
             </ToastProvider>
           </AuthProvider>
         </LangProvider>

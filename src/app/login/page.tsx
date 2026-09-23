@@ -71,7 +71,7 @@ export default function LoginPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-            TradeFlow
+            Backtide
           </Link>
           <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-4">{t('Sign in', '登入')}</h1>
           <p className="text-[14px]" style={{ color: 'var(--text-muted)' }}>

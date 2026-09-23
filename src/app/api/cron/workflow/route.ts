@@ -164,7 +164,7 @@ async function handleSendRfqEmail(
     .eq('id', job.company_id)
     .single();
 
-  const companyName = company?.name || 'TradeFlow';
+  const companyName = company?.name || 'Backtide';
   const deadline = payload.response_deadline
     ? new Date(payload.response_deadline).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -205,7 +205,7 @@ async function handleSendRfqEmail(
           </tr>
           <tr>
             <td style="background-color: #f9fafb; padding: 20px 32px; text-align: center; border-top: 1px solid #e5e7eb;">
-              <p style="margin: 0; color: #9ca3af; font-size: 12px;">${companyName} · Sent via TradeFlow AI</p>
+              <p style="margin: 0; color: #9ca3af; font-size: 12px;">${companyName} · Sent via Backtide</p>
             </td>
           </tr>
         </table>
