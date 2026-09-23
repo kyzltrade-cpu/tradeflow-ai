@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { MessageCircle, Quote, Timer, Bot, ArrowRight, Languages } from 'lucide-react';
 import Reveal from '@/components/landing/Reveal';
 import HeroDemo from '@/components/landing/HeroDemo';
+import Header from '@/components/landing/Header';
 
 /* ── Data ───────────────────────────────────────────────────────────────── */
 
@@ -42,6 +43,7 @@ const STEPS = [
 const PLANS = [
   {
     name: 'Starter SDR',
+    tagline: 'For solo traders getting off spreadsheets',
     price: 'HK$880',
     period: '/mo',
     features: [
@@ -58,6 +60,7 @@ const PLANS = [
   },
   {
     name: 'Growth Trading Desk',
+    tagline: 'For teams quoting at volume',
     price: 'HK$1,942',
     period: '/mo',
     features: [
@@ -72,6 +75,7 @@ const PLANS = [
   },
   {
     name: 'Enterprise',
+    tagline: 'For full desks & custom workflows',
     price: 'HK$4,880',
     period: '/mo',
     features: [
@@ -127,24 +131,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: '#FAF9F6', color: '#111' }}>
       {/* ── Nav ── */}
-      <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b" style={{ background: 'rgba(250,249,246,0.85)', borderColor: '#E8E5E1' }}>
-        <div className="max-w-7xl mx-auto px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center">
-          <div className="text-base font-semibold tracking-tight" style={{ color: '#111' }}>Backtide</div>
-          <div className="hidden md:flex items-center justify-center gap-8 text-sm font-medium" style={{ color: '#626260' }}>
-            <a href="#features" className="hover:text-black transition-colors">Features</a>
-            <a href="#how-it-works" className="hover:text-black transition-colors">How It Works</a>
-            <a href="#pricing" className="hover:text-black transition-colors">Pricing</a>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-medium px-4 py-2 rounded-lg transition-colors" style={{ color: '#626260' }}>
-              Log in
-            </Link>
-            <Link href="/signup" className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-all" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
-              Start Free
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Header />
 
       {/* ── Hero ── */}
       <section className="pt-32 pb-20 px-6">
@@ -243,13 +230,8 @@ export default function LandingPage() {
             {STEPS.map((s, i) => (
               <Reveal key={s.num} delay={i * 110}>
                 <div className="group text-center">
-                  <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-white mx-auto mb-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-105" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -3px 0 0 #085a4a' }}>
+                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-bold text-white mx-auto mb-4 transition-transform duration-300 group-hover:-translate-y-1 group-hover:scale-105" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -3px 0 0 #085a4a' }}>
                     {s.num}
-                    {i < 3 && (
-                      <span aria-hidden="true" className="hidden md:block absolute left-full top-1/2 -translate-y-1/2 w-[calc(100%+2rem)] h-px">
-                        <span className="block h-full" style={{ background: '#B8DDD3', transform: 'scaleX(0)', transformOrigin: 'left', animationName: 'btk-trace', animationDuration: '1.2s', animationDelay: `${i * 160}ms`, animationTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)', animationFillMode: 'forwards' }} />
-                      </span>
-                    )}
                   </div>
                   <h3 className="text-base font-bold mb-2">{s.title}</h3>
                   <p className="text-sm leading-relaxed" style={{ color: '#626260' }}>{s.desc}</p>
@@ -357,51 +339,68 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="py-24 px-6" style={{ background: '#F8FAFD' }}>
-        <div className="max-w-4xl mx-auto text-center">
+      <section id="pricing" className="py-24 px-6 relative overflow-hidden" style={{ background: '#F8FAFD' }}>
+        <div aria-hidden="true" className="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 w-[820px] h-[460px] rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(10,110,92,0.09), rgba(10,110,92,0) 70%)' }} />
+        <div className="max-w-4xl mx-auto text-center relative">
           <Reveal>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Simple, transparent pricing
             </h2>
-            <p className="text-lg mb-12" style={{ color: '#626260' }}>
+            <p className="text-lg mb-16" style={{ color: '#626260' }}>
               Start with a 14-day free trial. Scale when you&apos;re ready.
             </p>
           </Reveal>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-5 md:gap-6">
             {PLANS.map((plan, i) => (
-              <Reveal key={plan.name} delay={i * 110}>
-              <div className="p-8 rounded-2xl border-2 text-left transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ background: '#fff', borderColor: plan.accent ? '#0A6E5C' : '#E8E5E1' }}>
-                {plan.accent && <div className="flex items-center justify-between mb-4"><div className="text-xs font-bold uppercase tracking-widest" style={{ color: '#0A6E5C' }}>Most Popular</div></div>}
-                <div className="text-base font-semibold mb-2" style={{ color: '#626260' }}>{plan.name}</div>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className="text-2xl font-bold" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{plan.price}</span>
-                  {plan.period && <span className="text-sm" style={{ color: '#626260' }}>{plan.period}</span>}
-                </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm">
-                      <svg className="w-4 h-4 shrink-0" style={{ color: '#0A6E5C' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                {plan.available ? (
-                  <Link href="/signup" className="group/cta block w-full text-center py-3 rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', color: '#fff', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
-                    {plan.cta}
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
-                  </Link>
-                ) : (
-                  <div className="block w-full text-center py-3 rounded-lg text-sm font-medium" style={{ background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' }}>
-                    {plan.cta}
+              <Reveal key={plan.name} delay={i * 110} className="h-full">
+                <div
+                  className="relative flex h-full flex-col p-8 rounded-2xl text-left transition-all duration-300 md:hover:-translate-y-1"
+                  style={{
+                    background: '#fff',
+                    border: plan.accent ? '1.5px solid #0A6E5C' : '1px solid #E8E5E1',
+                    boxShadow: plan.accent
+                      ? '0 24px 60px -24px rgba(10,110,92,0.45)'
+                      : '0 1px 2px rgba(17,17,17,0.04)',
+                  }}
+                >
+                  {plan.accent && (
+                    <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap text-[11px] font-bold uppercase tracking-widest px-3 py-1 rounded-full text-white" style={{ background: '#0A6E5C', boxShadow: '0 6px 18px -6px rgba(10,110,92,0.6)' }}>
+                      Most Popular
+                    </span>
+                  )}
+                  <div className="text-base font-semibold" style={{ color: '#111' }}>{plan.name}</div>
+                  <div className="text-xs mt-1 mb-6" style={{ color: '#9CA3AF' }}>{plan.tagline}</div>
+                  <div className="flex items-baseline gap-1.5 mb-8">
+                    <span className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{plan.price}</span>
+                    {plan.period && <span className="text-sm" style={{ color: '#626260' }}>{plan.period}</span>}
                   </div>
-                )}
-              </div>
+                  <ul className="space-y-3 mb-8 flex-1">
+                    {plan.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm leading-snug" style={{ color: '#374151' }}>
+                        <span className="w-5 h-5 mt-px rounded-full flex items-center justify-center shrink-0" style={{ background: plan.accent ? '#E6F4F0' : '#F3F4F6', color: plan.accent ? '#0A6E5C' : '#9CA3AF' }}>
+                          <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                          </svg>
+                        </span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                  {plan.available ? (
+                    <Link href="/signup" className="group/cta w-full text-center py-3 rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', color: '#fff', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+                      {plan.cta}
+                      <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
+                    </Link>
+                  ) : (
+                    <div className="w-full text-center py-3 rounded-lg text-sm font-medium" style={{ background: '#F3F4F6', color: '#9CA3AF', cursor: 'not-allowed' }}>
+                      {plan.cta}
+                    </div>
+                  )}
+                </div>
               </Reveal>
             ))}
           </div>
-          <p className="text-xs mt-8" style={{ color: '#626260' }}>
+          <p className="text-xs mt-10" style={{ color: '#626260' }}>
             14-day free trial · Card required · 50 AI responses included · Cancel anytime.
           </p>
         </div>

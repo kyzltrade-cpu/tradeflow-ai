@@ -207,18 +207,23 @@ html {
   to { transform: scaleX(1); }
 }
 
-@keyframes btk-float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
-}
-
 @keyframes btk-think {
   0%, 80%, 100% { transform: scale(0.7); opacity: 0.35; }
   40% { transform: scale(1); opacity: 1; }
 }
 
+@keyframes btk-progress {
+  from { width: 0%; }
+  to { width: 100%; }
+}
+
 .btk-anim-rise { animation: btk-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
 .btk-anim-rise-sm { animation: btk-rise-sm 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+.btk-progress {
+  animation-name: btk-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
 .btk-caret {
   display: inline-block;
   width: 2px;
