@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { MessageCircle, Quote, Timer, Bot, ArrowRight, Languages } from 'lucide-react';
 import Reveal from '@/components/landing/Reveal';
 import HeroDemo from '@/components/landing/HeroDemo';
-import Header from '@/components/landing/Header';
 
 /* ── Data ───────────────────────────────────────────────────────────────── */
 
@@ -131,7 +130,24 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: '#FAF9F6', color: '#111' }}>
       {/* ── Nav ── */}
-      <Header />
+      <nav className="fixed top-0 w-full z-50 backdrop-blur-md border-b" style={{ background: 'rgba(250,249,246,0.85)', borderColor: '#E8E5E1' }}>
+        <div className="max-w-7xl mx-auto px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center">
+          <div className="text-base font-semibold tracking-tight" style={{ color: '#111' }}>Backtide</div>
+          <div className="hidden md:flex items-center justify-center gap-8 text-sm font-medium" style={{ color: '#626260' }}>
+            <a href="#features" className="hover:text-black transition-colors">Features</a>
+            <a href="#how-it-works" className="hover:text-black transition-colors">How It Works</a>
+            <a href="#pricing" className="hover:text-black transition-colors">Pricing</a>
+          </div>
+          <div className="flex items-center gap-3">
+            <Link href="/login" className="text-sm font-medium px-4 py-2 rounded-lg transition-colors" style={{ color: '#626260' }}>
+              Log in
+            </Link>
+            <Link href="/signup" className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-all" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+              Start Free
+            </Link>
+          </div>
+        </div>
+      </nav>
 
       {/* ── Hero ── */}
       <section className="pt-32 pb-20 px-6">
