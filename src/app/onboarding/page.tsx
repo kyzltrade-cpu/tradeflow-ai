@@ -288,7 +288,7 @@ export default function OnboardingPage() {
                 </div>
                 <div className="flex items-center gap-3 text-[14px]">
                   <span style={{ color: 'var(--success)' }}>✓</span>
-                    <span>{t('HK$880/mo — no contracts', 'HK$880/月——無合約')}</span>
+                    <span>{t('HK$1,580/mo — no contracts', 'HK$1,580/月——無合約')}</span>
                 </div>
               </div>
               <button

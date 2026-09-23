@@ -10,8 +10,8 @@ const PLANS = [
   {
     id: 'starter',
     name: 'Starter SDR',
-    monthly: 880,
-    annual: 704,
+    monthly: 1580,
+    annual: 1264,
     features: [
       '1 WhatsApp number & email inbox',
       '1,000 AI conversations a month',
@@ -76,7 +76,7 @@ export default function PricingPage() {
             {t('Simple pricing', '簡單定價')}
           </h1>
           <p className="text-[16px] max-w-[600px] mx-auto mb-8" style={{ color: 'var(--text-muted)' }}>
-            {t('Start free, pay HK$880/month when ready. No setup fee.', '免費開始，準備好再按每月 HK$880 付費。無設置費。')}
+            {t('Start free, pay HK$1,580/month when ready. No setup fee.', '免費開始，準備好再按每月 HK$1,580 付費。無設置費。')}
           </p>
 
           {/* Billing toggle */}

@@ -42,7 +42,7 @@ const STEPS = [
 const PLANS = [
   {
     name: 'Starter SDR',
-    price: 'HK$880',
+    price: 'HK$1,580',
     period: '/mo',
     features: [
       '1 WhatsApp number & email inbox',
@@ -346,7 +346,7 @@ export default function LandingPage() {
               Simple, transparent pricing
             </h2>
             <p className="text-lg mb-16" style={{ color: '#626260' }}>
-              14-day free trial, then HK$880/month. Cancel anytime.
+              14-day free trial, then HK$1,580/month. Cancel anytime.
             </p>
           </Reveal>
           <Reveal className="max-w-[440px] mx-auto">

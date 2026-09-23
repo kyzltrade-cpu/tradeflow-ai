@@ -67,15 +67,8 @@ function InquiryScene() {
       </Stagger>
 
       <Stagger delay={450}>
-        <div className="flex justify-end">
-          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl rounded-tr-sm" style={{ background: '#0A6E5C', color: '#fff' }}>
-            <span className="flex gap-1">
-              <span className="btk-think-dot" style={{ animationDelay: '0ms', background: '#fff' }} />
-              <span className="btk-think-dot" style={{ animationDelay: '150ms', background: '#fff' }} />
-              <span className="btk-think-dot" style={{ animationDelay: '300ms', background: '#fff' }} />
-            </span>
-            <span className="text-xs font-medium">Reading specs…<span className="btk-caret" style={{ background: '#fff' }} /></span>
-          </div>
+        <div className="text-xs" style={{ color: '#9CA3AF' }}>
+          Draft reply ready — extracted the specs, flagged 3 gaps. You approve before it&apos;s sent.
         </div>
       </Stagger>
     </div>
@@ -287,12 +280,6 @@ export default function HeroDemo() {
             {paused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
             {paused || reduceMotion.current ? 'Play' : 'Pause'}
           </button>
-          {!paused && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0A6E5C' }} />
-              LIVE
-            </span>
-          )}
         </span>
       </div>
 
@@ -335,9 +322,8 @@ export default function HeroDemo() {
         {scenes[stage]}
       </div>
 
-      <div className="mt-6 pt-4 border-t flex flex-col sm:flex-row items-center justify-between gap-3" style={{ borderColor: '#EFEDE8' }}>
+      <div className="mt-6 pt-4 border-t" style={{ borderColor: '#EFEDE8' }}>
         <span className="text-xs" style={{ color: '#9CA3AF' }}>Every step is a draft you approve before it goes out.</span>
-        <span className="text-xs font-semibold" style={{ color: '#0A6E5C' }}>Email · WhatsApp · 中文 · English</span>
       </div>
     </div>
   );

@@ -18,8 +18,8 @@ const TIERS = {
   starter: {
     name: 'Backtide Starter',
     description: '1 WhatsApp number · 1,000 AI conversations/mo',
-    monthly: 88000, // HKD HK$880.00
-    annual: 70400, // HKD HK$704.00/mo (20% off)
+    monthly: 158000, // HKD HK$1,580.00
+    annual: 126400, // HKD HK$1,264.00/mo (20% off)
   },
   growth: {
     name: 'Backtide Growth',

@@ -35,7 +35,7 @@ CORE FEATURES:
 10. Language Detection: Automatic detection of EN/ZH/Cantonese
 
 PRICING (HKD):
-- Starter SDR: HK$880/mo — Unlimited WhatsApp conversations, products & FAQ rules, EN/ZH/Cantonese/Spanish, human override, knowledge base, custom AI personality
+- Starter SDR: HK$1,580/mo — Unlimited WhatsApp conversations, products & FAQ rules, EN/ZH/Cantonese/Spanish, human override, knowledge base, custom AI personality
 - Growth Trading Desk: HK$2,480/mo (Coming Soon) — WeChat Work integration, multi-user dashboard, analytics, priority support
 - Enterprise: HK$4,880/mo (Coming Soon) — AI sourcing & supplier matching, automated quotes, dedicated account manager, custom integrations
 - 14-day free trial on all plans. Card required. 50 AI responses included. No setup fees. Annual billing saves 20%.
@@ -57,7 +57,7 @@ vs SleekFlow:
 - Built specifically for HK trading companies
 
 vs Wati:
-- Lower entry price (HK$880 vs HK$460-770)
+- Higher entry price (HK$1,580 vs HK$460-770) but flat — no per-message markup
 - WeChat integration included
 - No hidden per-message markup
 - Bilingual EN/ZH interface
@@ -180,8 +180,8 @@ HOW TO CUSTOMIZE AI BEHAVIOR:
 
 export const PRICING_INFO = {
   starter: {
-    monthly: 880,
-    annual: 704,
+    monthly: 1580,
+    annual: 1264,
     currency: 'HKD',
     features: [
       'Unlimited WhatsApp conversations',
