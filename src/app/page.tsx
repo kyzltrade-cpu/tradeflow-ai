@@ -20,9 +20,9 @@ const FEATURES = [
   },
   {
     icon: Quote,
-    title: 'Cited Quotes',
-    desc: 'Every number on your quote has a source. Supplier price, margin, FX rate — all traceable.',
-    detail: 'AI cites where every data point came from. Show customers confidence, not guesswork.',
+    title: 'Quotes with a source',
+    desc: 'Every number on your quote comes from a supplier price, your margin rule, and the FX rate — all traceable.',
+    detail: 'No guesswork. Every line traces back to a supplier price, your margin rule, and the FX rate.',
   },
   {
     icon: Timer,
@@ -36,7 +36,7 @@ const STEPS = [
   { num: '01', title: 'Inquiry comes in', desc: 'From email or WhatsApp. Every spec, quantity, and requirement is extracted with source citations.' },
   { num: '02', title: 'Gaps get clarified', desc: 'AI flags missing details and drafts a clarification question in the customer\'s language. You approve, we ask.' },
   { num: '03', title: 'Suppliers get RFQed', desc: 'A batch RFQ goes to your shortlisted suppliers on their preferred channel. You approve every send.' },
-  { num: '04', title: 'Quote is drafted', desc: 'Responses are compared, landed cost is calculated, and a cited quote is drafted. You approve, one click to send.' },
+  { num: '04', title: 'Quote is drafted', desc: 'Responses are compared, landed cost is calculated, and a quote is drafted. You approve, one click to send.' },
 ];
 
 const PLANS = [
@@ -293,26 +293,39 @@ export default function LandingPage() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#0A6E5C' }}>3</div>
                 <div>
-                  <div className="text-sm font-semibold">A cited quote, ready to send</div>
+                  <div className="text-sm font-semibold">A quote you can trace</div>
                   <div className="text-xs" style={{ color: '#9CA3AF' }}>Every number traces back to a supplier price or your margin rule</div>
                 </div>
               </div>
               <div className="px-5 py-4 rounded-xl text-sm" style={{ background: '#F8FAFD', border: '1px solid #E5EDF5' }}>
                 <div className="flex justify-between items-baseline mb-3">
-                  <span className="font-semibold" style={{ color: '#111' }}>500ml Vacuum Bottle, Double-Wall 304</span>
-                  <span className="font-bold" style={{ color: '#0A6E5C' }}>USD 4.80 / pc</span>
+                  <span className="font-semibold" style={{ color: '#111' }}>
+                    <span className="text-xs font-semibold mr-1" style={{ color: '#9CA3AF' }}>10,000 pcs ·</span>
+                    500ml Vacuum Bottle, Double-Wall 304
+                  </span>
+                  <span className="font-bold shrink-0 ml-3" style={{ color: '#0A6E5C' }}>USD 5.00 / pc</span>
                 </div>
                 <div className="flex justify-between items-baseline mb-3">
-                  <span className="font-semibold" style={{ color: '#111' }}>Logo Printing (single-color laser)</span>
-                  <span className="font-bold" style={{ color: '#0A6E5C' }}>USD 0.35 / pc</span>
+                  <span className="font-semibold" style={{ color: '#111' }}>
+                    <span className="text-xs font-semibold mr-1" style={{ color: '#9CA3AF' }}>10,000 pcs ·</span>
+                    Logo Printing (single-color laser)
+                  </span>
+                  <span className="font-bold shrink-0 ml-3" style={{ color: '#0A6E5C' }}>USD 0.35 / pc</span>
                 </div>
                 <div className="flex justify-between items-baseline mb-4">
-                  <span className="font-semibold" style={{ color: '#111' }}>Sample (air freight)</span>
-                  <span className="font-bold" style={{ color: '#0A6E5C' }}>USD 25.00</span>
+                  <span className="font-semibold" style={{ color: '#111' }}>
+                    <span className="text-xs font-semibold mr-1" style={{ color: '#9CA3AF' }}>1 pc ·</span>
+                    Sample (air freight)
+                  </span>
+                  <span className="font-bold shrink-0 ml-3" style={{ color: '#0A6E5C' }}>USD 25.00</span>
+                </div>
+                <div className="flex justify-between items-baseline py-3 border-t text-sm font-bold" style={{ borderColor: '#E5EDF5', color: '#0A6E5C' }}>
+                  <span>Subtotal</span>
+                  <span>USD 53,525</span>
                 </div>
                 <div className="py-3 border-t text-xs" style={{ borderColor: '#E5EDF5', color: '#50617A' }}>
                   <span className="font-semibold" style={{ color: '#0A6E5C' }}>Sources: </span>
-                  Supplier quote #SO-2091 (Global Stainless) · 32% target margin · FX 7.82 · Validity 15 days
+                  Supplier quote #SO-2091 (Global Stainless) · 20% margin on bottles (4.00 → 5.00) · FX 7.82 · Holds for 15 days
                 </div>
               </div>
               <p className="text-sm mt-4" style={{ color: '#626260' }}>
