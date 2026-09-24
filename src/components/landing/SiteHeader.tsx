@@ -73,10 +73,10 @@ export default function SiteHeader() {
         }}
       >
         <div
-          className="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-[1fr_auto_1fr] items-center transition-all duration-200"
-          style={{ height: scrolled ? 60 : 68 }}
+          className="max-w-7xl mx-auto px-5 sm:px-6 grid grid-cols-[1fr_auto_1fr] items-center transition-all duration-200"
+          style={{ height: scrolled ? 64 : 76 }}
         >
-          <Link href="/" className="justify-self-start flex items-center gap-2 group">
+          <Link href="/" className="justify-self-start flex items-center gap-2 sm:gap-3 group">
             <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-12 w-12 sm:h-14 sm:w-14 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
             <span className="hidden sm:inline text-xl font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
               Sailwise
@@ -97,10 +97,10 @@ export default function SiteHeader() {
             ))}
           </div>
 
-          <div className="justify-self-end flex items-center gap-2 sm:gap-3">
+          <div className="justify-self-end flex items-center gap-2.5 sm:gap-3">
             <Link
               href="/signup"
-              className="text-sm font-semibold px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg btn-primary"
+              className="text-sm font-semibold px-4 py-2.5 sm:px-5 sm:py-2.5 rounded-lg btn-primary"
             >
               Start Free
             </Link>
@@ -109,10 +109,10 @@ export default function SiteHeader() {
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
-              className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg border transition-colors hover:bg-black/[0.04]"
+              className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg border transition-colors hover:bg-black/[0.04]"
               style={{ borderColor: '#E0E0E0' }}
             >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round">
                 {menuOpen ? (
                   <>
                     <path d="M6 6l12 12" />
@@ -132,7 +132,7 @@ export default function SiteHeader() {
 
         {menuOpen && (
           <div
-            className="md:hidden border-t px-4 py-4 space-y-1 backdrop-blur-md"
+            className="md:hidden border-t px-5 py-5 space-y-1.5 backdrop-blur-md"
             style={{ borderColor: '#E7E7E7', background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.95)' }}
           >
             {LINKS.map((l) => (
@@ -140,7 +140,7 @@ export default function SiteHeader() {
                 key={l.href}
                 href={l.href}
                 onClick={(e) => scrollTo(e, l.href)}
-                className={`block px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-black/[0.04] ${active === l.href ? 'bg-black/[0.04]' : ''}`}
+                className={`block px-4 py-3 rounded-lg text-[15px] font-medium transition-colors hover:bg-black/[0.04] ${active === l.href ? 'bg-black/[0.04]' : ''}`}
                 style={{ color: active === l.href ? '#000' : '#333333' }}
               >
                 {l.label}
@@ -149,7 +149,7 @@ export default function SiteHeader() {
             <Link
               href="/login"
               onClick={() => setMenuOpen(false)}
-              className="block px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-black/[0.04]"
+              className="block px-4 py-3 rounded-lg text-[15px] font-medium hover:bg-black/[0.04]"
               style={{ color: '#555555', borderTop: '1px solid #EDEDED' }}
             >
               Log in
