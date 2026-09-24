@@ -524,9 +524,9 @@ export default function LandingPage() {
                 border: '1.5px solid #000',
               }}
             >
-              <div className="flex items-center justify-between">
-                <div className="text-base font-semibold" style={{ color: '#0A0A0A' }}>{PLANS[0].name}</div>
-                <span className="btk-mono text-[10px] font-semibold px-2 py-1 rounded-full border" style={{ color: '#8A8A8A', borderColor: '#E0E0E0' }}>one plan · everything included</span>
+              <div>
+                <div className="text-lg font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>{PLANS[0].name}</div>
+                <span className="btk-mono text-[10px] font-semibold px-2.5 py-1 rounded-full border inline-block mt-2" style={{ color: '#8A8A8A', borderColor: '#E0E0E0' }}>one plan · everything included</span>
               </div>
               <PricingPrice monthly={PLANS[0].price} annual="HK$1,264" period={PLANS[0].period} />
               <div className="h-px bg-black/10 mb-4" />
