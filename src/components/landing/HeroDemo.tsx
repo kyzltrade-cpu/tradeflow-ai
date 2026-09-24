@@ -44,22 +44,22 @@ function InquiryScene() {
     <div className="space-y-3">
       <Stagger delay={0}>
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: '#0A6E5C' }}>
+          <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: '#000' }}>
             SC
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-semibold" style={{ color: '#111' }}>Sarah Chen</div>
-            <div className="text-xs" style={{ color: '#9CA3AF' }}>Pacific Trading · Shenzhen</div>
+            <div className="text-sm font-semibold" style={{ color: '#0A0A0A' }}>Sarah Chen</div>
+            <div className="text-xs" style={{ color: '#9A9A9A' }}>Pacific Trading · Shenzhen</div>
           </div>
-          <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+          <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border" style={{ background: '#F4F4F4', color: '#000', borderColor: '#E0E0E0' }}>
             <MessageCircle className="w-3 h-3" /> WhatsApp
           </span>
-          <span className="text-[11px] shrink-0" style={{ color: '#9CA3AF' }}>just now</span>
+          <span className="text-[11px] shrink-0" style={{ color: '#9A9A9A' }}>just now</span>
         </div>
       </Stagger>
 
       <Stagger delay={150}>
-        <div className="rounded-xl rounded-tl-sm px-5 py-4 text-sm leading-relaxed" style={{ background: '#F8FAFD', color: '#50617A', border: '1px solid #E5EDF5' }}>
+        <div className="rounded-xl rounded-tl-sm px-5 py-4 text-sm leading-relaxed" style={{ background: '#FAFAFA', color: '#555555', border: '1px solid #ECECEC' }}>
           Hi, we need 10,000 pcs of 500ml stainless steel vacuum bottles for a corporate order. Please quote with
           logo printing and your best lead time. Preference for double-wall, 304 food grade. We also need a sample
           before mass production.
@@ -67,12 +67,12 @@ function InquiryScene() {
       </Stagger>
 
       <Stagger delay={450}>
-        <div className="rounded-xl rounded-tl-sm px-5 py-4 text-sm leading-relaxed border" style={{ background: '#FFF', color: '#111', borderColor: '#E8E5E1', boxShadow: '0 8px 24px -16px rgba(10,110,92,0.25)' }}>
-          <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold" style={{ color: '#0A6E5C' }}>
+        <div className="rounded-xl rounded-tl-sm px-5 py-4 text-sm leading-relaxed border" style={{ background: '#FFF', color: '#111', borderColor: '#E5E5E5', boxShadow: '0 8px 24px -16px rgba(0,0,0,0.14)' }}>
+          <div className="flex items-center gap-1.5 mb-2 text-[11px] font-semibold" style={{ color: '#000' }}>
             <span className="inline-flex items-center gap-1"><Bot className="w-3 h-3" /> AI draft</span>
-            <span className="text-[#9CA3AF] font-medium">· awaiting approval</span>
+            <span className="text-[#9A9A9A] font-medium">· awaiting approval</span>
           </div>
-          <div className="leading-relaxed" style={{ color: '#374151' }}>
+          <div className="leading-relaxed" style={{ color: '#333333' }}>
             Hi Sarah — thanks for the inquiry. Glad to quote the 500ml double-wall 304 bottles with logo printing.
             Before pricing: could you share a target price or budget, the Incoterm, and the delivery destination &amp; date?
             A sample can ship before mass production.
@@ -91,28 +91,28 @@ function ClarifyScene() {
   return (
     <div className="space-y-4">
       <div className="grid sm:grid-cols-2 gap-3">
-        <div className="rounded-xl px-4 py-3.5" style={{ background: '#F8FAFD', border: '1px solid #E5EDF5' }}>
-          <div className="text-[11px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: '#9CA3AF' }}>Extracted</div>
+        <div className="rounded-xl px-4 py-3.5" style={{ background: '#FAFAFA', border: '1px solid #ECECEC' }}>
+          <div className="text-[11px] font-semibold uppercase tracking-wider mb-2.5" style={{ color: '#9A9A9A' }}>Extracted</div>
           <ul className="space-y-2">
             {EXTRACTED.map((item, i) => (
               <Stagger key={item} delay={i * 140}>
-                <li className="flex items-center gap-2 text-sm" style={{ color: '#50617A' }}>
-                  <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#0A6E5C' }} strokeWidth={3} />
+                <li className="flex items-center gap-2 text-sm" style={{ color: '#555555' }}>
+                  <Check className="w-3.5 h-3.5 shrink-0" style={{ color: '#000' }} strokeWidth={3} />
                   {item}
                 </li>
               </Stagger>
             ))}
           </ul>
         </div>
-        <div className="rounded-xl px-4 py-3.5" style={{ background: '#FFF9EC', border: '1px solid #F3E5C9' }}>
-          <div className="text-[11px] font-semibold uppercase tracking-wider mb-2.5 flex items-center gap-1.5" style={{ color: '#B45309' }}>
+        <div className="rounded-xl px-4 py-3.5" style={{ background: '#FCFCFC', border: '1px dashed #CFCFCF' }}>
+          <div className="text-[11px] font-semibold uppercase tracking-wider mb-2.5 flex items-center gap-1.5" style={{ color: '#000' }}>
             <AlertTriangle className="w-3.5 h-3.5" /> Gaps it caught
           </div>
           <ul className="space-y-2">
             {GAPS.map((item, i) => (
               <Stagger key={item} delay={240 + i * 140}>
-                <li className="flex items-center gap-2 text-sm" style={{ color: '#92600E' }}>
-                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#D97706' }} />
+                <li className="flex items-center gap-2 text-sm" style={{ color: '#333333' }}>
+                  <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: '#000' }} />
                   {item}
                 </li>
               </Stagger>
@@ -122,10 +122,10 @@ function ClarifyScene() {
       </div>
       <Stagger delay={700}>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border" style={{ background: '#F4F4F4', color: '#000', borderColor: '#E0E0E0' }}>
             <Globe className="w-3 h-3" /> Draft reply · English · awaiting your approval
           </span>
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg text-white" style={{ background: '#000', boxShadow: 'inset 0 -2px 0 0 #1A1A1A' }}>
             <Send className="w-3 h-3" /> Approve &amp; ask
           </span>
         </div>
@@ -141,12 +141,12 @@ function RfqScene() {
     <div className="space-y-3">
       {SUPPLIERS.map((s, i) => (
         <Stagger key={s} delay={i * 160}>
-          <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: '#F8FAFD', border: '1px solid #E5EDF5' }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: i === 0 ? '#0A6E5C' : '#7A8588' }}>
+          <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: '#FAFAFA', border: '1px solid #ECECEC' }}>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: i === 0 ? '#000' : '#8A8A8A' }}>
               {s[0]}
             </div>
-            <div className="text-sm font-medium" style={{ color: '#111' }}>{s}</div>
-            <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold" style={{ color: '#0A6E5C' }}>
+            <div className="text-sm font-medium" style={{ color: '#0A0A0A' }}>{s}</div>
+            <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold" style={{ color: '#000' }}>
               <Check className="w-3.5 h-3.5" strokeWidth={3} /> Replied
             </span>
           </div>
@@ -154,12 +154,12 @@ function RfqScene() {
       ))}
       <Stagger delay={620}>
         <div>
-          <div className="flex justify-between text-[11px] font-semibold mb-1.5" style={{ color: '#9CA3AF' }}>
+          <div className="flex justify-between text-[11px] font-semibold mb-1.5" style={{ color: '#9A9A9A' }}>
             <span>3 / 3 suppliers replied</span>
-            <span style={{ color: '#0A6E5C' }}>best landed <span className="font-bold">USD 4.00</span>/pc</span>
+            <span style={{ color: '#000' }}>best landed <span className="font-bold">USD 4.00</span>/pc</span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#EEEBE6' }}>
-            <div className="h-full rounded-full btk-anim-rise" style={{ background: '#0A6E5C', width: '100%', transformOrigin: 'left', animationName: 'btk-trace', animationDuration: '1.2s' }} />
+          <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#E8E8E8' }}>
+            <div className="h-full rounded-full btk-anim-rise" style={{ background: '#000', width: '100%', transformOrigin: 'left', animationName: 'btk-trace', animationDuration: '1.2s' }} />
           </div>
         </div>
       </Stagger>
@@ -182,17 +182,17 @@ function QuoteScene() {
     <div className="space-y-3">
       {QUOTE_LINES.map((line, i) => (
         <Stagger key={line.label} delay={i * 180}>
-          <div className="rounded-xl px-4 py-3" style={{ background: '#F8FAFD', border: '1px solid #E5EDF5' }}>
+          <div className="rounded-xl px-4 py-3" style={{ background: '#FAFAFA', border: '1px solid #ECECEC' }}>
             <div className="flex items-baseline justify-between gap-4 text-sm">
-              <span className="font-medium" style={{ color: '#111' }}>
-                <span className="text-xs font-semibold" style={{ color: '#9CA3AF' }}>{line.qty} · </span>
+              <span className="font-medium" style={{ color: '#0A0A0A' }}>
+                <span className="text-xs font-semibold" style={{ color: '#9A9A9A' }}>{line.qty} · </span>
                 {line.label}
               </span>
-              <span className="shrink-0 font-bold tabular-nums" style={{ color: '#0A6E5C' }}>{line.unit}</span>
+              <span className="shrink-0 font-bold tabular-nums" style={{ color: '#000' }}>{line.unit}</span>
             </div>
-            <div className="flex items-center justify-between mt-1 text-[11px]" style={{ color: '#9CA3AF' }}>
+            <div className="flex items-center justify-between mt-1 text-[11px]" style={{ color: '#9A9A9A' }}>
               <span className="flex items-center gap-1.5">
-                <FileText className="w-3 h-3" style={{ color: '#0A6E5C' }} /> {line.src}
+                <FileText className="w-3 h-3" style={{ color: '#000' }} /> {line.src}
               </span>
               <span className="font-semibold tabular-nums">{line.total}</span>
             </div>
@@ -200,14 +200,14 @@ function QuoteScene() {
         </Stagger>
       ))}
       <Stagger delay={620}>
-        <div className="rounded-xl px-4 py-3 flex items-center justify-between text-sm font-bold" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
+        <div className="rounded-xl px-4 py-3 flex items-center justify-between text-sm font-bold border" style={{ background: '#F4F4F4', color: '#000', borderColor: '#E0E0E0' }}>
           <span>Subtotal</span>
           <span className="tabular-nums">{QUOTE_TOTAL}</span>
         </div>
       </Stagger>
       <Stagger delay={700}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <p className="text-[11px] leading-relaxed" style={{ color: '#626260' }}>
+          <p className="text-[11px] leading-relaxed" style={{ color: '#555555' }}>
             Bottles: 20% margin (USD 4.00 → 5.00/pc). Printing &amp; sample at cost. FX 7.82 — quote holds for 15 days.
           </p>
           <button
@@ -218,8 +218,8 @@ function QuoteScene() {
             className="inline-flex items-center justify-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg text-white transition-all active:scale-[0.98] disabled:cursor-default shrink-0"
             style={
               sent
-                ? { background: '#E6F4F0', color: '#0A6E5C', boxShadow: 'inset 0 0 0 1px #0A6E5C' }
-                : { background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }
+                ? { background: '#F4F4F4', color: '#000', boxShadow: 'inset 0 0 0 1px #000', border: 'none' }
+                : { background: '#000', boxShadow: 'inset 0 -2px 0 0 #1A1A1A' }
             }
           >
             {sent ? (
@@ -270,20 +270,20 @@ export default function HeroDemo() {
   const autoplaying = !reduceMotion.current && !paused && !interacting;
 
   return (
-    <div className="max-w-4xl mx-auto rounded-2xl border p-5 md:p-7 text-left btk-anim-rise" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.85), 0 1px 2px rgba(17,17,17,0.04), 0 24px 60px -30px rgba(10,110,92,0.18)' }}>
+    <div className="max-w-4xl mx-auto rounded-2xl border p-5 md:p-7 text-left btk-anim-rise" style={{ background: '#fff', borderColor: '#E5E5E5', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.85), 0 1px 2px rgba(0,0,0,0.05), 0 24px 60px -30px rgba(0,0,0,0.18)' }}>
       <div className="flex items-center gap-2 mb-5 select-none">
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#F1A7A0' }} />
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#F2D68F' }} />
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#A9CEA8' }} />
-        <span className="ml-3 text-xs font-semibold" style={{ color: '#111' }}>Backtide</span>
-        <span className="hidden sm:inline text-[11px]" style={{ color: '#9CA3AF' }}>· Pacific Trading inbox</span>
+        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#E0E0E0' }} />
+        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#D6D6D6' }} />
+        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#CFCFCF' }} />
+        <span className="ml-3 text-xs font-semibold" style={{ color: '#0A0A0A' }}>Vectra</span>
+        <span className="hidden sm:inline text-[11px]" style={{ color: '#9A9A9A' }}>· Pacific Trading inbox</span>
         <span className="ml-auto flex items-center gap-2">
           <button
             type="button"
             onClick={() => setPaused((p) => !p)}
             aria-label={paused ? 'Play demo' : 'Pause demo'}
-            className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full transition-colors hover:bg-black/[0.04] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6E5C]/40"
-            style={{ color: '#0A6E5C' }}
+            className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2.5 py-1 rounded-full transition-colors hover:bg-black/[0.04] active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+            style={{ color: '#000' }}
           >
             {paused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
             {paused || reduceMotion.current ? 'Play' : 'Pause'}
@@ -302,22 +302,22 @@ export default function HeroDemo() {
               onClick={() => selectStage(i)}
               aria-pressed={active}
               aria-label={`Show ${s.label} step`}
-              className="flex flex-col items-center gap-1 rounded-xl px-2 pt-2.5 pb-1.5 text-xs font-semibold cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6E5C]/40"
+              className="flex flex-col items-center gap-1 rounded-xl px-2 pt-2.5 pb-1.5 text-xs font-semibold cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
               style={{
-                background: active ? '#E6F4F0' : 'transparent',
-                color: active ? '#0A6E5C' : '#9CA3AF',
+                background: active ? '#F4F4F4' : 'transparent',
+                color: active ? '#000' : '#9A9A9A',
               }}
             >
               <span className="flex items-center gap-2">
                 <Icon className="w-3.5 h-3.5 shrink-0" />
                 <span className="hidden sm:inline">{s.label}</span>
               </span>
-              <span className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: active ? 'rgba(10,110,92,0.15)' : 'transparent' }}>
+              <span className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: active ? 'rgba(0,0,0,0.12)' : 'transparent' }}>
                 {active && autoplaying && (
                   <span
                     key={`progress-${stage}`}
                     className="block h-full rounded-full"
-                    style={{ background: '#0A6E5C', animation: `btk-progress ${SCENE_DURATION}ms linear forwards` }}
+                    style={{ background: '#000', animation: `btk-progress ${SCENE_DURATION}ms linear forwards` }}
                   />
                 )}
               </span>
@@ -330,8 +330,8 @@ export default function HeroDemo() {
         {scenes[stage]}
       </div>
 
-      <div className="mt-6 pt-4 border-t" style={{ borderColor: '#EFEDE8' }}>
-        <span className="text-xs" style={{ color: '#9CA3AF' }}>Every step is a draft you approve before it goes out.</span>
+      <div className="mt-6 pt-4 border-t" style={{ borderColor: '#EEEEEE' }}>
+        <span className="text-xs" style={{ color: '#9A9A9A' }}>Every step is a draft you approve before it goes out.</span>
       </div>
     </div>
   );

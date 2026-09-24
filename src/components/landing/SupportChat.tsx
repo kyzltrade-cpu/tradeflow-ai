@@ -12,7 +12,7 @@ interface Msg {
 const WELCOME: Msg = {
   role: 'assistant',
   content:
-    "Hi! I'm the Backtide support assistant. Ask me anything about the product, pricing, or getting started — I reply in your language.",
+    "Hi! I'm the Vectra support assistant. Ask me anything about the product, pricing, or getting started — I reply in your language.",
 };
 
 const QUICK_QUESTIONS = [
@@ -133,7 +133,7 @@ export default function SupportChat() {
       {open && (
         <div
           role="dialog"
-          aria-label="Backtide support chat"
+          aria-label="Vectra support chat"
           className="btk-anim-rise fixed flex flex-col rounded-[20px] border z-40 overflow-hidden"
           style={{
             left: 'max(1.25rem, env(safe-area-inset-left))',
@@ -141,24 +141,24 @@ export default function SupportChat() {
             width: 'min(24rem, calc(100vw - 2.5rem))',
             height: 'min(34rem, calc(100dvh - 9rem))',
             background: '#fff',
-            borderColor: '#E8E5E1',
+            borderColor: '#E5E5E5',
             boxShadow: '0 32px 72px -24px rgba(15,23,42,0.28), 0 8px 24px -16px rgba(15,23,42,0.14)',
           }}
         >
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3.5 border-b shrink-0" style={{ borderColor: '#F0EDE7', background: '#fff' }}>
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b shrink-0" style={{ borderColor: '#EEEEEE', background: '#fff' }}>
             <span
               className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0"
-              style={{ background: 'linear-gradient(180deg, #0F8070, #0A6E5C 60%, #075346)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.3)' }}
+              style={{ background: 'linear-gradient(180deg, #3A3A3A, #000 60%, #000)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.18)' }}
             >
               <MessageCircleQuestion className="w-5 h-5" />
             </span>
             <div className="min-w-0">
-              <div className="text-sm font-bold" style={{ color: '#111' }}>Backtide support</div>
-              <div className="flex items-center gap-1.5 text-xs" style={{ color: '#626260' }}>
+              <div className="text-sm font-bold" style={{ color: '#0A0A0A' }}>Vectra support</div>
+              <div className="flex items-center gap-1.5 text-xs" style={{ color: '#555555' }}>
                 <span className="relative flex w-2 h-2">
-                  <span className="absolute inline-flex h-full w-full rounded-full animate-ping opacity-60" style={{ background: '#34D399' }} />
-                  <span className="relative inline-flex rounded-full w-2 h-2" style={{ background: '#34D399' }} />
+                  <span className="absolute inline-flex h-full w-full rounded-full animate-ping opacity-60" style={{ background: '#1C7A4D' }} />
+                  <span className="relative inline-flex rounded-full w-2 h-2" style={{ background: '#1C7A4D' }} />
                 </span>
                 Online · replies instantly
               </div>
@@ -168,8 +168,8 @@ export default function SupportChat() {
               onClick={close}
               aria-label="Close support chat"
               className="w-8 h-8 ml-auto rounded-lg flex items-center justify-center transition-colors duration-150"
-              style={{ color: '#626260' }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = '#F3F6F4'; }}
+              style={{ color: '#555555' }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#F4F4F4'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
               <X className="w-4 h-4" />
@@ -181,14 +181,14 @@ export default function SupportChat() {
             ref={bodyRef}
             aria-live="polite"
             className="flex-1 overflow-y-auto px-4 py-4 space-y-3"
-            style={{ background: '#FAF9F6' }}
+            style={{ background: '#FAFAFA' }}
           >
             {messages.map((m, i) =>
               m.role === 'user' ? (
                 <div key={i} className="flex justify-end">
                   <div
                     className="max-w-[85%] px-3.5 py-2.5 text-sm leading-relaxed text-white whitespace-pre-wrap break-words rounded-2xl rounded-br-md"
-                    style={{ background: 'linear-gradient(180deg, #0F8070, #0A6E5C 60%, #075346)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.18)' }}
+                    style={{ background: 'linear-gradient(180deg, #1F1F1F, #000 60%, #000)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.15)' }}
                   >
                     {m.content}
                   </div>
@@ -197,14 +197,14 @@ export default function SupportChat() {
                 <div key={i} className="flex justify-start">
                   {m.content === '' && streaming ? (
                     <div className="flex items-center gap-1.5 px-4 py-3.5 rounded-2xl rounded-bl-md" style={{ background: 'var(--panel-bg)', border: '1px solid var(--panel-border)' }}>
-                      <span className="btk-chat-dot w-1.5 h-1.5 rounded-full" style={{ background: '#0A6E5C' }} />
-                      <span className="btk-chat-dot w-1.5 h-1.5 rounded-full" style={{ background: '#0A6E5C', animationDelay: '120ms' }} />
-                      <span className="btk-chat-dot w-1.5 h-1.5 rounded-full" style={{ background: '#0A6E5C', animationDelay: '240ms' }} />
+                      <span className="btk-chat-dot w-1.5 h-1.5 rounded-full" style={{ background: '#000' }} />
+                      <span className="btk-chat-dot w-1.5 h-1.5 rounded-full" style={{ background: '#000', animationDelay: '120ms' }} />
+                      <span className="btk-chat-dot w-1.5 h-1.5 rounded-full" style={{ background: '#000', animationDelay: '240ms' }} />
                     </div>
                   ) : (
                     <div
                       className="max-w-[85%] px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words rounded-2xl rounded-bl-md"
-                      style={{ background: '#fff', color: '#26332F', border: '1px solid var(--panel-border)', boxShadow: 'var(--shadow-card)' }}
+                      style={{ background: '#fff', color: '#0A0A0A', border: '1px solid var(--panel-border)', boxShadow: 'var(--shadow-card)' }}
                     >
                       {m.content}
                     </div>
@@ -215,13 +215,13 @@ export default function SupportChat() {
 
             {error && !streaming && (
               <div className="flex justify-start">
-                <div className="max-w-[90%] px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl rounded-bl-md" style={{ background: '#FFF7F5', color: '#9A3412', border: '1px solid #F5D5C5' }}>
+                <div className="max-w-[90%] px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl rounded-bl-md" style={{ background: '#FBF1F0', color: '#B42318', border: '1px solid #F0D5D2' }}>
                   <div className="whitespace-pre-wrap break-words">{error}</div>
                   <button
                     type="button"
                     onClick={() => void send(lastPromptRef.current)}
                     className="mt-2 text-xs font-semibold underline underline-offset-2"
-                    style={{ color: '#9A3412' }}
+                    style={{ color: '#B42318' }}
                   >
                     Try again
                   </button>
@@ -237,9 +237,9 @@ export default function SupportChat() {
                     type="button"
                     onClick={() => void send(q)}
                     className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors duration-150 hover:text-white"
-                    style={{ background: '#fff', color: '#0A6E5C', borderColor: '#B8DDD3' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = '#0A6E5C'; e.currentTarget.style.color = '#fff'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#0A6E5C'; }}
+                    style={{ background: '#fff', color: '#555555', borderColor: '#DFDFDF' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = '#000'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.color = '#555555'; }}
                   >
                     {q}
                   </button>
@@ -249,27 +249,27 @@ export default function SupportChat() {
           </div>
 
           {/* Composer */}
-          <form onSubmit={onSubmit} className="p-3 border-t shrink-0" style={{ borderColor: '#F0EDE7', background: '#fff' }}>
+          <form onSubmit={onSubmit} className="p-3 border-t shrink-0" style={{ borderColor: '#EEEEEE', background: '#fff' }}>
             <div className="flex items-end gap-2">
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about Backtide…"
+                placeholder="Ask about Vectra…"
                 aria-label="Message"
                 autoComplete="off"
-                className="flex-1 min-w-0 px-3.5 py-2.5 text-sm rounded-xl border outline-none focus:border-teal-600"
-                style={{ background: '#FAF9F6', color: '#111', borderColor: '#E8E5E1' }}
-                onFocus={(e) => { e.currentTarget.style.borderColor = '#0A6E5C'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,110,92,0.12)'; }}
-                onBlur={(e) => { e.currentTarget.style.borderColor = '#E8E5E1'; e.currentTarget.style.boxShadow = 'none'; }}
+                className="flex-1 min-w-0 px-3.5 py-2.5 text-sm rounded-xl border outline-none"
+                style={{ background: '#FAFAFA', color: '#0A0A0A', borderColor: '#E5E5E5' }}
+                onFocus={(e) => { e.currentTarget.style.borderColor = '#000'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,0,0,0.12)'; }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = '#E5E5E5'; e.currentTarget.style.boxShadow = 'none'; }}
               />
               <button
                 type="submit"
                 disabled={streaming || !input.trim()}
                 aria-label="Send message"
                 className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: 'linear-gradient(180deg, #0F8070, #0A6E5C 60%, #075346)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.25), inset 0 -2px 0 0 #085a4a' }}
+                style={{ background: 'linear-gradient(180deg, #1F1F1F, #000 60%, #000)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.15), inset 0 -2px 0 0 #1A1A1A' }}
                 onMouseEnter={(e) => {
                   if (!e.currentTarget.disabled) {
                     e.currentTarget.style.filter = 'brightness(1.05)';
@@ -284,7 +284,7 @@ export default function SupportChat() {
                 <Send className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-[11px] mt-2 text-center" style={{ color: '#B0ADA8' }}>
+            <p className="text-[11px] mt-2 text-center" style={{ color: '#9A9A9A' }}>
               Powered by NVIDIA NIM · Human review on request
             </p>
           </form>
@@ -305,8 +305,8 @@ export default function SupportChat() {
           width: 58,
           height: 58,
           borderRadius: '999px',
-          background: 'linear-gradient(180deg, #0F8070, #0A6E5C 60%, #075346)',
-          boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.3), inset 0 -3px 0 0 rgba(8,90,74,0.6), 0 20px 40px -16px rgba(10,110,92,0.55)',
+          background: 'linear-gradient(180deg, #1F1F1F, #000 60%, #000)',
+          boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.15), inset 0 -3px 0 0 rgba(0,0,0,0.85), 0 20px 40px -16px rgba(0,0,0,0.55)',
         }}
         onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.06)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
@@ -314,8 +314,8 @@ export default function SupportChat() {
         {open ? <X className="w-6 h-6 text-white" /> : <MessageCircleQuestion className="w-6 h-6 text-white" />}
         {!open && (
           <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
-            <span className="absolute inline-flex h-full w-full rounded-full animate-ping opacity-60" style={{ background: '#34D399' }} />
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 border-2 border-white" style={{ background: '#34D399' }} />
+            <span className="absolute inline-flex h-full w-full rounded-full animate-ping opacity-60" style={{ background: '#1C7A4D' }} />
+            <span className="relative inline-flex rounded-full h-3.5 w-3.5 border-2 border-white" style={{ background: '#1C7A4D' }} />
           </span>
         )}
       </button>

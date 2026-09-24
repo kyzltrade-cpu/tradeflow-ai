@@ -9,7 +9,7 @@ type GlowCardProps = {
   color?: `rgba(${string})`;
 };
 
-export default function GlowCard({ children, className, style, color = 'rgba(10, 110, 92, 0.40)' }: GlowCardProps) {
+export default function GlowCard({ children, className, style, color = 'rgba(0, 0, 0, 0.22)' }: GlowCardProps) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [spot, setSpot] = useState({ x: 0.5, y: 0.5 });
   const [active, setActive] = useState(false);
@@ -39,7 +39,7 @@ export default function GlowCard({ children, className, style, color = 'rgba(10,
         style={{
           opacity: active ? 1 : 0,
           borderRadius: 'inherit',
-          background: `radial-gradient(320px circle at ${spot.x * 100}% ${spot.y * 100}%, ${color}, rgba(10,110,92,0.06) 45%, transparent 70%)`,
+          background: `radial-gradient(320px circle at ${spot.x * 100}% ${spot.y * 100}%, ${color}, rgba(0,0,0,0.05) 45%, transparent 70%)`,
         }}
       />
       <div className="relative">{children}</div>

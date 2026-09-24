@@ -164,7 +164,7 @@ async function handleSendRfqEmail(
     .eq('id', job.company_id)
     .single();
 
-  const companyName = company?.name || 'Backtide';
+  const companyName = company?.name || 'Vectra';
   const deadline = payload.response_deadline
     ? new Date(payload.response_deadline).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -183,7 +183,7 @@ async function handleSendRfqEmail(
       <td align="center" style="padding: 40px 20px;">
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
           <tr>
-            <td style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 32px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #3A3A3A 0%, #000000 100%); padding: 32px; text-align: center;">
               <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">${companyName}</h1>
               <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Request for Quotation</p>
             </td>
@@ -192,7 +192,7 @@ async function handleSendRfqEmail(
             <td style="padding: 32px;">
               <p style="margin: 0 0 16px; color: #374151; font-size: 14px; line-height: 1.6;">Dear ${payload.to_name || 'Supplier'},</p>
               <p style="margin: 0 0 16px; color: #374151; font-size: 14px; line-height: 1.6;">We would like to request a quotation for the following. Please review the details and submit your best pricing.</p>
-              ${payload.opportunity_title ? `<div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin-bottom: 20px;"><p style="margin: 0; color: #111827; font-size: 16px; font-weight: 600;">${payload.opportunity_title}</p></div>` : ''}
+              ${payload.opportunity_title ? `<div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 20px;"><p style="margin: 0; color: #111827; font-size: 16px; font-weight: 600;">${payload.opportunity_title}</p></div>` : ''}
               <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                   <tr><td style="padding: 6px 0; color: #6b7280; font-size: 13px; width: 140px;">RFQ Number</td><td style="padding: 6px 0; color: #111827; font-size: 13px; font-weight: 600;">${payload.rfq_number || job.entity_id?.slice(0, 8) || 'N/A'}</td></tr>
@@ -205,7 +205,7 @@ async function handleSendRfqEmail(
           </tr>
           <tr>
             <td style="background-color: #f9fafb; padding: 20px 32px; text-align: center; border-top: 1px solid #e5e7eb;">
-              <p style="margin: 0; color: #9ca3af; font-size: 12px;">${companyName} · Sent via Backtide</p>
+              <p style="margin: 0; color: #9ca3af; font-size: 12px;">${companyName} · Sent via Vectra</p>
             </td>
           </tr>
         </table>

@@ -177,10 +177,9 @@ function Sidebar({
         <div className="flex h-14 items-center gap-2.5 border-b px-4" style={{ borderColor: 'var(--border)' }}>
           <Link
             href="/"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg font-bold text-white text-sm"
-            style={{ background: 'var(--accent)' }}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
           >
-            BT
+            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-8 w-8 rounded-lg object-cover" />
           </Link>
           {!collapsed && (
             <Link
@@ -188,7 +187,7 @@ function Sidebar({
               className="text-[15px] font-semibold"
               style={{ color: 'var(--text)' }}
             >
-              Backtide
+              Vectra
             </Link>
           )}
         </div>
@@ -329,7 +328,7 @@ function AdminShell({ children }: { children: ReactNode }) {
         <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
           <div className="w-full max-w-[400px] text-center">
             <div className="mb-6">
-              <img src="/logo.svg" alt="Backtide" className="h-7 mx-auto" />
+              <img src="/brand/vectra-mark.png" alt="Vectra" className="h-10 mx-auto rounded-lg" />
             </div>
             <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#D1FAE5' }}>
@@ -350,7 +349,7 @@ function AdminShell({ children }: { children: ReactNode }) {
         <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
           <div className="w-full max-w-[400px] text-center">
             <div className="mb-6">
-              <img src="/logo.svg" alt="Backtide" className="h-7 mx-auto" />
+              <img src="/brand/vectra-mark.png" alt="Vectra" className="h-10 mx-auto rounded-lg" />
             </div>
             <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#FEF3C7' }}>

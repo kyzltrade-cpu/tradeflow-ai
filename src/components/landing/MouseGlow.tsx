@@ -49,7 +49,7 @@ export default function MouseGlow() {
         transition:
           'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
         willChange: 'transform',
-        background: 'radial-gradient(circle, rgba(10,110,92,0.07), rgba(10,110,92,0) 62%)',
+        background: 'radial-gradient(circle, rgba(0,0,0,0.05), rgba(0,0,0,0) 62%)',
       }}
     />
   );

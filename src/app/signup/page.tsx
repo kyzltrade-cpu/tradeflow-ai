@@ -47,13 +47,8 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
         <div className="w-full max-w-[400px] text-center">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <span
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white transition-transform duration-200 group-hover:scale-105"
-              style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)', fontSize: 13 }}
-            >
-              BT
-            </span>
-            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>Backtide</span>
+            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-9 w-9 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105" />
+            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>Vectra</span>
           </Link>
           <div className="mt-8 p-6 border rounded-lg" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
@@ -97,14 +92,9 @@ export default function SignupPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <span
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white transition-transform duration-200 group-hover:scale-105"
-              style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)', fontSize: 13 }}
-            >
-              BT
-            </span>
+            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-9 w-9 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105" />
             <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-              Backtide
+              Vectra
             </span>
           </Link>
           <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-5">{t('Create account', '建立帳戶')}</h1>

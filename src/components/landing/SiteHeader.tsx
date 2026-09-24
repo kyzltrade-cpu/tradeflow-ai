@@ -49,15 +49,15 @@ export default function SiteHeader() {
       <div
         className="btk-scroll-progress"
         style={{
-          background: `linear-gradient(90deg, #0A6E5C ${progress}%, transparent ${progress}%)`,
+          background: `linear-gradient(90deg, #000 ${progress}%, transparent ${progress}%)`,
         }}
         aria-hidden="true"
       />
       <nav
         className="fixed top-0 w-full z-50 backdrop-blur-md border-b transition-all duration-200"
         style={{
-          background: scrolled ? 'rgba(250,249,246,0.92)' : 'rgba(250,249,246,0.85)',
-          borderColor: scrolled ? '#DDD8CE' : '#E8E5E1',
+          background: scrolled ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.85)',
+          borderColor: scrolled ? '#E7E7E7' : '#EDEDED',
           boxShadow: scrolled ? '0 8px 24px -20px rgba(17,17,17,0.25)' : 'none',
         }}
       >
@@ -66,14 +66,9 @@ export default function SiteHeader() {
           style={{ height: scrolled ? 52 : 64 }}
         >
           <Link href="/" className="justify-self-start flex items-center gap-2.5 group">
-            <span
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold text-white transition-transform duration-200 group-hover:scale-105"
-              style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}
-            >
-              BT
-            </span>
-            <span className="text-base font-semibold tracking-tight" style={{ color: '#111' }}>
-              Backtide
+            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-8 w-8 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
+            <span className="text-base font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
+              Vectra
             </span>
           </Link>
 
@@ -83,7 +78,7 @@ export default function SiteHeader() {
                 key={l.href}
                 href={l.href}
                 className={`btk-nav-link ${active === l.href ? 'is-active' : ''}`}
-                style={{ color: active === l.href ? '#0A6E5C' : '#626260' }}
+                style={{ color: active === l.href ? '#000' : '#555555' }}
               >
                 {l.label}
               </a>
@@ -94,7 +89,7 @@ export default function SiteHeader() {
             <Link
               href="/login"
               className="text-sm font-medium px-4 py-2 rounded-lg transition-colors hover:bg-black/[0.04]"
-              style={{ color: '#626260' }}
+              style={{ color: '#555555' }}
             >
               Log in
             </Link>

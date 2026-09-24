@@ -62,7 +62,7 @@ export async function POST(
       .eq('id', companyId)
       .single();
 
-    const companyName = company?.name || 'Backtide';
+    const companyName = company?.name || 'Vectra';
     const supplierName = rfq.suppliers.trading_name || rfq.suppliers.legal_name || 'Supplier';
     const opportunityTitle = rfq.opportunities?.title || '';
 
@@ -89,7 +89,7 @@ export async function POST(
         <table role="presentation" width="600" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
           <!-- Header -->
           <tr>
-            <td style="background: linear-gradient(135deg, #059669 0%, #10b981 100%); padding: 32px; text-align: center;">
+            <td style="background: linear-gradient(135deg, #3A3A3A 0%, #000000 100%); padding: 32px; text-align: center;">
               <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">
                 ${companyName}
               </h1>
@@ -110,7 +110,7 @@ export async function POST(
               </p>
 
               ${opportunityTitle ? `
-              <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
+              <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin-bottom: 20px;">
                 <p style="margin: 0 0 4px; color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Opportunity</p>
                 <p style="margin: 0; color: #111827; font-size: 16px; font-weight: 600;">${opportunityTitle}</p>
               </div>` : ''}
@@ -150,7 +150,7 @@ export async function POST(
                 ${companyName}
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                This RFQ was sent via Backtide
+                This RFQ was sent via Vectra
               </p>
             </td>
           </tr>

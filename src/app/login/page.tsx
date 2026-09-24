@@ -71,14 +71,9 @@ export default function LoginPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <span
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white transition-transform duration-200 group-hover:scale-105"
-              style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)', fontSize: 13 }}
-            >
-              BT
-            </span>
+            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-9 w-9 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105" />
             <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-              Backtide
+              Vectra
             </span>
           </Link>
           <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-5">{t('Sign in', '登入')}</h1>

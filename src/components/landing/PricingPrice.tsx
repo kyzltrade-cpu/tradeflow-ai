@@ -22,19 +22,19 @@ export default function PricingPrice({ monthly, annual, period = '/mo' }: Pricin
         >
           {price}
         </span>
-        <span className="text-sm" style={{ color: '#626260' }}>
+        <span className="text-sm" style={{ color: '#555555' }}>
           {period}
         </span>
         <span
           className="ml-auto text-[11px] font-semibold px-2.5 py-1 rounded-full"
-          style={{ background: '#E6F4F0', color: '#0A6E5C', border: '1px solid #B8DDD3' }}
+          style={{ background: '#F4F4F4', color: '#000', border: '1px solid #E0E0E0' }}
         >
           {mode === 'monthly' ? 'Save 20% annually' : 'HK$3,792 saved / yr'}
         </span>
       </div>
       <div
         className="mt-5 inline-flex items-center rounded-full p-1"
-        style={{ background: '#F1FAF7', border: '1px solid #B8DDD3' }}
+        style={{ background: '#FAFAFA', border: '1px solid #E0E0E0' }}
       >
         {(['monthly', 'annual'] as const).map((m) => (
           <button
@@ -42,8 +42,8 @@ export default function PricingPrice({ monthly, annual, period = '/mo' }: Pricin
             type="button"
             onClick={() => setMode(m)}
             aria-pressed={mode === m}
-            className="rounded-full px-3.5 py-1 text-[11px] font-semibold transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6E5C]/40"
-            style={mode === m ? { background: '#0A6E5C', color: '#fff' } : { color: '#0A6E5C' }}
+            className="rounded-full px-3.5 py-1 text-[11px] font-semibold transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+            style={mode === m ? { background: '#000', color: '#fff' } : { color: '#555' }}
           >
             {m === 'monthly' ? 'Monthly' : 'Annual'}
           </button>

@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  /* Landing: warm cream + teal */
-  --bg: #FAF9F6;
+  /* Landing: paper white + mono ink */
+  --bg: #FFFFFF;
   --surface: #FFFFFF;
-  --text: #111111;
-  --text-muted: #626260;
-  --border: #E8E5E1;
-  --accent: #0A6E5C;
-  --accent-hover: #085A4A;
-  --accent-light: #E8F5F1;
-  --success: #038153;
-  --error: #CC3340;
-  --warning: #AD5918;
+  --text: #0A0A0A;
+  --text-muted: #555555;
+  --border: #E5E5E5;
+  --accent: #000000;
+  --accent-hover: #1A1A1A;
+  --accent-light: #F4F4F4;
+  --success: #1C7A4D;
+  --error: #B42318;
+  --warning: #B54708;
 
   /* Motion */
   --dur-instant: 100ms;
@@ -24,14 +24,14 @@
   --ease-snappy: cubic-bezier(0.5, 0, 0, 1);
 
   /* Brand-tinted hairline + neutral data panels */
-  --hairline: color-mix(in srgb, var(--accent) 20%, var(--border));
-  --panel-bg: #F6F9F7;
-  --panel-border: #E2EAE6;
-  --panel-text: #4F5E59;
+  --hairline: #EDEDED;
+  --panel-bg: #FAFAFA;
+  --panel-border: #ECECEC;
+  --panel-text: #555555;
 
   /* Refined layered shadows */
-  --shadow-card: 0 1px 2px rgba(17, 17, 17, 0.03), 0 16px 40px -32px rgba(17, 17, 17, 0.08);
-  --shadow-float: 0 24px 60px -28px rgba(10, 110, 92, 0.25);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 40px -32px rgba(0, 0, 0, 0.10);
+  --shadow-float: 0 24px 60px -28px rgba(0, 0, 0, 0.28);
 }
 
 @theme inline {
@@ -67,14 +67,14 @@ body {
 
 /* Dashboard mode */
 .dashboard-mode {
-  --bg: #F8FAFD;
+  --bg: #FFFFFF;
   --surface: #FFFFFF;
-  --text: #061B31;
-  --text-muted: #50617A;
-  --border: #E5EDF5;
-  --accent: #2563EB;
-  --accent-hover: #1D4ED8;
-  --accent-light: #EFF6FF;
+  --text: #0A0A0A;
+  --text-muted: #555555;
+  --border: #E7E7E7;
+  --accent: #000000;
+  --accent-hover: #1A1A1A;
+  --accent-light: #F4F4F4;
 }
 
 /* Dashboard utility classes */
@@ -159,7 +159,7 @@ body {
   transition-duration: var(--dur-instant);
 }
 
-/* Landing: crafted primary CTA (teal gradient + inset bevel + lift) */
+/* Landing: crafted primary CTA (black + inset bevel + lift) */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -169,11 +169,11 @@ body {
   font-size: 14px;
   font-weight: 500;
   color: #fff;
-  background-image: linear-gradient(180deg, #0F8070 0%, #0A6E5C 45%, #075346 100%);
+  background-image: linear-gradient(180deg, #1A1A1A 0%, #000 55%, #000 100%);
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.22),
-    inset 0 -2px 0 0 #085a4a,
-    0 1px 2px rgba(17, 17, 17, 0.08);
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.8),
+    0 1px 2px rgba(0, 0, 0, 0.10);
   transition:
     transform var(--dur-fast) var(--ease-snappy),
     box-shadow var(--dur-normal) var(--ease-out),
@@ -181,19 +181,19 @@ body {
 }
 .btn-primary:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
+  filter: brightness(1.15);
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.3),
-    inset 0 -2px 0 0 #085a4a,
-    0 10px 24px -12px rgba(10, 110, 92, 0.55);
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
+    inset 0 -2px 0 0 rgba(0, 0, 0, 0.8),
+    0 10px 24px -12px rgba(0, 0, 0, 0.5);
 }
 .btn-primary:active {
   transform: translateY(0) scale(0.99);
-  filter: brightness(0.98);
+  filter: brightness(0.95);
   transition-duration: var(--dur-instant);
   box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.16),
-    inset 0 -1px 0 0 #085a4a;
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 0 rgba(0, 0, 0, 0.8);
 }
 
 /* Landing: quiet hairline secondary */
@@ -205,9 +205,9 @@ body {
   border-radius: 10px;
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
-  border: 1px solid #D9D7CB;
-  background: transparent;
+  color: #111;
+  border: 1px solid #DFDFDF;
+  background: #fff;
   transition:
     background-color var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
@@ -215,10 +215,10 @@ body {
     box-shadow var(--dur-normal) var(--ease-out);
 }
 .btn-ghost:hover {
-  background: rgba(17, 17, 17, 0.035);
-  border-color: #CCC8BA;
+  background: #F6F6F6;
+  border-color: #C9C9C9;
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px -10px rgba(17, 17, 17, 0.18);
+  box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.20);
 }
 .btn-ghost:active {
   transform: translateY(0) scale(0.99);
@@ -230,9 +230,9 @@ body {
 }
 
 .badge-success {
-  background: #ECFDF5;
+  background: #F2F7F4;
   color: var(--success);
-  border: 1px solid #A7F3D0;
+  border: 1px solid #CFDFD5;
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 12px;
@@ -240,9 +240,9 @@ body {
 }
 
 .badge-error {
-  background: #FEF2F2;
+  background: #FBF1F0;
   color: var(--error);
-  border: 1px solid #FECACA;
+  border: 1px solid #F0D5D2;
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 12px;
@@ -250,13 +250,21 @@ body {
 }
 
 .badge-warning {
-  background: #FFFBEB;
+  background: #FBF6ED;
   color: var(--warning);
-  border: 1px solid #FDE68A;
+  border: 1px solid #EFE3CC;
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 12px;
   font-weight: 500;
+}
+
+/* Ops-data mono chip (de-templated industrial texture) */
+.btk-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  tab-size: 4;
 }
 
 /* Focus rings */
@@ -395,7 +403,7 @@ html {
   left: 0; right: 0; bottom: -5px;
   height: 2px;
   border-radius: 999px;
-  background: #0A6E5C;
+  background: #000;
   transform: scaleX(0);
   transform-origin: left;
   transition: transform 0.25s var(--ease-out);
@@ -414,14 +422,14 @@ html {
   font-weight: 600;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #0A6E5C;
+  color: #000;
 }
 .btk-kicker::before,
 .btk-kicker::after {
   content: "";
   width: 1.75rem;
   height: 1px;
-  background: color-mix(in srgb, #0A6E5C 45%, transparent);
+  background: #C9C9C9;
 }
 
 /* Landing: breathing radial backdrops (hero + pricing ambient glows) */
