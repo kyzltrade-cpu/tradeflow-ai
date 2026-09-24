@@ -636,7 +636,7 @@ export default function LandingPage() {
       <footer className="py-14 px-6 border-t" style={{ borderColor: '#E5E5E5' }}>
         <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-2.5 mb-3">
+            <div className="flex items-center gap-1.5 mb-3">
               <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-8 w-8 rounded object-cover" />
               <span className="text-sm font-semibold" style={{ color: '#0A0A0A' }}>Sailwise</span>
             </div>

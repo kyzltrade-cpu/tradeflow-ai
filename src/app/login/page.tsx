@@ -70,7 +70,7 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 group">
+          <Link href="/" className="inline-flex items-center gap-1.5 group">
             <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-16 w-16 rounded-2xl object-cover transition-transform duration-200 group-hover:scale-105" />
             <span className="text-[24px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
               Sailwise

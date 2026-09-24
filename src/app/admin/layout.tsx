@@ -174,7 +174,7 @@ function Sidebar({
         }}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center gap-2 border-b px-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex h-16 items-center gap-1.5 border-b px-4" style={{ borderColor: 'var(--border)' }}>
           <Link
             href="/"
             className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg"
