@@ -312,18 +312,6 @@ export default function SupportChat() {
         onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
       >
         {open ? <X className="w-6 h-6 text-white" /> : <MessageCircleQuestion className="w-6 h-6 text-white" />}
-        {!open && (
-          <>
-            <span
-              aria-hidden="true"
-              className="absolute -inset-1 rounded-full btk-strobe"
-              style={{ boxShadow: '0 0 0 2px rgba(255,255,255,0.95), 0 0 22px 6px rgba(255,255,255,0.75)' }}
-            />
-            <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
-              <span className="relative inline-flex rounded-full h-3.5 w-3.5 border-2 border-white" style={{ background: '#fff' }} />
-            </span>
-          </>
-        )}
       </button>
     </>
   );

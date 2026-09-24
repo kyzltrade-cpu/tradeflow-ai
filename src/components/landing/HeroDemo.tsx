@@ -272,9 +272,9 @@ export default function HeroDemo() {
   return (
     <div className="max-w-4xl mx-auto rounded-2xl border p-5 md:p-7 text-left btk-anim-rise" style={{ background: '#fff', borderColor: '#E5E5E5', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.85), 0 1px 2px rgba(0,0,0,0.05), 0 24px 60px -30px rgba(0,0,0,0.18)' }}>
       <div className="flex items-center gap-2 mb-5 select-none">
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#E0E0E0' }} />
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#D6D6D6' }} />
-        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#CFCFCF' }} />
+        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FF5F57' }} />
+        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FEBC2E' }} />
+        <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#28C840' }} />
         <span className="ml-3 text-xs font-semibold" style={{ color: '#0A0A0A' }}>Vectra</span>
         <span className="hidden sm:inline text-[11px]" style={{ color: '#9A9A9A' }}>· Pacific Trading inbox</span>
         <span className="ml-auto flex items-center gap-2">
@@ -311,15 +311,6 @@ export default function HeroDemo() {
               <span className="flex items-center gap-2">
                 <Icon className="w-3.5 h-3.5 shrink-0" />
                 <span className="hidden sm:inline">{s.label}</span>
-              </span>
-              <span className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: active ? `${s.accent}26` : 'transparent' }}>
-                {active && autoplaying && (
-                  <span
-                    key={`progress-${stage}`}
-                    className="block h-full rounded-full"
-                    style={{ background: s.accent, animation: `btk-progress ${SCENE_DURATION}ms linear forwards` }}
-                  />
-                )}
               </span>
             </button>
           );

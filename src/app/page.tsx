@@ -518,14 +518,12 @@ export default function LandingPage() {
           </Reveal>
           <Reveal className="max-w-[440px] mx-auto">
             <div
-              className="relative flex h-full flex-col p-8 rounded-2xl text-left transition-all duration-300 md:hover:-translate-y-1"
+              className="relative flex h-full flex-col p-8 rounded-2xl text-left transition-all duration-300 md:hover:-translate-y-1 btk-card-hover"
               style={{
                 background: '#fff',
                 border: '1.5px solid #000',
-                boxShadow: '0 24px 60px -24px rgba(0,0,0,0.35), inset 0 1px 0 0 rgba(255,255,255,0.9)',
               }}
             >
-              <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl" style={{ background: 'linear-gradient(90deg, #000, #444)' }} />
               <div className="flex items-center justify-between">
                 <div className="text-base font-semibold" style={{ color: '#0A0A0A' }}>{PLANS[0].name}</div>
                 <span className="btk-mono text-[10px] font-semibold px-2 py-1 rounded-full border" style={{ color: '#8A8A8A', borderColor: '#E0E0E0' }}>one plan · everything included</span>
