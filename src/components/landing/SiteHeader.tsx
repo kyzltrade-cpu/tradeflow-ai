@@ -75,7 +75,7 @@ export default function SiteHeader() {
           style={{ height: scrolled ? 64 : 76 }}
         >
           <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group">
-            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-12 w-12 sm:h-14 sm:w-14 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
+            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-14 w-14 rounded object-cover transition-transform duration-200 group-hover:scale-105 translate-y-[2px] sm:translate-y-0" />
             <span className="text-xl font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
               Sailwise
             </span>
