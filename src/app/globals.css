@@ -402,6 +402,10 @@ html {
   pointer-events: none;
 }
 
+/* Smooth animated scrolling for in-page anchor nav (fixed-header offset) */
+html { scroll-behavior: smooth; }
+section[id] { scroll-margin-top: 84px; }
+
 .btk-nav-link {
   position: relative;
   transition: color 0.15s ease;

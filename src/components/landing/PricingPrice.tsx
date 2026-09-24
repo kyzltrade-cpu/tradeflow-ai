@@ -27,7 +27,7 @@ export default function PricingPrice({ monthly, annual, period = '/mo' }: Pricin
         </span>
         <span
           className="ml-auto text-[11px] font-semibold px-2.5 py-1 rounded-full"
-          style={{ background: '#F4F4F4', color: '#000', border: '1px solid #E0E0E0' }}
+          style={{ background: mode === 'monthly' ? '#F4F4F4' : '#0A0A0A', color: mode === 'monthly' ? '#000' : '#fff', border: `1px solid ${mode === 'monthly' ? '#E0E0E0' : '#0A0A0A'}` }}
         >
           {mode === 'monthly' ? 'Save 20% annually' : 'HK$3,792 saved / yr'}
         </span>

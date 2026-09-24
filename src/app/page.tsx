@@ -526,15 +526,19 @@ export default function LandingPage() {
               }}
             >
               <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl" style={{ background: 'linear-gradient(90deg, #000, #444)' }} />
-              <div className="text-base font-semibold" style={{ color: '#0A0A0A' }}>{PLANS[0].name}</div>
+              <div className="flex items-center justify-between">
+                <div className="text-base font-semibold" style={{ color: '#0A0A0A' }}>{PLANS[0].name}</div>
+                <span className="btk-mono text-[10px] font-semibold px-2 py-1 rounded-full border" style={{ color: '#8A8A8A', borderColor: '#E0E0E0' }}>one plan · everything included</span>
+              </div>
               <PricingPrice monthly={PLANS[0].price} annual="HK$1,264" period={PLANS[0].period} />
+              <div className="h-px bg-black/10 mb-4" />
               <p className="btk-mono text-[10px] mb-4 text-left" style={{ color: '#8A8A8A' }}>
                 What&apos;s included
               </p>
-              <ul className="space-y-3 mb-8 flex-1">
+              <ul className="space-y-3 mb-2 flex-1">
                 {PLANS[0].features.map((f) => (
                   <li key={f} className="flex items-start gap-2.5 text-sm leading-snug" style={{ color: '#333333' }}>
-                    <span className="w-5 h-5 mt-px rounded-full flex items-center justify-center shrink-0" style={{ background: '#F4F4F4', color: '#000' }}>
+                    <span className="w-5 h-5 mt-px rounded-full flex items-center justify-center shrink-0" style={{ background: '#0A0A0A', color: '#fff' }}>
                       <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
@@ -543,10 +547,15 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/signup" className="group/cta btn-primary w-full py-3.5">
-                Start Free Trial
-                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
-              </Link>
+              <div className="pt-5 border-t border-black/10">
+                <Link href="/signup" className="group/cta btn-primary w-full py-3.5">
+                  Start Free Trial
+                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
+                </Link>
+                <p className="text-center mt-3 text-[11px]" style={{ color: '#8A8A8A' }}>
+                  No credit card required · 14-day free trial · Cancel anytime
+                </p>
+              </div>
             </div>
           </Reveal>
           <p className="text-xs mt-10" style={{ color: '#555555' }}>

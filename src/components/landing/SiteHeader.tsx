@@ -44,6 +44,15 @@ export default function SiteHeader() {
     return () => observer.disconnect();
   }, []);
 
+  const scrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    const el = document.querySelector(href);
+    if (!el) return;
+    e.preventDefault();
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(null, '', href);
+    setActive(href);
+  };
+
   return (
     <>
       <div
@@ -77,6 +86,7 @@ export default function SiteHeader() {
               <a
                 key={l.href}
                 href={l.href}
+                onClick={(e) => scrollTo(e, l.href)}
                 className={`btk-nav-link ${active === l.href ? 'is-active' : ''}`}
                 style={{ color: active === l.href ? '#000' : '#555555' }}
               >
