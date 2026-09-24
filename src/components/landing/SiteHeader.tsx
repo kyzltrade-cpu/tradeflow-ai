@@ -14,7 +14,6 @@ export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
   const [active, setActive] = useState<string>('');
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
@@ -49,7 +48,6 @@ export default function SiteHeader() {
     const el = document.querySelector(href);
     if (!el) return;
     e.preventDefault();
-    setMenuOpen(false);
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     history.replaceState(null, '', href);
     setActive(href);
@@ -73,23 +71,23 @@ export default function SiteHeader() {
         }}
       >
         <div
-          className="max-w-7xl mx-auto px-5 sm:px-6 grid grid-cols-[1fr_auto_1fr] items-center transition-all duration-200"
+          className="max-w-7xl mx-auto px-5 sm:px-6 flex items-center justify-between transition-all duration-200"
           style={{ height: scrolled ? 64 : 76 }}
         >
-          <Link href="/" className="justify-self-start flex items-center gap-2 sm:gap-3 group">
+          <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group">
             <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-12 w-12 sm:h-14 sm:w-14 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
-            <span className="hidden sm:inline text-xl font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
+            <span className="text-xl font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
               Sailwise
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center justify-center gap-8 text-sm font-medium">
+          <div className="hidden md:flex flex-1 items-center justify-center gap-8 text-sm font-medium px-6">
             {LINKS.map((l) => (
               <a
                 key={l.href}
                 href={l.href}
                 onClick={(e) => scrollTo(e, l.href)}
-                className={`btk-nav-link ${active === l.href ? 'is-active' : ''}`}
+                className={`btk-nav-link whitespace-nowrap ${active === l.href ? 'is-active' : ''}`}
                 style={{ color: active === l.href ? '#000' : '#555555' }}
               >
                 {l.label}
@@ -97,65 +95,15 @@ export default function SiteHeader() {
             ))}
           </div>
 
-          <div className="justify-self-end flex items-center gap-2.5 sm:gap-3">
+          <div className="shrink-0">
             <Link
               href="/signup"
               className="text-sm font-semibold px-4 py-2.5 sm:px-5 sm:py-2.5 rounded-lg btn-primary"
             >
               Start Free
             </Link>
-            <button
-              type="button"
-              aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={menuOpen}
-              onClick={() => setMenuOpen((o) => !o)}
-              className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg border transition-colors hover:bg-black/[0.04]"
-              style={{ borderColor: '#E0E0E0' }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round">
-                {menuOpen ? (
-                  <>
-                    <path d="M6 6l12 12" />
-                    <path d="M18 6L6 18" />
-                  </>
-                ) : (
-                  <>
-                    <path d="M4 7h16" />
-                    <path d="M4 12h16" />
-                    <path d="M4 17h16" />
-                  </>
-                )}
-              </svg>
-            </button>
           </div>
         </div>
-
-        {menuOpen && (
-          <div
-            className="md:hidden border-t px-5 py-5 space-y-1.5 backdrop-blur-md"
-            style={{ borderColor: '#E7E7E7', background: scrolled ? 'rgba(255,255,255,0.97)' : 'rgba(255,255,255,0.95)' }}
-          >
-            {LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={(e) => scrollTo(e, l.href)}
-                className={`block px-4 py-3 rounded-lg text-[15px] font-medium transition-colors hover:bg-black/[0.04] ${active === l.href ? 'bg-black/[0.04]' : ''}`}
-                style={{ color: active === l.href ? '#000' : '#333333' }}
-              >
-                {l.label}
-              </a>
-            ))}
-            <Link
-              href="/login"
-              onClick={() => setMenuOpen(false)}
-              className="block px-4 py-3 rounded-lg text-[15px] font-medium hover:bg-black/[0.04]"
-              style={{ color: '#555555', borderTop: '1px solid #EDEDED' }}
-            >
-              Log in
-            </Link>
-          </div>
-        )}
       </nav>
     </>
   );
