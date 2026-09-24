@@ -71,8 +71,8 @@ export default function LoginPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <img src="/brand/backtide-mark.png" alt="Backtide" className="h-9 w-9 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105" />
-            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
+            <img src="/brand/backtide-mark.png" alt="Backtide" className="h-16 w-16 rounded-2xl object-cover transition-transform duration-200 group-hover:scale-105" />
+            <span className="text-[24px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
               Backtide
             </span>
           </Link>
