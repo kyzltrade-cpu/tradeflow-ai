@@ -518,7 +518,7 @@ export default function LandingPage() {
           </Reveal>
           <Reveal className="max-w-[440px] mx-auto">
             <div
-              className="relative flex h-full flex-col p-8 rounded-2xl text-left transition-all duration-300 md:hover:-translate-y-1 btk-card-hover"
+              className="relative flex h-full flex-col p-8 rounded-2xl text-left transition-all duration-300 md:hover:-translate-y-2 btk-card-hover"
               style={{
                 background: '#fff',
                 border: '1.5px solid #000',
