@@ -167,15 +167,14 @@ export default function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="pt-36 pb-20 px-6 relative overflow-hidden">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-32 -left-24 w-[480px] h-[480px] rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(10,110,92,0.10), rgba(10,110,92,0) 70%)', animation: 'btk-blob-a 14s ease-in-out infinite' }} />
-        <div aria-hidden="true" className="pointer-events-none absolute top-40 -right-32 w-[560px] h-[560px] rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(10,110,92,0.07), rgba(10,110,92,0) 70%)', animation: 'btk-blob-b 18s ease-in-out infinite' }} />
+        <div aria-hidden="true" className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[940px] h-[640px]" style={{ background: 'radial-gradient(50% 50% at 50% 28%, rgba(10,110,92,0.06), rgba(10,110,92,0) 70%)' }} />
         <div className="max-w-5xl mx-auto text-center relative">
           <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: '#E6F4F0', color: '#0A6E5C', borderColor: '#B8DDD3', animationDelay: '0ms' }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0A6E5C' }}></span>
             Built for HK &amp; SZ trading companies
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.08] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
             <span className="btk-anim-rise block" style={{ animationDelay: '90ms' }}>
               From inquiry to quote.
             </span>
@@ -190,20 +189,23 @@ export default function LandingPage() {
           </p>
 
           <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center gap-4 mb-16" style={{ animationDelay: '450ms' }}>
-            <Link href="/signup" className="group w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium text-white transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+            <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-3.5">
               Start Free Trial
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <Link href="#see-it-in-action" className="w-full sm:w-auto px-8 py-3.5 rounded-lg text-sm font-medium border transition-all hover:bg-black/[0.03] hover:-translate-y-0.5 active:translate-y-px" style={{ borderColor: '#D9D7CB', color: '#374151' }}>
+            <Link href="#see-it-in-action" className="btn-ghost w-full sm:w-auto px-8 py-3.5">
               See a Live Demo
             </Link>
           </div>
 
-          <div className="btk-anim-rise" style={{ animationDelay: '540ms' }}>
-            <HeroDemo />
+          <div className="relative">
+            <div aria-hidden="true" className="btk-anim-rise pointer-events-none absolute -inset-x-8 -inset-y-12 rounded-[40px]" style={{ background: 'linear-gradient(180deg, rgba(10,110,92,0.10), rgba(10,110,92,0.02) 40%, transparent 75%)', filter: 'blur(28px)', animationDelay: '560ms' }} />
+            <div className="btk-anim-rise relative" style={{ animationDelay: '560ms' }}>
+              <HeroDemo />
+            </div>
           </div>
 
-          <div className="mt-14 overflow-hidden" aria-hidden="true">
+          <div className="mt-14 overflow-hidden" aria-hidden="true" style={{ maskImage: 'linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent)', WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent)' }}>
             <div className="flex gap-3 text-xs font-semibold uppercase tracking-[0.2em] whitespace-nowrap btk-marquee" style={{ color: '#B0ADA8' }}>
               {[0, 1].map((n) => (
                 <div key={n} className="flex shrink-0 items-center gap-3 pr-3">
@@ -224,6 +226,7 @@ export default function LandingPage() {
       <section id="features" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-16">
+            <p className="btk-kicker mb-5">01 · The pipeline</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Everything you need. Nothing you don&apos;t.
             </h2>
@@ -236,7 +239,8 @@ export default function LandingPage() {
               const Icon = f.icon;
               return (
                 <Reveal key={f.title} delay={(i % 3) * 90}>
-                  <div className="group h-full p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30 hover:shadow-[0_24px_48px_-28px_rgba(10,110,92,0.25)]" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+                  <div className="group relative h-full p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30 hover:shadow-[0_24px_48px_-28px_rgba(10,110,92,0.25)]" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: 'var(--shadow-card)' }}>
+                    <span className="absolute top-6 right-6 text-[11px] font-semibold tabular-nums" style={{ color: '#CCC8BA' }}>{String(i + 1).padStart(2, '0')}</span>
                     <div className="flex items-center gap-3.5 mb-4">
                       <span className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
                         <Icon className="w-5 h-5" />
@@ -244,7 +248,7 @@ export default function LandingPage() {
                       <h3 className="text-lg font-bold">{f.title}</h3>
                     </div>
                     <p className="text-sm leading-relaxed mb-4" style={{ color: '#626260' }}>{f.desc}</p>
-                    <p className="text-xs leading-relaxed px-4 py-3 rounded-lg border" style={{ background: '#F8FAFD', color: '#50617A', borderColor: '#E5EDF5' }}>{f.detail}</p>
+                    <p className="text-xs leading-relaxed px-4 py-3 rounded-lg border" style={{ background: 'var(--panel-bg)', color: 'var(--panel-text)', borderColor: 'var(--panel-border)' }}>{f.detail}</p>
                   </div>
                 </Reveal>
               );
@@ -257,6 +261,7 @@ export default function LandingPage() {
       <section className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-6xl mx-auto">
           <Reveal className="text-center mb-14">
+            <p className="btk-kicker mb-5">02 · Built-in control</p>
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-3" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               AI does the legwork. You stay in control.
             </h2>
@@ -269,7 +274,7 @@ export default function LandingPage() {
               const Icon = f.icon;
               return (
                 <Reveal key={f.title} delay={i * 90}>
-                  <div className="h-full rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+                  <div className="h-full rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30 hover:shadow-[0_16px_32px_-24px_rgba(10,110,92,0.3)]" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
                     <span className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
                       <Icon className="w-5 h-5" />
                     </span>
@@ -287,6 +292,7 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
           <Reveal className="text-center mb-16">
+            <p className="btk-kicker mb-5">03 · The workflow</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               From inquiry to quote in 4 steps
             </h2>
@@ -314,6 +320,7 @@ export default function LandingPage() {
       <section id="see-it-in-action" className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-5xl mx-auto">
           <Reveal className="text-center mb-16">
+            <p className="btk-kicker mb-5">04 · Product demo</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               See it in action
             </h2>
@@ -424,6 +431,7 @@ export default function LandingPage() {
         <div aria-hidden="true" className="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 w-[820px] h-[460px] rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(10,110,92,0.09), rgba(10,110,92,0) 70%)' }} />
         <div className="max-w-4xl mx-auto text-center relative">
           <Reveal>
+            <p className="btk-kicker mb-5">05 · Pricing</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Simple, transparent pricing
             </h2>
@@ -437,14 +445,15 @@ export default function LandingPage() {
               style={{
                 background: '#fff',
                 border: '1.5px solid #0A6E5C',
-                boxShadow: '0 24px 60px -24px rgba(10,110,92,0.45)',
+                boxShadow: '0 24px 60px -24px rgba(10,110,92,0.45), inset 0 1px 0 0 rgba(255,255,255,0.9)',
               }}
             >
+              <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl" style={{ background: 'linear-gradient(90deg, #0A6E5C, #1B8F74)' }} />
               <div className="text-base font-semibold" style={{ color: '#111' }}>{PLANS[0].name}</div>
               <div className="flex items-baseline gap-1.5 mt-1 mb-6">
                 <span className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{PLANS[0].price}</span>
                 <span className="text-sm" style={{ color: '#626260' }}>{PLANS[0].period}</span>
-                <span className="ml-auto text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: '#F8FAFD', color: '#50617A', border: '1px solid #E5EDF5' }}>
+                <span className="ml-auto text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: '#E6F4F0', color: '#0A6E5C', border: '1px solid #B8DDD3' }}>
                   Save 20% annually
                 </span>
               </div>
@@ -463,7 +472,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/signup" className="group/cta w-full text-center py-3 rounded-lg text-sm font-medium transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', color: '#fff', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+              <Link href="/signup" className="group/cta btn-primary w-full py-3.5">
                 Start Free Trial
                 <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
               </Link>
@@ -489,6 +498,7 @@ export default function LandingPage() {
       <section className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-3xl mx-auto">
           <Reveal className="text-center mb-16">
+            <p className="btk-kicker mb-5">06 · FAQ</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Questions, answered
             </h2>
@@ -530,11 +540,11 @@ export default function LandingPage() {
             Backtide helps trading companies in HK, Shenzhen, and beyond quote faster and win more deals.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup" className="group w-full sm:w-auto px-8 py-4 rounded-lg text-sm font-medium text-white transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99] inline-flex items-center justify-center gap-2" style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}>
+            <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-4">
               Get Started Free
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <Link href="/login" className="w-full sm:w-auto px-8 py-4 rounded-lg text-sm font-medium border transition-all hover:bg-black/[0.03] hover:-translate-y-0.5" style={{ borderColor: '#D9D7CB', color: '#374151' }}>
+            <Link href="/login" className="btn-ghost w-full sm:w-auto px-8 py-4">
               Book a Demo
             </Link>
           </div>

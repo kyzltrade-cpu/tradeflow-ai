@@ -270,7 +270,7 @@ export default function HeroDemo() {
   const autoplaying = !reduceMotion.current && !paused && !interacting;
 
   return (
-    <div className="max-w-4xl mx-auto rounded-2xl border p-5 md:p-7 text-left btk-anim-rise" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: '0 24px 60px -30px rgba(10,110,92,0.18)' }}>
+    <div className="max-w-4xl mx-auto rounded-2xl border p-5 md:p-7 text-left btk-anim-rise" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.85), 0 1px 2px rgba(17,17,17,0.04), 0 24px 60px -30px rgba(10,110,92,0.18)' }}>
       <div className="flex items-center gap-2 mb-5 select-none">
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#F1A7A0' }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#F2D68F' }} />

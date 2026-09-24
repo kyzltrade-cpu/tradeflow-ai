@@ -100,8 +100,7 @@ export default function SiteHeader() {
             </Link>
             <Link
               href="/signup"
-              className="text-sm font-semibold px-5 py-2.5 rounded-lg text-white transition-all hover:-translate-y-0.5 active:translate-y-px active:scale-[0.99]"
-              style={{ background: '#0A6E5C', boxShadow: 'inset 0 -2px 0 0 #085a4a' }}
+              className="text-sm font-semibold px-5 py-2.5 rounded-lg btn-primary"
             >
               Start Free
             </Link>
