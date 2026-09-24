@@ -74,9 +74,9 @@ export default function SiteHeader() {
           className="max-w-7xl mx-auto px-6 grid grid-cols-[1fr_auto_1fr] items-center transition-all duration-200"
           style={{ height: scrolled ? 52 : 64 }}
         >
-          <Link href="/" className="justify-self-start flex items-center gap-1.5 group">
-            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-10 w-10 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
-            <span className="text-base font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
+          <Link href="/" className="justify-self-start flex items-center gap-2 group">
+            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-12 w-12 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
+            <span className="text-lg font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
               Sailwise
             </span>
           </Link>
@@ -95,17 +95,17 @@ export default function SiteHeader() {
             ))}
           </div>
 
-          <div className="justify-self-end flex items-center gap-3">
+          <div className="justify-self-end flex items-center gap-2 sm:gap-3">
             <Link
               href="/login"
-              className="text-sm font-medium px-4 py-2 rounded-lg transition-colors hover:bg-black/[0.04]"
+              className="hidden sm:inline-block text-sm font-medium px-3 py-2 rounded-lg transition-colors hover:bg-black/[0.04]"
               style={{ color: '#555555' }}
             >
               Log in
             </Link>
             <Link
               href="/signup"
-              className="text-sm font-semibold px-5 py-2.5 rounded-lg btn-primary"
+              className="text-sm font-semibold px-4 py-2 sm:px-5 sm:py-2.5 rounded-lg btn-primary"
             >
               Start Free
             </Link>
