@@ -13,7 +13,7 @@ export default function PrivacyPage() {
         <div className="max-w-[1200px] mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
             <Link href="/" className="text-[17px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-              Backtide
+              Sailwise
             </Link>
           </div>
           <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export default function PrivacyPage() {
         {/* Footer */}
         <div className="mt-16 pt-6 border-t flex items-center justify-between text-[13px]" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
           <Link href="/" className="hover:opacity-70">{t('Back to home', '返回首頁')}</Link>
-          <span>© 2026 Backtide</span>
+          <span>© 2026 Sailwise</span>
         </div>
       </div>
     </div>

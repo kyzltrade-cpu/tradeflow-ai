@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     // Fetch the website
     const response = await fetch(parsedUrl.toString(), {
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; BacktideBot/1.0)',
+        'User-Agent': 'Mozilla/5.0 (compatible; SailwiseBot/1.0)',
         'Accept': 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(15000),

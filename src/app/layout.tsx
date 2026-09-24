@@ -25,12 +25,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Backtide — Inquiry to Quote, End to End",
+  title: "Sailwise — Inquiry to Quote, End to End",
   description: "AI copilot for trading companies. Extract specs, batch RFQ suppliers, compare landed costs, and draft cited quotes — in hours, not days.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Backtide",
+    title: "Sailwise",
   },
 };
 

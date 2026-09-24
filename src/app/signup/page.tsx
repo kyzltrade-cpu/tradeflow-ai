@@ -47,8 +47,8 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
         <div className="w-full max-w-[400px] text-center">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <img src="/brand/backtide-mark.png" alt="Backtide" className="h-9 w-9 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105" />
-            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>Backtide</span>
+            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-9 w-9 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105" />
+            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>Sailwise</span>
           </Link>
           <div className="mt-8 p-6 border rounded-lg" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
@@ -92,9 +92,9 @@ export default function SignupPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2.5 group">
-            <img src="/brand/backtide-mark.png" alt="Backtide" className="h-9 w-9 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105" />
+            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-9 w-9 rounded-lg object-cover transition-transform duration-200 group-hover:scale-105" />
             <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
-              Backtide
+              Sailwise
             </span>
           </Link>
           <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-5">{t('Create account', '建立帳戶')}</h1>

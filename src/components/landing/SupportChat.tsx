@@ -12,7 +12,7 @@ interface Msg {
 const WELCOME: Msg = {
   role: 'assistant',
   content:
-    "Hi! I'm the Backtide support assistant. Ask me anything about the product, pricing, or getting started — I reply in your language.",
+    "Hi! I'm the Sailwise support assistant. Ask me anything about the product, pricing, or getting started — I reply in your language.",
 };
 
 const QUICK_QUESTIONS = [
@@ -133,7 +133,7 @@ export default function SupportChat() {
       {open && (
         <div
           role="dialog"
-          aria-label="Backtide support chat"
+          aria-label="Sailwise support chat"
           className="btk-anim-rise fixed flex flex-col rounded-[20px] border z-40 overflow-hidden"
           style={{
             left: 'max(1.25rem, env(safe-area-inset-left))',
@@ -154,7 +154,7 @@ export default function SupportChat() {
               <MessageCircleQuestion className="w-5 h-5" />
             </span>
             <div className="min-w-0">
-              <div className="text-sm font-bold" style={{ color: '#0A0A0A' }}>Backtide support</div>
+              <div className="text-sm font-bold" style={{ color: '#0A0A0A' }}>Sailwise support</div>
               <div className="flex items-center gap-1.5 text-xs" style={{ color: '#555555' }}>
                 <span className="relative flex w-2 h-2">
                   <span className="absolute inline-flex h-full w-full rounded-full animate-ping opacity-60" style={{ background: '#1C7A4D' }} />
@@ -256,7 +256,7 @@ export default function SupportChat() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask about Backtide…"
+                placeholder="Ask about Sailwise…"
                 aria-label="Message"
                 autoComplete="off"
                 className="flex-1 min-w-0 px-3.5 py-2.5 text-sm rounded-xl border outline-none"

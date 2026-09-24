@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useLang } from '@/lib/lang';
 
 type PricingPriceProps = {
   monthly: string;
@@ -9,12 +10,13 @@ type PricingPriceProps = {
 };
 
 export default function PricingPrice({ monthly, annual, period = '/mo' }: PricingPriceProps) {
+  const { t } = useLang();
   const [mode, setMode] = useState<'monthly' | 'annual'>('monthly');
   const price = mode === 'monthly' ? monthly : annual;
 
   return (
     <div className="mt-1 mb-6">
-      <div className="flex items-baseline gap-1.5">
+      <div className="flex items-baseline gap-2">
         <span
           key={mode}
           className="btk-anim-fade-down inline-block text-4xl font-bold tracking-tight tabular-nums"
@@ -25,29 +27,31 @@ export default function PricingPrice({ monthly, annual, period = '/mo' }: Pricin
         <span className="text-sm" style={{ color: '#555555' }}>
           {period}
         </span>
-        <span
-          className="ml-auto text-[11px] font-semibold px-2.5 py-1 rounded-full"
-          style={{ background: mode === 'monthly' ? '#F4F4F4' : '#0A0A0A', color: mode === 'monthly' ? '#000' : '#fff', border: `1px solid ${mode === 'monthly' ? '#E0E0E0' : '#0A0A0A'}` }}
-        >
-          {mode === 'monthly' ? 'Save 20% annually' : 'HK$3,792 saved / yr'}
-        </span>
       </div>
-      <div
-        className="mt-5 inline-flex items-center rounded-full p-1"
-        style={{ background: '#FAFAFA', border: '1px solid #E0E0E0' }}
-      >
-        {(['monthly', 'annual'] as const).map((m) => (
-          <button
-            key={m}
-            type="button"
-            onClick={() => setMode(m)}
-            aria-pressed={mode === m}
-            className="rounded-full px-3.5 py-1 text-[11px] font-semibold transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
-            style={mode === m ? { background: '#000', color: '#fff' } : { color: '#555' }}
-          >
-            {m === 'monthly' ? 'Monthly' : 'Annual'}
-          </button>
-        ))}
+      <div className="mt-5 flex items-center gap-3">
+        <div
+          className="inline-flex items-center rounded-full p-1"
+          style={{ background: '#FAFAFA', border: '1px solid #E0E0E0' }}
+        >
+          {(['monthly', 'annual'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => setMode(m)}
+              aria-pressed={mode === m}
+              className="rounded-full px-3.5 py-1 text-[11px] font-semibold transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+              style={mode === m ? { background: '#000', color: '#fff' } : { color: '#555' }}
+            >
+              {m === 'monthly' ? 'Monthly' : 'Annual'}
+            </button>
+          ))}
+        </div>
+        <span
+          className="hidden sm:inline text-[12px] font-medium tabular-nums transition-colors duration-300"
+          style={{ color: mode === 'annual' ? 'var(--accent)' : '#9A9A9A' }}
+        >
+          {mode === 'monthly' ? t('Save 20% with annual', '年繳可慳 20%') : 'HK$3,792 saved / yr'}
+        </span>
       </div>
     </div>
   );

@@ -179,7 +179,7 @@ function Sidebar({
             href="/"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
           >
-            <img src="/brand/backtide-mark.png" alt="Backtide" className="h-10 w-10 rounded-lg object-cover" />
+            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-10 w-10 rounded-lg object-cover" />
           </Link>
           {!collapsed && (
             <Link
@@ -187,7 +187,7 @@ function Sidebar({
               className="text-[15px] font-semibold"
               style={{ color: 'var(--text)' }}
             >
-              Backtide
+              Sailwise
             </Link>
           )}
         </div>
@@ -328,7 +328,7 @@ function AdminShell({ children }: { children: ReactNode }) {
         <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
           <div className="w-full max-w-[400px] text-center">
             <div className="mb-6">
-              <img src="/brand/backtide-mark.png" alt="Backtide" className="h-10 mx-auto rounded-lg" />
+              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-10 mx-auto rounded-lg" />
             </div>
             <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#D1FAE5' }}>
@@ -349,7 +349,7 @@ function AdminShell({ children }: { children: ReactNode }) {
         <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
           <div className="w-full max-w-[400px] text-center">
             <div className="mb-6">
-              <img src="/brand/backtide-mark.png" alt="Backtide" className="h-10 mx-auto rounded-lg" />
+              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-10 mx-auto rounded-lg" />
             </div>
             <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#FEF3C7' }}>

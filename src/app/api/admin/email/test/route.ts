@@ -24,12 +24,12 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         from: `${from_name} <${from_email}>`,
         to: [to_email],
-        subject: 'Backtide — Test Email',
+        subject: 'Sailwise — Test Email',
         html: `
           <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 24px;">
-            <h2 style="color: #1a1a1a;">Backtide Email Integration</h2>
+            <h2 style="color: #1a1a1a;">Sailwise Email Integration</h2>
             <p style="color: #666;">Your email integration is working correctly. You will receive quotes, follow-ups, and invoices at this address.</p>
-            <p style="color: #666;">— The Backtide Team</p>
+            <p style="color: #666;">— The Sailwise Team</p>
           </div>
         `,
       }),

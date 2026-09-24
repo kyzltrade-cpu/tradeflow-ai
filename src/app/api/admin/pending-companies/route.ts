@@ -89,12 +89,12 @@ export async function POST(req: NextRequest) {
 
           if (owner?.email) {
             await resend.emails.send({
-              from: 'Backtide <onboarding@resend.dev>',
+              from: 'Sailwise <onboarding@resend.dev>',
               to: owner.email,
               replyTo: 'tradeflow.hk@gmail.com',
-              subject: 'Your Backtide account has been approved!',
+              subject: 'Your Sailwise account has been approved!',
               html: `
-                <h2>Welcome to Backtide!</h2>
+                <h2>Welcome to Sailwise!</h2>
                 <p>Your account has been approved. You can now access your dashboard and start setting up your AI assistant.</p>
                 <p><a href="https://tradeflow-ai-rho.vercel.app/admin" style="background:#000;color:white;padding:12px 24px;text-decoration:none;border-radius:4px;">Go to Dashboard</a></p>
                 <p>Need help? Reply to this email or contact tradeflow.hk@gmail.com</p>

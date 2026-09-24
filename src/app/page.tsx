@@ -28,7 +28,7 @@ const CORE_FEATURES = [
     span: 'lg:col-span-4',
     wide: true,
     title: 'Email + WhatsApp inbox',
-    desc: 'An inquiry lands in the channel the customer uses — email or WhatsApp — and Backtide drives it through the whole sourcing pipeline from there.',
+    desc: 'An inquiry lands in the channel the customer uses — email or WhatsApp — and Sailwise drives it through the whole sourcing pipeline from there.',
     detail: 'No new software for your team, customers, or suppliers to learn. Supports English, Chinese, and mixed-language threads.',
   },
   {
@@ -146,15 +146,15 @@ const PLANS = [
 const FAQS = [
   {
     q: 'Does it work with the email I already use?',
-    a: 'Yes. Backtide works over your existing mailbox — an inquiry can arrive from a customer or be added in one click. There is no new software for your team, your customers, or your suppliers to learn.',
+    a: 'Yes. Sailwise works over your existing mailbox — an inquiry can arrive from a customer or be added in one click. There is no new software for your team, your customers, or your suppliers to learn.',
   },
   {
     q: 'Does it work with WhatsApp?',
-    a: 'Yes. Backtide works over email and WhatsApp, depending on what the customer or supplier prefers. Specs are extracted the same way, and replies route back through the channel you choose — ideal for Shenzhen and mainland suppliers who live on WeChat and WhatsApp.',
+    a: 'Yes. Sailwise works over email and WhatsApp, depending on what the customer or supplier prefers. Specs are extracted the same way, and replies route back through the channel you choose — ideal for Shenzhen and mainland suppliers who live on WeChat and WhatsApp.',
   },
   {
     q: 'Can it handle Chinese and mixed-language emails?',
-    a: 'Backtide extracts specs from English, Simplified Chinese, Traditional Chinese, and mixed-language threads — common in HK and SZ trade.',
+    a: 'Sailwise extracts specs from English, Simplified Chinese, Traditional Chinese, and mixed-language threads — common in HK and SZ trade.',
   },
   {
     q: 'What happens when a spec is missing?',
@@ -166,7 +166,7 @@ const FAQS = [
   },
   {
     q: 'Why not just use ChatGPT or a generic AI add-on?',
-    a: 'Backtide is a pipeline, not a chat window. It ties each step to your data — your products, suppliers, margins, and FX rates — and keeps a human approving every outbound message. A generic chatbot can write a reply; it can\'t RFQ your suppliers, compare landed costs, or draft a quote you can trace.',
+    a: 'Sailwise is a pipeline, not a chat window. It ties each step to your data — your products, suppliers, margins, and FX rates — and keeps a human approving every outbound message. A generic chatbot can write a reply; it can\'t RFQ your suppliers, compare landed costs, or draft a quote you can trace.',
   },
   {
     q: 'Do I need to be technical to set it up?',
@@ -214,7 +214,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#555555', animationDelay: '330ms' }}>
-            Backtide is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, RFQs your suppliers, compares their responses with cited landed costs, and drafts a ready-to-send quote — in hours, not days.
+            Sailwise is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, RFQs your suppliers, compares their responses with cited landed costs, and drafts a ready-to-send quote — in hours, not days.
           </p>
 
           <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center gap-4 mb-16" style={{ animationDelay: '450ms' }}>
@@ -610,7 +610,7 @@ export default function LandingPage() {
       {/* ── Final CTA ── */}
       <section className="py-24 px-6 relative overflow-hidden">
         <div aria-hidden="true" className="btk-drift pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-bold leading-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#F4F4F4', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
-          Backtide
+          Sailwise
         </div>
         <Reveal className="relative max-w-3xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
@@ -618,7 +618,7 @@ export default function LandingPage() {
             <span style={{ color: '#000' }}>Start closing deals.</span>
           </h2>
           <p className="text-lg mb-10" style={{ color: '#555555' }}>
-            Backtide helps trading companies in HK, Shenzhen, and beyond quote faster and win more deals.
+            Sailwise helps trading companies in HK, Shenzhen, and beyond quote faster and win more deals.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-4">
@@ -637,13 +637,13 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2.5 mb-3">
-              <img src="/brand/backtide-mark.png" alt="Backtide" className="h-8 w-8 rounded object-cover" />
-              <span className="text-sm font-semibold" style={{ color: '#0A0A0A' }}>Backtide</span>
+              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-8 w-8 rounded object-cover" />
+              <span className="text-sm font-semibold" style={{ color: '#0A0A0A' }}>Sailwise</span>
             </div>
             <p className="text-sm max-w-[280px]" style={{ color: '#555555' }}>
               The AI copilot for HK and Shenzhen trading companies — inquiry to quote, end to end.
             </p>
-            <p className="text-xs mt-6" style={{ color: '#9A9A9A' }}>© 2026 Backtide. All rights reserved.</p>
+            <p className="text-xs mt-6" style={{ color: '#9A9A9A' }}>© 2026 Sailwise. All rights reserved.</p>
           </div>
           <div>
             <div className="btk-mono text-[10px] mb-4" style={{ color: '#8A8A8A' }}>Product</div>
