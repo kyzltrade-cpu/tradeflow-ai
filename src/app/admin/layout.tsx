@@ -174,12 +174,12 @@ function Sidebar({
         }}
       >
         {/* Logo */}
-        <div className="flex h-14 items-center gap-2.5 border-b px-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex h-14 items-center gap-1.5 border-b px-4" style={{ borderColor: 'var(--border)' }}>
           <Link
             href="/"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
           >
-            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-8 w-8 rounded-lg object-cover" />
+            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-10 w-10 rounded-lg object-cover" />
           </Link>
           {!collapsed && (
             <Link

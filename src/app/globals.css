@@ -384,6 +384,15 @@ html {
   animation: btk-chat-dot 1.2s var(--ease-out) infinite;
 }
 
+/* Support chat: strobing attention light on the launcher */
+@keyframes btk-strobe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.12; }
+}
+.btk-strobe {
+  animation: btk-strobe 0.5s steps(1, end) infinite;
+}
+
 /* Appshell: slim progress bar shown at the very top of the viewport */
 .btk-scroll-progress {
   position: fixed;
@@ -470,7 +479,7 @@ html {
     scroll-behavior: auto !important;
   }
   .btk-marquee, .btk-anim-rise, .btk-anim-rise-sm, .btk-anim-fade-down, .btk-chat-dot,
-  .btk-breathe, .btk-drift, .btk-flow-track {
+  .btk-breathe, .btk-drift, .btk-flow-track, .btk-strobe {
     animation: none;
   }
 }

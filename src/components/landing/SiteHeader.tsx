@@ -65,8 +65,8 @@ export default function SiteHeader() {
           className="max-w-7xl mx-auto px-6 grid grid-cols-[1fr_auto_1fr] items-center transition-all duration-200"
           style={{ height: scrolled ? 52 : 64 }}
         >
-          <Link href="/" className="justify-self-start flex items-center gap-2.5 group">
-            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-8 w-8 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
+          <Link href="/" className="justify-self-start flex items-center gap-1.5 group">
+            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-10 w-10 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
             <span className="text-base font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
               Vectra
             </span>

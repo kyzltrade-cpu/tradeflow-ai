@@ -300,7 +300,7 @@ export default function SupportChat() {
         aria-expanded={open}
         className="fixed flex items-center justify-center z-40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
         style={{
-          left: 'max(1.25rem, env(safe-area-inset-left))',
+          right: 'max(1.25rem, env(safe-area-inset-right))',
           bottom: 'max(1.25rem, env(safe-area-inset-bottom))',
           width: 58,
           height: 58,
@@ -313,10 +313,16 @@ export default function SupportChat() {
       >
         {open ? <X className="w-6 h-6 text-white" /> : <MessageCircleQuestion className="w-6 h-6 text-white" />}
         {!open && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
-            <span className="absolute inline-flex h-full w-full rounded-full animate-ping opacity-60" style={{ background: '#1C7A4D' }} />
-            <span className="relative inline-flex rounded-full h-3.5 w-3.5 border-2 border-white" style={{ background: '#1C7A4D' }} />
-          </span>
+          <>
+            <span
+              aria-hidden="true"
+              className="absolute -inset-1 rounded-full btk-strobe"
+              style={{ boxShadow: '0 0 0 2px rgba(255,255,255,0.95), 0 0 22px 6px rgba(255,255,255,0.75)' }}
+            />
+            <span className="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5">
+              <span className="relative inline-flex rounded-full h-3.5 w-3.5 border-2 border-white" style={{ background: '#fff' }} />
+            </span>
+          </>
         )}
       </button>
     </>

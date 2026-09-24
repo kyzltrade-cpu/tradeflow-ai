@@ -17,10 +17,10 @@ import {
 } from 'lucide-react';
 
 const STAGES = [
-  { key: 'inquiry', label: 'Inquiry', icon: Inbox },
-  { key: 'clarify', label: 'Clarify', icon: MessageCircle },
-  { key: 'rfq', label: 'RFQ', icon: Users },
-  { key: 'quote', label: 'Quote', icon: Quote },
+  { key: 'inquiry', label: 'Inquiry', icon: Inbox, accent: '#F59E0B' },
+  { key: 'clarify', label: 'Clarify', icon: MessageCircle, accent: '#2563EB' },
+  { key: 'rfq', label: 'RFQ', icon: Users, accent: '#7C3AED' },
+  { key: 'quote', label: 'Quote', icon: Quote, accent: '#059669' },
 ];
 
 const SCENE_DURATION = 5200;
@@ -304,20 +304,20 @@ export default function HeroDemo() {
               aria-label={`Show ${s.label} step`}
               className="flex flex-col items-center gap-1 rounded-xl px-2 pt-2.5 pb-1.5 text-xs font-semibold cursor-pointer transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
               style={{
-                background: active ? '#F4F4F4' : 'transparent',
-                color: active ? '#000' : '#9A9A9A',
+                background: active ? `${s.accent}14` : 'transparent',
+                color: active ? s.accent : '#9A9A9A',
               }}
             >
               <span className="flex items-center gap-2">
                 <Icon className="w-3.5 h-3.5 shrink-0" />
                 <span className="hidden sm:inline">{s.label}</span>
               </span>
-              <span className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: active ? 'rgba(0,0,0,0.12)' : 'transparent' }}>
+              <span className="h-0.5 w-full rounded-full overflow-hidden" style={{ background: active ? `${s.accent}26` : 'transparent' }}>
                 {active && autoplaying && (
                   <span
                     key={`progress-${stage}`}
                     className="block h-full rounded-full"
-                    style={{ background: '#000', animation: `btk-progress ${SCENE_DURATION}ms linear forwards` }}
+                    style={{ background: s.accent, animation: `btk-progress ${SCENE_DURATION}ms linear forwards` }}
                   />
                 )}
               </span>
