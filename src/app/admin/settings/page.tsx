@@ -194,69 +194,6 @@ export default function SettingsPage() {
             </div>
             <OAuthConnections />
           </div>
-
-          {/* Stripe */}
-          <div className="border rounded-[4px] p-4" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#635BFF' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-7.076-2.19L3.36 21.8C5.573 22.926 8.621 24 12.21 24c2.63 0 4.789-.657 6.293-1.878 1.686-1.36 2.498-3.327 2.498-5.735 0-4.17-2.508-5.85-7.024-7.237z"/></svg>
-              </div>
-              <div>
-                <p className="text-[13px] font-medium">Stripe</p>
-                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Billing & Payments</p>
-              </div>
-            </div>
-            <p className="text-[12px] mb-2" style={{ color: 'var(--text-muted)' }}>
-              {t('Manage subscriptions and process payments', '管理訂閱及處理付款')}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: '#D1FAE5', color: '#059669' }}>
-                {t('Active', '啟用中')}
-              </span>
-            </div>
-          </div>
-
-          {/* Exa Search */}
-          <div className="border rounded-[4px] p-4" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#10B981' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              </div>
-              <div>
-                <p className="text-[13px] font-medium">Exa Search</p>
-                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>AI-powered web search</p>
-              </div>
-            </div>
-            <p className="text-[12px] mb-2" style={{ color: 'var(--text-muted)' }}>
-              {t('Search the web for supplier and product information', '搜尋網絡上的供應商和產品資訊')}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: '#D1FAE5', color: '#059669' }}>
-                {t('Configured', '已配置')}
-              </span>
-            </div>
-          </div>
-
-          {/* NVIDIA NIM */}
-          <div className="border rounded-[4px] p-4" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: '#76B900' }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-              </div>
-              <div>
-                <p className="text-[13px] font-medium">NVIDIA NIM</p>
-                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>Llama 3.1 8B Instruct</p>
-              </div>
-            </div>
-            <p className="text-[12px] mb-2" style={{ color: 'var(--text-muted)' }}>
-              {t('AI inference for chat and extraction', '用於聊天和提取的 AI 推理')}
-            </p>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: '#D1FAE5', color: '#059669' }}>
-                {t('Active', '啟用中')}
-              </span>
-            </div>
-          </div>
         </div>
       </section>
 

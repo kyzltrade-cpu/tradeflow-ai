@@ -138,16 +138,14 @@ export default function OAuthConnections() {
     );
   }
 
-  const redirectUri = `${typeof window !== 'undefined' ? window.location.origin : ''}/api/admin/connections/callback`;
-
   return (
     <div className="space-y-3">
-      {dbError && (
+      {dbError && status?.configured && (status.configured.google || status.configured.microsoft) && (
         <div
           className="text-[12px] rounded-[4px] px-3 py-2"
           style={{ background: 'rgba(239,68,68,0.08)', color: 'var(--error, #ef4444)' }}
         >
-          {t('Connection storage is temporarily unavailable. Contact support.', '連接儲存暫時不可用，請聯絡支援。')}
+          {t('Syncing connections is temporarily unavailable — please try again later.', '暫時無法同步連接 — 請稍後再試。')}
         </div>
       )}
 
@@ -181,8 +179,8 @@ export default function OAuthConnections() {
                   {busy === provider ? '…' : t('Disconnect', '中斷連接')}
                 </button>
               ) : !configured ? (
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: '#FFF7E6', color: '#B45309' }}>
-                  {t('Setup needed', '需要設定')}
+                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: '#F3F4F6', color: '#6B7280' }}>
+                  {t('Coming soon', '即將推出')}
                 </span>
               ) : (
                 <button
@@ -216,13 +214,6 @@ export default function OAuthConnections() {
                   {testBusy === provider ? '…' : t('Send Test', '發送測試')}
                 </button>
               </div>
-            )}
-
-            {!configured && (
-              <p className="text-[11px] mt-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                {t('Admin must register this redirect URI in the provider console:', '管理員需要在此返迴圈中登記此重定向 URI：')}{' '}
-                <code className="font-mono">{redirectUri}</code>
-              </p>
             )}
           </div>
         );
