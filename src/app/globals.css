@@ -367,6 +367,15 @@ html {
 
 .btk-anim-fade-down { animation: btk-fade-down 0.5s var(--ease-out) backwards; }
 
+/* Support chat: typing indicator */
+@keyframes btk-chat-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-3px); opacity: 1; }
+}
+.btk-chat-dot {
+  animation: btk-chat-dot 1.2s var(--ease-out) infinite;
+}
+
 /* Appshell: slim progress bar shown at the very top of the viewport */
 .btk-scroll-progress {
   position: fixed;
@@ -415,6 +424,35 @@ html {
   background: color-mix(in srgb, #0A6E5C 45%, transparent);
 }
 
+/* Landing: breathing radial backdrops (hero + pricing ambient glows) */
+@keyframes btk-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.06); opacity: 1; }
+}
+.btk-breathe {
+  animation: btk-breathe 9s var(--ease-out) infinite;
+}
+
+/* Landing: drifting ghost numerals / ghost word (keeps the centered -translate-y-1/2) */
+@keyframes btk-drift {
+  0%, 100% { transform: translateY(-50%) translateX(0); }
+  50% { transform: translateY(-50%) translateX(12px); }
+}
+.btk-drift {
+  animation: btk-drift 12s var(--ease-out) infinite;
+}
+
+/* Landing: pipeline flow dot (how-it-works connector) */
+@keyframes btk-flow {
+  0% { left: 0%; opacity: 0; }
+  8% { opacity: 1; }
+  92% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+.btk-flow-track {
+  animation: btk-flow 5.5s var(--ease-out) infinite;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -423,7 +461,8 @@ html {
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
-  .btk-marquee, .btk-anim-rise, .btk-anim-rise-sm, .btk-anim-fade-down {
+  .btk-marquee, .btk-anim-rise, .btk-anim-rise-sm, .btk-anim-fade-down, .btk-chat-dot,
+  .btk-breathe, .btk-drift, .btk-flow-track {
     animation: none;
   }
 }

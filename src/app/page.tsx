@@ -15,6 +15,9 @@ import {
 import Reveal from '@/components/landing/Reveal';
 import HeroDemo from '@/components/landing/HeroDemo';
 import SiteHeader from '@/components/landing/SiteHeader';
+import GlowCard from '@/components/landing/GlowCard';
+import MouseGlow from '@/components/landing/MouseGlow';
+import PricingPrice from '@/components/landing/PricingPrice';
 
 /* ── The pipeline: the core loop the product runs ───────────────────────── */
 
@@ -163,11 +166,12 @@ const FAQS = [
 export default function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: '#FAF9F6', color: '#111' }}>
+      <MouseGlow />
       <SiteHeader />
 
       {/* ── Hero ── */}
       <section className="pt-36 pb-20 px-6 relative overflow-hidden">
-        <div aria-hidden="true" className="pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[940px] h-[640px]" style={{ background: 'radial-gradient(50% 50% at 50% 28%, rgba(10,110,92,0.06), rgba(10,110,92,0) 70%)' }} />
+        <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 w-[940px] h-[640px]" style={{ marginLeft: -470, background: 'radial-gradient(50% 50% at 50% 28%, rgba(10,110,92,0.06), rgba(10,110,92,0) 70%)' }} />
         <div className="max-w-5xl mx-auto text-center relative">
           <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: '#E6F4F0', color: '#0A6E5C', borderColor: '#B8DDD3', animationDelay: '0ms' }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#0A6E5C' }}></span>
@@ -199,9 +203,11 @@ export default function LandingPage() {
           </div>
 
           <div className="relative">
-            <div aria-hidden="true" className="btk-anim-rise pointer-events-none absolute -inset-x-8 -inset-y-12 rounded-[40px]" style={{ background: 'linear-gradient(180deg, rgba(10,110,92,0.10), rgba(10,110,92,0.02) 40%, transparent 75%)', filter: 'blur(28px)', animationDelay: '560ms' }} />
+            <div aria-hidden="true" className="btk-breathe pointer-events-none absolute -inset-x-8 -inset-y-12 rounded-[40px]" style={{ background: 'linear-gradient(180deg, rgba(10,110,92,0.10), rgba(10,110,92,0.02) 40%, transparent 75%)', filter: 'blur(28px)' }} />
             <div className="btk-anim-rise relative" style={{ animationDelay: '560ms' }}>
-              <HeroDemo />
+              <GlowCard className="rounded-2xl">
+                <HeroDemo />
+              </GlowCard>
             </div>
           </div>
 
@@ -225,7 +231,10 @@ export default function LandingPage() {
       {/* ── Features: the pipeline ── */}
       <section id="features" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
-          <Reveal className="text-center mb-16">
+          <Reveal className="relative text-center mb-16">
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(10,110,92,0.055)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+              01
+            </div>
             <p className="btk-kicker mb-5">01 · The pipeline</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Everything you need. Nothing you don&apos;t.
@@ -239,7 +248,7 @@ export default function LandingPage() {
               const Icon = f.icon;
               return (
                 <Reveal key={f.title} delay={(i % 3) * 90}>
-                  <div className="group relative h-full p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30 hover:shadow-[0_24px_48px_-28px_rgba(10,110,92,0.25)]" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: 'var(--shadow-card)' }}>
+                  <GlowCard className="group relative h-full p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30 hover:shadow-[0_24px_48px_-28px_rgba(10,110,92,0.25)]" style={{ background: '#fff', borderColor: '#E8E5E1', boxShadow: 'var(--shadow-card)' }}>
                     <span className="absolute top-6 right-6 text-[11px] font-semibold tabular-nums" style={{ color: '#CCC8BA' }}>{String(i + 1).padStart(2, '0')}</span>
                     <div className="flex items-center gap-3.5 mb-4">
                       <span className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-300 group-hover:scale-105" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
@@ -249,7 +258,7 @@ export default function LandingPage() {
                     </div>
                     <p className="text-sm leading-relaxed mb-4" style={{ color: '#626260' }}>{f.desc}</p>
                     <p className="text-xs leading-relaxed px-4 py-3 rounded-lg border" style={{ background: 'var(--panel-bg)', color: 'var(--panel-text)', borderColor: 'var(--panel-border)' }}>{f.detail}</p>
-                  </div>
+                  </GlowCard>
                 </Reveal>
               );
             })}
@@ -260,7 +269,10 @@ export default function LandingPage() {
       {/* ── You stay in control ── */}
       <section className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-6xl mx-auto">
-          <Reveal className="text-center mb-14">
+          <Reveal className="relative text-center mb-14">
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(10,110,92,0.055)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+              02
+            </div>
             <p className="btk-kicker mb-5">02 · Built-in control</p>
             <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-3" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               AI does the legwork. You stay in control.
@@ -274,13 +286,13 @@ export default function LandingPage() {
               const Icon = f.icon;
               return (
                 <Reveal key={f.title} delay={i * 90}>
-                  <div className="h-full rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30 hover:shadow-[0_16px_32px_-24px_rgba(10,110,92,0.3)]" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+                  <GlowCard className="h-full rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30 hover:shadow-[0_16px_32px_-24px_rgba(10,110,92,0.3)]" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
                     <span className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: '#E6F4F0', color: '#0A6E5C' }}>
                       <Icon className="w-5 h-5" />
                     </span>
                     <h3 className="text-base font-bold mb-1.5">{f.title}</h3>
                     <p className="text-sm leading-relaxed" style={{ color: '#626260' }}>{f.desc}</p>
-                  </div>
+                  </GlowCard>
                 </Reveal>
               );
             })}
@@ -291,7 +303,10 @@ export default function LandingPage() {
       {/* ── How It Works ── */}
       <section id="how-it-works" className="py-24 px-6">
         <div className="max-w-5xl mx-auto">
-          <Reveal className="text-center mb-16">
+          <Reveal className="relative text-center mb-16">
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(10,110,92,0.055)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+              03
+            </div>
             <p className="btk-kicker mb-5">03 · The workflow</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               From inquiry to quote in 4 steps
@@ -300,7 +315,10 @@ export default function LandingPage() {
               The whole sourcing pipeline, with you approving every message.
             </p>
           </Reveal>
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="relative">
+            <div aria-hidden="true" className="pointer-events-none hidden md:block absolute left-[12.5%] right-[12.5%] top-7 h-px" style={{ background: 'linear-gradient(90deg, transparent, rgba(10,110,92,0.35) 20%, rgba(10,110,92,0.35) 80%, transparent)' }} />
+            <span aria-hidden="true" className="btk-flow-track pointer-events-none hidden md:block absolute top-7 w-2 h-2 -ml-1 rounded-full" style={{ background: '#0A6E5C', boxShadow: '0 0 12px 2px rgba(10,110,92,0.35)' }} />
+            <div className="grid md:grid-cols-4 gap-8">
             {STEPS.map((s, i) => (
               <Reveal key={s.num} delay={i * 110}>
                 <div className="group text-center">
@@ -312,6 +330,7 @@ export default function LandingPage() {
                 </div>
               </Reveal>
             ))}
+            </div>
           </div>
         </div>
       </section>
@@ -319,7 +338,10 @@ export default function LandingPage() {
       {/* ── See It In Action ── */}
       <section id="see-it-in-action" className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-5xl mx-auto">
-          <Reveal className="text-center mb-16">
+          <Reveal className="relative text-center mb-16">
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(10,110,92,0.055)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+              04
+            </div>
             <p className="btk-kicker mb-5">04 · Product demo</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               See it in action
@@ -331,7 +353,7 @@ export default function LandingPage() {
 
           <div className="space-y-6">
             <Reveal>
-            <div className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+            <GlowCard className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#0A6E5C' }}>1</div>
                 <div>
@@ -343,11 +365,11 @@ export default function LandingPage() {
                 <div className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#9CA3AF' }}>From: Sarah Chen</div>
                 Hi, we need 10,000 pcs of 500ml stainless steel vacuum bottles for a corporate order. Please quote with logo printing and your best lead time. Preference for double-wall, 304 food grade. We also need a sample before mass production. Thank you!
               </div>
-            </div>
+            </GlowCard>
             </Reveal>
 
             <Reveal delay={120}>
-            <div className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+            <GlowCard className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#0A6E5C' }}>2</div>
                 <div>
@@ -374,11 +396,11 @@ export default function LandingPage() {
                   </ul>
                 </div>
               </div>
-            </div>
+            </GlowCard>
             </Reveal>
 
             <Reveal delay={240}>
-            <div className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
+            <GlowCard className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-teal-600/30" style={{ background: '#fff', borderColor: '#E8E5E1' }}>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#0A6E5C' }}>3</div>
                 <div>
@@ -420,7 +442,7 @@ export default function LandingPage() {
               <p className="text-sm mt-4" style={{ color: '#626260' }}>
                 You review, adjust, approve. The quote goes out in your voice, with your margins intact.
               </p>
-            </div>
+            </GlowCard>
             </Reveal>
           </div>
         </div>
@@ -428,9 +450,12 @@ export default function LandingPage() {
 
       {/* ── Pricing ── */}
       <section id="pricing" className="py-24 px-6 relative overflow-hidden">
-        <div aria-hidden="true" className="pointer-events-none absolute -top-48 left-1/2 -translate-x-1/2 w-[820px] h-[460px] rounded-full" style={{ background: 'radial-gradient(closest-side, rgba(10,110,92,0.09), rgba(10,110,92,0) 70%)' }} />
+        <div aria-hidden="true" className="btk-breathe pointer-events-none absolute -top-48 left-1/2 w-[820px] h-[460px] rounded-full" style={{ marginLeft: -410, background: 'radial-gradient(closest-side, rgba(10,110,92,0.09), rgba(10,110,92,0) 70%)' }} />
         <div className="max-w-4xl mx-auto text-center relative">
-          <Reveal>
+          <Reveal className="relative text-center">
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(10,110,92,0.055)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+              05
+            </div>
             <p className="btk-kicker mb-5">05 · Pricing</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Simple, transparent pricing
@@ -450,13 +475,7 @@ export default function LandingPage() {
             >
               <span aria-hidden="true" className="absolute inset-x-0 top-0 h-[3px] rounded-t-2xl" style={{ background: 'linear-gradient(90deg, #0A6E5C, #1B8F74)' }} />
               <div className="text-base font-semibold" style={{ color: '#111' }}>{PLANS[0].name}</div>
-              <div className="flex items-baseline gap-1.5 mt-1 mb-6">
-                <span className="text-4xl font-bold tracking-tight" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>{PLANS[0].price}</span>
-                <span className="text-sm" style={{ color: '#626260' }}>{PLANS[0].period}</span>
-                <span className="ml-auto text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: '#E6F4F0', color: '#0A6E5C', border: '1px solid #B8DDD3' }}>
-                  Save 20% annually
-                </span>
-              </div>
+              <PricingPrice monthly={PLANS[0].price} annual="HK$1,264" period={PLANS[0].period} />
               <p className="text-[11px] uppercase tracking-wider font-semibold mb-4 text-left" style={{ color: '#9CA3AF' }}>
                 What&apos;s included
               </p>
@@ -497,7 +516,10 @@ export default function LandingPage() {
       {/* ── FAQ ── */}
       <section className="py-24 px-6" style={{ background: '#F8FAFD' }}>
         <div className="max-w-3xl mx-auto">
-          <Reveal className="text-center mb-16">
+          <Reveal className="relative text-center mb-16">
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(10,110,92,0.055)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+              06
+            </div>
             <p className="btk-kicker mb-5">06 · FAQ</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Questions, answered
@@ -528,7 +550,7 @@ export default function LandingPage() {
 
       {/* ── Final CTA ── */}
       <section className="py-24 px-6 relative overflow-hidden">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-bold leading-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#F1EFE9', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
+        <div aria-hidden="true" className="btk-drift pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-bold leading-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#F1EFE9', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
           Backtide
         </div>
         <Reveal className="relative max-w-3xl mx-auto text-center">
