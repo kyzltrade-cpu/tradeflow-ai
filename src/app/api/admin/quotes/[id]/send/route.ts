@@ -155,7 +155,7 @@ export async function POST(
       updatedAt: quote.updated_at,
     };
 
-    const companyName = company?.name || 'Vectra';
+    const companyName = company?.name || 'Backtide';
     const companyLogoUrl = null;
 
     const emailHtml = generateQuoteHTML(quoteObj, { id: companyId, name: companyName, logoUrl: companyLogoUrl }, lineItems);

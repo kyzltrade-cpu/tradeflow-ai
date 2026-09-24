@@ -16,19 +16,19 @@ function getStripe() {
 
 const TIERS = {
   starter: {
-    name: 'Vectra Starter',
+    name: 'Backtide Starter',
     description: '1 WhatsApp number · 1,000 AI conversations/mo',
     monthly: 158000, // HKD HK$1,580.00
     annual: 126400, // HKD HK$1,264.00/mo (20% off)
   },
   growth: {
-    name: 'Vectra Growth',
+    name: 'Backtide Growth',
     description: '3 WhatsApp numbers · 5,000 AI conversations/mo · WeChat',
     monthly: 248000, // HKD HK$2,480.00
     annual: 155400, // HKD HK$1,554.00/mo (20% off)
   },
   enterprise: {
-    name: 'Vectra Enterprise',
+    name: 'Backtide Enterprise',
     description: 'Unlimited WhatsApp · Unlimited AI · Dedicated manager',
     monthly: 467200, // HKD HK$4,672.00
     annual: 373800, // HKD HK$3,738.00/mo (20% off)

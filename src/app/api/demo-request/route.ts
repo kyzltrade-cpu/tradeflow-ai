@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     if (resend) {
       try {
         await resend.emails.send({
-          from: 'Vectra Demo Requests <onboarding@resend.dev>',
+          from: 'Backtide Demo Requests <onboarding@resend.dev>',
           to: ADMIN_EMAIL,
           replyTo: email,
           subject: `[Demo Request] ${company} - ${name}`,
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
               </tr>
             </table>
             <p style="margin-top: 16px;">
-              <a href="mailto:${email}?subject=Re: Vectra Demo Request" style="background:#000;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;">Reply to ${name}</a>
+              <a href="mailto:${email}?subject=Re: Backtide Demo Request" style="background:#000;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;">Reply to ${name}</a>
             </p>
           `,
         });

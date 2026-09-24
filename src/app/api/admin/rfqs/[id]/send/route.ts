@@ -62,7 +62,7 @@ export async function POST(
       .eq('id', companyId)
       .single();
 
-    const companyName = company?.name || 'Vectra';
+    const companyName = company?.name || 'Backtide';
     const supplierName = rfq.suppliers.trading_name || rfq.suppliers.legal_name || 'Supplier';
     const opportunityTitle = rfq.opportunities?.title || '';
 
@@ -150,7 +150,7 @@ export async function POST(
                 ${companyName}
               </p>
               <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                This RFQ was sent via Vectra
+                This RFQ was sent via Backtide
               </p>
             </td>
           </tr>

@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const provider = body.provider as OAuthProvider | undefined;
     const to = String(body.to || '').trim();
-    const subject = String(body.subject || 'Test email from Vectra').trim();
+    const subject = String(body.subject || 'Test email from Backtide').trim();
     const text = String(body.text || 'This is a test email sent from your connected inbox.').trim();
 
     if (!provider || !PROVIDERS[provider]) {

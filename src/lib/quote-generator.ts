@@ -889,13 +889,13 @@ export async function createQuoteVersion(
   // Get current max version
   const { data: existingVersions } = await supabaseAdmin
     .from("quote_versions")
-    .select("version")
+    .select("version_number")
     .eq("quote_id", quoteId)
-    .order("version", { ascending: false })
+    .order("version_number", { ascending: false })
     .limit(1);
 
   const nextVersion = existingVersions && existingVersions.length > 0
-    ? existingVersions[0].version + 1
+    ? existingVersions[0].version_number + 1
     : 1;
 
   // Create version snapshot
@@ -904,9 +904,10 @@ export async function createQuoteVersion(
     .insert({
       id: generateId(),
       quote_id: quoteId,
-      version: nextVersion,
+      company_id: quote.company_id,
+      version_number: nextVersion,
       snapshot: quote,
-      change_notes: changeSummary,
+      change_summary: changeSummary,
       created_at: nowISO(),
     });
 
@@ -918,7 +919,7 @@ export async function createQuoteVersion(
   await supabaseAdmin
     .from("quotes")
     .update({
-      version: nextVersion,
+      current_version: nextVersion,
       updated_at: nowISO(),
     })
     .eq("id", quoteId);

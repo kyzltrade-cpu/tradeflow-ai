@@ -268,10 +268,10 @@ export default function OnboardingPage() {
           {step === 'welcome' && (
             <div>
               <h1 className="text-[28px] font-semibold tracking-[-0.8px] mb-3">
-                {t('Get started with Vectra', '開始使用 Vectra')}
+                {t('Get started with Backtide', '開始使用 Backtide')}
               </h1>
               <p className="text-[15px] leading-[1.6] mb-8" style={{ color: 'var(--text-muted)' }}>
-                {t('Your AI copilot for trading companies. An inquiry lands in your inbox and Vectra drives it through the whole sourcing pipeline — extract, clarify, RFQ, quote.', '您的貿易公司 AI 副駕駛。詢盤進入您的收件匣後，Vectra 將它推進整個採購流程 — 抽取、澄清、RFQ、報價。')}
+                {t('Your AI copilot for trading companies. An inquiry lands in your inbox and Backtide drives it through the whole sourcing pipeline — extract, clarify, RFQ, quote.', '您的貿易公司 AI 副駕駛。詢盤進入您的收件匣後，Backtide 將它推進整個採購流程 — 抽取、澄清、RFQ、報價。')}
               </p>
               <div className="space-y-3 mb-8">
                 <div className="flex items-center gap-3 text-[14px]">

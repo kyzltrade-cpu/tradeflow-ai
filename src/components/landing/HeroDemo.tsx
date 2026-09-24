@@ -275,7 +275,7 @@ export default function HeroDemo() {
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FF5F57' }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FEBC2E' }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#28C840' }} />
-        <span className="ml-3 text-xs font-semibold" style={{ color: '#0A0A0A' }}>Vectra</span>
+        <span className="ml-3 text-xs font-semibold" style={{ color: '#0A0A0A' }}>Backtide</span>
         <span className="hidden sm:inline text-[11px]" style={{ color: '#9A9A9A' }}>· Pacific Trading inbox</span>
         <span className="ml-auto flex items-center gap-2">
           <button

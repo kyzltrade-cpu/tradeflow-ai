@@ -23,16 +23,16 @@ export async function GET(req: NextRequest) {
       .from('suppliers')
       .select('*', { count: 'exact' })
       .eq('company_id', companyId)
-      .order('name');
+      .order('legal_name');
 
     if (search) {
-      query = query.or(`name.ilike.%${search}%,country.ilike.%${search}%,contact_name.ilike.%${search}%`);
+      query = query.or(`legal_name.ilike.%${search}%,trading_name.ilike.%${search}%,location.ilike.%${search}%,contact_name.ilike.%${search}%`);
     }
 
     if (approved === 'true') {
-      query = query.eq('is_active', true);
+      query = query.eq('is_approved', true);
     } else if (approved === 'false') {
-      query = query.eq('is_active', false);
+      query = query.eq('is_approved', false);
     }
 
     const { data, error, count } = await query.range(offset, offset + limit - 1);
@@ -68,23 +68,24 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const {
       company_id,
-      name,
+      legal_name,
+      trading_name,
       contact_name,
-      email,
-      phone,
-      whatsapp_number,
-      wechat_id,
-      country,
-      specialties,
+      contact_email,
+      contact_phone,
+      contact_whatsapp,
+      contact_wechat,
+      location,
+      product_capabilities,
       certifications,
-      rating,
-      lead_time_days,
       payment_terms,
+      moq_notes,
+      typical_lead_time_days,
       notes,
     } = body;
 
-    if (!name) {
-      return NextResponse.json({ error: 'name required' }, { status: 400 });
+    if (!legal_name) {
+      return NextResponse.json({ error: 'legal_name required' }, { status: 400 });
     }
 
     const companyId = company_id || auth.companyId;
@@ -99,20 +100,21 @@ export async function POST(req: NextRequest) {
       .from('suppliers')
       .insert({
         company_id: companyId,
-        name,
+        legal_name,
+        trading_name: trading_name || null,
         contact_name: contact_name || null,
-        email: email || null,
-        phone: phone || null,
-        whatsapp_number: whatsapp_number || null,
-        wechat_id: wechat_id || null,
-        country: country || null,
-        specialties: specialties || [],
+        contact_email: contact_email || null,
+        contact_phone: contact_phone || null,
+        contact_whatsapp: contact_whatsapp || null,
+        contact_wechat: contact_wechat || null,
+        location: location || null,
+        product_capabilities: product_capabilities || [],
         certifications: certifications || [],
-        rating: rating || null,
-        lead_time_days: lead_time_days || null,
         payment_terms: payment_terms || null,
+        moq_notes: moq_notes || null,
+        typical_lead_time_days: typical_lead_time_days || null,
         notes: notes || null,
-        is_active: true,
+        is_approved: false,
       })
       .select()
       .single();

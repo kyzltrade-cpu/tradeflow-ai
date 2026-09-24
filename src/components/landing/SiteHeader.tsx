@@ -75,9 +75,9 @@ export default function SiteHeader() {
           style={{ height: scrolled ? 52 : 64 }}
         >
           <Link href="/" className="justify-self-start flex items-center gap-1.5 group">
-            <img src="/brand/vectra-mark.png" alt="Vectra" className="h-10 w-10 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
+            <img src="/brand/backtide-mark.png" alt="Backtide" className="h-10 w-10 rounded object-cover transition-transform duration-200 group-hover:scale-105" />
             <span className="text-base font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
-              Vectra
+              Backtide
             </span>
           </Link>
 

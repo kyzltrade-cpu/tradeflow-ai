@@ -97,9 +97,9 @@ export async function PUT(
     }
 
     const allowedFields = [
-      'name', 'contact_name', 'email', 'phone', 'whatsapp_number',
-      'wechat_id', 'country', 'specialties', 'certifications',
-      'rating', 'lead_time_days', 'payment_terms', 'notes', 'is_active',
+      'legal_name', 'trading_name', 'contact_name', 'contact_email', 'contact_phone',
+      'contact_whatsapp', 'contact_wechat', 'location', 'product_capabilities', 'certifications',
+      'payment_terms', 'moq_notes', 'typical_lead_time_days', 'notes', 'is_approved',
     ];
 
     const updates: Record<string, unknown> = {};
@@ -153,7 +153,7 @@ export async function DELETE(
 
     const { error } = await supabaseAdmin
       .from('suppliers')
-      .update({ is_active: false, updated_at: new Date().toISOString() })
+      .update({ deleted_at: new Date().toISOString() })
       .eq('id', id);
 
     if (error) {

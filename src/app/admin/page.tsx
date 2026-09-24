@@ -211,7 +211,7 @@ export default function AdminPage() {
           </div>
           <h2 className="text-[16px] font-semibold mb-1">{t('Connect your inbox to get started', '連接收件箱開始使用')}</h2>
           <p className="text-[13px] mb-5 max-w-[420px] mx-auto" style={{ color: 'var(--text-muted)' }}>
-            {t('Vectra needs a conversation channel before inquiries can arrive. Connect WhatsApp or an email, then upload your products.', 'Vectra 需要一個對話渠道才能接收查詢。請先連接 WhatsApp 或電郵，然後上載產品。')}
+            {t('Backtide needs a conversation channel before inquiries can arrive. Connect WhatsApp or an email, then upload your products.', 'Backtide 需要一個對話渠道才能接收查詢。請先連接 WhatsApp 或電郵，然後上載產品。')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/admin/settings" className="accent-btn inline-flex items-center justify-center">

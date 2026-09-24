@@ -25,12 +25,12 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Vectra — Inquiry to Quote, End to End",
+  title: "Backtide — Inquiry to Quote, End to End",
   description: "AI copilot for trading companies. Extract specs, batch RFQ suppliers, compare landed costs, and draft cited quotes — in hours, not days.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Vectra",
+    title: "Backtide",
   },
 };
 
