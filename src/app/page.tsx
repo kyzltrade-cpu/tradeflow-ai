@@ -420,53 +420,35 @@ export default function LandingPage() {
             </Reveal>
 
             <Reveal delay={200}>
-              <div className="flex flex-col p-4 rounded-2xl border" style={{ background: '#fff', borderColor: '#E5E5E5' }}>
-                {/* Chat Header */}
-                <div className="pb-3 mb-3 flex items-center gap-3" style={{ borderBottom: '1px solid #E5E5E5' }}>
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm" style={{ background: '#25D366' }}>S</div>
+              <div className="flex flex-col rounded-2xl border" style={{ background: '#f9f9f9', borderColor: '#D5D5D5' }}>
+                {/* Email Header */}
+                <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #E8E8E8' }}>
                   <div>
-                    <div className="font-semibold text-sm">Sailwise</div>
-                    <div className="text-xs" style={{ color: '#999' }}>online</div>
+                    <div className="font-semibold text-sm" style={{ color: '#333' }}>Sarah Chen</div>
+                    <div className="text-xs" style={{ color: '#888' }}>sarah@company.com</div>
                   </div>
+                  <div className="text-xs" style={{ color: '#999' }}>9:32 AM</div>
                 </div>
 
-                {/* Messages */}
-                <div className="space-y-3 flex-1 mb-4 text-sm">
-                  {/* Bot Alert */}
-                  <div className="flex justify-start">
-                    <div className="max-w-xs px-3 py-2 rounded-2xl" style={{ background: '#E5E5E5', color: '#000' }}>
-                      <div className="font-semibold mb-1">📧 New inquiry</div>
-                      <div style={{ fontSize: '0.85rem' }}>Sarah Chen</div>
-                      <div style={{ fontSize: '0.85rem', color: '#555' }}>10k pcs • 500ml</div>
-                    </div>
-                  </div>
-
-                  {/* Bot Details */}
-                  <div className="flex justify-start">
-                    <div className="max-w-xs px-3 py-2 rounded-2xl" style={{ background: '#E5E5E5', color: '#000', fontSize: '0.85rem' }}>
-                      304 Grade • Logo printing • Sample needed
-                    </div>
-                  </div>
-
-                  {/* User Reply */}
-                  <div className="flex justify-end">
-                    <div className="max-w-xs px-3 py-2 rounded-2xl" style={{ background: '#25D366', color: '#fff', fontSize: '0.85rem' }}>
-                      We can do 8 week MOQ, logo from 5 pcs, sample ships tomorrow
-                    </div>
-                  </div>
-
-                  {/* Bot Confirmation */}
-                  <div className="flex justify-start">
-                    <div className="max-w-xs px-3 py-2 rounded-2xl" style={{ background: '#E5E5E5', color: '#000', fontSize: '0.85rem' }}>
-                      ✓ Email sent to Sarah
-                    </div>
-                  </div>
+                {/* Email Subject */}
+                <div className="px-5 py-3" style={{ borderBottom: '1px solid #E8E8E8' }}>
+                  <div className="text-xs font-semibold" style={{ color: '#666' }}>SUBJECT</div>
+                  <div className="text-sm font-semibold mt-1" style={{ color: '#333' }}>Bulk Order – Vacuum Bottles</div>
                 </div>
 
-                {/* Input */}
-                <div className="pt-3 flex items-center gap-2" style={{ borderTop: '1px solid #E5E5E5' }}>
-                  <input type="text" placeholder="Message..." disabled className="flex-1 px-3 py-1.5 rounded-full text-xs" style={{ background: '#F5F5F5', color: '#999', border: 'none' }} />
-                  <span style={{ color: '#25D366', fontSize: '14px' }}>🎤</span>
+                {/* Email Body */}
+                <div className="px-5 py-4 text-sm leading-relaxed" style={{ color: '#555', lineHeight: '1.6' }}>
+                  <p className="mb-3">Hi,</p>
+                  <p className="mb-3">We need 10,000 pcs of 500ml stainless steel vacuum bottles for a corporate order.</p>
+                  <p className="mb-3">Requirements:</p>
+                  <ul className="list-disc list-inside mb-3 space-y-1" style={{ color: '#666' }}>
+                    <li>Double-wall, 304 food grade</li>
+                    <li>Logo printing capability</li>
+                    <li>Sample needed before mass production</li>
+                    <li>Best lead time?</li>
+                  </ul>
+                  <p>Please quote when available.</p>
+                  <p className="mt-4">Thanks,<br />Sarah</p>
                 </div>
               </div>
             </Reveal>
