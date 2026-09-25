@@ -32,14 +32,6 @@ const CORE_FEATURES = [
     detail: 'No new software for your team or customers to learn. Supports English, Chinese, and mixed-language threads.',
   },
   {
-    icon: MessageSquare,
-    code: 'WHATSAPP',
-    span: 'lg:col-span-2',
-    title: 'Instant WhatsApp alerts',
-    desc: 'Important emails trigger instant WhatsApp notifications. Review, draft replies on WhatsApp, and the bot sends them as emails.',
-    detail: 'Never miss a critical inquiry. Reply on mobile without jumping between apps. AI sorts important from routine automatically.',
-  },
-  {
     icon: ScanSearch,
     code: 'SPECS',
     span: 'lg:col-span-2',
@@ -114,7 +106,7 @@ const CONTROL_FEATURES = [
 /* ── How it works ───────────────────────────────────────────────────────── */
 
 const STEPS = [
-  { num: '01', code: 'INBOUND', channels: 'EMAIL · WHATSAPP', title: 'Inquiry comes in', desc: 'From your connected mailbox, instant WhatsApp alert. Every spec, quantity, and requirement is pulled out and pinned to the line it came from. Review and reply on WhatsApp.', gate: 'GATE 01 — APPROVE THE EXTRACTION' },
+  { num: '01', code: 'INBOUND', channels: 'EMAIL', title: 'Inquiry comes in', desc: 'From your connected mailbox. Every spec, quantity, and requirement is pulled out and pinned to the line it came from.', gate: 'GATE 01 — APPROVE THE EXTRACTION' },
   { num: '02', code: 'CLARIFY', channels: 'CUSTOMER LANGUAGE', title: 'Gaps get clarified', desc: 'AI flags what\'s missing and drafts one question in the customer\'s language. You approve, we ask.', gate: 'GATE 02 — APPROVE THE QUESTION' },
   { num: '03', code: 'QUOTE', channels: 'PRICE · MARGIN · FX', title: 'Quote is drafted', desc: 'Quote drafted from your product prices, margin rules, and the FX rate — every number traced. You approve, one click sends.', gate: 'GATE 03 — YOUR SIGN-OFF' },
 ];
@@ -365,6 +357,100 @@ export default function LandingPage() {
                 </Reveal>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WhatsApp Mobile Alerts ── */}
+      <section className="py-24 px-6" style={{ background: '#FAFAFA' }}>
+        <div className="max-w-5xl mx-auto">
+          <Reveal className="relative text-center mb-16">
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+              02
+            </div>
+            <p className="btk-kicker mb-5">02 · Mobile-first alerts</p>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+              Get alerts where you are
+            </h2>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: '#555555' }}>
+              Important emails land as WhatsApp alerts. Review specs, draft replies, and send them as emails — all from your phone.
+            </p>
+          </Reveal>
+
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <Reveal delay={120}>
+              <div className="space-y-6">
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold mb-1">Instant notifications</h3>
+                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Important inquiries trigger WhatsApp alerts in real-time. Never miss a deal while you&apos;re away from your desk.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold mb-1">Review on mobile</h3>
+                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>See extracted specs, quantities, and requirements right in WhatsApp. No jumping between apps or logging into dashboards.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold mb-1">Draft replies on WhatsApp</h3>
+                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Respond with clarification questions or initial quotes. The bot formats and sends them as professional emails from your mailbox.</p>
+                  </div>
+                </div>
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold mb-1">Smart filtering</h3>
+                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Only "important" emails trigger alerts. Your system learns what matters — VIP customers, high-value inquiries, new leads.</p>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+
+            <Reveal delay={200}>
+              <GlowCard className="rounded-2xl border overflow-hidden" style={{ background: '#fff', borderColor: '#E5E5E5' }}>
+                <div className="p-8 text-center" style={{ background: '#F5F5F5' }}>
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ background: '#25D366', opacity: 0.1 }}>
+                    <MessageSquare className="w-8 h-8" style={{ color: '#25D366' }} />
+                  </div>
+                  <p className="text-sm font-semibold mb-6" style={{ color: '#555555' }}>WhatsApp Alert Example</p>
+                  <div className="space-y-3 text-left bg-white rounded-lg p-4 border" style={{ borderColor: '#E5E5E5' }}>
+                    <div className="text-xs font-semibold mb-2" style={{ color: '#9A9A9A' }}>Sailwise Bot</div>
+                    <div className="text-sm leading-relaxed mb-4">
+                      <span style={{ color: '#555555' }}>New inquiry from <strong>Sarah Chen</strong></span>
+                    </div>
+                    <div className="px-3 py-2 rounded text-sm" style={{ background: '#F0F0F0', color: '#333' }}>
+                      <div className="font-semibold mb-1">Product:</div>
+                      <div className="text-xs mb-2">Stainless Steel Vacuum Bottles (500ml)</div>
+                      <div className="font-semibold mb-1">Qty:</div>
+                      <div className="text-xs mb-2">10,000 pcs</div>
+                      <div className="font-semibold mb-1">Requirements:</div>
+                      <div className="text-xs">Double-wall, 304 food grade, logo printing</div>
+                    </div>
+                    <div className="mt-4 flex gap-2">
+                      <button className="flex-1 px-3 py-2 rounded text-xs font-semibold" style={{ background: '#25D366', color: '#fff' }}>
+                        Reply Draft
+                      </button>
+                      <button className="flex-1 px-3 py-2 rounded text-xs font-semibold border" style={{ borderColor: '#E5E5E5', color: '#555555' }}>
+                        View Full
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </GlowCard>
+            </Reveal>
           </div>
         </div>
       </section>
