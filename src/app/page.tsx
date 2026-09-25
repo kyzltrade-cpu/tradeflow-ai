@@ -214,7 +214,7 @@ export default function LandingPage() {
           }}
         />
         <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 w-[940px] h-[640px]" style={{ marginLeft: -470, background: 'radial-gradient(50% 50% at 50% 28%, rgba(0,0,0,0.045), rgba(0,0,0,0) 70%)' }} />
-        <div className="max-w-5xl mx-auto text-center sm:text-right relative">
+        <div className="max-w-5xl mx-auto sm:mx-0 sm:ml-auto sm:mr-6 text-center sm:text-right relative">
           <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: 'rgba(255,255,255,0.85)', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms', backdropFilter: 'blur(6px)' }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#000' }}></span>
             Built for HK &amp; SZ trading companies
