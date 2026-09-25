@@ -377,8 +377,7 @@ export default function LandingPage() {
             </p>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <Reveal delay={120}>
+          <Reveal delay={120}>
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
@@ -418,8 +417,6 @@ export default function LandingPage() {
                 </div>
               </div>
             </Reveal>
-
-          </div>
         </div>
       </section>
 
