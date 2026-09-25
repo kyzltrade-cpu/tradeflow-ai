@@ -201,7 +201,7 @@ export default function LandingPage() {
           style={{
             backgroundImage: 'url(/hero/hero-banner.jpg)',
             backgroundSize: 'cover',
-            backgroundPosition: 'left center',
+            backgroundPosition: 'right center',
           }}
         />
         {/* Light wash for headline legibility; fades to white before the demo dashboard */}
