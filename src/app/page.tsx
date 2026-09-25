@@ -210,11 +210,11 @@ export default function LandingPage() {
           className="pointer-events-none absolute inset-x-0 top-0 h-[540px] md:h-[600px]"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.5) 62%, #FFFFFF 100%)',
+              'linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.85) 100%)',
           }}
         />
         <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 w-[940px] h-[640px]" style={{ marginLeft: -470, background: 'radial-gradient(50% 50% at 50% 28%, rgba(0,0,0,0.045), rgba(0,0,0,0) 70%)' }} />
-        <div className="max-w-5xl mx-auto text-center relative">
+        <div className="max-w-5xl mx-auto text-center sm:text-right relative">
           <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: 'rgba(255,255,255,0.85)', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms', backdropFilter: 'blur(6px)' }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#000' }}></span>
             Built for HK &amp; SZ trading companies
@@ -230,11 +230,11 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#4A4A4A', animationDelay: '330ms', textShadow: '0 1px 0 rgba(255,255,255,0.6)' }}>
+          <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto sm:mx-0 sm:ml-auto mb-10 leading-relaxed" style={{ color: '#4A4A4A', animationDelay: '330ms', textShadow: '0 1px 0 rgba(255,255,255,0.6)' }}>
             Sailwise is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, drafts a cited price from your products and margins, and follows up until the deal closes — in hours, not days.
           </p>
 
-          <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center gap-4 mb-16" style={{ animationDelay: '450ms' }}>
+          <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-4 mb-16" style={{ animationDelay: '450ms' }}>
             <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-3.5">
               Start Free Trial
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
