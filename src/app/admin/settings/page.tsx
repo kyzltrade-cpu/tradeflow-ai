@@ -6,7 +6,7 @@ import { useCompany } from '@/lib/company';
 import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
-import OAuthConnections from '@/components/OAuthConnections';
+import ComposioConnections from '@/components/ComposioConnections';
 
 const ADMIN_EMAIL = 'tradeflow.hk@gmail.com';
 
@@ -141,18 +141,18 @@ export default function SettingsPage() {
         </p>
       </div>
 
-      {/* Integrations */}
+      {/* Connections */}
       <section className="border rounded-[4px] p-5 mb-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
         <h2 className="text-[15px] font-semibold mb-1">
-          {t('Email inbox', '電郵收件匣')}
+          {t('Connections', '連接')}
         </h2>
         <p className="text-[13px] mb-4" style={{ color: 'var(--text-muted)' }}>
           {t(
-            'Your AI inbox — the core of Sailwise. Connect Google or Microsoft and your quotes, negotiations, and company brain are built from email.',
-            '您的 AI 電郵收件匣 — Sailwise 的核心。連接 Google 或 Microsoft，您的報價、議價和公司知識庫都由電郵建立。'
+            'Connect the apps your business runs on. Your AI inbox and company brain are built from email, spreadsheets, and documents — Gmail, Outlook, Excel, Google Sheets, OneDrive, and more.',
+            '連接您業務所使用的應用程式。您的 AI 收件匣和公司知識庫由電郵、試算表和文件建立 — 包括 Gmail、Outlook、Excel、Google Sheets、OneDrive 等。'
           )}
         </p>
-        <OAuthConnections />
+        <ComposioConnections />
       </section>
 
       
@@ -311,11 +311,11 @@ export default function SettingsPage() {
           </span>
         </div>
         <p className="text-[13px] mb-3" style={{ color: 'var(--text-muted)' }}>
-          {t('Let our team set up Sailwise for you. We\'ll connect WhatsApp, upload your products, and configure the AI. This is a one-time fee on top of your subscription plan.', '讓我們的團隊為您設定 Sailwise。我們會連接 WhatsApp、上傳產品並配置 AI。此為訂閱方案外的一次性費用。')}
+          {t('Let our team set up Sailwise for you. We\'ll connect your email inbox, upload your products, and configure the AI. This is a one-time fee on top of your subscription plan.', '讓我們的團隊為您設定 Sailwise。我們會連接您的電郵收件匣、上傳產品並配置 AI。此為訂閱方案外的一次性費用。')}
         </p>
         <div className="flex items-center justify-between p-3 rounded-[4px]" style={{ background: 'var(--bg)' }}>
           <div>
-            <p className="text-[13px] font-medium">{t('WhatsApp connection + Product upload + AI config', 'WhatsApp 連接 + 產品上傳 + AI 配置')}</p>
+            <p className="text-[13px] font-medium">{t('Email inbox connection + Product upload + AI config', '電郵收件匣連接 + 產品上傳 + AI 配置')}</p>
           </div>
           <span className="text-[18px] font-semibold">HK$1,000</span>
         </div>
