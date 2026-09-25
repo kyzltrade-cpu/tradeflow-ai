@@ -420,36 +420,88 @@ export default function LandingPage() {
             </Reveal>
 
             <Reveal delay={200}>
-              <GlowCard className="rounded-2xl border overflow-hidden" style={{ background: '#fff', borderColor: '#E5E5E5' }}>
-                <div className="p-8 text-center" style={{ background: '#F5F5F5' }}>
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ background: '#25D366', opacity: 0.1 }}>
-                    <MessageSquare className="w-8 h-8" style={{ color: '#25D366' }} />
-                  </div>
-                  <p className="text-sm font-semibold mb-6" style={{ color: '#555555' }}>WhatsApp Alert Example</p>
-                  <div className="space-y-3 text-left bg-white rounded-lg p-4 border" style={{ borderColor: '#E5E5E5' }}>
-                    <div className="text-xs font-semibold mb-2" style={{ color: '#9A9A9A' }}>Sailwise Bot</div>
-                    <div className="text-sm leading-relaxed mb-4">
-                      <span style={{ color: '#555555' }}>New inquiry from <strong>Sarah Chen</strong></span>
+              <div className="flex justify-center">
+                {/* iPhone Frame */}
+                <div className="relative" style={{ width: '320px' }}>
+                  {/* iPhone Bezel */}
+                  <div className="relative rounded-[40px] border-[12px] border-black shadow-2xl overflow-hidden" style={{ aspectRatio: '9/19' }}>
+                    {/* Status Bar */}
+                    <div className="absolute top-0 left-0 right-0 h-8 px-4 flex items-center justify-between text-white text-[11px] font-semibold z-20" style={{ background: '#075e54' }}>
+                      <span>9:41</span>
+                      <div className="flex gap-1">
+                        <span>📶</span>
+                        <span>📡</span>
+                        <span>🔋</span>
+                      </div>
                     </div>
-                    <div className="px-3 py-2 rounded text-sm" style={{ background: '#F0F0F0', color: '#333' }}>
-                      <div className="font-semibold mb-1">Product:</div>
-                      <div className="text-xs mb-2">Stainless Steel Vacuum Bottles (500ml)</div>
-                      <div className="font-semibold mb-1">Qty:</div>
-                      <div className="text-xs mb-2">10,000 pcs</div>
-                      <div className="font-semibold mb-1">Requirements:</div>
-                      <div className="text-xs">Double-wall, 304 food grade, logo printing</div>
+
+                    {/* WhatsApp Header */}
+                    <div className="pt-8 px-4 pb-3" style={{ background: '#075e54' }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-white font-bold text-sm">Sailwise Bot</div>
+                          <div className="text-[11px]" style={{ color: '#e0f7f4' }}>online</div>
+                        </div>
+                        <div className="flex gap-3 text-white text-lg">
+                          <span>📞</span>
+                          <span>ℹ️</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="mt-4 flex gap-2">
-                      <button className="flex-1 px-3 py-2 rounded text-xs font-semibold" style={{ background: '#25D366', color: '#fff' }}>
-                        Reply Draft
+
+                    {/* Messages */}
+                    <div className="flex-1 overflow-y-auto p-3 space-y-3" style={{ background: '#ECE5DD', height: 'calc(100% - 120px)' }}>
+                      {/* Bot Message 1 */}
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-snug" style={{ background: '#fff', color: '#000' }}>
+                          <strong>New Inquiry Alert</strong>
+                        </div>
+                      </div>
+
+                      {/* Bot Message 2 */}
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-snug" style={{ background: '#fff', color: '#000' }}>
+                          From: Sarah Chen
+                        </div>
+                      </div>
+
+                      {/* Bot Message 3 - Product Details */}
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-snug" style={{ background: '#fff', color: '#000' }}>
+                          <div className="font-semibold mb-1">500ml Vacuum Bottles</div>
+                          <div className="text-xs">Qty: 10,000 pcs</div>
+                          <div className="text-xs">304 Food Grade</div>
+                          <div className="text-xs">Logo Printing</div>
+                        </div>
+                      </div>
+
+                      {/* Bot Message 4 */}
+                      <div className="flex justify-start">
+                        <div className="max-w-[85%] px-3 py-2 rounded-2xl text-sm leading-snug" style={{ background: '#fff', color: '#000' }}>
+                          Ready to reply?
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="px-3 py-3 flex items-end gap-2" style={{ background: '#ECE5DD' }}>
+                      <input
+                        type="text"
+                        placeholder="Tap to reply..."
+                        disabled
+                        className="flex-1 px-3 py-2 rounded-full text-sm"
+                        style={{ background: '#fff', color: '#999', fontSize: '13px' }}
+                      />
+                      <button className="flex items-center justify-center w-8 h-8 rounded-full text-lg" style={{ background: '#25D366', color: '#fff' }}>
+                        ➤
                       </button>
-                      <button className="flex-1 px-3 py-2 rounded text-xs font-semibold border" style={{ borderColor: '#E5E5E5', color: '#555555' }}>
-                        View Full
-                      </button>
                     </div>
+
+                    {/* Notch */}
+                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 rounded-b-3xl" style={{ background: '#000', zIndex: 30 }} />
                   </div>
                 </div>
-              </GlowCard>
+              </div>
             </Reveal>
           </div>
         </div>
