@@ -30,6 +30,11 @@ export default function ProductsPage() {
   const [newPhotos, setNewPhotos] = useState<string[]>([]);
   const [editPhotos, setEditPhotos] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [importResult, setImportResult] = useState<{ imported?: number; updated?: number; skipped?: number; errors?: string[] } | null>(null);
+  const importFileRef = useRef<HTMLInputElement>(null);
   const addPhotoRef = useRef<HTMLInputElement>(null);
   const editPhotoRef = useRef<HTMLInputElement>(null);
 
@@ -163,6 +168,50 @@ export default function ProductsPage() {
   const removeNewPhoto = (index: number) => setNewPhotos(prev => prev.filter((_, i) => i !== index));
   const removeEditPhoto = (index: number) => setEditPhotos(prev => prev.filter((_, i) => i !== index));
 
+  const handleImportFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImportFile(file);
+    setImportResult(null);
+    if (importFileRef.current) importFileRef.current.value = '';
+  };
+
+  const handleImport = async () => {
+    if (!importFile) {
+      showToast(t('Choose a spreadsheet file first', '請先選擇試算表檔案'), 'error');
+      return;
+    }
+    if (!companyId) return;
+    setImporting(true);
+    setImportResult(null);
+    try {
+      const fd = new FormData();
+      fd.append('file', importFile);
+      const res = await authFetch('/api/admin/products/import', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        showToast(data.error || t('Import failed', '匯入失敗'), 'error');
+        setImporting(false);
+        return;
+      }
+      setImportResult(data);
+      showToast(`${t('Products imported', '已匯入產品')}: ${data.imported || 0}`, 'success');
+      // Reload the list
+      setLoading(true);
+      const listRes = await authFetch(`/api/admin/products?company_id=${companyId}`);
+      const listData = await listRes.json();
+      setProducts(listData.products || listData || []);
+      setLoading(false);
+    } catch (err) {
+      console.error('[products] import error:', err);
+      showToast(t('Import failed', '匯入失敗'), 'error');
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const startEditing = (product: Product) => {
     setEditingProduct(product);
     setEditPhotos(product.photos || []);
@@ -177,14 +226,72 @@ export default function ProductsPage() {
             {t('Manage your product catalog — the AI uses these to answer customer inquiries', '管理您的產品目錄——AI 使用這些資料回覆客戶查詢')}
           </p>
         </div>
-        <button
-          onClick={() => setShowAdd(true)}
-          className="text-[13px] md:text-[14px] font-medium px-4 py-2.5 rounded-[4px] text-white w-full sm:w-auto"
-          style={{ background: 'var(--accent)' }}
-        >
-          {t('Add product', '新增產品')}
-        </button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => setShowImport(true)}
+            className="text-[13px] md:text-[14px] font-medium px-4 py-2.5 rounded-[4px] border w-full sm:w-auto"
+            style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+          >
+            {t('Import from Excel', '從 Excel 匯入')}
+          </button>
+          <button
+            onClick={() => setShowAdd(true)}
+            className="text-[13px] md:text-[14px] font-medium px-4 py-2.5 rounded-[4px] text-white w-full sm:w-auto"
+            style={{ background: 'var(--accent)' }}
+          >
+            {t('Add product', '新增產品')}
+          </button>
+        </div>
       </div>
+
+      {showImport && (
+        <div className="border rounded-[4px] p-4 md:p-5 mb-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+          <h2 className="text-[14px] md:text-[15px] font-semibold mb-2">{t('Import products from Excel', '從 Excel 匯入產品')}</h2>
+          <p className="text-[12px] mb-4" style={{ color: 'var(--text-muted)' }}>
+            {t('Upload your existing price list (.xlsx / .csv). We match columns by name (e.g. product name, category, price, MOQ) and update matching products automatically.', '上傳您現有的價格表（.xlsx / .csv）。系統會按欄名智能對應欄位（如產品名稱、類別、價格、MOQ），並自動更新相符的產品。')}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <input
+              ref={importFileRef}
+              type="file"
+              accept=".xlsx,.xls,.csv"
+              onChange={handleImportFile}
+              className="text-[13px]"
+            />
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => { setShowImport(false); setImportFile(null); setImportResult(null); }}
+                className="text-[12px] md:text-[13px] px-4 py-2 rounded-[4px] border"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                {t('Cancel', '取消')}
+              </button>
+              <button
+                onClick={handleImport}
+                disabled={importing}
+                className="text-[12px] md:text-[13px] font-medium px-4 py-2 rounded-[4px] text-white"
+                style={{ background: 'var(--accent)' }}
+              >
+                {importing ? '...' : t('Import', '匯入')}
+              </button>
+            </div>
+          </div>
+          {importResult && (
+            <div className="mt-4 text-[12px] rounded-[4px] p-3" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+              <p>
+                {t('Imported', '新增')}: <strong>{importResult.imported ?? 0}</strong>
+                {' · '}{t('Updated', '更新')}: <strong>{importResult.updated ?? 0}</strong>
+                {' · '}{t('Skipped', '跳過')}: <strong>{importResult.skipped ?? 0}</strong>
+              </p>
+              {importResult.errors && importResult.errors.length > 0 && (
+                <p className="mt-1" style={{ color: 'var(--danger, #d33)' }}>
+                  {t('Errors', '錯誤')}: {importResult.errors.join('; ')}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {showAdd && (
         <div className="border rounded-[4px] p-4 md:p-5 mb-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>

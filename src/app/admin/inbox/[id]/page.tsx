@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle, User, Flag, CheckCircle, Download } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
@@ -31,10 +31,41 @@ interface ConversationWithRelations {
   detected_language: string | null;
   handoff_summary: string | null;
   external_search_enabled: boolean;
+  created_at?: string;
   updated_at: string;
   messages: Message[];
   inquiries: Array<Record<string, unknown>>;
-  opportunities: Array<Record<string, unknown>>;
+  opportunities: OpportunityRec[];
+  quotes: QuoteRec[];
+  approvals: ApprovalRec[];
+}
+
+interface OpportunityRec {
+  id: string;
+  title: string;
+  stage: string;
+  estimated_order_value: number | null;
+  currency: string | null;
+  trading_model: string | null;
+}
+
+interface QuoteRec {
+  id: string;
+  quote_number?: string | null;
+  status: string;
+  opportunity_id?: string | null;
+  total_amount?: number | null;
+  currency?: string | null;
+  valid_until?: string | null;
+  created_at?: string | null;
+}
+
+interface ApprovalRec {
+  id: string;
+  quote_id: string;
+  status: string;
+  comments?: string | null;
+  created_at?: string | null;
 }
 
 interface PriceSource {
@@ -56,6 +87,7 @@ interface SuggestionLine {
   total: number;
   at_cost: boolean;
   requires_manual_pricing: boolean;
+  target_price?: string | null;
   sources: PriceSource[];
 }
 
@@ -110,6 +142,44 @@ const statusBadge = (status: string) => {
   return { bg: 'var(--accent-light)', fg: 'var(--accent)', text: 'AI' };
 };
 
+const STAGE_TRANSITIONS: Record<string, string[]> = {
+  NEW: ['NEEDS_INFORMATION', 'QUALIFIED'],
+  NEEDS_INFORMATION: ['QUALIFIED'],
+  QUALIFIED: ['SOURCING'],
+  SOURCING: ['QUOTE_DRAFT'],
+  QUOTE_DRAFT: ['PENDING_APPROVAL'],
+  PENDING_APPROVAL: ['SENT'],
+  SENT: ['NEGOTIATING'],
+  NEGOTIATING: ['WON', 'LOST', 'EXPIRED'],
+  WON: [],
+  LOST: [],
+  EXPIRED: [],
+};
+
+const STAGE_META: Record<string, { en: string; zh: string; color: string; bg: string }> = {
+  NEW: { en: 'New', zh: '新', color: '#6B7280', bg: '#F3F4F6' },
+  NEEDS_INFORMATION: { en: 'Needs info', zh: '待補資料', color: '#D97706', bg: '#FEF3C7' },
+  QUALIFIED: { en: 'Qualified', zh: '已確認', color: '#2563EB', bg: '#EFF6FF' },
+  SOURCING: { en: 'Sourcing', zh: '採購中', color: '#7C3AED', bg: '#F5F3FF' },
+  QUOTE_DRAFT: { en: 'Quote draft', zh: '報價草擬', color: '#D97706', bg: '#FEF3C7' },
+  PENDING_APPROVAL: { en: 'Pending approval', zh: '待審批', color: '#EA580C', bg: '#FFEDD5' },
+  SENT: { en: 'Sent', zh: '已發送', color: '#0F766E', bg: '#F0FDFA' },
+  NEGOTIATING: { en: 'Negotiating', zh: '談判中', color: '#7C3AED', bg: '#F5F3FF' },
+  WON: { en: 'Won', zh: '已成交', color: '#059669', bg: '#ECFDF5' },
+  LOST: { en: 'Lost', zh: '已流失', color: '#DC2626', bg: '#FEF2F2' },
+  EXPIRED: { en: 'Expired', zh: '已過期', color: '#6B7280', bg: '#F3F4F6' },
+};
+
+const QUOTE_STATUS_META: Record<string, { en: string; zh: string; color: string; bg: string }> = {
+  DRAFT: { en: 'Draft', zh: '草稿', color: '#6B7280', bg: '#F3F4F6' },
+  IN_REVIEW: { en: 'In review', zh: '審核中', color: '#D97706', bg: '#FEF3C7' },
+  APPROVED: { en: 'Approved', zh: '已核准', color: '#059669', bg: '#ECFDF5' },
+  SENT: { en: 'Sent', zh: '已發送', color: '#2563EB', bg: '#EFF6FF' },
+  OPENED: { en: 'Opened', zh: '已開啟', color: '#2563EB', bg: '#EFF6FF' },
+  ACCEPTED: { en: 'Accepted', zh: '已接受', color: '#059669', bg: '#ECFDF5' },
+  REJECTED: { en: 'Rejected', zh: '已拒絕', color: '#DC2626', bg: '#FEF2F2' },
+};
+
 export default function InboxDetailPage() {
   const { t } = useLang();
   const { companyId, loading: companyLoading } = useCompany();
@@ -148,6 +218,20 @@ export default function InboxDetailPage() {
     }
   }, [id, companyId, companyLoading, showToast, t]);
 
+  const refreshDetail = useCallback(async () => {
+    if (!companyId || !id) return;
+    try {
+      const res = await authFetch(`/api/admin/inbox/${id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setDetail(data);
+        if (data.detected_language) setDetectLang(data.detected_language);
+      }
+    } catch (err) {
+      console.error('[inbox-detail] refresh error:', err);
+    }
+  }, [id, companyId]);
+
   const fetchSuggestion = useCallback(async (silent = false) => {
     if (companyLoading || !companyId || !id) return;
     try {
@@ -156,13 +240,16 @@ export default function InboxDetailPage() {
       if (!res.ok) throw new Error('Failed to load suggestion');
       const data = await res.json();
       setSuggestion(data);
+      if (data.draft && (data.draft.created_opportunity || data.draft.created_quote)) {
+        refreshDetail();
+      }
     } catch (err) {
       console.error('[inbox-suggest] fetch error:', err);
       if (!silent) showToast(t('Failed to generate suggestion', '無法產生建議報價'), 'error');
     } finally {
       setLoadingSuggest(false);
     }
-  }, [id, companyId, companyLoading, showToast, t]);
+  }, [id, companyId, companyLoading, showToast, t, refreshDetail]);
 
   useEffect(() => {
     fetchDetail();
@@ -308,32 +395,45 @@ export default function InboxDetailPage() {
       showToast(t('Some items need manual pricing — quoting the priced items only', '部分項目需人手定價——只報已定價項目'));
     }
     try {
+      const existingQuote = detail.quotes && detail.quotes[0];
+      if (existingQuote) {
+        showToast(`${t('A draft quote already exists', '草稿報價已存在')} ${existingQuote.quote_number}`, 'success');
+        refreshDetail();
+        return;
+      }
       const inquiry = detail.inquiries && detail.inquiries[0] as Record<string, unknown> | undefined;
-      const title = `${detail.contact_name || detail.contact_email || 'Customer'} — ${suggestion.request_summary || 'Quotation request'}`.slice(0, 200);
-      const oppRes = await authFetch('/api/admin/opportunities', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          stage: 'NEW',
-          trading_model: 'principal',
-          product_category: priced[0].matched_product_name || priced[0].product,
-          product_name: priced[0].matched_product_name || priced[0].product,
-          estimated_order_value: suggestion.subtotal,
-          currency: suggestion.currency || 'USD',
-          inquiry_id: inquiry?.id || null,
-          customer_id: inquiry?.customer_id || null,
-          contact_id: inquiry?.contact_id || null,
-          notes: suggestion.sources_summary.join('; ') || null,
-        }),
-      });
-      if (!oppRes.ok) throw new Error('Opportunity create failed');
-      const oppData = await oppRes.json();
+      const existingOpp = detail.opportunities && detail.opportunities[0];
+      let opportunityId: string;
+      if (existingOpp) {
+        opportunityId = existingOpp.id;
+      } else {
+        const title = `${detail.contact_name || detail.contact_email || 'Customer'} — ${suggestion.request_summary || 'Quotation request'}`.slice(0, 200);
+        const oppRes = await authFetch('/api/admin/opportunities', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title,
+            stage: 'NEW',
+            trading_model: 'principal',
+            product_category: priced[0].matched_product_name || priced[0].product,
+            product_name: priced[0].matched_product_name || priced[0].product,
+            estimated_order_value: suggestion.subtotal,
+            currency: suggestion.currency || 'USD',
+            inquiry_id: inquiry?.id || null,
+            customer_id: inquiry?.customer_id || null,
+            contact_id: inquiry?.contact_id || null,
+            notes: suggestion.sources_summary.join('; ') || null,
+          }),
+        });
+        if (!oppRes.ok) throw new Error('Opportunity create failed');
+        const oppData = await oppRes.json();
+        opportunityId = oppData.opportunity.id;
+      }
       const quoteRes = await authFetch('/api/admin/quotes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          opportunity_id: oppData.opportunity.id,
+          opportunity_id: opportunityId,
           currency: suggestion.currency || 'USD',
           customer_id: inquiry?.customer_id || null,
           contact_id: inquiry?.contact_id || null,
@@ -351,10 +451,100 @@ export default function InboxDetailPage() {
       if (!quoteRes.ok) throw new Error('Quote create failed');
       const quoteData = await quoteRes.json();
       showToast(`${t('Quote created', '報價已建立')} ${quoteData.quote.quote_number}`, 'success');
-      router.push('/admin/quotes');
+      refreshDetail();
     } catch (err) {
       console.error('[inbox-quote] error:', err);
       showToast(t('Failed to create quote', '建立報價失敗'), 'error');
+    }
+  };
+
+  const runApprovalAction = async (quoteId: string, action: 'request' | 'approve' | 'reject') => {
+    try {
+      const res = await authFetch(`/api/admin/quotes/${quoteId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        showToast(data.error || t('Approval action failed', '審批操作失敗'), 'error');
+        return;
+      }
+      const data = await res.json();
+      refreshDetail();
+      if (action === 'request') {
+        showToast(
+          data.auto_approved
+            ? t('Auto-approved (below threshold)', '自動核准（低於門檻）')
+            : t('Approval requested', '已送交審批'),
+          'success'
+        );
+      } else if (action === 'approve') {
+        showToast(t('Quote approved', '報價已核准'), 'success');
+      } else {
+        showToast(t('Quote rejected', '報價已拒絕'), 'success');
+      }
+    } catch (err) {
+      console.error('[inbox-approval] error:', err);
+      showToast(t('Approval action failed', '審批操作失敗'), 'error');
+    }
+  };
+
+  const advanceStage = async (oppId: string) => {
+    const opp = detail?.opportunities.find((o) => o.id === oppId);
+    if (!opp) return;
+    const nexts = STAGE_TRANSITIONS[opp.stage] || [];
+    if (nexts.length === 0) return;
+    try {
+      const res = await authFetch(`/api/admin/opportunities/${oppId}/stage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage: nexts[0] }),
+      });
+      if (!res.ok) throw new Error('Failed to advance stage');
+      refreshDetail();
+      showToast(
+        t(`Moved to ${STAGE_META[nexts[0]]?.en || nexts[0]}`, `移至「${STAGE_META[nexts[0]]?.zh || nexts[0]}」`),
+        'success'
+      );
+    } catch (err) {
+      console.error('[inbox-stage] error:', err);
+      showToast(t('Failed to advance stage', '推進階段失敗'), 'error');
+    }
+  };
+
+  const jumpStage = async (oppId: string, stage: string) => {
+    try {
+      const res = await authFetch(`/api/admin/opportunities/${oppId}/stage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stage }),
+      });
+      if (!res.ok) throw new Error('Failed to move stage');
+      refreshDetail();
+      showToast(t(`Moved to ${STAGE_META[stage]?.en || stage}`, `移至「${STAGE_META[stage]?.zh || stage}」`), 'success');
+    } catch (err) {
+      console.error('[inbox-stage] error:', err);
+      showToast(t('Failed to move stage', '改變階段失敗'), 'error');
+    }
+  };
+
+  const downloadQuotePdf = async (quoteId: string, filename: string) => {
+    try {
+      const res = await authFetch(`/api/admin/quotes/${quoteId}/pdf`);
+      if (!res.ok) throw new Error('PDF download failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('[inbox-pdf] error:', err);
+      showToast(t('Failed to download PDF', '下載 PDF 失敗'), 'error');
     }
   };
 
@@ -401,22 +591,6 @@ export default function InboxDetailPage() {
         <div className="flex items-center gap-2 flex-wrap">
           {body && (
             <>
-              <button
-                onClick={toggleExternalSearch}
-                disabled={togglingSearch}
-                className="flex items-center gap-1.5 text-[11px] md:text-[12px] font-medium px-2 md:px-3 py-1.5 rounded-[4px] border"
-                style={{
-                  borderColor: body.external_search_enabled ? '#038153' : 'var(--border)',
-                  background: body.external_search_enabled ? '#E8F5F1' : 'transparent',
-                  color: body.external_search_enabled ? '#038153' : 'var(--text-muted)',
-                }}
-                title={t('Allow AI auto-replies to use web search for this customer', '容許 AI 自動回覆為此客戶使用網絡搜尋')}
-              >
-                <Globe width="12" height="12" />
-                <span className="hidden sm:inline">
-                  {t('External search', '外部搜尋')}: {body.external_search_enabled ? 'ON' : 'OFF'}
-                </span>
-              </button>
               {displayStatus === 'human' ? (
                 <button
                   onClick={() => setStatus('active')}
@@ -578,11 +752,66 @@ export default function InboxDetailPage() {
 
         {/* Right rail */}
         <div className="hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 flex-col border-l overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
-          {/* Inquiry panel */}
+          {/* ── Pod: Customer ─────────────────────────────────── */}
+          <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <User width="14" height="14" style={{ color: 'var(--accent)' }} />
+              <h3 className="text-[13px] font-semibold">{t('Customer', '客戶')}</h3>
+            </div>
+            {body ? (
+              <>
+                <div className="flex items-start gap-2.5">
+                  <div
+                    className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-white text-[13px] font-semibold"
+                    style={{ background: '#6366F1' }}
+                  >
+                    {(body.contact_name || body.contact_email || '?').slice(0, 1).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-medium truncate">{body.contact_name || t('Untitled customer', '未命名客戶')}</p>
+                    {body.contact_email && <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{body.contact_email}</p>}
+                    {body.contact_phone && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact_phone}</p>}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                    {body.channel || 'email'}
+                  </span>
+                  {detectLang && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                      {detectLang === 'zh' ? '中文' : 'EN'}
+                    </span>
+                  )}
+                  {body.created_at && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
+                      {new Date(body.created_at).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={toggleExternalSearch}
+                  disabled={togglingSearch}
+                  className="flex items-center gap-1.5 text-[11px] font-medium px-2 py-1.5 rounded-[4px] border mt-3 w-full"
+                  style={{
+                    borderColor: body.external_search_enabled ? '#038153' : 'var(--border)',
+                    background: body.external_search_enabled ? '#E8F5F1' : 'transparent',
+                    color: body.external_search_enabled ? '#038153' : 'var(--text-muted)',
+                  }}
+                >
+                  <Globe width="12" height="12" />
+                  {t('External search', '外部搜尋')}: {body.external_search_enabled ? t('ON — AI can web-search for this customer', '開啟——AI 可為此客戶作網絡搜尋') : t('OFF', '關閉')}
+                </button>
+              </>
+            ) : (
+              <SkeletonBlock lines={4} />
+            )}
+          </div>
+
+          {/* ── Pod: Quote (FX + target + citations) ───────────── */}
           <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles width="14" height="14" style={{ color: 'var(--accent)' }} />
-              <h3 className="text-[13px] font-semibold">{t('Inquiry', '查詢')}</h3>
+              <h3 className="text-[13px] font-semibold">{t('Quote', '報價')}</h3>
               {suggestion && (
                 <span className="text-[10px] px-1.5 py-0.5 rounded font-medium ml-auto" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
                   {suggestion.extraction?.source === 'heuristic' ? t('Heuristic', '規則提取') : 'AI'}
@@ -592,7 +821,7 @@ export default function InboxDetailPage() {
             {loadingSuggest ? (
               <SkeletonBlock lines={3} />
             ) : suggestion && suggestion.request_summary ? (
-              <p className="text-[13px] leading-relaxed mb-3" style={{ color: 'var(--text)' }}>
+              <p className="text-[12px] leading-relaxed mb-3" style={{ color: 'var(--text)' }}>
                 {suggestion.request_summary}
               </p>
             ) : (
@@ -600,16 +829,34 @@ export default function InboxDetailPage() {
                 {t('Could not extract a request from this thread yet', '暫時未能從對話提取查詢')}
               </p>
             )}
+
+            {suggestion?.fx && (
+              <div className="flex items-center gap-1.5 text-[11px] mb-1.5" style={{ color: '#0EA5E9' }}>
+                <Globe width="11" height="11" />
+                {t('FX', '匯率')}: 1 → {suggestion.fx.rate} · {suggestion.fx.pair}
+              </div>
+            )}
+            {suggestion && suggestion.margin_rules.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {suggestion.margin_rules.map((r) => (
+                  <span key={r.name} className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                    {r.name} +{r.margin_pct}%
+                  </span>
+                ))}
+              </div>
+            )}
+
             {suggestion && suggestion.lines.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {suggestion.lines.map((l, i) => (
-                  <span key={l.id} className="text-[11px] px-2 py-1 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}>
+                  <span key={l.id} className="text-[10px] px-2 py-1 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}>
                     #{i + 1}{l.quantity ? ` ${l.quantity.toLocaleString()} ${l.unit || 'pcs'}` : ''} · {l.product.slice(0, 42)}
                   </span>
                 ))}
               </div>
             )}
-            <div className="flex gap-2">
+
+            <div className="flex gap-2 mb-3">
               <button
                 onClick={handleClarify}
                 className="flex-1 text-[12px] font-medium px-3 py-2 rounded-[4px] border"
@@ -631,22 +878,15 @@ export default function InboxDetailPage() {
                 className="flex-1 text-[12px] font-medium px-3 py-2 rounded-[4px] text-white"
                 style={{ background: 'var(--accent)' }}
               >
-                {t('Quote', '報價')}
+                {t('Create draft', '建立草稿')}
               </button>
             </div>
-          </div>
 
-          {/* Suggested quote */}
-          <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <FileText width="14" height="14" style={{ color: 'var(--accent)' }} />
-              <h3 className="text-[13px] font-semibold">{t('Suggested quote', '建議報價')}</h3>
-            </div>
             {loadingSuggest ? (
               <SkeletonBlock lines={5} />
             ) : !suggestion || suggestion.lines.length === 0 ? (
               <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('No quote suggested yet — press "Price"', '尚未建議報價——請按「定價」')}
+                {t('No price suggested yet — press "Price"', '尚未建議價格——請按「定價」')}
               </p>
             ) : (
               <>
@@ -663,6 +903,11 @@ export default function InboxDetailPage() {
                             <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
                               {l.matched_product_name || (l.requires_manual_pricing ? t('No matching product', '未匹配到產品') : '')}
                             </p>
+                            {l.target_price && (
+                              <p className="text-[10px] mt-0.5 font-medium" style={{ color: '#0EA5E9' }}>
+                                {t('Customer target', '客戶目標價')}: {l.target_price}
+                              </p>
+                            )}
                           </div>
                           <div className="text-right flex-shrink-0">
                             <p className="text-[14px] font-semibold">{fmtAmount(l.unit_price, suggestion.currency || 'USD')}</p>
@@ -683,6 +928,13 @@ export default function InboxDetailPage() {
                           <button onClick={() => toggleCites(l.id)} className="text-[10px] mt-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>
                             {expanded ? t('Show less', '收合') : t(`Show ${l.sources.length - 2} more sources`, `顯示其餘 ${l.sources.length - 2} 個來源`)}
                           </button>
+                        )}
+                        {l.target_price && l.unit_price > 0 && (
+                          <p className="text-[10px] mt-1.5 font-medium" style={{ color: '#0EA5E9' }}>
+                            {l.unit_price > parseFloat(String(l.target_price).replace(/[^0-9.]/g, '') || '0') && parseFloat(String(l.target_price).replace(/[^0-9.]/g, '') || '0') > 0
+                              ? t('Above customer target — consider adjusting', '高於客戶目標價——建議調整')
+                              : t('Within customer target range', '在客戶目標價範圍內')}
+                          </p>
                         )}
                         {l.requires_manual_pricing && (
                           <p className="text-[10px] mt-1.5 font-medium flex items-center gap-1" style={{ color: 'var(--error)' }}>
@@ -712,7 +964,152 @@ export default function InboxDetailPage() {
             )}
           </div>
 
-          {/* Recommended suppliers */}
+          {/* ── Pod: Stage ─────────────────────────────────────── */}
+          <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Flag width="14" height="14" style={{ color: 'var(--accent)' }} />
+              <h3 className="text-[13px] font-semibold">{t('Stage', '階段')}</h3>
+            </div>
+            {detail?.opportunities && detail.opportunities.length > 0 ? (
+              detail.opportunities.map((opp) => {
+                const meta = STAGE_META[opp.stage] || STAGE_META.NEW;
+                const nexts = STAGE_TRANSITIONS[opp.stage] || [];
+                return (
+                  <div key={opp.id} className="rounded-[4px] border p-2.5 mb-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ color: meta.color, background: meta.bg }}>
+                        {t(meta.en, meta.zh)}
+                      </span>
+                      {opp.estimated_order_value != null && (
+                        <span className="text-[12px] font-semibold">{fmtAmount(opp.estimated_order_value, opp.currency || suggestion?.currency || 'USD')}</span>
+                      )}
+                    </div>
+                    <p className="text-[12px] font-medium mt-1.5 truncate">{opp.title}</p>
+                    {opp.trading_model && (
+                      <p className="text-[10px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{opp.trading_model}</p>
+                    )}
+                    {nexts.length > 0 && (
+                      <div className="flex gap-1.5 mt-2">
+                        <button
+                          onClick={() => advanceStage(opp.id)}
+                          className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1.5 rounded-[4px] border"
+                          style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                        >
+                          {t('Advance', '推進')} →
+                          {t(STAGE_META[nexts[0]].en, STAGE_META[nexts[0]].zh)}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                {t('No opportunity yet — auto-created when the AI extracts the request', '暫無商機——AI 提取需求後會自動建立')}
+              </p>
+            )}
+          </div>
+
+          {/* ── Pod: Approvals ─────────────────────────────────── */}
+          <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <CheckCircle width="14" height="14" style={{ color: 'var(--accent)' }} />
+              <h3 className="text-[13px] font-semibold">{t('Approvals', '審批')}</h3>
+            </div>
+            {detail?.quotes && detail.quotes.length > 0 ? (
+              detail.quotes.map((q) => {
+                const qm = QUOTE_STATUS_META[q.status] || QUOTE_STATUS_META.DRAFT;
+                const approval = detail.approvals.find((a) => a.quote_id === q.id);
+                return (
+                  <div key={q.id} className="rounded-[4px] border p-2.5 mb-2" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[12px] font-medium truncate">{q.quote_number || q.id.slice(0, 8)}</p>
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold flex-shrink-0" style={{ color: qm.color, background: qm.bg }}>
+                        {t(qm.en, qm.zh)}
+                      </span>
+                    </div>
+                    {q.total_amount != null && (
+                      <p className="text-[12px] mt-1 font-semibold">{fmtAmount(q.total_amount, q.currency || 'USD')}</p>
+                    )}
+                    {approval && (
+                      <p className="text-[10px] mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
+                        {approval.status}{approval.comments ? ` · ${approval.comments}` : ''}
+                      </p>
+                    )}
+                    {q.status === 'DRAFT' && (
+                      <button
+                        onClick={() => runApprovalAction(q.id, 'request')}
+                        className="text-[11px] font-medium px-2.5 py-1.5 rounded-[4px] border mt-2"
+                        style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                      >
+                        {t('Request approval', '送交審批')}
+                      </button>
+                    )}
+                    {q.status === 'IN_REVIEW' && (
+                      <div className="flex gap-1.5 mt-2">
+                        <button
+                          onClick={() => runApprovalAction(q.id, 'approve')}
+                          className="text-[11px] font-medium px-2.5 py-1.5 rounded-[4px] text-white"
+                          style={{ background: '#059669' }}
+                        >
+                          {t('Approve', '核准')}
+                        </button>
+                        <button
+                          onClick={() => runApprovalAction(q.id, 'reject')}
+                          className="text-[11px] font-medium px-2.5 py-1.5 rounded-[4px] border"
+                          style={{ borderColor: 'var(--border)', color: 'var(--error)' }}
+                        >
+                          {t('Reject', '拒絕')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                {t('No quote yet — it is created automatically from the suggestion', '暫無報價——會按建議自動建立')}
+              </p>
+            )}
+          </div>
+
+          {/* ── Pod: PDFs ──────────────────────────────────────── */}
+          <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Download width="14" height="14" style={{ color: 'var(--accent)' }} />
+              <h3 className="text-[13px] font-semibold">{t('Quote PDFs', '報價 PDF')}</h3>
+            </div>
+            {detail?.quotes && detail.quotes.length > 0 ? (
+              <div className="space-y-2">
+                {detail.quotes.map((q) => (
+                  <div key={q.id} className="flex items-center justify-between gap-2 rounded-[4px] border p-2.5" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-medium truncate">{q.quote_number || q.id.slice(0, 8)}</p>
+                      {q.valid_until && (
+                        <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                          {t('Valid until', '有效期至')} {new Date(q.valid_until).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => downloadQuotePdf(q.id, `${q.quote_number || q.id}.pdf`)}
+                      className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1.5 rounded-[4px] border shrink-0"
+                      style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                    >
+                      <Download width="11" height="11" />
+                      {t('Download', '下載')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                {t('No PDF yet — create the draft quote to download', '暫無 PDF——建立報價草稿後即可下載')}
+              </p>
+            )}
+          </div>
+
+          {/* ── Pod: Suppliers ──────────────────────────────────── */}
           <div className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Building2 width="14" height="14" style={{ color: 'var(--accent)' }} />
@@ -760,22 +1157,76 @@ export default function InboxDetailPage() {
       </div>
 
       {/* Mobile copy of the rail */}
-      <div className="lg:hidden mt-4 border rounded-[4px] p-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-        <div className="flex items-center gap-2 mb-3">
-          <Sparkles width="14" height="14" style={{ color: 'var(--accent)' }} />
-          <h3 className="text-[13px] font-semibold">{t('Suggested quote & suppliers', '建議報價與供應商')}</h3>
-        </div>
-        {loadingSuggest ? (
-          <SkeletonBlock lines={4} />
-        ) : suggestion && suggestion.lines.length > 0 ? (
-          <div className="flex items-center justify-between">
-            <span className="text-[13px]">{t('Subtotal', '小計')}</span>
-            <span className="text-[15px] font-semibold">{fmtAmount(suggestion.subtotal, suggestion.currency || 'USD')}</span>
+      <div className="lg:hidden mt-4 border rounded-[4px] p-4 space-y-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        {body && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <User width="14" height="14" style={{ color: 'var(--accent)' }} />
+              <h3 className="text-[13px] font-semibold">{t('Customer', '客戶')}</h3>
+            </div>
+            <p className="text-[13px] font-medium">{body.contact_name || t('Untitled customer', '未命名客戶')}</p>
+            {body.contact_email && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact_email}</p>}
           </div>
-        ) : (
-          <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-            {t('No suggestion yet — press "Price"', '尚未建議——請按「定價」')}
-          </p>
+        )}
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles width="14" height="14" style={{ color: 'var(--accent)' }} />
+            <h3 className="text-[13px] font-semibold">{t('Suggested quote', '建議報價')}</h3>
+          </div>
+          {loadingSuggest ? (
+            <SkeletonBlock lines={4} />
+          ) : suggestion && suggestion.lines.length > 0 ? (
+            <div className="flex items-center justify-between">
+              <span className="text-[13px]">{t('Subtotal', '小計')}</span>
+              <span className="text-[15px] font-semibold">{fmtAmount(suggestion.subtotal, suggestion.currency || 'USD')}</span>
+            </div>
+          ) : (
+            <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+              {t('No suggestion yet — press "Price"', '尚未建議——請按「定價」')}
+            </p>
+          )}
+        </div>
+        {detail?.opportunities && detail.opportunities.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Flag width="14" height="14" style={{ color: 'var(--accent)' }} />
+              <h3 className="text-[13px] font-semibold">{t('Stage', '階段')}</h3>
+            </div>
+            {detail.opportunities.map((opp) => {
+              const meta = STAGE_META[opp.stage] || STAGE_META.NEW;
+              return (
+                <div key={opp.id} className="flex items-center justify-between gap-2">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ color: meta.color, background: meta.bg }}>
+                    {t(meta.en, meta.zh)}
+                  </span>
+                  {opp.estimated_order_value != null && (
+                    <span className="text-[13px] font-semibold">{fmtAmount(opp.estimated_order_value, opp.currency || 'USD')}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        {detail?.quotes && detail.quotes.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Download width="14" height="14" style={{ color: 'var(--accent)' }} />
+              <h3 className="text-[13px] font-semibold">{t('Quote PDFs', '報價 PDF')}</h3>
+            </div>
+            <div className="space-y-1.5">
+              {detail.quotes.map((q) => (
+                <button
+                  key={q.id}
+                  onClick={() => downloadQuotePdf(q.id, `${q.quote_number || q.id}.pdf`)}
+                  className="flex items-center gap-1.5 text-[12px] font-medium"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  <Download width="11" height="11" />
+                  {q.quote_number || q.id.slice(0, 8)}
+                </button>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </div>

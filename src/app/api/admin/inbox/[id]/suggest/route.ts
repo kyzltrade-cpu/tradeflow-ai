@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
+import { ensureAutoDraft } from '@/lib/auto-draft';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
@@ -41,6 +42,7 @@ interface SuggestedLine {
   total: number;
   at_cost: boolean;
   requires_manual_pricing: boolean;
+  target_price?: string | null;
   sources: PriceSource[];
 }
 
@@ -327,6 +329,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         sources_summary: [],
         suppliers: [],
         extraction: { source: 'none' as const, items: [] },
+        draft: null,
       });
     }
 
@@ -412,6 +415,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         total,
         at_cost: sources.some((s) => s.detail === 'at cost'),
         requires_manual_pricing: requiresManual,
+        target_price: item.target_price ?? null,
         sources,
       });
     }
@@ -426,6 +430,19 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       `FX ${config.fx_rate} · ${config.fx_pair}`,
     ];
 
+    const draft = await ensureAutoDraft({
+      companyId: auth.companyId,
+      conversationId: id,
+      conversation,
+      requestSummary: extraction.request_summary,
+      currency,
+      lines,
+      subtotal,
+      sourcesSummary,
+      actorId: auth.user.id,
+      actorEmail: auth.user.email,
+    });
+
     return NextResponse.json({
       conversation,
       request_summary: extraction.request_summary,
@@ -437,6 +454,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       sources_summary: sourcesSummary,
       suppliers: suppliersMatch,
       extraction,
+      draft,
     });
   } catch (err) {
     if (err instanceof Response) return err;
