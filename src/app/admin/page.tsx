@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Mail, Search, Globe, Clock } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
@@ -64,15 +64,27 @@ export default function AdminInboxPage() {
   const { companyId, loading: companyLoading } = useCompany();
   const { showToast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [rows, setRows] = useState<InboxRow[]>([]);
   const [counts, setCounts] = useState<InboxCounts>({
     needs_reply: 0, waiting: 0, bookmarked: 0, human: 0, ai: 0, total: 0,
   });
-  const [filter, setFilter] = useState<Filter>('needs_reply');
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // URL is the single source of truth for the folder view (?view=). Sidebar
+  // folder links and the in-page tabs both navigate to the same query param.
+  const view = searchParams.get('view');
+  const filter: Filter =
+    view === 'waiting' || view === 'all' || view === 'bookmarked' || view === 'human' || view === 'ai'
+      ? view
+      : 'needs_reply';
+
+  const selectFilter = (key: Filter) => {
+    router.replace(key === 'needs_reply' ? '/admin' : `/admin?view=${key}`, { scroll: false });
+  };
 
   const fetchInbox = useCallback(async (activeFilter: Filter) => {
     if (companyLoading || !companyId) return;
@@ -156,7 +168,7 @@ export default function AdminInboxPage() {
             {tabs.map((f) => (
               <button
                 key={f.key}
-                onClick={() => setFilter(f.key)}
+                onClick={() => selectFilter(f.key)}
                 className="text-[11px] md:text-[12px] px-2.5 py-1 rounded-[4px] font-medium whitespace-nowrap"
                 style={{
                   background: filter === f.key ? 'var(--accent)' : 'transparent',

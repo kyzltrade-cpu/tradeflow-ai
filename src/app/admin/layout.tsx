@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useCallback, useEffect, type ReactNode } from 'react';
+import { useState, useCallback, useEffect, useMemo, Suspense, type ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useLang, LangToggle } from '@/lib/lang';
 import { useAuth } from '@/lib/auth';
 import { CompanyProvider, useCompany } from '@/lib/company';
@@ -11,11 +11,15 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 /* ── Navigation config ──────────────────────────────────────────────────── */
 
+type BadgeTone = 'accent' | 'warn' | 'muted';
+
 interface NavItem {
   href: string;
   en: string;
   zh: string;
   icon: string;
+  countKey?: keyof InboxCounts;
+  badgeTone?: BadgeTone;
 }
 
 interface NavGroup {
@@ -23,22 +27,73 @@ interface NavGroup {
   items: NavItem[];
 }
 
+interface InboxCounts {
+  needs_reply: number;
+  waiting: number;
+  bookmarked: number;
+  human: number;
+  ai: number;
+  total: number;
+}
+
+const EMPTY_COUNTS: InboxCounts = { needs_reply: 0, waiting: 0, bookmarked: 0, human: 0, ai: 0, total: 0 };
+
+/* Inbox folder icons */
+const ICON_MAIL = 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75';
+const ICON_SPARKLES = 'M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z';
+const ICON_CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
+const ICON_BOOKMARK = 'M17.593 3.322c1.1.128 1.908 1.077 1.908 2.184V21l-7-4.5L5.75 21V5.506c0-1.107.81-2.056 1.907-2.185a48.507 48.507 0 0111.936 0z';
+const ICON_INBOX = 'M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.929 8.298a2.25 2.25 0 00-2.156-1.548h-2.986a2.25 2.25 0 01-2.157 1.54H11.37a2.25 2.25 0 01-2.157-1.54H6.227a2.25 2.25 0 00-2.156 1.548L1.6 13.177a5.25 5.25 0 00-.1.661z';
+
 const NAV_GROUPS: NavGroup[] = [
   {
-    label: { en: 'Primary', zh: '主要' },
+    label: { en: 'Inbox', zh: '收件匣' },
     items: [
       {
-        href: '/admin',
-        en: 'Inbox',
-        zh: '收件匣',
-        icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75',
+        href: '/admin?view=needs_reply',
+        en: 'Focused',
+        zh: '待回覆',
+        icon: ICON_MAIL,
+        countKey: 'needs_reply',
+        badgeTone: 'accent',
       },
       {
-        href: '/admin/inquiries',
-        en: 'Inquiries',
-        zh: '詢價',
-        icon: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75',
+        href: '/admin?view=waiting',
+        en: 'Waiting on them',
+        zh: '等客戶',
+        icon: ICON_CLOCK,
+        countKey: 'waiting',
+        badgeTone: 'muted',
       },
+      {
+        href: '/admin?view=ai',
+        en: 'AI handled',
+        zh: 'AI 已處理',
+        icon: ICON_SPARKLES,
+        countKey: 'ai',
+        badgeTone: 'muted',
+      },
+      {
+        href: '/admin?view=bookmarked',
+        en: 'Bookmarked',
+        zh: '已加書籤',
+        icon: ICON_BOOKMARK,
+        countKey: 'bookmarked',
+        badgeTone: 'muted',
+      },
+      {
+        href: '/admin?view=all',
+        en: 'All mail',
+        zh: '全部',
+        icon: ICON_INBOX,
+        countKey: 'total',
+        badgeTone: 'muted',
+      },
+    ],
+  },
+  {
+    label: { en: 'Pipeline', zh: '流程' },
+    items: [
       {
         href: '/admin/opportunities',
         en: 'Opportunities',
@@ -55,18 +110,12 @@ const NAV_GROUPS: NavGroup[] = [
         href: '/admin/follow-ups',
         en: 'Follow-ups',
         zh: '跟進',
-        icon: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z',
-      },
-      {
-        href: '/admin/conversations',
-        en: 'Conversations',
-        zh: '對話',
-        icon: 'M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z',
+        icon: ICON_CLOCK,
       },
     ],
   },
   {
-    label: { en: 'Secondary', zh: '次要' },
+    label: { en: 'Catalog', zh: '目錄' },
     items: [
       {
         href: '/admin/suppliers',
@@ -87,12 +136,6 @@ const NAV_GROUPS: NavGroup[] = [
         icon: 'M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25',
       },
       {
-        href: '/admin/faq',
-        en: 'FAQ Rules',
-        zh: 'FAQ 規則',
-        icon: 'M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z',
-      },
-      {
         href: '/admin/settings',
         en: 'Settings',
         zh: '設定',
@@ -104,10 +147,38 @@ const NAV_GROUPS: NavGroup[] = [
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 
-function SidebarItem({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
+const TONE_BADGE: Record<BadgeTone, { bg: string; fg: string }> = {
+  accent: { bg: '#111111', fg: '#FFFFFF' },
+  warn: { bg: '#FEF3C7', fg: '#D97706' },
+  muted: { bg: '#F3F4F6', fg: '#6B7280' },
+};
+
+function SidebarItem({
+  item,
+  collapsed,
+  counts,
+}: {
+  item: NavItem;
+  collapsed: boolean;
+  counts: InboxCounts;
+}) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { t } = useLang();
-  const active = pathname === item.href || pathname.startsWith(item.href + '/');
+
+  const { baseHref, view } = useMemo(() => {
+    const [b, q] = item.href.split('?');
+    return { baseHref: b, view: q ? new URLSearchParams(q).get('view') : null };
+  }, [item.href]);
+
+  // Inbox folder items (with ?view=) become active when the current view matches.
+  const active = view
+    ? pathname === baseHref && (searchParams.get('view') || 'needs_reply') === view
+    : pathname === baseHref || pathname.startsWith(baseHref + '/');
+
+  const count = item.countKey ? counts[item.countKey] ?? 0 : 0;
+  const showBadge = typeof item.countKey === 'string' && count > 0;
+  const tone = item.badgeTone || 'muted';
 
   return (
     <Link
@@ -116,37 +187,55 @@ function SidebarItem({ item, collapsed }: { item: NavItem; collapsed: boolean })
       className="flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] font-medium transition-colors"
       style={{
         background: active ? 'var(--accent-light)' : 'transparent',
-        color: active ? 'var(--accent)' : 'var(--text-muted)',
+        color: active ? 'var(--text)' : 'var(--text-muted)',
       }}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
-        strokeWidth={1.5}
+        strokeWidth={active ? 2 : 1.5}
         stroke="currentColor"
         className="h-5 w-5 shrink-0"
       >
         <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
       </svg>
-      {!collapsed && <span>{t(item.en, item.zh)}</span>}
+      {!collapsed && (
+        <>
+          <span className="min-w-0 flex-1 truncate">{t(item.en, item.zh)}</span>
+          {showBadge && (
+            <span
+              className="rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none"
+              style={{
+                background: active ? TONE_BADGE.accent.bg : TONE_BADGE[tone].bg,
+                color: active ? TONE_BADGE.accent.fg : TONE_BADGE[tone].fg,
+              }}
+            >
+              {count > 99 ? '99+' : count}
+            </span>
+          )}
+        </>
+      )}
     </Link>
   );
 }
 
 function Sidebar({
-  collapsed,
   onClose,
   email,
   onSignOut,
+  onMinimize,
+  counts,
 }: {
-  collapsed: boolean;
   onClose: () => void;
   email: string | null;
   onSignOut: () => void;
+  onMinimize: () => void;
+  counts: InboxCounts;
 }) {
   const { t } = useLang();
   const initial = (email || 'B').charAt(0).toUpperCase();
+  const focused = counts.needs_reply ?? 0;
 
   return (
     <>
@@ -154,55 +243,90 @@ function Sidebar({
       <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={onClose} />
 
       <aside
-        className="fixed left-0 top-0 z-50 flex h-full flex-col border-r transition-all duration-200 lg:static lg:z-auto"
+        className="fixed left-0 top-0 z-50 flex h-full flex-col border-r lg:static lg:z-auto"
         style={{
-          width: collapsed ? 60 : 240,
+          width: 240,
           background: 'var(--surface)',
           borderColor: 'var(--border)',
         }}
       >
         {/* Logo */}
-        <div
-          className={`flex h-14 items-center gap-1.5 border-b ${collapsed ? 'justify-center px-0' : 'px-4'}`}
-          style={{ borderColor: 'var(--border)' }}
-        >
+        <div className="flex h-14 items-center gap-1.5 border-b px-4" style={{ borderColor: 'var(--border)' }}>
           <Link
             href="/"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
           >
             <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-10 w-10 rounded-lg object-cover" />
           </Link>
-          {!collapsed && (
-            <Link
-              href="/"
-              className="text-base font-semibold"
-              style={{ color: 'var(--text)' }}
-            >
-              Sailwise
-            </Link>
-          )}
+          <Link
+            href="/"
+            className="text-base font-semibold"
+            style={{ color: 'var(--text)' }}
+          >
+            Sailwise
+          </Link>
         </div>
 
         {/* Nav groups */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           {NAV_GROUPS.map((group, gi) => (
             <div key={gi} className={gi > 0 ? 'mt-6' : ''}>
-              {!collapsed && (
-                <div
-                  className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  {t(group.label.en, group.label.zh)}
-                </div>
-              )}
+              <div
+                className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {t(group.label.en, group.label.zh)}
+              </div>
               <div className="space-y-0.5">
                 {group.items.map((item) => (
-                  <SidebarItem key={item.href} item={item} collapsed={collapsed} />
+                  <SidebarItem key={item.href} item={item} collapsed={false} counts={counts} />
                 ))}
               </div>
             </div>
           ))}
+
+          {/* AI status card */}
+          <div className="mt-6">
+            <div
+              className="flex items-start gap-2.5 rounded-lg border px-3 py-2.5"
+              style={{
+                borderColor: 'var(--border)',
+                background: 'linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(56,189,248,0.05) 100%)',
+              }}
+            >
+              <span
+                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-white"
+                style={{ background: '#6366F1' }}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d={ICON_SPARKLES} />
+                </svg>
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="text-[12px] font-semibold" style={{ color: 'var(--text)' }}>
+                  {t('AI inbox', 'AI 收件匣')}
+                </div>
+                <div className="mt-0.5 text-[11px] leading-snug" style={{ color: 'var(--text-muted)' }}>
+                  {focused > 0
+                    ? t(`${focused} message${focused === 1 ? '' : 's'} waiting on you`, `有 ${focused} 封郵件等待你回覆`)
+                    : t('You’re all caught up', '所有郵件已處理')}
+                </div>
+              </div>
+              <span
+                className="mt-1 h-2 w-2 shrink-0 rounded-full"
+                style={{ background: 'var(--success)', boxShadow: '0 0 0 3px rgba(28,122,77,0.15)' }}
+                title="AI online"
+              />
+            </div>
+          </div>
         </nav>
+
+        {/* Language */}
+        <div className="border-t px-3 py-3" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex justify-center">
+            <LangToggle />
+          </div>
+        </div>
 
         {/* User badge */}
         <div className="border-t px-3 py-3" style={{ borderColor: 'var(--border)' }}>
@@ -215,20 +339,18 @@ function Sidebar({
             >
               {initial}
             </Link>
-            {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-[13px] font-medium" style={{ color: 'var(--text)' }}>
-                  {email}
-                </div>
-                <Link
-                  href="/admin/settings"
-                  className="truncate text-[11px] hover:underline"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  {t('Settings', '設定')}
-                </Link>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13px] font-medium" style={{ color: 'var(--text)' }}>
+                {email}
               </div>
-            )}
+              <Link
+                href="/admin/settings"
+                className="truncate text-[11px] hover:underline"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {t('Settings', '設定')}
+              </Link>
+            </div>
             <button
               onClick={onSignOut}
               className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-red-50"
@@ -247,6 +369,43 @@ function Sidebar({
               </svg>
             </button>
           </div>
+        </div>
+      {/* Minimize sidebar */}
+        <div className="border-t px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+          <button
+            onClick={onMinimize}
+            className="hidden lg:flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-gray-100"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-4 w-4"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 9 6 6m0 0-6 6m6-6H3.75" />
+            </svg>
+            <span>{t('Minimize sidebar', '收窄側欄')}</span>
+          </button>
+          <button
+            onClick={onClose}
+            className="flex lg:hidden w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-gray-100"
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-4 w-4"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+            <span>{t('Close', '關閉')}</span>
+          </button>
         </div>
       </aside>
     </>
@@ -272,7 +431,38 @@ function AdminShell({ children }: { children: ReactNode }) {
   const { companyId, companyStatus, loading: companyLoading } = useCompany();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [headerRetracted, setHeaderRetracted] = useState(false);
+  const [counts, setCounts] = useState<InboxCounts>(EMPTY_COUNTS);
+
+  const refreshCounts = useCallback(async () => {
+    try {
+      const res = await authFetch('/api/admin/inbox?filter=all');
+      if (!res.ok) return;
+      const json = (await res.json()) as { counts?: InboxCounts };
+      const counts = json?.counts;
+      if (counts && typeof counts === 'object') {
+        setCounts({
+          needs_reply: counts.needs_reply ?? 0,
+          waiting: counts.waiting ?? 0,
+          bookmarked: counts.bookmarked ?? 0,
+          human: counts.human ?? 0,
+          ai: counts.ai ?? 0,
+          total: counts.total ?? 0,
+        });
+      }
+    } catch {
+      // silent — counts are non-critical
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!user || loading) return;
+    const first = setTimeout(refreshCounts, 0);
+    const id = setInterval(refreshCounts, 30_000);
+    return () => {
+      clearTimeout(first);
+      clearInterval(id);
+    };
+  }, [user, loading, refreshCounts]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -377,26 +567,31 @@ function AdminShell({ children }: { children: ReactNode }) {
       {/* Mobile sidebar */}
       {mobileOpen && (
         <div className="lg:hidden">
-          <Sidebar collapsed={false} onClose={() => setMobileOpen(false)} email={user?.email ?? null} onSignOut={handleLogout} />
+          <Suspense fallback={null}>
+            <Sidebar onClose={() => setMobileOpen(false)} email={user?.email ?? null} onSignOut={handleLogout} onMinimize={() => { setMobileOpen(false); setCollapsed(true); }} counts={counts} />
+          </Suspense>
         </div>
       )}
 
       {/* Desktop sidebar */}
       <div className="hidden lg:block">
-        <Sidebar collapsed={collapsed} onClose={() => {}} email={user?.email ?? null} onSignOut={handleLogout} />
-      </div>
-
-      {/* Main content */}
-      <div className="flex flex-1 flex-col overflow-hidden">
-        {headerRetracted ? (
-          <div className="absolute right-4 top-2 z-40 flex items-center gap-2">
-            <LangToggle />
+        {collapsed ? (
+          <aside
+            className="flex h-full w-[56px] flex-col items-center border-r py-3"
+            style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
+          >
+            <Link
+              href="/"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+              aria-label="Sailwise"
+            >
+              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-10 w-10 rounded-lg object-cover" />
+            </Link>
             <button
-              type="button"
-              onClick={() => setHeaderRetracted(false)}
-              aria-label="Expand header"
-              title="Expand header"
-              className="flex h-8 w-8 items-center justify-center rounded-md border transition-colors hover:bg-gray-100"
+              onClick={toggleCollapse}
+              className="mt-4 flex h-9 w-9 items-center justify-center rounded-md border transition-colors hover:bg-gray-100"
+              aria-label="Restore sidebar"
+              title="Restore sidebar"
               style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
             >
               <svg
@@ -407,80 +602,49 @@ function AdminShell({ children }: { children: ReactNode }) {
                 stroke="currentColor"
                 className="h-5 w-5"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9 6 6m0 0-6 6m6-6H3.75" />
               </svg>
             </button>
-          </div>
+            {counts.needs_reply > 0 && (
+              <span
+                className="mt-3 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white"
+                style={{ background: '#111111' }}
+                title={`${counts.needs_reply} focused`}
+              >
+                {counts.needs_reply > 99 ? '99+' : counts.needs_reply}
+              </span>
+            )}
+          </aside>
         ) : (
-          <header
-            className="sticky top-0 z-30 flex h-14 items-center justify-between border-b px-4"
-            style={{
-              background: 'var(--surface)',
-              borderColor: 'var(--border)',
-            }}
-          >
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-gray-100 lg:hidden"
-              aria-label="Open sidebar"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-5 w-5"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            </button>
-
-            <button
-              onClick={toggleCollapse}
-              className="hidden h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-gray-100 lg:flex"
-              aria-label="Collapse sidebar"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-5 w-5"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-              </svg>
-            </button>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setHeaderRetracted(true)}
-                aria-label="Retract header"
-                title="Retract header"
-                className="flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-gray-100"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 8.25 7.5 7.5 7.5-7.5" />
-                </svg>
-              </button>
-              <LangToggle />
-            </div>
-          </header>
+          <Suspense fallback={null}>
+            <Sidebar onClose={() => {}} email={user?.email ?? null} onSignOut={handleLogout} onMinimize={toggleCollapse} counts={counts} />
+          </Suspense>
         )}
+      </div>
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed left-3 top-3 z-30 flex lg:hidden h-9 w-9 items-center justify-center rounded-md border bg-white/90 shadow-sm"
+        aria-label="Open menu"
+        title="Open menu"
+        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+          className="h-5 w-5"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+
+      {/* Main content */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto p-4 pt-14 lg:pt-4 md:p-6 md:pt-6 lg:pt-6">
           <div className="mx-auto max-w-[1280px]">{children}</div>
         </main>
       </div>
