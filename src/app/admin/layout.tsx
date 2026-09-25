@@ -174,33 +174,35 @@ function SidebarItem({
   return (
     <Link
       href={item.href}
-      className="group/item relative flex items-center gap-2.5 rounded-md px-2.5 py-[5px] text-[13px] transition-colors"
+      className="group relative flex h-[34px] items-center gap-2.5 rounded-[8px] px-2.5 transition-colors"
       style={{
-        background: active ? 'var(--accent-light)' : 'transparent',
-        color: active ? 'var(--text)' : 'var(--text-muted)',
+        background: active ? '#F1F1F1' : 'transparent',
+        color: active ? 'var(--text)' : '#6B6B6B',
       }}
     >
-      {active && (
-        <span
-          className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full"
-          style={{ background: 'var(--accent)' }}
-        />
-      )}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
-        strokeWidth={active ? 2 : 1.5}
+        strokeWidth={active ? 2 : 1.75}
         stroke="currentColor"
-        className="h-[18px] w-[18px] shrink-0"
+        className="h-[17px] w-[17px] shrink-0"
       >
         <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
       </svg>
-      <span className="min-w-0 flex-1 truncate font-medium">{t(item.en, item.zh)}</span>
+      <span
+        className="min-w-0 flex-1 truncate text-[13px] tracking-[-0.01em]"
+        style={{ fontWeight: active ? 600 : 500 }}
+      >
+        {t(item.en, item.zh)}
+      </span>
       {showCount && (
         <span
-          className="text-[12px] font-semibold tabular-nums"
-          style={{ color: active ? 'var(--text)' : 'var(--text-muted)' }}
+          className="flex h-[18px] min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums leading-none"
+          style={{
+            background: active ? 'var(--accent)' : 'var(--accent-light)',
+            color: active ? '#FFFFFF' : 'var(--text)',
+          }}
         >
           {count > 99 ? '99+' : count}
         </span>
@@ -239,23 +241,23 @@ function Sidebar({
         }}
       >
         {/* Logo row */}
-        <div className="flex h-[52px] items-center gap-2 px-3.5">
+        <div className="flex h-[56px] shrink-0 items-center gap-2 border-b px-4" style={{ borderColor: 'var(--border)' }}>
           <Link
             href="/"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] transition-opacity hover:opacity-80"
             title="Sailwise"
           >
-            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-8 w-8 rounded-md object-cover" />
+            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-7 w-7 rounded-[6px] object-cover" />
           </Link>
           <span
-            className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.2px]"
+            className="min-w-0 flex-1 truncate text-[14px] font-semibold tracking-[-0.2px]"
             style={{ color: 'var(--text)' }}
           >
             Sailwise
           </span>
           <button
             onClick={onMinimize}
-            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-gray-100 lg:flex"
+            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-black/[0.05] lg:flex"
             title={t('Minimize sidebar', '收窄側欄')}
             style={{ color: 'var(--text-muted)' }}
           >
@@ -273,16 +275,16 @@ function Sidebar({
         </div>
 
         {/* Nav groups */}
-        <nav className="flex-1 overflow-y-auto px-2.5 pb-3 pt-1">
+        <nav className="flex-1 overflow-y-auto px-2.5 pb-4 pt-4">
           {NAV_GROUPS.map((group, gi) => (
-            <div key={gi} className={gi > 0 ? 'mt-[22px]' : ''}>
+            <div key={gi} className={gi > 0 ? 'mt-7' : ''}>
               <div
-                className="mb-[5px] px-2.5 text-[10px] font-semibold uppercase tracking-[0.08em]"
-                style={{ color: 'var(--text-muted)' }}
+                className="mb-2 px-2.5 text-[11px] font-semibold uppercase tracking-[0.08em]"
+                style={{ color: '#8A8A8A' }}
               >
                 {t(group.label.en, group.label.zh)}
               </div>
-              <div className="space-y-[1px]">
+              <div className="space-y-[2px]">
                 {group.items.map((item) => (
                   <SidebarItem key={item.href} item={item} counts={counts} />
                 ))}
@@ -292,23 +294,22 @@ function Sidebar({
         </nav>
 
         {/* Footer */}
-        <div className="border-t px-2.5 py-2.5" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2">
+        <div className="border-t px-3 py-3" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-2.5">
             <Link
               href="/admin/settings"
-              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-white transition-opacity hover:opacity-85"
               style={{ background: '#111111' }}
               title={email || t('Account', '帳戶')}
             >
               {initial}
             </Link>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[12px] font-medium" style={{ color: 'var(--text)' }}>
+              <div className="truncate text-[12.5px] font-medium" style={{ color: 'var(--text)' }}>
                 {email}
               </div>
             </div>
             <div className="flex items-center gap-0.5">
-              <LangToggle />
               <button
                 onClick={onSignOut}
                 className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-red-50 lg:flex"
@@ -328,11 +329,17 @@ function Sidebar({
               </button>
             </div>
           </div>
+          <div className="mt-2.5 flex items-center justify-between border-t pt-2.5" style={{ borderColor: 'var(--border)' }}>
+            <span className="text-[11px] font-medium" style={{ color: '#8A8A8A' }}>
+              {t('Language', '語言')}
+            </span>
+            <LangToggle />
+          </div>
 
           {/* Mobile close (drawer) */}
           <button
             onClick={onClose}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-gray-100 lg:hidden"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-black/[0.05] lg:hidden"
             style={{ color: 'var(--text-muted)' }}
           >
             <svg
@@ -523,22 +530,22 @@ function AdminShell({ children }: { children: ReactNode }) {
       <div className="hidden lg:block">
         {collapsed ? (
           <aside
-            className="flex h-full w-[56px] flex-col items-center border-r py-3"
+            className="flex h-full w-[60px] flex-col items-center border-r py-3"
             style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
           >
             <Link
               href="/"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
               aria-label="Sailwise"
             >
-              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-10 w-10 rounded-lg object-cover" />
+              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-8 w-8 rounded-lg object-cover" />
             </Link>
             <button
               onClick={toggleCollapse}
-              className="mt-4 flex h-9 w-9 items-center justify-center rounded-md border transition-colors hover:bg-gray-100"
+              className="mt-3 flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-black/[0.05]"
               aria-label="Restore sidebar"
               title="Restore sidebar"
-              style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              style={{ color: 'var(--text-muted)' }}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -546,14 +553,14 @@ function AdminShell({ children }: { children: ReactNode }) {
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="h-5 w-5"
+                className="h-4.5 w-4.5"
               >
                 <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9 6 6m0 0-6 6m6-6H3.75" />
               </svg>
             </button>
             {counts.needs_reply > 0 && (
               <span
-                className="mt-3 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white"
+                className="mt-2 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white"
                 style={{ background: '#111111' }}
                 title={`${counts.needs_reply} focused`}
               >

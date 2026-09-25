@@ -194,23 +194,23 @@ export default function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="pt-36 pb-20 px-6 relative overflow-hidden">
-        {/* Hero background banner */}
+        {/* Hero background banner — top band only, anchored left, not behind the demo */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[540px] md:h-[600px]"
           style={{
             backgroundImage: 'url(/hero/hero-banner.jpg)',
             backgroundSize: 'cover',
-            backgroundPosition: 'center',
+            backgroundPosition: 'left center',
           }}
         />
-        {/* Soft white wash so headline + demo stay crisp over the image */}
+        {/* Light wash for headline legibility; fades to white before the demo dashboard */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[540px] md:h-[600px]"
           style={{
             background:
-              'linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.78) 22%, rgba(255,255,255,0.92) 55%, #FFFFFF 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.5) 62%, #FFFFFF 100%)',
           }}
         />
         <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 w-[940px] h-[640px]" style={{ marginLeft: -470, background: 'radial-gradient(50% 50% at 50% 28%, rgba(0,0,0,0.045), rgba(0,0,0,0) 70%)' }} />

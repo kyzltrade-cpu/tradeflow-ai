@@ -576,18 +576,19 @@ export default function InboxDetailPage() {
         className="flex items-center justify-between gap-3 px-3 md:px-5 py-2.5 md:py-3 flex-shrink-0 border-b"
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             onClick={() => router.push('/admin')}
-            className="flex items-center gap-1.5 text-[13px] font-medium px-2 py-1.5 rounded-full transition-colors hover:bg-gray-100"
+            className="flex items-center gap-1.5 text-[13px] font-medium px-2.5 py-1.5 rounded-lg transition-colors hover:bg-black/[0.05]"
             style={{ color: 'var(--text-muted)' }}
           >
             <ArrowLeft width="15" height="15" />
             {t('Inbox', '收件匣')}
           </button>
-          <div>
-            <h1 className="text-[15px] md:text-[16px] font-semibold tracking-[-0.3px]">{contactLabel}</h1>
-            <p className="text-[11px] md:text-[12px]" style={{ color: 'var(--text-muted)' }}>
+          <div className="h-5 w-[1px] shrink-0" style={{ background: 'var(--border)' }} />
+          <div className="min-w-0">
+            <h1 className="truncate text-[15px] md:text-[16px] font-semibold tracking-[-0.3px]">{contactLabel}</h1>
+            <p className="truncate text-[11px] md:text-[12px]" style={{ color: 'var(--text-muted)' }}>
               {body?.contact_email || body?.contact_phone || ''}
             </p>
           </div>
@@ -598,7 +599,7 @@ export default function InboxDetailPage() {
               {displayStatus === 'human' ? (
                 <button
                   onClick={() => setStatus('active')}
-                  className="text-[11px] md:text-[12px] font-medium px-2 md:px-3 py-1.5 rounded-[4px] border"
+                  className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg border"
                   style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
                 >
                   {t('Release to AI', '交還 AI')}
@@ -607,21 +608,21 @@ export default function InboxDetailPage() {
                 <>
                   <button
                     onClick={() => setStatus(displayStatus === 'ai_paused' ? 'active' : 'ai_paused')}
-                    className="text-[11px] md:text-[12px] font-medium px-2 md:px-3 py-1.5 rounded-[4px] border"
+                    className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg border"
                     style={{ borderColor: 'var(--border)', color: displayStatus === 'ai_paused' ? '#D97706' : 'var(--text-muted)' }}
                   >
                     {displayStatus === 'ai_paused' ? t('Resume AI', '恢復 AI') : t('Pause AI', '暫停 AI')}
                   </button>
                   <button
                     onClick={() => setStatus(displayStatus === 'bookmarked' ? 'active' : 'bookmarked')}
-                    className="text-[11px] md:text-[12px] font-medium px-2 md:px-3 py-1.5 rounded-[4px] border"
+                    className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg border"
                     style={{ borderColor: 'var(--border)', color: displayStatus === 'bookmarked' ? 'var(--error)' : 'var(--text-muted)' }}
                   >
                     {displayStatus === 'bookmarked' ? t('Bookmarked', '已加書籤') : t('Bookmark', '加書籤')}
                   </button>
                   <button
                     onClick={() => setStatus('human')}
-                    className="text-[11px] md:text-[12px] font-medium px-2 md:px-3 py-1.5 rounded-[4px] text-white"
+                    className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg text-white"
                     style={{ background: '#038153' }}
                   >
                     {t('Take over', '接管')}

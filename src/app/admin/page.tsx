@@ -142,15 +142,15 @@ export default function AdminInboxPage() {
     <div className="flex h-full flex-col" style={{ background: 'var(--bg)' }}>
       {/* Mail toolbar — folder pills + search */}
       <div
-        className="flex items-center gap-2 border-b px-3 py-2 flex-shrink-0 md:px-4"
+        className="flex items-center gap-2 border-b px-3 py-2 flex-shrink-0 md:px-5"
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
       >
-        <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-1 overflow-x-auto py-0.5">
           {tabs.map((f) => (
             <button
               key={f.key}
               onClick={() => selectFilter(f.key)}
-              className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-medium transition-colors"
+              className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors"
               style={{
                 background: filter === f.key ? 'var(--accent)' : 'transparent',
                 color: filter === f.key ? 'white' : 'var(--text-muted)',
@@ -159,7 +159,7 @@ export default function AdminInboxPage() {
               {t(f.en, f.zh)}
               {f.n !== undefined && f.n > 0 && (
                 <span
-                  className="rounded-full px-1.5 text-[10px] font-semibold tabular-nums leading-4"
+                  className="rounded-full px-1.5 text-[10px] font-bold tabular-nums leading-4"
                   style={{
                     background: filter === f.key ? 'rgba(255,255,255,0.2)' : 'var(--accent-light)',
                     color: filter === f.key ? 'white' : 'var(--text)',
@@ -175,19 +175,19 @@ export default function AdminInboxPage() {
         <div className="ml-auto flex items-center gap-1.5">
           <button
             onClick={() => fetchInbox(filter)}
-            className="flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-gray-100"
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/[0.05]"
             title={t('Refresh', '重新整理')}
             style={{ color: 'var(--text-muted)' }}
           >
-            <RefreshCw width="14" height="14" />
+            <RefreshCw width="15" height="15" />
           </button>
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2" width="14" height="14" style={{ color: 'var(--text-muted)' }} />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2" width="15" height="15" style={{ color: 'var(--text-muted)' }} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder={t('Search mail…', '搜尋郵件…')}
-              className="border rounded-full pl-8 pr-3 py-1.5 text-[13px] focus:outline-none w-40 md:w-56"
+              className="border rounded-[10px] pl-8.5 pr-3 py-2 text-[13px] focus:outline-none w-44 md:w-60 transition-[width]"
               style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
             />
           </div>
@@ -196,8 +196,8 @@ export default function AdminInboxPage() {
 
       {/* Column headers — makes it unmistakably a mail client */}
       <div
-        className="hidden md:grid grid-cols-[minmax(190px,240px)_1fr_80px] items-center gap-3 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] border-b flex-shrink-0"
-        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+        className="hidden md:grid grid-cols-[minmax(190px,240px)_1fr_80px] items-center gap-3 px-5 py-2 text-[11px] font-semibold uppercase tracking-[0.05em] border-b flex-shrink-0"
+        style={{ borderColor: 'var(--border)', color: 'var(--text-muted)', background: '#FBFBFB' }}
       >
         <span>{t('Sender', '寄件人')}</span>
         <span>{t('Message', '內容')}</span>
