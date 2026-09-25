@@ -48,8 +48,6 @@ const STATUS_OPTIONS = [
 const CHANNEL_OPTIONS = [
   { value: '', en: 'All channels', zh: '所有渠道' },
   { value: 'email', en: 'Email', zh: '電郵' },
-  { value: 'whatsapp', en: 'WhatsApp', zh: 'WhatsApp' },
-  { value: 'wechat', en: 'WeChat', zh: '微信' },
   { value: 'web', en: 'Web', zh: '網站' },
   { value: 'manual', en: 'Manual', zh: '手動' },
   { value: 'api', en: 'API', zh: 'API' },
@@ -90,8 +88,6 @@ function priorityColor(priority: string) {
 function channelIcon(channel: string) {
   switch (channel) {
     case 'email': return 'M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z';
-    case 'whatsapp': return 'M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z';
-    case 'wechat': return 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z';
     case 'web': return 'M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9';
     case 'manual': return 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z';
     case 'api': return 'M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4';
@@ -230,7 +226,7 @@ export default function InquiriesPage() {
         <div>
           <h1 className="text-[20px] md:text-[24px] font-semibold tracking-[-0.5px]">{t('Inquiries', '詢價')}</h1>
           <p className="text-[13px] md:text-[14px] mt-1" style={{ color: 'var(--text-muted)' }}>
-            {t('All incoming inquiries from email, WhatsApp, web, and other channels', '來自電郵、WhatsApp、網站和其他渠道的所有詢價')}
+            {t('All incoming inquiries from email and other channels', '來自電郵和其他渠道的所有詢價')}
           </p>
         </div>
         <button

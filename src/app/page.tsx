@@ -3,7 +3,6 @@ import {
   Inbox,
   ScanSearch,
   MessageCircleQuestion,
-  Users,
   Quote,
   Timer,
   ShieldCheck,
@@ -28,8 +27,8 @@ const CORE_FEATURES = [
     span: 'lg:col-span-4',
     wide: true,
     title: 'Email-first inbox',
-    desc: 'An inquiry lands in the mailbox you already use — Google or Microsoft — and Sailwise drives it through the whole sourcing pipeline from there.',
-    detail: 'No new software for your team, customers, or suppliers to learn. Supports English, Chinese, and mixed-language threads.',
+    desc: 'An inquiry lands in the mailbox you already use — Google or Microsoft — and Sailwise drives it through the whole pipeline from there.',
+    detail: 'No new software for your team or customers to learn. Supports English, Chinese, and mixed-language threads.',
   },
   {
     icon: ScanSearch,
@@ -48,20 +47,20 @@ const CORE_FEATURES = [
     detail: 'Never quote on assumptions — target price, Incoterm, and destination are caught before you commit.',
   },
   {
-    icon: Users,
-    code: 'RFQ',
+    icon: ShieldCheck,
+    code: 'TRACE',
     span: 'lg:col-span-2',
-    title: 'Suppliers get RFQed',
-    desc: 'A batch RFQ goes to your shortlisted suppliers by email, in their language.',
-    detail: 'You approve every send. Suppliers reply in place; no chasing spreadsheet threads.',
+    title: 'Every number traceable',
+    desc: 'Each line cites where it came from — your products, your margin rules, the FX rate.',
+    detail: 'A full paper trail for every spec, price, and approval. Nothing is guessed.',
   },
   {
     icon: Quote,
     code: 'QUOTE',
     span: 'lg:col-span-2',
     title: 'Quotes with a source',
-    desc: 'Every number on your quote comes from a supplier price, your margin rule, and the FX rate — all traceable.',
-    detail: 'No guesswork. Every line traces back to a supplier price, your margin rule, and the FX rate.',
+    desc: 'Every number on your quote comes from your product price, your margin rule, and the FX rate — all traceable.',
+    detail: 'No guesswork. Every line traces back to your product price, a margin rule, and the FX rate.',
   },
   {
     icon: Timer,
@@ -81,7 +80,7 @@ const CONTROL_FEATURES = [
     icon: ShieldCheck,
     code: 'APPROVAL',
     title: 'Approve everything',
-    desc: 'Every reply, RFQ, and quote is a draft until you say go.',
+    desc: 'Every reply and every quote is a draft until you say go.',
   },
   {
     icon: Layers,
@@ -108,8 +107,7 @@ const CONTROL_FEATURES = [
 const STEPS = [
   { num: '01', code: 'INBOUND', channels: 'EMAIL', title: 'Inquiry comes in', desc: 'From your connected mailbox. Every spec, quantity, and requirement is pulled out and pinned to the line it came from.', gate: 'GATE 01 — APPROVE THE EXTRACTION' },
   { num: '02', code: 'CLARIFY', channels: 'CUSTOMER LANGUAGE', title: 'Gaps get clarified', desc: 'AI flags what\'s missing and drafts one question in the customer\'s language. You approve, we ask.', gate: 'GATE 02 — APPROVE THE QUESTION' },
-  { num: '03', code: 'RFQ', channels: 'SUPPLIERS · BATCH', title: 'Suppliers get RFQed', desc: 'One batch RFQ to your shortlist by email. They reply in place.', gate: 'GATE 03 — APPROVE THE SEND' },
-  { num: '04', code: 'QUOTE', channels: 'COMPARE · LANDED COST', title: 'Quote is drafted', desc: 'Responses compared, landed cost calculated, quote drafted — every number traced to a supplier price, margin rule, or FX rate. You approve, one click sends.', gate: 'GATE 04 — YOUR SIGN-OFF' },
+  { num: '03', code: 'QUOTE', channels: 'PRICE · MARGIN · FX', title: 'Quote is drafted', desc: 'Quote drafted from your product prices, margin rules, and the FX rate — every number traced. You approve, one click sends.', gate: 'GATE 03 — YOUR SIGN-OFF' },
 ];
 
 /* ── Ops marquee tokens ─────────────────────────────────────────────────── */
@@ -146,7 +144,7 @@ const PLANS = [
 const FAQS = [
   {
     q: 'Does it work with the email I already use?',
-    a: 'Yes. Sailwise works over your existing mailbox with a one-click Google or Microsoft connection. There is no new software for your team, your customers, or your suppliers to learn.',
+    a: 'Yes. Sailwise works over your existing mailbox with a one-click Google or Microsoft connection. There is no new software for your team or your customers to learn.',
   },
   {
     q: 'Can I use a personal Gmail or Hotmail?',
@@ -162,23 +160,23 @@ const FAQS = [
   },
   {
     q: 'Who controls the final quote?',
-    a: 'You do. Every quote is a draft until you approve it. AI cites where each number came from — supplier price, margin rule, FX rate — so you can verify fast.',
+    a: 'You do. Every quote is a draft until you approve it. AI cites where each number came from — product price, margin rule, FX rate — so you can verify fast.',
   },
   {
     q: 'Why not just use ChatGPT or a generic AI add-on?',
-    a: 'Sailwise is a pipeline, not a chat window. It ties each step to your data — your products, suppliers, margins, and FX rates — and keeps a human approving every outbound message. A generic chatbot can write a reply; it can\'t RFQ your suppliers, compare landed costs, or draft a quote you can trace.',
+    a: 'Sailwise is a pipeline, not a chat window. It ties each step to your data — your products, margins, and FX rates — and keeps a human approving every outbound message. A generic chatbot can write a reply; it can\'t extract specs with citations, respect your margin rules, or draft a quote you can trace through your own pricing.',
   },
   {
     q: 'Do I need to be technical to set it up?',
-    a: 'No. Self-serve setup is guided: connect your Google or Microsoft mailbox, upload your products, and approve your first draft. There\'s also an optional done-for-you setup for HK$1,288 one-time where our team does all of it for you.',
+    a: 'No. Self-serve setup is guided: connect your Google or Microsoft mailbox, upload your products, and approve your first draft. There\'s also an optional done-for-you setup for HK$1,000 one-time where our team does all of it for you.',
   },
   {
-    q: 'Is my supplier and pricing data safe?',
+    q: 'Is my product and pricing data safe?',
     a: 'Your knowledge base is private to your company. Data is stored encrypted, access is per-user, and it is never used to train models shared with other customers.',
   },
   {
     q: 'Is there a setup fee?',
-    a: 'You can start free on your own. There\'s also an optional done-for-you setup for HK$1,288 one-time — our team connects your mailbox, uploads your products, and configures the AI for you.',
+    a: 'You can start free on your own. There\'s also an optional done-for-you setup for HK$1,000 one-time — our team connects your mailbox, uploads your products, and configures the AI for you.',
   },
   {
     q: 'Can I cancel anytime?',
@@ -214,7 +212,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#555555', animationDelay: '330ms' }}>
-            Sailwise is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, RFQs your suppliers, compares their responses with cited landed costs, and drafts a ready-to-send quote — in hours, not days.
+            Sailwise is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, drafts a cited price from your products and margins, and follows up until the deal closes — in hours, not days.
           </p>
 
           <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center gap-4 mb-16" style={{ animationDelay: '450ms' }}>
@@ -396,7 +394,7 @@ export default function LandingPage() {
               See it in action
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
-              A real RFQ, minutes later. Here&apos;s the whole flow.
+              A real inquiry, minutes later. Here&apos;s the whole flow.
             </p>
           </Reveal>
 
@@ -406,8 +404,8 @@ export default function LandingPage() {
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#000' }}>1</div>
                 <div>
-                  <div className="text-sm font-semibold">The RFQ arrives</div>
-                  <div className="text-xs" style={{ color: '#8A8A8A' }}>The inquiry lands in your shared inbox</div>
+                  <div className="text-sm font-semibold">The inquiry arrives</div>
+                  <div className="text-xs" style={{ color: '#8A8A8A' }}>The inquiry lands in your inbox</div>
                 </div>
                 <span className="btk-mono ml-auto text-[10px]" style={{ color: '#9A9A9A' }}>T+00:00</span>
               </div>
@@ -456,7 +454,7 @@ export default function LandingPage() {
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#000' }}>3</div>
                 <div>
                   <div className="text-sm font-semibold">A quote you can trace</div>
-                  <div className="text-xs" style={{ color: '#8A8A8A' }}>Every number traces back to a supplier price or your margin rule</div>
+                  <div className="text-xs" style={{ color: '#8A8A8A' }}>Every number traces back to your product price, a margin rule, or the FX rate</div>
                 </div>
                 <span className="btk-mono ml-auto text-[10px]" style={{ color: '#9A9A9A' }}>T+09:25</span>
               </div>
@@ -488,7 +486,7 @@ export default function LandingPage() {
                 </div>
                 <div className="py-3 border-t text-xs" style={{ borderColor: '#ECECEC', color: '#555555' }}>
                   <span className="font-semibold" style={{ color: '#000' }}>Sources: </span>
-                  Supplier quote #SO-2091 (Global Stainless) · 20% margin on bottles (4.00 → 5.00) · FX 7.82 · Holds for 15 days
+                  Product price list · 20% margin rule (4.00 → 5.00) · FX 7.82 · Holds for 15 days
                 </div>
               </div>
               <p className="text-sm mt-4" style={{ color: '#555555' }}>

@@ -59,9 +59,6 @@ const ITEM_STATUSES = [
 
 const CHANNEL_LABELS: Record<string, { en: string; zh: string }> = {
   email: { en: 'Email', zh: '電子郵件' },
-  whatsapp: { en: 'WhatsApp', zh: 'WhatsApp' },
-  wechat: { en: 'WeChat', zh: '微信' },
-  sms: { en: 'SMS', zh: '簡訊' },
 };
 
 const ITEMS_PER_PAGE = 10;

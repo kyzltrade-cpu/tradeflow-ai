@@ -72,7 +72,6 @@ export default function OnboardingPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [companyName, setCompanyName] = useState('');
   const [industry, setIndustry] = useState('');
-  const [whatsappNumber, setWhatsappNumber] = useState('');
   const [saving, setSaving] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
 
@@ -202,7 +201,6 @@ export default function OnboardingPage() {
           system_prompt: getSystemPrompt(),
           company_name: companyName,
           industry,
-          whatsapp_phone_number_id: whatsappNumber || undefined,
         }),
       });
 
@@ -271,7 +269,7 @@ export default function OnboardingPage() {
                 {t('Get started with Sailwise', '開始使用 Sailwise')}
               </h1>
               <p className="text-[15px] leading-[1.6] mb-8" style={{ color: 'var(--text-muted)' }}>
-                {t('Your AI copilot for trading companies. An inquiry lands in your inbox and Sailwise drives it through the whole sourcing pipeline — extract, clarify, RFQ, quote.', '您的貿易公司 AI 副駕駛。詢盤進入您的收件匣後，Sailwise 將它推進整個採購流程 — 抽取、澄清、RFQ、報價。')}
+                {t('Your AI copilot for trading companies. An inquiry lands in your inbox and Sailwise drives it through the whole process — extract specs, clarify details, prepare a price you approve, and follow up until the deal closes.', '您的貿易公司 AI 副駕駛。詢盤進入您的收件匣後，Sailwise 將它推進整個流程 — 抽取規格、澄清細節、準備您審批的報價、直到成交跟進。')}
               </p>
               <div className="space-y-3 mb-8">
                 <div className="flex items-center gap-3 text-[14px]">
@@ -280,11 +278,11 @@ export default function OnboardingPage() {
                 </div>
                 <div className="flex items-center gap-3 text-[14px]">
                   <span style={{ color: 'var(--success)' }}>✓</span>
-                  <span>{t('Batch RFQ to your suppliers, you approve every send', '批次 RFQ 給供應商，每次發送由您審批')}</span>
+                  <span>{t('A cited quote draft you approve before it is sent', '附引用的報價草稿，發送前由您審批')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[14px]">
                   <span style={{ color: 'var(--success)' }}>✓</span>
-                  <span>{t('Works on Email + WhatsApp', '支援 Email + WhatsApp')}</span>
+                  <span>{t('Works on Email', '支援 Email')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[14px]">
                   <span style={{ color: 'var(--success)' }}>✓</span>
@@ -339,19 +337,6 @@ export default function OnboardingPage() {
                     <option>{t('Home & Garden', '家居與園藝')}</option>
                     <option>{t('Industrial & Hardware', '工業與五金')}</option>
                   </select>
-                </div>
-                <div>
-                  <label className="block text-[13px] font-medium mb-1">{t('WhatsApp Phone Number ID (optional)', 'WhatsApp Phone Number ID（可選）')}</label>
-                  <input
-                    value={whatsappNumber}
-                    onChange={(e) => setWhatsappNumber(e.target.value)}
-                    placeholder="e.g. 1234567890"
-                    className="w-full border rounded-[4px] px-3 py-2.5 text-[14px] focus:outline-none"
-                    style={{ borderColor: 'var(--border)' }}
-                  />
-                  <p className="text-[12px] mt-1" style={{ color: 'var(--text-muted)' }}>
-                    {t('From Meta App Dashboard → WhatsApp → API Setup. You can set this up later in Settings.', '來自 Meta App Dashboard → WhatsApp → API Setup。您也可以稍後在設定中設定。')}
-                  </p>
                 </div>
               </div>
               <div className="flex gap-3">
@@ -650,14 +635,11 @@ export default function OnboardingPage() {
                 </div>
               </div>
 
-              {/* Webhook URL */}
+              {/* Connect your inbox */}
               <div className="text-left mb-6 p-4 rounded-[4px]" style={{ background: 'var(--bg)' }}>
-                <p className="text-[13px] font-medium mb-2">{t('Your webhook URL:', '您的 Webhook URL：')}</p>
-                <div className="border rounded-[4px] px-3 py-2 text-[12px] font-mono break-all" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-                  {typeof window !== 'undefined' ? `${window.location.origin}/api/webhooks/whatsapp` : '/api/webhooks/whatsapp'}
-                </div>
-                <p className="text-[11px] mt-1.5" style={{ color: 'var(--text-muted)' }}>
-                  {t('Set this in Meta App Dashboard → WhatsApp → Configuration → Webhook', '在 Meta App Dashboard → WhatsApp → Configuration → Webhook 中設定此 URL')}
+                <p className="text-[13px] font-medium mb-2">{t('Next: connect your inbox', '下一步：連接您的收件匣')}</p>
+                <p className="text-[12px] leading-[1.6]" style={{ color: 'var(--text-muted)' }}>
+                  {t('To receive real inquiries, connect your email inbox in Settings. One-click connect for Gmail, Outlook and more — your conversations land in the dashboard automatically.', '要接收真實詢盤，請在「設定」中連接您的 Email 收件匣。一鍵連接 Gmail、Outlook 等，對話將自動進入控制台。')}
                 </p>
               </div>
 
@@ -672,7 +654,7 @@ export default function OnboardingPage() {
                     <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <circle cx="12" cy="12" r="3" />
                   </svg>
-                  {t('Connect WhatsApp in Settings', '在設定中連接 WhatsApp')}
+                  {t('Connect your inbox in Settings', '在設定中連接您的收件匣')}
                 </Link>
                 <Link
                   href="/admin"
@@ -684,7 +666,7 @@ export default function OnboardingPage() {
               </div>
 
               <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('Share your WhatsApp number with customers — AI replies 24/7', '將 WhatsApp 號碼分享給客戶——AI 全天候回覆')}
+                {t('Your AI inbox assistant replies to customers around the clock', '您的 AI 收件匣助手全天候回覆客戶')}
               </p>
             </div>
           )}

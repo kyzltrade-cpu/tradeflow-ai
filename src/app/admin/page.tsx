@@ -12,7 +12,6 @@ interface ConversationSummary {
   id: string;
   contact_name: string | null;
   contact_phone: string | null;
-  contact_wechat_id: string | null;
   channel: string;
   status: string;
   detected_language: string | null;
@@ -95,7 +94,7 @@ export default function AdminPage() {
         const uniqueContacts = new Set(
           allConvs
             .filter((c) => new Date(c.updated_at).getTime() > weekAgo)
-            .map((c) => c.contact_phone || c.contact_wechat_id || c.id)
+            .map((c) => c.contact_phone || c.id)
         );
 
         setData({
@@ -131,7 +130,7 @@ export default function AdminPage() {
   };
 
   const contactName = (conv: ConversationSummary) =>
-    conv.contact_name || conv.contact_phone || conv.contact_wechat_id || 'Unknown';
+    conv.contact_name || conv.contact_phone || 'Unknown';
 
   return (
     <div>
@@ -211,11 +210,11 @@ export default function AdminPage() {
           </div>
           <h2 className="text-[16px] font-semibold mb-1">{t('Connect your inbox to get started', '連接收件箱開始使用')}</h2>
           <p className="text-[13px] mb-5 max-w-[420px] mx-auto" style={{ color: 'var(--text-muted)' }}>
-            {t('Sailwise needs a conversation channel before inquiries can arrive. Connect WhatsApp or an email, then upload your products.', 'Sailwise 需要一個對話渠道才能接收查詢。請先連接 WhatsApp 或電郵，然後上載產品。')}
+            {t('Sailwise needs a connected email inbox before inquiries can arrive. Connect your email in Settings, then upload your products.', 'Sailwise 需要連接電郵收件箱才能接收查詢。請在設定中連接電郵，然後上載產品。')}
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/admin/settings" className="accent-btn inline-flex items-center justify-center">
-              {t('Connect channel', '連接渠道')}
+              {t('Connect email', '連接電郵')}
             </Link>
             <Link href="/admin/products" className="secondary-btn inline-flex items-center justify-center">
               {t('Add products', '新增產品')}

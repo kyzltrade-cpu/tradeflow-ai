@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
   for (const item of activeItems) {
     try {
       const seq = item.follow_up_sequences;
-      const channel = (seq.channel as 'email' | 'whatsapp') || 'email';
+      const channel = 'email';
 
       // ── Build context for NIM generation ────────────────────────
       const context = await buildContext(item);
@@ -200,8 +200,6 @@ export async function GET(req: NextRequest) {
             : undefined,
         });
         sendResult = { success: result.success, error: result.error };
-      } else if (channel === 'whatsapp') {
-        sendResult = { success: false, error: 'WhatsApp sending not yet implemented' };
       }
 
       // ── Update item status ────────────────────────────────────

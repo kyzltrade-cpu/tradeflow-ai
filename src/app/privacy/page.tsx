@@ -38,8 +38,8 @@ export default function PrivacyPage() {
             <h2 className="text-[18px] font-semibold mb-3">{t('What data we collect', '我們收集的資料')}</h2>
             <p className="text-[14px] leading-[1.7]" style={{ color: 'var(--text-muted)' }}>
               {t(
-                'We collect contact information (names, phone numbers, email addresses) from messages sent to your WhatsApp and WeChat channels. We also store your product catalog data (product names, pricing, specifications, MOQ) and conversation history between your business and customers.',
-                '我們從發送到您 WhatsApp 和微信渠道的訊息中收集聯絡資訊（姓名、電話號碼、電郵地址）。我們亦會儲存您的產品目錄資料（產品名稱、價格、規格、MOQ）以及您與客戶之間的對話記錄。'
+                'We collect contact information (names, email addresses, and phone numbers when provided) from emails and conversations sent to your business. We also store your product catalog data (product names, pricing, specifications, MOQ) and conversation history between your business and customers.',
+                '我們從發送給您的電郵和對話中收集聯絡資訊（姓名、電郵地址，以及如您提供的電話號碼）。我們亦會儲存您的產品目錄資料（產品名稱、價格、規格、MOQ）以及您與客戶之間的對話記錄。'
               )}
             </p>
           </section>
@@ -71,8 +71,8 @@ export default function PrivacyPage() {
             <h2 className="text-[18px] font-semibold mb-3">{t('Third parties', '第三方服務')}</h2>
             <p className="text-[14px] leading-[1.7]" style={{ color: 'var(--text-muted)' }}>
               {t(
-                'We share data with the following third-party processors as necessary to provide our service: WhatsApp/Meta for message delivery, NVIDIA for AI processing, and Supabase for data storage. Each processor is bound by their respective data processing agreements.',
-                '我們會根據提供服務的需要，與以下第三方處理者共享資料：WhatsApp/Meta 用於訊息傳送，NVIDIA 用於 AI 處理，Supabase 用於資料儲存。每個處理者均受其各自的資料處理協議約束。'
+                'We share data with the following third-party processors as necessary to provide our service: Google and Microsoft for your connected email inboxes, OpenAI for AI-generated responses, and Supabase for data storage. Each processor is bound by their respective data processing agreements.',
+                '我們會根據提供服務的需要，與以下第三方處理者共享資料：Google 和 Microsoft 用於連接您的電郵收件匣，OpenAI 用於 AI 生成回覆，Supabase 用於資料儲存。每個處理者均受其各自的資料處理協議約束。'
               )}
             </p>
           </section>

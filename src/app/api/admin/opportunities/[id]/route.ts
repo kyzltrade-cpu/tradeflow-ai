@@ -33,8 +33,6 @@ export async function GET(
       inquiryResult,
       extractedFieldsResult,
       customerResult,
-      supplierRfqsResult,
-      supplierQuotesResult,
       quotesResult,
       followUpResult,
       auditResult,
@@ -65,20 +63,6 @@ export async function GET(
             .eq('id', opportunity.customer_id)
             .single()
         : Promise.resolve({ data: null }),
-
-      // Supplier RFQs
-      supabaseAdmin
-        .from('supplier_rfqs')
-        .select('*, suppliers(id, legal_name, trading_name, location)')
-        .eq('opportunity_id', id)
-        .order('created_at', { ascending: false }),
-
-      // Supplier quotes
-      supabaseAdmin
-        .from('supplier_quotes')
-        .select('*, suppliers(id, legal_name, trading_name)')
-        .eq('opportunity_id', id)
-        .order('created_at', { ascending: false }),
 
       // Customer-facing quotes
       supabaseAdmin
@@ -125,8 +109,6 @@ export async function GET(
       inquiry: inquiryResult.data,
       extracted_fields: extractedFieldsResult.data || [],
       customer: customerResult.data,
-      supplier_rfqs: supplierRfqsResult.data || [],
-      supplier_quotes: supplierQuotesResult.data || [],
       quotes: quotesResult.data || [],
       cost_build_up: costBuildUp,
       follow_ups: followUpResult.data || [],

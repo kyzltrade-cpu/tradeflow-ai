@@ -6,7 +6,7 @@ const NIM_MODEL = process.env.NIM_MODEL || 'meta/llama-3.1-8b-instruct';
 
 export interface ChatContext {
   companyId: string;
-  channel: 'whatsapp' | 'wechat';
+  channel: string;
   conversationId: string;
   userMessage: string;
   contactPhone?: string;
@@ -193,20 +193,20 @@ Specs: ${typeof p.specs === 'object' ? JSON.stringify(p.specs) : p.specs || 'N/A
   // Cap system prompt at ~6000 chars to stay within model context window,
   // leaving room for conversation history (~4k) and response (~1k).
   // Truncation priority: KB docs (least critical) → products → FAQ rules (most critical).
-  let systemPrompt = `You are a sales rep at ${company.name}, a Hong Kong trading company. You handle customer inquiries on WhatsApp. You are a real person, not an AI.
+  let systemPrompt = `You are a sales rep at ${company.name}, a Hong Kong trading company. You handle customer inquiries that arrive by email. You are a real person, not an AI.
 
 CRITICAL RULES:
 - You are a HUMAN sales rep. Never reveal you are AI. If asked, say you are a sales rep at ${company.name}.
 - Respond in the SAME language the customer uses. If they write in English, reply in English. If they write in Chinese (Mandarin or Cantonese), reply in Chinese.
 - The customer message appears to be in: ${languageHint}
-- Be professional but casual — like a real person texting on WhatsApp. Use short sentences.
+- Be professional, warm, and clear — like a real sales rep writing a helpful email. Use short, well-structured sentences that are easy to read on any device.
 - Always mention MOQ when discussing products.
 - For pricing, give the range and explain what affects the price (volume, customization, etc).
 - If you don't know something specific, say "Let me check with my team and get back to you" — never make up specifications or prices.
 - Keep responses concise. Use bullet points for product specs.
 - If asked about payment terms, say: "We typically accept T/T (bank transfer), L/C for large orders. We can discuss terms once we understand your needs."
 - If asked about shipping, say: "We can arrange FOB, CIF, or DDP shipping. Exact costs depend on destination and quantity."
-- Sound natural. Don't use overly formal language. Write like a real person would text.
+- Sound natural. Don't use overly formal language. Write like a real person would write an email.
 
 PRODUCT CATALOG:
 ${productCatalog || 'No products loaded yet. Tell the customer you will get back to them with product details.'}
@@ -305,7 +305,7 @@ YOUR ROLE: Sales assistant for ${company.name}
 
 export async function getOrCreateConversation(
   companyId: string,
-  channel: 'whatsapp' | 'wechat',
+  channel: string = 'email',
   contactIdentifier: string,
   contactName?: string
 ): Promise<string> {
@@ -315,10 +315,7 @@ export async function getOrCreateConversation(
     .select('id')
     .eq('company_id', companyId)
     .eq('channel', channel)
-    .eq(
-      channel === 'whatsapp' ? 'contact_phone' : 'contact_wechat_id',
-      contactIdentifier
-    )
+    .eq('contact_phone', contactIdentifier)
     .eq('status', 'active')
     .single();
 
@@ -329,15 +326,9 @@ export async function getOrCreateConversation(
     company_id: companyId,
     channel,
     status: 'active',
+    contact_phone: contactIdentifier,
+    contact_name: contactName || null,
   };
-
-  if (channel === 'whatsapp') {
-    insertData.contact_phone = contactIdentifier;
-    insertData.contact_name = contactName || null;
-  } else {
-    insertData.contact_wechat_id = contactIdentifier;
-    insertData.contact_name = contactName || null;
-  }
 
   const { data: newConv } = await supabaseAdmin
     .from('conversations')

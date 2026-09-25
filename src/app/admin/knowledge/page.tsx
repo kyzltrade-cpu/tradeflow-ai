@@ -73,12 +73,12 @@ const EMPTY_GOAL: Goal = {
 const GOAL_TEMPLATES: Omit<Goal, 'id' | 'enabled'>[] = [
   {
     title: 'The Concierge (Warm Welcome)',
-    description: 'Open-ended, human-like greeting. Parses customer intent naturally, then routes to the right specialist. Feels like texting a real person.',
-    greeting: "Hi there! Thanks for reaching out to {company}. I'm here to help. Could you tell me a bit about what you're looking to source today?",
+    description: 'Open-ended, human-like greeting. Parses customer intent naturally, then routes to the right specialist. Feels like a helpful email conversation.',
+    greeting: "Hi there! Thanks for reaching out to {company}. I'm here to help. Could you tell me a bit about what you're looking for today?",
     flow_steps: [
-      { trigger: 'product inquiry / specific item', response: "Got it. That sounds like a great project. Could you share a bit more detail — like the quantity you're looking for, any specific specs, and whether you have a tech pack or samples ready?" },
-      { trigger: 'has tech pack / ready to order', response: "Perfect. Since you already have a tech pack, I'll flag this as 'Ready for Quote' for our team. Do you have the file ready to share here, or would you prefer to email it?" },
-      { trigger: 'just browsing / not ready yet', response: "No problem at all. Feel free to browse our catalog and reach out whenever you're ready. I'm here 24/7 if you have any questions." },
+      { trigger: 'product inquiry / specific item', response: "Got it. That sounds like a great project. Could you share a bit more detail — like the quantity you're looking for, any specific specs, and whether you have drawings, samples, or a product catalog ready?" },
+      { trigger: 'has tech pack / ready to order', response: "Perfect. Since you already have a tech pack, I'll flag this as 'Ready for Quote' for our team. You can reply with the file attached and our team will review it." },
+      { trigger: 'just browsing / not ready yet', response: "No problem at all. Feel free to reply whenever you're ready — I'm here 24/7 if you have any questions." },
       { trigger: 'pricing question', response: "Pricing depends on quantity, specs, and materials. Could you share a few details about what you need? I'll get you a ballpark range right away." },
     ],
     handoff_message: "🔥 New Lead: {client_info} | {product} | {volume} | {status}. Priority: {priority}",
@@ -86,13 +86,13 @@ const GOAL_TEMPLATES: Omit<Goal, 'id' | 'enabled'>[] = [
   },
   {
     title: 'Automated KYC & Onboarding',
-    description: 'Collects client requirements, compliance needs, and target pricing through a structured conversational flow. Instantly structures data for your sourcing team.',
-    greeting: "Welcome to {company}! I'd love to help you find the right products. To get started, could you tell me what industry you're in and what kind of products you're looking for?",
+    description: 'Collects customer requirements, compliance needs, and target pricing through a structured email conversation. Instantly structures data for your sales team.',
+    greeting: "Welcome to {company}! I'd love to help you find the right products. To get started, could you tell me what you're looking for and roughly how many units you need?",
     flow_steps: [
-      { trigger: 'industry / product type', response: "Great, {industry} is one of our specialties. A few quick questions to make sure I match you with the right specialist:\n\n1. What's your target order quantity?\n2. Do you need any certifications (CE, FDA, UL, etc.)?\n3. What's your ideal price range per unit?" },
-      { trigger: 'certifications needed', response: "Got it — {certifications} required. I'll make sure our team sources only certified suppliers for you. This usually adds 2-3 weeks to lead time. Is that workable?" },
+      { trigger: 'product / industry type', response: "Great — a few quick questions so I can prepare your quote:\n\n1. What's your target order quantity?\n2. Which certification documents do you need for the product (CE, FDA, UL, etc.)?\n3. What's your ideal price range per unit?" },
+      { trigger: 'certifications needed', response: "Got it — {certifications} required. I'll include the relevant certification documents with your quote. Note that this can add 2-3 weeks to lead time. Is that workable?" },
       { trigger: 'budget / price range', response: "Perfect, I've noted your budget range. Based on what you've shared, this looks like a {priority} priority project. I'm connecting you with our {specialist} team now." },
-      { trigger: 'timeline / urgency', response: "Understood on the timeline. I'll flag this as {urgency} priority. Our team will review and get back to you within {sla}." },
+      { trigger: 'timeline / urgency', response: "Understood on the timeline. I'll flag this as {urgency} priority. Our team will review your inquiry and get back to you within {sla}." },
     ],
     handoff_message: "📋 New KYC Lead: {client_info} | Industry: {industry} | Products: {products} | Budget: {budget} | Certs: {certs} | Timeline: {timeline}",
     triggers: ['new customer', 'registration', 'sign up', 'onboard'],
@@ -104,6 +104,8 @@ const GOAL_TEMPLATES: Omit<Goal, 'id' | 'enabled'>[] = [
     flow_steps: [
       { trigger: 'product + quantity', response: "Thanks! For {quantity} units of {product}, the estimated range is {price_range}. This includes standard packaging. Need any custom branding or special packaging?" },
       { trigger: 'customization request', response: "Customization is definitely available. Could you share more details? Things like:\n- Logo printing (screen print, embroidery, laser engraving?)\n- Custom packaging or labels\n- Color variants\n\nThis helps me give you an accurate quote." },
+      { trigger: 'lead time / MOQ', response: "Standard lead time for {product} is {lead_time}, and our MOQ is {moq}. If you need a faster delivery, let me know your target date and I'll check what we can do." },
+      { trigger: 'payment terms', response: "We typically accept T/T (bank transfer) for standard orders and L/C for larger orders. We can discuss terms once we understand your requirements better." },
       { trigger: 'shipping / delivery', response: "For shipping, I need to know:\n1. Destination country?\n2. preferred method (sea freight, air, express)?\n3. Required delivery date?\n\nI'll factor this into the total cost." },
       { trigger: 'ready to order', response: "Great! I've prepared your preliminary quote. I'm sending it to our team for final confirmation. You'll receive the formal quotation within 24 hours. In the meantime, is there anything else you'd like to adjust?" },
     ],

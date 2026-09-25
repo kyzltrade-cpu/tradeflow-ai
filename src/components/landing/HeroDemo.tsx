@@ -10,7 +10,6 @@ import {
   Quote,
   Globe,
   AlertTriangle,
-  Users,
   Bot,
   Play,
   Pause,
@@ -19,7 +18,7 @@ import {
 const STAGES = [
   { key: 'inquiry', label: 'Inquiry', icon: Inbox, accent: '#F59E0B' },
   { key: 'clarify', label: 'Clarify', icon: MessageCircle, accent: '#2563EB' },
-  { key: 'rfq', label: 'RFQ', icon: Users, accent: '#7C3AED' },
+  { key: 'price', label: 'Price', icon: FileText, accent: '#7C3AED' },
   { key: 'quote', label: 'Quote', icon: Quote, accent: '#059669' },
 ];
 
@@ -52,7 +51,7 @@ function InquiryScene() {
             <div className="text-xs" style={{ color: '#9A9A9A' }}>Pacific Trading · Shenzhen</div>
           </div>
           <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border" style={{ background: '#F4F4F4', color: '#000', borderColor: '#E0E0E0' }}>
-            <MessageCircle className="w-3 h-3" /> WhatsApp
+            <Inbox className="w-3 h-3" /> Email
           </span>
           <span className="text-[11px] shrink-0" style={{ color: '#9A9A9A' }}>just now</span>
         </div>
@@ -134,29 +133,29 @@ function ClarifyScene() {
   );
 }
 
-const SUPPLIERS = ['Global Stainless · Guangdong', 'SZ Metal Works · Shenzhen', 'Ningbo Pacific Metal · Zhejiang'];
+const PRICE_INPUTS = [
+  { label: 'Unit price (your list)', value: 'USD 4.00 / pc', note: 'Product price list' },
+  { label: 'Margin applied', value: '+20%', note: 'Bottle margin rule' },
+  { label: 'FX rate', value: '7.82', note: 'USD → HKD' },
+];
 
-function RfqScene() {
+function DraftPriceScene() {
   return (
     <div className="space-y-3">
-      {SUPPLIERS.map((s, i) => (
-        <Stagger key={s} delay={i * 160}>
+      {PRICE_INPUTS.map((p, i) => (
+        <Stagger key={p.label} delay={i * 160}>
           <div className="flex items-center gap-3 rounded-xl px-4 py-3" style={{ background: '#FAFAFA', border: '1px solid #ECECEC' }}>
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0" style={{ background: i === 0 ? '#000' : '#8A8A8A' }}>
-              {s[0]}
-            </div>
-            <div className="text-sm font-medium" style={{ color: '#0A0A0A' }}>{s}</div>
-            <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-bold" style={{ color: '#000' }}>
-              <Check className="w-3.5 h-3.5" strokeWidth={3} /> Replied
-            </span>
+            <div className="flex-1 text-sm font-medium" style={{ color: '#0A0A0A' }}>{p.label}</div>
+            <div className="text-sm font-bold tabular-nums" style={{ color: '#000' }}>{p.value}</div>
+            <span className="text-[11px] shrink-0" style={{ color: '#9A9A9A' }}>{p.note}</span>
           </div>
         </Stagger>
       ))}
       <Stagger delay={620}>
         <div>
           <div className="flex justify-between text-[11px] font-semibold mb-1.5" style={{ color: '#9A9A9A' }}>
-            <span>3 / 3 suppliers replied</span>
-            <span style={{ color: '#000' }}>best landed <span className="font-bold">USD 4.00</span>/pc</span>
+            <span>Drafting your price</span>
+            <span style={{ color: '#000' }}>target <span className="font-bold">USD 5.00</span>/pc</span>
           </div>
           <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#E8E8E8' }}>
             <div className="h-full rounded-full btk-anim-rise" style={{ background: '#000', width: '100%', transformOrigin: 'left', animationName: 'btk-trace', animationDuration: '1.2s' }} />
@@ -168,8 +167,8 @@ function RfqScene() {
 }
 
 const QUOTE_LINES = [
-  { qty: '10,000 pcs', label: '500ml Vacuum Bottle, Double-Wall 304', unit: 'USD 5.00 / pc', total: 'USD 50,000', src: 'SO-2091 · Global Stainless' },
-  { qty: '10,000 pcs', label: 'Logo Printing (single-color laser)', unit: 'USD 0.35 / pc', total: 'USD 3,500', src: 'SO-2091' },
+  { qty: '10,000 pcs', label: '500ml Vacuum Bottle, Double-Wall 304', unit: 'USD 5.00 / pc', total: 'USD 50,000', src: 'Product price · 20% margin' },
+  { qty: '10,000 pcs', label: 'Logo Printing (single-color laser)', unit: 'USD 0.35 / pc', total: 'USD 3,500', src: 'Cost + margin rule' },
   { qty: '1 pc', label: 'Sample (air freight)', unit: 'USD 25.00', total: 'USD 25', src: 'Ctn 2026-03 · FX 7.82' },
 ];
 
@@ -259,7 +258,7 @@ export default function HeroDemo() {
     return () => clearInterval(id);
   }, [paused, interacting]);
 
-  const scenes = [<InquiryScene key="i" />, <ClarifyScene key="c" />, <RfqScene key="r" />, <QuoteScene key="q" />];
+  const scenes = [<InquiryScene key="i" />, <ClarifyScene key="c" />, <DraftPriceScene key="p" />, <QuoteScene key="q" />];
 
   const hold = () => setInteracting(true);
   const release = () => setInteracting(false);

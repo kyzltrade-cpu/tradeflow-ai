@@ -217,7 +217,7 @@ export default function ProductsPage() {
               <input ref={addPhotoRef} type="file" accept="image/*" multiple onChange={handleAddPhotoClick} className="hidden" />
             </div>
             <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
-              {t('Max 5MB per image. These photos may be shared with customers via WhatsApp.', '每張圖片最大 5MB。這些圖片可能會透過 WhatsApp 分享給客戶。')}
+              {t('Max 5MB per image. These photos can be shared with customers in your quotes.', '每張圖片最大 5MB。這些圖片可在您的報價中分享給客戶。')}
             </p>
           </div>
 

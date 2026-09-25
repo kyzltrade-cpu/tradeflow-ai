@@ -17,21 +17,21 @@ function getStripe() {
 const TIERS = {
   starter: {
     name: 'Sailwise Starter',
-    description: '1 WhatsApp number · 1,000 AI conversations/mo',
+    description: 'Email-first assistant · 1,000 AI conversations/mo',
     monthly: 188000, // HKD HK$1,880.00
     annual: 150400, // HKD HK$1,504.00/mo (20% off)
   },
   growth: {
     name: 'Sailwise Growth',
-    description: '3 WhatsApp numbers · 5,000 AI conversations/mo · WeChat',
+    description: 'Email-first assistant · 5,000 AI conversations/mo',
     monthly: 248000, // HKD HK$2,480.00
-    annual: 155400, // HKD HK$1,554.00/mo (20% off)
+    annual: 198400, // HKD HK$1,984.00/mo (20% off)
   },
   enterprise: {
     name: 'Sailwise Enterprise',
-    description: 'Unlimited WhatsApp · Unlimited AI · Dedicated manager',
-    monthly: 467200, // HKD HK$4,672.00
-    annual: 373800, // HKD HK$3,738.00/mo (20% off)
+    description: 'Email-first assistant · Unlimited AI · Dedicated manager',
+    monthly: 488000, // HKD HK$4,880.00
+    annual: 390400, // HKD HK$3,904.00/mo (20% off)
   },
 } as const;
 
@@ -114,8 +114,8 @@ export async function POST(req: NextRequest) {
         tier,
         interval,
       },
-      success_url: `${appUrl}/admin/billing?billing=success`,
-      cancel_url: `${appUrl}/admin/billing?billing=cancelled`,
+      success_url: `${appUrl}/admin/settings?billing=success`,
+      cancel_url: `${appUrl}/admin/settings?billing=cancelled`,
     });
 
     return NextResponse.json({ url: session.url });

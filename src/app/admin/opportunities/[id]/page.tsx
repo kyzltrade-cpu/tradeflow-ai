@@ -73,32 +73,6 @@ interface Customer {
   created_at: string;
 }
 
-interface SupplierRfq {
-  id: string;
-  opportunity_id: string;
-  supplier_id: string;
-  status: string;
-  sent_at: string | null;
-  responded_at: string | null;
-  created_at: string;
-  suppliers?: { id: string; legal_name: string; trading_name: string; location: string | null } | null;
-}
-
-interface SupplierQuote {
-  id: string;
-  opportunity_id: string;
-  supplier_id: string;
-  unit_price: number | null;
-  moq: number | null;
-  lead_time_days: number | null;
-  payment_terms: string | null;
-  certifications: string[] | null;
-  status: string;
-  selected: boolean;
-  created_at: string;
-  suppliers?: { id: string; legal_name: string; trading_name: string } | null;
-}
-
 interface Quote {
   id: string;
   quote_number: string;
@@ -182,8 +156,6 @@ interface OpportunityData {
   inquiry: Inquiry | null;
   extracted_fields: ExtractedField[];
   customer: Customer | null;
-  supplier_rfqs: SupplierRfq[];
-  supplier_quotes: SupplierQuote[];
   quotes: Quote[];
   cost_build_up: CostBuildUp | null;
   follow_ups: FollowUpSequence[];
@@ -227,13 +199,6 @@ const PRIORITIES = [
   { key: 'urgent', en: 'Urgent', zh: '緊急', color: '#B91C1C' },
 ];
 
-const RFQ_STATUSES: Record<string, { en: string; zh: string; bg: string; color: string }> = {
-  DRAFT:    { en: 'Draft',    zh: '草稿', bg: '#F3F4F6', color: '#6B7280' },
-  SENT:     { en: 'Sent',     zh: '已發送', bg: '#DBEAFE', color: '#2563EB' },
-  RESPONDED:{ en: 'Responded', zh: '已回覆', bg: '#D1FAE5', color: '#059669' },
-  CANCELLED:{ en: 'Cancelled', zh: '已取消', bg: '#F3F4F6', color: '#6B7280' },
-};
-
 const QUOTE_STATUSES: Record<string, { en: string; zh: string; bg: string; color: string }> = {
   DRAFT:            { en: 'Draft',            zh: '草稿',     bg: '#F3F4F6', color: '#6B7280' },
   IN_REVIEW:        { en: 'In Review',        zh: '審核中',   bg: '#FEF3C7', color: '#D97706' },
@@ -263,8 +228,6 @@ const FIELD_STATUSES: Record<string, { en: string; zh: string; bg: string; color
 const TABS = [
   { key: 'overview',   en: 'Overview',      zh: '總覽' },
   { key: 'inquiry',    en: 'Inquiry',       zh: '詢問' },
-  { key: 'rfq',        en: 'Supplier RFQs',  zh: '供應商詢價' },
-  { key: 'sq',         en: 'Supplier Quotes',zh: '供應商報價' },
   { key: 'cost',       en: 'Cost & Margin',  zh: '成本與利潤' },
   { key: 'quote',      en: 'Customer Quote', zh: '客戶報價' },
   { key: 'followups',  en: 'Follow-ups',     zh: '跟進' },
@@ -902,210 +865,6 @@ function MissingFieldsChecklist({ fields, t }: { fields: ExtractedField[]; t: (e
 }
 
 // ---------------------------------------------------------------------------
-// Tab: Supplier RFQs
-// ---------------------------------------------------------------------------
-
-function TabSupplierRfqs({ rfqs, t }: { rfqs: SupplierRfq[]; t: (en: string, zh: string) => string }) {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-[13px] md:text-[14px] font-semibold" style={{ color: 'var(--text)' }}>
-          {t('Supplier RFQs', '供應商詢價')} <span className="font-normal" style={{ color: 'var(--text-muted)' }}>({rfqs.length})</span>
-        </h3>
-        <button
-          className="text-[11px] font-medium px-3 py-1.5 rounded-[4px] text-white"
-          style={{ background: 'var(--accent)' }}
-        >
-          {t('Create Supplier RFQ', '建立供應商詢價')}
-        </button>
-      </div>
-
-      {rfqs.length === 0 ? (
-        <SectionCard title={t('No RFQs sent', '尚未發送詢價')}>
-          <EmptyState
-            title={t('No supplier RFQs yet', '暫無供應商詢價')}
-            subtitle={t('Create an RFQ to request quotes from suppliers', '建立詢價以向供應商索取報價')}
-          />
-        </SectionCard>
-      ) : (
-        <div className="border rounded-[4px] overflow-hidden" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-          <table className="w-full text-[13px]">
-            <thead>
-              <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-                <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Supplier', '供應商')}</th>
-                <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Status', '狀態')}</th>
-                <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Sent', '發送時間')}</th>
-                <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Responded', '回覆時間')}</th>
-                <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Created', '建立時間')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rfqs.map((rfq) => {
-                const statusInfo = RFQ_STATUSES[rfq.status] || RFQ_STATUSES.DRAFT;
-                const supplierName = rfq.suppliers?.trading_name || rfq.suppliers?.legal_name || '—';
-                return (
-                  <tr key={rfq.id} className="border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
-                    <td className="px-5 py-3 font-medium" style={{ color: 'var(--text)' }}>{supplierName}</td>
-                    <td className="px-5 py-3">
-                      <Badge bg={statusInfo.bg} color={statusInfo.color}>
-                        {t(statusInfo.en, statusInfo.zh)}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-3" style={{ color: 'var(--text-muted)' }}>{formatDateTime(rfq.sent_at)}</td>
-                    <td className="px-5 py-3" style={{ color: 'var(--text-muted)' }}>{formatDateTime(rfq.responded_at)}</td>
-                    <td className="px-5 py-3" style={{ color: 'var(--text-muted)' }}>{formatDate(rfq.created_at)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Tab: Supplier Quotes
-// ---------------------------------------------------------------------------
-
-function TabSupplierQuotes({ quotes, t }: { quotes: SupplierQuote[]; t: (en: string, zh: string) => string }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  const bestMetrics = useMemo(() => {
-    if (quotes.length === 0) return null;
-    const prices = quotes.filter((q) => q.unit_price != null).map((q) => q.unit_price!);
-    const moqs = quotes.filter((q) => q.moq != null).map((q) => q.moq!);
-    const leads = quotes.filter((q) => q.lead_time_days != null).map((q) => q.lead_time_days!);
-    return {
-      bestPrice: prices.length > 0 ? Math.min(...prices) : null,
-      worstPrice: prices.length > 0 ? Math.max(...prices) : null,
-      bestMoq: moqs.length > 0 ? Math.min(...moqs) : null,
-      worstMoq: moqs.length > 0 ? Math.max(...moqs) : null,
-      bestLead: leads.length > 0 ? Math.min(...leads) : null,
-      worstLead: leads.length > 0 ? Math.max(...leads) : null,
-    };
-  }, [quotes]);
-
-  if (quotes.length === 0) {
-    return (
-      <SectionCard title={t('Supplier Quotes', '供應商報價')}>
-        <EmptyState
-          title={t('No supplier quotes yet', '暫無供應商報價')}
-          subtitle={t('Quotes will appear here when suppliers respond to RFQs', '供應商回覆詢價後，報價將顯示於此')}
-        />
-      </SectionCard>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-[13px] md:text-[14px] font-semibold" style={{ color: 'var(--text)' }}>
-          {t('Supplier Quotes', '供應商報價')} <span className="font-normal" style={{ color: 'var(--text-muted)' }}>({quotes.length})</span>
-        </h3>
-      </div>
-
-      {/* Comparison Table */}
-      <div className="border rounded-[4px] overflow-x-auto" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-        <table className="w-full text-[13px] min-w-[700px]">
-          <thead>
-            <tr className="border-b" style={{ borderColor: 'var(--border)' }}>
-              <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Supplier', '供應商')}</th>
-              <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Unit Price', '單價')}</th>
-              <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('MOQ', '最低訂購量')}</th>
-              <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Lead Time', '交貨期')}</th>
-              <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Payment', '付款條件')}</th>
-              <th className="text-left px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Certs', '認證')}</th>
-              <th className="text-right px-5 py-3 font-medium" style={{ color: 'var(--text-muted)' }}>{t('Action', '操作')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {quotes.map((q) => {
-              const supplierName = q.suppliers?.trading_name || q.suppliers?.legal_name || '—';
-              const isSelected = q.selected || selectedId === q.id;
-              const isBestPrice = bestMetrics?.bestPrice != null && q.unit_price === bestMetrics.bestPrice;
-              const isBestLead = bestMetrics?.bestLead != null && q.lead_time_days === bestMetrics.bestLead;
-              const isBestMoq = bestMetrics?.bestMoq != null && q.moq === bestMetrics.bestMoq;
-
-              return (
-                <tr
-                  key={q.id}
-                  className="border-b last:border-b-0"
-                  style={{
-                    borderColor: 'var(--border)',
-                    background: isSelected ? '#F0FDF4' : undefined,
-                  }}
-                >
-                  <td className="px-5 py-3">
-                    <span className="font-medium" style={{ color: 'var(--text)' }}>{supplierName}</span>
-                    {q.selected && (
-                      <Badge bg="#D1FAE5" color="#059669">{t('Selected', '已選中')}</Badge>
-                    )}
-                  </td>
-                  <td className="px-5 py-3">
-                    <span className="font-medium" style={{ color: isBestPrice ? '#059669' : 'var(--text)' }}>
-                      {formatCurrency(q.unit_price, 'USD')}
-                    </span>
-                    {isBestPrice && quotes.length > 1 && (
-                      <span className="ml-1 text-[10px] font-bold" style={{ color: '#059669' }}>★</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3">
-                    <span style={{ color: isBestMoq ? '#059669' : 'var(--text)' }}>
-                      {q.moq?.toLocaleString() || '—'}
-                    </span>
-                    {isBestMoq && quotes.length > 1 && (
-                      <span className="ml-1 text-[10px] font-bold" style={{ color: '#059669' }}>★</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3">
-                    <span style={{ color: isBestLead ? '#059669' : 'var(--text)' }}>
-                      {q.lead_time_days != null ? `${q.lead_time_days}d` : '—'}
-                    </span>
-                    {isBestLead && quotes.length > 1 && (
-                      <span className="ml-1 text-[10px] font-bold" style={{ color: '#059669' }}>★</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3" style={{ color: 'var(--text-muted)' }}>{q.payment_terms || '—'}</td>
-                  <td className="px-5 py-3">
-                    {q.certifications && q.certifications.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {q.certifications.slice(0, 3).map((cert) => (
-                          <span key={cert} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--border)', color: 'var(--text-muted)' }}>
-                            {cert}
-                          </span>
-                        ))}
-                        {q.certifications.length > 3 && (
-                          <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>+{q.certifications.length - 3}</span>
-                        )}
-                      </div>
-                    ) : (
-                      <span style={{ color: 'var(--text-muted)' }}>—</span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    {!q.selected && (
-                      <button
-                        onClick={() => setSelectedId(q.id)}
-                        className="text-[11px] font-medium px-2.5 py-1 rounded-[4px] border"
-                        style={{ borderColor: 'var(--accent)', color: 'var(--accent)' }}
-                      >
-                        {t('Select', '選取')}
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
 // Tab: Cost & Margin
 // ---------------------------------------------------------------------------
 
@@ -1559,7 +1318,7 @@ export default function OpportunityDetailPage({ params }: { params: Promise<Para
           <SkeletonBlock className="h-4 w-80" />
         </div>
         <div className="flex gap-2 mb-6">
-          {Array.from({ length: 8 }).map((_, i) => (
+          {Array.from({ length: 6 }).map((_, i) => (
             <SkeletonBlock key={i} className="h-8 w-20" />
           ))}
         </div>
@@ -1597,7 +1356,7 @@ export default function OpportunityDetailPage({ params }: { params: Promise<Para
     );
   }
 
-  const { opportunity: opp, inquiry, extracted_fields, customer, supplier_rfqs, supplier_quotes, quotes, cost_build_up, follow_ups, audit_history } = data;
+  const { opportunity: opp, inquiry, extracted_fields, customer, quotes, cost_build_up, follow_ups, audit_history } = data;
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -1661,12 +1420,6 @@ export default function OpportunityDetailPage({ params }: { params: Promise<Para
         )}
         {activeTab === 'inquiry' && (
           <TabInquiry inquiry={inquiry} extractedFields={extracted_fields} t={t} />
-        )}
-        {activeTab === 'rfq' && (
-          <TabSupplierRfqs rfqs={supplier_rfqs} t={t} />
-        )}
-        {activeTab === 'sq' && (
-          <TabSupplierQuotes quotes={supplier_quotes} t={t} />
         )}
         {activeTab === 'cost' && (
           <TabCostMargin costBuildUp={cost_build_up} currency={opp.currency} t={t} />

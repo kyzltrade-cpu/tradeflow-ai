@@ -40,8 +40,8 @@ export default function PricingPage() {
 
   const handleCheckout = async (tier: string) => {
     if (isLoggedIn) {
-      // Logged in → go to billing page
-      router.push('/admin/billing');
+      // Logged in → billing lives in Settings
+      router.push('/admin/settings');
       return;
     }
     // Not logged in → go to signup

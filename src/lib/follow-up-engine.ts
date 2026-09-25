@@ -576,7 +576,7 @@ RULES:
 - Keep the tone professional but warm — like a real business partner.
 - Be concise: 2-4 short paragraphs max.
 - Offer a clear next step or question.
-- Match the channel style (email = formal, whatsapp = casual but professional).
+- Write in a clear, professional, warm email style.
 
 STEP PURPOSE: ${stepMeta.bodyHint}`;
 

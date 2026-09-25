@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { LangProvider } from "@/lib/lang";
@@ -26,7 +27,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Sailwise — Inquiry to Quote, End to End",
-  description: "AI copilot for trading companies. Extract specs, batch RFQ suppliers, compare landed costs, and draft cited quotes — in hours, not days.",
+  description: "AI copilot for trading companies. Extract specs from email, clarify gaps, and draft cited quotes from your own pricing — in hours, not days.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -34,7 +35,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html
       lang="en"

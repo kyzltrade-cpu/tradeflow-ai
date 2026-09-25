@@ -18,7 +18,8 @@ const WELCOME: Msg = {
 const QUICK_QUESTIONS = [
   'How does the free trial work?',
   'How much does it cost?',
-  'How do I connect WhatsApp?',
+  'How do I connect my email inbox?',
+  'Can I connect Excel or Google Sheets?',
   'Which languages are supported?',
 ];
 

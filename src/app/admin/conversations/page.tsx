@@ -25,7 +25,7 @@ interface Conversation {
   id: string;
   contact_name: string | null;
   contact_phone: string | null;
-  contact_wechat_id: string | null;
+  contact_email: string | null;
   channel: string;
   status: string;
   detected_language: string | null;
@@ -199,7 +199,7 @@ export default function ConversationsPage() {
   }, [messages]);
 
   const contactName = (conv: Conversation) =>
-    conv.contact_name || conv.contact_phone || conv.contact_wechat_id || 'Unknown';
+    conv.contact_name || conv.contact_phone || conv.contact_email || 'Unknown';
 
   const displayStatus = (conv: Conversation): 'ai' | 'human' | 'flagged' | 'ai_paused' => {
     if (conv.status === 'bookmarked') return 'flagged';
