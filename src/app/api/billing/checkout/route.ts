@@ -18,8 +18,8 @@ const TIERS = {
   starter: {
     name: 'Sailwise Starter',
     description: '1 WhatsApp number · 1,000 AI conversations/mo',
-    monthly: 158000, // HKD HK$1,580.00
-    annual: 126400, // HKD HK$1,264.00/mo (20% off)
+    monthly: 188000, // HKD HK$1,880.00
+    annual: 150400, // HKD HK$1,504.00/mo (20% off)
   },
   growth: {
     name: 'Sailwise Growth',

@@ -11,8 +11,8 @@ const PLANS = [
   {
     id: 'starter',
     name: 'Starter SDR',
-    price: 1580,
-    annualPrice: 1264,
+    price: 1880,
+    annualPrice: 1504,
     features: [
       'Email inbox (Google or Microsoft)',
       'Unlimited AI conversations',
@@ -176,7 +176,7 @@ function BillingContent() {
             </button>
           ) : (
             <div className="text-right">
-              <span className="text-[20px] font-semibold">HK$1,580</span>
+              <span className="text-[20px] font-semibold">HK$1,880</span>
               <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>/mo</span>
             </div>
           )}

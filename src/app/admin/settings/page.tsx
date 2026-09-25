@@ -336,7 +336,7 @@ export default function SettingsPage() {
               {t('Current plan', '目前方案')}
             </p>
             {subscriptionStatus === 'active' ? (
-              <p className="text-[15px] font-semibold mt-0.5">Starter SDR · HK$1,580/mo</p>
+              <p className="text-[15px] font-semibold mt-0.5">Starter SDR · HK$1,880/mo</p>
             ) : (
               <>
                 <p className="text-[15px] font-semibold mt-0.5">{t('Free trial', '免費試用')}</p>
@@ -351,7 +351,7 @@ export default function SettingsPage() {
               {t('Active', '啟用中')}
             </span>
           ) : (
-            <span className="text-[15px] font-semibold">HK$1,580/mo</span>
+            <span className="text-[15px] font-semibold">HK$1,880/mo</span>
           )}
         </div>
         <a

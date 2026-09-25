@@ -124,7 +124,7 @@ const OPS_TOKENS = [
 const PLANS = [
   {
     name: 'Starter SDR',
-    price: 'HK$1,580',
+    price: 'HK$1,880',
     period: '/mo',
     features: [
       'Email inbox (Google / Microsoft)',
@@ -513,7 +513,7 @@ export default function LandingPage() {
               Simple, transparent pricing
             </h2>
             <p className="text-lg mb-16" style={{ color: '#555555' }}>
-              14-day free trial, then HK$1,580/month. Cancel anytime.
+              14-day free trial, then HK$1,880/month. Cancel anytime.
             </p>
           </Reveal>
           <Reveal className="max-w-[440px] mx-auto">
@@ -528,7 +528,7 @@ export default function LandingPage() {
                 <div className="text-lg font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>{PLANS[0].name}</div>
                 <span className="btk-mono text-[10px] font-semibold px-2.5 py-1 rounded-full border inline-block mt-2" style={{ color: '#8A8A8A', borderColor: '#E0E0E0' }}>one plan · everything included</span>
               </div>
-              <PricingPrice monthly={PLANS[0].price} annual="HK$1,264" period={PLANS[0].period} />
+              <PricingPrice monthly={PLANS[0].price} annual="HK$1,504" period={PLANS[0].period} />
               <div className="h-px bg-black/10 mb-4" />
               <p className="btk-mono text-[10px] mb-4 text-left" style={{ color: '#8A8A8A' }}>
                 What&apos;s included
@@ -560,7 +560,7 @@ export default function LandingPage() {
             14-day free trial · Card required · 50 AI responses included · Cancel anytime.
           </p>
           <p className="text-xs mt-4 max-w-xl mx-auto" style={{ color: '#555555' }}>
-            Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,288</span> one-time we connect your mailbox, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,264/month —{' '}
+            Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,288</span> one-time we connect your mailbox, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,504/month —{' '}
             <Link href="/pricing" className="font-medium underline underline-offset-2" style={{ color: '#000' }}>see pricing</Link>.
           </p>
           <p className="text-xs mt-3" style={{ color: '#8A8A8A' }}>
