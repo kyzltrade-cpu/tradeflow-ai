@@ -420,35 +420,49 @@ export default function LandingPage() {
             </Reveal>
 
             <Reveal delay={200}>
-              <div className="flex flex-col rounded-2xl border" style={{ background: '#f9f9f9', borderColor: '#D5D5D5' }}>
-                {/* Email Header */}
-                <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid #E8E8E8' }}>
+              <div className="flex flex-col rounded-2xl border" style={{ background: '#ece5dd', borderColor: '#D0C7BB' }}>
+                {/* WhatsApp Header */}
+                <div className="px-4 py-3 flex items-center gap-2" style={{ background: '#075e54', borderRadius: '16px 16px 0 0' }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs" style={{ background: '#128C7E' }}>S</div>
                   <div>
-                    <div className="font-semibold text-sm" style={{ color: '#333' }}>Sarah Chen</div>
-                    <div className="text-xs" style={{ color: '#888' }}>sarah@company.com</div>
+                    <div className="font-semibold text-xs text-white">Sailwise</div>
+                    <div className="text-[10px]" style={{ color: '#DCFFF4' }}>online</div>
                   </div>
-                  <div className="text-xs" style={{ color: '#999' }}>9:32 AM</div>
                 </div>
 
-                {/* Email Subject */}
-                <div className="px-5 py-3" style={{ borderBottom: '1px solid #E8E8E8' }}>
-                  <div className="text-xs font-semibold" style={{ color: '#666' }}>SUBJECT</div>
-                  <div className="text-sm font-semibold mt-1" style={{ color: '#333' }}>Bulk Order – Vacuum Bottles</div>
+                {/* Messages */}
+                <div className="p-4 space-y-3">
+                  {/* Email Alert Message */}
+                  <div className="flex justify-start">
+                    <div className="max-w-xs px-4 py-3 rounded-2xl text-sm" style={{ background: '#fff', color: '#000' }}>
+                      <div className="font-semibold mb-2">📧 Bulk Order – Vacuum Bottles</div>
+                      <div className="text-xs mb-2" style={{ color: '#666' }}>From: Sarah Chen</div>
+                      <div className="text-xs leading-relaxed mb-2" style={{ color: '#555' }}>
+                        <p className="mb-2">We need 10,000 pcs of 500ml stainless steel vacuum bottles.</p>
+                        <p className="font-semibold mb-1">Requirements:</p>
+                        <ul className="list-disc list-inside space-y-1" style={{ color: '#666' }}>
+                          <li>Double-wall, 304 food grade</li>
+                          <li>Logo printing capability</li>
+                          <li>Sample needed</li>
+                          <li>Best lead time?</li>
+                        </ul>
+                      </div>
+                      <div className="text-[11px]" style={{ color: '#999' }}>9:32 AM</div>
+                    </div>
+                  </div>
+
+                  {/* User Reply */}
+                  <div className="flex justify-end">
+                    <div className="max-w-xs px-4 py-3 rounded-2xl text-sm" style={{ background: '#DCF8C6', color: '#000' }}>
+                      We can do 8 week MOQ, logo from 5 pcs, sample ships tomorrow
+                    </div>
+                  </div>
                 </div>
 
-                {/* Email Body */}
-                <div className="px-5 py-4 text-sm leading-relaxed" style={{ color: '#555', lineHeight: '1.6' }}>
-                  <p className="mb-3">Hi,</p>
-                  <p className="mb-3">We need 10,000 pcs of 500ml stainless steel vacuum bottles for a corporate order.</p>
-                  <p className="mb-3">Requirements:</p>
-                  <ul className="list-disc list-inside mb-3 space-y-1" style={{ color: '#666' }}>
-                    <li>Double-wall, 304 food grade</li>
-                    <li>Logo printing capability</li>
-                    <li>Sample needed before mass production</li>
-                    <li>Best lead time?</li>
-                  </ul>
-                  <p>Please quote when available.</p>
-                  <p className="mt-4">Thanks,<br />Sarah</p>
+                {/* Input */}
+                <div className="px-4 pb-3 flex items-center gap-2" style={{ borderTop: '1px solid #D0C7BB' }}>
+                  <input type="text" placeholder="Message" disabled className="flex-1 px-3 py-2 rounded-full text-xs" style={{ background: '#fff', color: '#999', border: 'none' }} />
+                  <span style={{ color: '#075e54' }}>🎤</span>
                 </div>
               </div>
             </Reveal>
