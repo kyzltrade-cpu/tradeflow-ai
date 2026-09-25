@@ -421,9 +421,12 @@ export default function LandingPage() {
 
             <Reveal delay={200}>
               <div className="flex justify-center">
-                <div className="relative" style={{ width: '260px' }}>
-                  <div className="relative rounded-[38px] shadow-2xl overflow-hidden" style={{ background: '#000', aspectRatio: '9/19.5', boxShadow: '0 20px 60px rgba(0,0,0,0.3), inset 0 0 0 12px #000' }}>
-                    <div className="relative w-full h-full flex flex-col" style={{ background: '#ece5dd' }}>
+                {/* iPhone Shell */}
+                <div className="relative" style={{ width: '280px' }}>
+                  {/* Phone Outer Shell */}
+                  <div className="relative rounded-[45px] shadow-2xl overflow-hidden" style={{ background: '#1a1a1a', aspectRatio: '9/19.5', boxShadow: '0 25px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1), inset 0 0 0 8px #000' }}>
+                    {/* Screen */}
+                    <div className="relative rounded-[40px] overflow-hidden m-2 w-full h-full flex flex-col" style={{ background: '#ece5dd', aspectRatio: '9/19.5' }}>
                       <div className="h-6 px-4 flex items-center justify-between text-black text-[9px] font-medium" style={{ background: '#fff', paddingTop: '2px' }}>
                         <span style={{ fontSize: '11px', fontWeight: '600' }}>9:41</span>
                         <div className="flex gap-0.5 items-center" style={{ fontSize: '9px' }}>
@@ -481,7 +484,9 @@ export default function LandingPage() {
                         <input type="text" placeholder="Message..." disabled className="flex-1 px-2.5 py-1.5 rounded-full text-xs" style={{ background: '#fff', color: '#999', border: '1px solid #ddd' }} />
                         <button className="w-6 h-6 flex items-center justify-center rounded text-sm" style={{ color: '#25D366' }}>🎤</button>
                       </div>
-                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 h-5 rounded-b-3xl z-10" style={{ background: '#000' }} />
+                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-5 rounded-b-3xl z-10" style={{ background: '#000' }} />
+                      {/* Home Indicator */}
+                      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-32 h-1 rounded-full z-10" style={{ background: '#000' }} />
                     </div>
                   </div>
                 </div>
