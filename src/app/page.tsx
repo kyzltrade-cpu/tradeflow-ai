@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import {
   Inbox,
+  MessageSquare,
   ScanSearch,
   MessageCircleQuestion,
   Quote,
@@ -29,6 +30,14 @@ const CORE_FEATURES = [
     title: 'Email-first inbox',
     desc: 'An inquiry lands in the mailbox you already use — Google or Microsoft — and Sailwise drives it through the whole pipeline from there.',
     detail: 'No new software for your team or customers to learn. Supports English, Chinese, and mixed-language threads.',
+  },
+  {
+    icon: MessageSquare,
+    code: 'WHATSAPP',
+    span: 'lg:col-span-2',
+    title: 'Instant WhatsApp alerts',
+    desc: 'Important emails trigger instant WhatsApp notifications. Review, draft replies on WhatsApp, and the bot sends them as emails.',
+    detail: 'Never miss a critical inquiry. Reply on mobile without jumping between apps. AI sorts important from routine automatically.',
   },
   {
     icon: ScanSearch,
@@ -105,7 +114,7 @@ const CONTROL_FEATURES = [
 /* ── How it works ───────────────────────────────────────────────────────── */
 
 const STEPS = [
-  { num: '01', code: 'INBOUND', channels: 'EMAIL', title: 'Inquiry comes in', desc: 'From your connected mailbox. Every spec, quantity, and requirement is pulled out and pinned to the line it came from.', gate: 'GATE 01 — APPROVE THE EXTRACTION' },
+  { num: '01', code: 'INBOUND', channels: 'EMAIL · WHATSAPP', title: 'Inquiry comes in', desc: 'From your connected mailbox, instant WhatsApp alert. Every spec, quantity, and requirement is pulled out and pinned to the line it came from. Review and reply on WhatsApp.', gate: 'GATE 01 — APPROVE THE EXTRACTION' },
   { num: '02', code: 'CLARIFY', channels: 'CUSTOMER LANGUAGE', title: 'Gaps get clarified', desc: 'AI flags what\'s missing and drafts one question in the customer\'s language. You approve, we ask.', gate: 'GATE 02 — APPROVE THE QUESTION' },
   { num: '03', code: 'QUOTE', channels: 'PRICE · MARGIN · FX', title: 'Quote is drafted', desc: 'Quote drafted from your product prices, margin rules, and the FX rate — every number traced. You approve, one click sends.', gate: 'GATE 03 — YOUR SIGN-OFF' },
 ];
@@ -179,6 +188,14 @@ const FAQS = [
     a: 'You can start free on your own. There\'s also an optional done-for-you setup for HK$1,000 one-time — our team connects your mailbox, uploads your products, and configures the AI for you.',
   },
   {
+    q: 'How does the WhatsApp alert feature work?',
+    a: 'Connect your WhatsApp account to Sailwise. When an important email lands, you get an instant alert. You can review the extracted specs and draft a reply directly on WhatsApp. The bot sends it as a proper email from your mailbox — no need to jump between apps.',
+  },
+  {
+    q: 'What makes an email "important"?',
+    a: 'Sailwise learns what matters to your business. High-value customers, certain keywords, and new inquiries get flagged. You can customize the rules in your knowledge base to mark repeat customers or specific product categories as high-priority.',
+  },
+  {
     q: 'Can I cancel anytime?',
     a: 'Yes. Plans are month-to-month with no contracts. Cancel anytime and keep access through the end of your billing period.',
   },
@@ -193,7 +210,7 @@ export default function LandingPage() {
       <SiteHeader />
 
       {/* ── Hero ── */}
-      <section className="pt-36 pb-20 px-6 relative overflow-hidden">
+      <section className="pt-28 pb-14 px-6 relative overflow-hidden">
         {/* Hero background banner — top band only, anchored left, not behind the demo */}
         <div
           aria-hidden="true"
@@ -201,7 +218,7 @@ export default function LandingPage() {
           style={{
             backgroundImage: 'url(/hero/hero-banner.jpg)',
             backgroundSize: 'cover',
-            backgroundPosition: 'right center',
+            backgroundPosition: 'right 62% bottom 75%',
           }}
         />
         {/* Light wash for headline legibility; fades to white before the demo dashboard */}
@@ -214,34 +231,36 @@ export default function LandingPage() {
           }}
         />
         <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 w-[940px] h-[640px]" style={{ marginLeft: -470, background: 'radial-gradient(50% 50% at 50% 28%, rgba(0,0,0,0.045), rgba(0,0,0,0) 70%)' }} />
-        <div className="max-w-5xl mx-auto sm:mx-0 sm:ml-auto sm:mr-6 text-center sm:text-right relative">
-          <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: 'rgba(255,255,255,0.85)', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms', backdropFilter: 'blur(6px)' }}>
-            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#000' }}></span>
-            Built for HK &amp; SZ trading companies
-          </div>
+        <div className="max-w-5xl mx-auto sm:ml-6 md:sm:ml-10 relative">
+          <div className="sm:max-w-2xl text-center sm:text-left">
+            <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: 'rgba(255,255,255,0.85)', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms', backdropFilter: 'blur(6px)' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#000' }}></span>
+              Built for HK &amp; SZ trading companies
+            </div>
 
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
-            <span className="btk-anim-rise block" style={{ animationDelay: '90ms' }}>
-              From inquiry to quote.
-            </span>
-            <span className="relative inline-block btk-anim-rise" style={{ color: '#000', animationDelay: '210ms' }}>
-              End to end.
-              <span className="absolute left-0 -bottom-1 h-[3px] w-full rounded-full" style={{ background: '#000', opacity: 0.35, animation: 'btk-trace 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s backwards' }} />
-            </span>
-          </h1>
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
+              <span className="btk-anim-rise block" style={{ animationDelay: '90ms' }}>
+                From inquiry to quote.
+              </span>
+              <span className="relative inline-block btk-anim-rise" style={{ color: '#000', animationDelay: '210ms' }}>
+                End to end.
+                <span className="absolute left-0 -bottom-1 h-[3px] w-full rounded-full" style={{ background: '#000', opacity: 0.35, animation: 'btk-trace 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s backwards' }} />
+              </span>
+            </h1>
 
-          <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto sm:mx-0 sm:ml-auto mb-10 leading-relaxed" style={{ color: '#4A4A4A', animationDelay: '330ms', textShadow: '0 1px 0 rgba(255,255,255,0.6)' }}>
-            Sailwise is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, drafts a cited price from your products and margins, and follows up until the deal closes — in hours, not days.
-          </p>
+            <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto sm:mx-0 mb-10 leading-relaxed" style={{ color: '#4A4A4A', animationDelay: '330ms', textShadow: '0 1px 0 rgba(255,255,255,0.6)' }}>
+              Sailwise is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, drafts a cited price from your products and margins, and follows up until the deal closes — in hours, not days.
+            </p>
 
-          <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center sm:justify-end gap-4 mb-16" style={{ animationDelay: '450ms' }}>
-            <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-3.5">
-              Start Free Trial
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
-            <Link href="#see-it-in-action" className="btn-ghost w-full sm:w-auto px-8 py-3.5">
-              See a Live Demo
-            </Link>
+            <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4 mb-10" style={{ animationDelay: '450ms' }}>
+              <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-3.5">
+                Start Free Trial
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <Link href="#see-it-in-action" className="btn-ghost w-full sm:w-auto px-8 py-3.5">
+                See a Live Demo
+              </Link>
+            </div>
           </div>
 
           <div className="relative">
