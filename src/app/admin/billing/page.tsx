@@ -14,7 +14,7 @@ const PLANS = [
     price: 1580,
     annualPrice: 1264,
     features: [
-      '1 WhatsApp number',
+      'Email inbox (Google or Microsoft)',
       'Unlimited AI conversations',
       'Unlimited products & FAQ rules',
       'EN / ZH / Cantonese support',
@@ -29,7 +29,7 @@ const PLANS = [
     price: 2480,
     annualPrice: 1984,
     features: [
-      'WeChat Work integration',
+      'Multiple email inbox accounts',
       'Multi-user dashboard',
       'Analytics & reporting',
       'Priority support',

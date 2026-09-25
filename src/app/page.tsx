@@ -27,8 +27,8 @@ const CORE_FEATURES = [
     code: 'INBOX',
     span: 'lg:col-span-4',
     wide: true,
-    title: 'Email + WhatsApp inbox',
-    desc: 'An inquiry lands in the channel the customer uses — email or WhatsApp — and Sailwise drives it through the whole sourcing pipeline from there.',
+    title: 'Email-first inbox',
+    desc: 'An inquiry lands in the mailbox you already use — Google or Microsoft — and Sailwise drives it through the whole sourcing pipeline from there.',
     detail: 'No new software for your team, customers, or suppliers to learn. Supports English, Chinese, and mixed-language threads.',
   },
   {
@@ -52,7 +52,7 @@ const CORE_FEATURES = [
     code: 'RFQ',
     span: 'lg:col-span-2',
     title: 'Suppliers get RFQed',
-    desc: 'A batch RFQ goes to your shortlisted suppliers on their preferred channel — email or WhatsApp, in their language.',
+    desc: 'A batch RFQ goes to your shortlisted suppliers by email, in their language.',
     detail: 'You approve every send. Suppliers reply in place; no chasing spreadsheet threads.',
   },
   {
@@ -106,9 +106,9 @@ const CONTROL_FEATURES = [
 /* ── How it works ───────────────────────────────────────────────────────── */
 
 const STEPS = [
-  { num: '01', code: 'INBOUND', channels: 'EMAIL · WHATSAPP', title: 'Inquiry comes in', desc: 'From email or WhatsApp. Every spec, quantity, and requirement is pulled out and pinned to the line it came from.', gate: 'GATE 01 — APPROVE THE EXTRACTION' },
+  { num: '01', code: 'INBOUND', channels: 'EMAIL', title: 'Inquiry comes in', desc: 'From your connected mailbox. Every spec, quantity, and requirement is pulled out and pinned to the line it came from.', gate: 'GATE 01 — APPROVE THE EXTRACTION' },
   { num: '02', code: 'CLARIFY', channels: 'CUSTOMER LANGUAGE', title: 'Gaps get clarified', desc: 'AI flags what\'s missing and drafts one question in the customer\'s language. You approve, we ask.', gate: 'GATE 02 — APPROVE THE QUESTION' },
-  { num: '03', code: 'RFQ', channels: 'SUPPLIERS · BATCH', title: 'Suppliers get RFQed', desc: 'One batch RFQ to your shortlist, on their channel — email or WhatsApp. They reply in place.', gate: 'GATE 03 — APPROVE THE SEND' },
+  { num: '03', code: 'RFQ', channels: 'SUPPLIERS · BATCH', title: 'Suppliers get RFQed', desc: 'One batch RFQ to your shortlist by email. They reply in place.', gate: 'GATE 03 — APPROVE THE SEND' },
   { num: '04', code: 'QUOTE', channels: 'COMPARE · LANDED COST', title: 'Quote is drafted', desc: 'Responses compared, landed cost calculated, quote drafted — every number traced to a supplier price, margin rule, or FX rate. You approve, one click sends.', gate: 'GATE 04 — YOUR SIGN-OFF' },
 ];
 
@@ -127,7 +127,7 @@ const PLANS = [
     price: 'HK$1,580',
     period: '/mo',
     features: [
-      '1 WhatsApp number & email inbox',
+      'Email inbox (Google / Microsoft)',
       '1,000 AI conversations a month',
       'Unlimited products & FAQ rules',
       'English, Mandarin, Cantonese, Spanish',
@@ -146,11 +146,11 @@ const PLANS = [
 const FAQS = [
   {
     q: 'Does it work with the email I already use?',
-    a: 'Yes. Sailwise works over your existing mailbox — an inquiry can arrive from a customer or be added in one click. There is no new software for your team, your customers, or your suppliers to learn.',
+    a: 'Yes. Sailwise works over your existing mailbox with a one-click Google or Microsoft connection. There is no new software for your team, your customers, or your suppliers to learn.',
   },
   {
-    q: 'Does it work with WhatsApp?',
-    a: 'Yes. Sailwise works over email and WhatsApp, depending on what the customer or supplier prefers. Specs are extracted the same way, and replies route back through the channel you choose — ideal for Shenzhen and mainland suppliers who live on WeChat and WhatsApp.',
+    q: 'Can I use a personal Gmail or Hotmail?',
+    a: 'Yes — personal accounts work exactly like business mailboxes. Many of our customers run their entire trading business from a personal email address.',
   },
   {
     q: 'Can it handle Chinese and mixed-language emails?',
@@ -170,7 +170,7 @@ const FAQS = [
   },
   {
     q: 'Do I need to be technical to set it up?',
-    a: 'No. Self-serve setup is guided: connect WhatsApp or email, upload your products, and approve your first draft. There\'s also an optional done-for-you setup for HK$1,288 one-time where our team does all of it for you.',
+    a: 'No. Self-serve setup is guided: connect your Google or Microsoft mailbox, upload your products, and approve your first draft. There\'s also an optional done-for-you setup for HK$1,288 one-time where our team does all of it for you.',
   },
   {
     q: 'Is my supplier and pricing data safe?',
@@ -178,7 +178,7 @@ const FAQS = [
   },
   {
     q: 'Is there a setup fee?',
-    a: 'You can start free on your own. There\'s also an optional done-for-you setup for HK$1,288 one-time — our team connects WhatsApp, uploads your products, and configures the AI for you.',
+    a: 'You can start free on your own. There\'s also an optional done-for-you setup for HK$1,288 one-time — our team connects your mailbox, uploads your products, and configures the AI for you.',
   },
   {
     q: 'Can I cancel anytime?',
@@ -560,11 +560,11 @@ export default function LandingPage() {
             14-day free trial · Card required · 50 AI responses included · Cancel anytime.
           </p>
           <p className="text-xs mt-4 max-w-xl mx-auto" style={{ color: '#555555' }}>
-            Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,288</span> one-time we connect WhatsApp, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,264/month —{' '}
+            Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,288</span> one-time we connect your mailbox, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,264/month —{' '}
             <Link href="/pricing" className="font-medium underline underline-offset-2" style={{ color: '#000' }}>see pricing</Link>.
           </p>
           <p className="text-xs mt-3" style={{ color: '#8A8A8A' }}>
-            Need extra WhatsApp numbers, a bigger team, or custom workflows? We do custom plans —{' '}
+            Need a bigger team, more AI conversations, or custom workflows? We do custom plans —{' '}
             <a href="mailto:tradeflow.hk@gmail.com" className="font-medium underline underline-offset-2" style={{ color: '#000' }}>
               tradeflow.hk@gmail.com
             </a>

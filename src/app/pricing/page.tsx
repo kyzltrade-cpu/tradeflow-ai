@@ -13,7 +13,7 @@ const PLANS = [
     monthly: 1580,
     annual: 1264,
     features: [
-      '1 WhatsApp number & email inbox',
+      'Google & Microsoft email inbox (1 account)',
       '1,000 AI conversations a month',
       'Unlimited products & FAQ rules',
       'English, Mandarin, Cantonese, Spanish',
@@ -177,7 +177,7 @@ export default function PricingPage() {
         <div className="max-w-[600px] mx-auto px-6 py-12 text-center">
           <h2 className="text-[22px] font-semibold mb-3">{t('Need help getting started?', '需要幫助開始？')}</h2>
           <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
-            {t('Let our team set up Sailwise for you. We\'ll connect WhatsApp, upload your products, and configure the AI.', '讓我們的團隊為您設定 Sailwise。我們會連接 WhatsApp、上傳產品並配置 AI。')}
+            {t('Let our team set up Sailwise for you. We\'ll connect your inbox, upload your products, and configure the AI.', '讓我們的團隊為您設定 Sailwise。我們會連接您的電郵信箱、上傳產品並配置 AI。')}
           </p>
           <div className="inline-block p-5 rounded-[4px] border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
             <p className="text-[14px] font-medium mb-1">{t('Done-for-you setup', '代客設定')}</p>

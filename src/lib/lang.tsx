@@ -45,12 +45,34 @@ export function useLang() {
 export function LangToggle() {
   const { lang, toggle } = useLang();
   return (
-    <button
-      onClick={toggle}
-      className="text-[13px] px-3 py-1.5 rounded-full font-medium border transition-colors"
-      style={{ borderColor: 'var(--border)', color: 'var(--text)', background: 'var(--surface)' }}
+    <div
+      className="flex items-center rounded-full border p-0.5"
+      style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+      role="group"
+      aria-label="Language"
     >
-      {lang === 'en' ? '中文' : 'EN'}
-    </button>
+      <button
+        onClick={() => lang !== 'en' && toggle()}
+        className="rounded-full px-3 py-1 text-[12px] font-semibold transition-colors"
+        style={
+          lang === 'en'
+            ? { background: 'var(--accent)', color: '#FFFFFF' }
+            : { color: 'var(--text-muted)' }
+        }
+      >
+        EN
+      </button>
+      <button
+        onClick={() => lang !== 'zh' && toggle()}
+        className="rounded-full px-3 py-1 text-[12px] font-semibold transition-colors"
+        style={
+          lang === 'zh'
+            ? { background: 'var(--accent)', color: '#FFFFFF' }
+            : { color: 'var(--text-muted)' }
+        }
+      >
+        中文
+      </button>
+    </div>
   );
 }
