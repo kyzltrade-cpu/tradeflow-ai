@@ -421,95 +421,68 @@ export default function LandingPage() {
 
             <Reveal delay={200}>
               <div className="flex justify-center">
-                {/* iPhone Frame */}
-                <div className="relative" style={{ width: '240px' }}>
-                  {/* iPhone Bezel */}
-                  <div className="relative rounded-[38px] border-[12px] border-black shadow-2xl overflow-hidden" style={{ aspectRatio: '9/19.5', backgroundColor: '#000' }}>
-                    {/* Status Bar */}
-                    <div className="h-7 px-4 flex items-center justify-between text-white text-[10px] font-medium" style={{ background: '#fff' }}>
-                      <span style={{ fontSize: '12px', fontWeight: '600' }}>9:41</span>
-                      <div className="flex gap-1 items-center text-[10px]">
-                        <span>◢●●●●</span>
-                        <span>📡</span>
-                        <span>🔋</span>
-                      </div>
-                    </div>
-
-                    {/* WhatsApp Green Bar */}
-                    <div className="h-1" style={{ background: '#25D366' }} />
-
-                    {/* WhatsApp Header */}
-                    <div className="px-4 py-3 flex items-center justify-between" style={{ background: '#075e54' }}>
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0" style={{ background: '#25D366' }}>📱</div>
-                        <div className="min-w-0">
-                          <div className="text-white font-semibold text-sm leading-none">Sailwise</div>
-                          <div className="text-[11px]" style={{ color: '#dcf8c6' }}>active now</div>
+                <div className="relative" style={{ width: '260px' }}>
+                  <div className="relative rounded-[38px] shadow-2xl overflow-hidden" style={{ background: '#000', aspectRatio: '9/19.5', boxShadow: '0 20px 60px rgba(0,0,0,0.3), inset 0 0 0 12px #000' }}>
+                    <div className="relative w-full h-full flex flex-col" style={{ background: '#ece5dd' }}>
+                      <div className="h-6 px-4 flex items-center justify-between text-black text-[9px] font-medium" style={{ background: '#fff', paddingTop: '2px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '600' }}>9:41</span>
+                        <div className="flex gap-0.5 items-center" style={{ fontSize: '9px' }}>
+                          <span>▓▓▓▓▓</span>
+                          <span>Wifi</span>
+                          <span>🔋</span>
                         </div>
                       </div>
-                      <div className="flex gap-3 text-white text-lg flex-shrink-0">
-                        <span>📞</span>
-                        <span>ⓘ</span>
-                      </div>
-                    </div>
-
-                    {/* Messages Area */}
-                    <div className="p-3 space-y-3 overflow-y-auto flex flex-col" style={{ background: '#ECE5DD', height: 'calc(100% - 130px)' }}>
-                      {/* Bot Alert Message */}
-                      <div className="flex justify-start">
-                        <div className="max-w-[75%] px-3 py-2 rounded-2xl text-[12px] leading-snug font-medium" style={{ background: '#fff', color: '#000' }}>
-                          📬 New inquiry from Sarah Chen
-                        </div>
-                      </div>
-
-                      {/* Email Content Message */}
-                      <div className="flex justify-start">
-                        <div className="max-w-[80%] px-4 py-3 rounded-2xl text-[12px] leading-relaxed" style={{ background: '#fff', color: '#000' }}>
-                          <div className="font-semibold mb-1" style={{ fontSize: '13px' }}>Subject: Bulk Order - Vacuum Bottles</div>
-                          <div style={{ fontSize: '11px', color: '#666', marginBottom: '8px' }}>Hi, we need 10,000 pcs of 500ml stainless steel vacuum bottles for a corporate order. Double-wall, 304 food grade. Please quote with logo printing and your best lead time. We also need a sample before mass production.</div>
-                          <div style={{ fontSize: '11px', color: '#999' }}>From: Sarah Chen | 9:32 AM</div>
-                        </div>
-                      </div>
-
-                      {/* Extracted Details */}
-                      <div className="flex justify-start">
-                        <div className="max-w-[80%] px-4 py-3 rounded-2xl text-[11px]" style={{ background: '#fff', color: '#000', borderLeft: '3px solid #25D366' }}>
-                          <div className="font-semibold mb-2" style={{ color: '#075e54' }}>Extracted Details:</div>
-                          <div className="space-y-1">
-                            <div><span style={{ color: '#666' }}>Product:</span> <span style={{ fontWeight: '500' }}>Vacuum Bottles (500ml)</span></div>
-                            <div><span style={{ color: '#666' }}>Quantity:</span> <span style={{ fontWeight: '500' }}>10,000 pcs</span></div>
-                            <div><span style={{ color: '#666' }}>Material:</span> <span style={{ fontWeight: '500' }}>304 Stainless Steel</span></div>
-                            <div><span style={{ color: '#666' }}>Special:</span> <span style={{ fontWeight: '500' }}>Logo printing, Sample</span></div>
+                      <div className="px-3 py-2.5" style={{ background: '#075e54' }}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs" style={{ background: 'linear-gradient(135deg, #25D366, #128c7e)' }}>S</div>
+                            <div className="min-w-0">
+                              <div className="text-white font-semibold text-xs leading-none">Sailwise</div>
+                              <div className="text-[9px]" style={{ color: '#dcf8c6' }}>active now</div>
+                            </div>
+                          </div>
+                          <div className="text-white text-base flex gap-3">
+                            <span>📞</span>
+                            <span>ⓘ</span>
                           </div>
                         </div>
                       </div>
-
-                      {/* Spacer */}
-                      <div className="flex-1" />
-
-                      {/* CTA Message */}
-                      <div className="flex justify-center">
-                        <div className="max-w-[70%] px-4 py-3 rounded-3xl text-[13px] font-medium text-center text-white" style={{ background: '#25D366' }}>
-                          👉 Tap to draft reply
+                      <div className="flex-1 overflow-hidden px-3 pt-2.5 pb-2 space-y-2" style={{ background: '#ece5dd' }}>
+                        <div className="flex justify-start">
+                          <div className="px-3 py-1.5 rounded-3xl text-xs font-semibold max-w-[75%]" style={{ background: '#fff', color: '#000', boxShadow: '0 1px 0.5px rgba(0,0,0,0.13)' }}>
+                            📬 New inquiry
+                          </div>
+                        </div>
+                        <div className="flex justify-start">
+                          <div className="px-3 py-2 rounded-lg text-xs max-w-[85%]" style={{ background: '#fff', color: '#000', boxShadow: '0 1px 0.5px rgba(0,0,0,0.13)' }}>
+                            <div className="font-semibold text-[11px] mb-0.5" style={{ color: '#075e54' }}>Vacuum Bottles</div>
+                            <div className="text-[10px] leading-snug mb-1" style={{ color: '#333' }}>Hi, we need 10,000 pcs. Double-wall, 304 food grade, logo printing, sample needed.</div>
+                            <div className="text-[9px]" style={{ color: '#999' }}>9:32 AM</div>
+                          </div>
+                        </div>
+                        <div className="flex justify-start">
+                          <div className="px-3 py-2 rounded-lg text-xs max-w-[85%]" style={{ background: '#fff', borderLeft: '3px solid #25D366', color: '#000', boxShadow: '0 1px 0.5px rgba(0,0,0,0.13)' }}>
+                            <div className="font-semibold text-[10px] mb-1" style={{ color: '#075e54' }}>✓ Details extracted</div>
+                            <div className="text-[9px] space-y-0.5" style={{ color: '#444' }}>
+                              <div>• 10,000 pcs</div>
+                              <div>• 304 Food Grade</div>
+                              <div>• Logo + Sample</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex justify-center pt-1">
+                          <div className="px-3 py-2 rounded-3xl text-xs font-semibold" style={{ background: '#25D366', color: '#fff', boxShadow: '0 1px 0.5px rgba(0,0,0,0.2)' }}>
+                            👉 Reply now
+                          </div>
                         </div>
                       </div>
+                      <div className="px-2 py-2 flex items-center gap-1.5" style={{ background: '#ece5dd', borderTop: '1px solid #d9d9d9' }}>
+                        <button className="w-6 h-6 flex items-center justify-center rounded text-sm" style={{ color: '#25D366' }}>😊</button>
+                        <input type="text" placeholder="Message..." disabled className="flex-1 px-2.5 py-1.5 rounded-full text-xs" style={{ background: '#fff', color: '#999', border: '1px solid #ddd' }} />
+                        <button className="w-6 h-6 flex items-center justify-center rounded text-sm" style={{ color: '#25D366' }}>🎤</button>
+                      </div>
+                      <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-28 h-5 rounded-b-3xl z-10" style={{ background: '#000' }} />
                     </div>
-
-                    {/* Input Area */}
-                    <div className="px-3 py-3 flex items-center gap-2" style={{ background: '#ECE5DD', borderTop: '1px solid #d9d9d9' }}>
-                      <span className="text-lg flex-shrink-0">😊</span>
-                      <input
-                        type="text"
-                        placeholder="Message..."
-                        disabled
-                        className="flex-1 px-3 py-2 rounded-full text-sm"
-                        style={{ background: '#fff', color: '#999', fontSize: '13px', border: 'none' }}
-                      />
-                      <span className="text-lg flex-shrink-0">🎤</span>
-                    </div>
-
-                    {/* Notch */}
-                    <div className="absolute top-0 left-1/2 transform -translate-x-1/2 w-32 h-6 rounded-b-3xl" style={{ background: '#000', zIndex: 40 }} />
                   </div>
                 </div>
               </div>
