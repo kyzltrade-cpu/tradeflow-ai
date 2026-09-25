@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
       email_api_key,
       email_from_email,
       email_from_name,
+      pricing,
     } = body;
 
     // During onboarding, company_id is passed in body (auth.companyId may be null yet)
@@ -112,6 +113,9 @@ export async function POST(req: NextRequest) {
     // Only include chat_widget_enabled if it's explicitly passed
     if (chat_widget_enabled !== undefined) {
       settingsPayload.chat_widget_enabled = chat_widget_enabled;
+    }
+    if (pricing !== undefined) {
+      settingsPayload.pricing = pricing;
     }
 
     const { error: settingsError } = await supabaseAdmin

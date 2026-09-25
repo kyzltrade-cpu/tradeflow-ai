@@ -2,55 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 
-// GET /api/admin/suppliers?page=1&limit=20&search=&approved=true
+// GET /api/admin/suppliers — list the firm's trusted suppliers
 export async function GET(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
-    const url = new URL(req.url);
-    const companyId = auth.companyId || url.searchParams.get('company_id');
-
-    if (!companyId) {
+    if (!auth.companyId) {
       return NextResponse.json({ error: 'No company associated with this account' }, { status: 400 });
     }
-
-    const page = Math.max(1, parseInt(url.searchParams.get('page') || '1', 10));
-    const limit = Math.min(100, Math.max(1, parseInt(url.searchParams.get('limit') || '20', 10)));
-    const offset = (page - 1) * limit;
-    const search = url.searchParams.get('search') || '';
-    const approved = url.searchParams.get('approved');
+    const companyId = auth.companyId;
+    const url = new URL(req.url);
+    const search = url.searchParams.get('search');
+    const approvedOnly = url.searchParams.get('approved') === 'true';
 
     let query = supabaseAdmin
       .from('suppliers')
-      .select('*', { count: 'exact' })
+      .select('*')
       .eq('company_id', companyId)
-      .order('legal_name');
+      .is('deleted_at', null);
+
+    if (approvedOnly) {
+      query = query.eq('is_approved', true);
+    }
 
     if (search) {
-      query = query.or(`legal_name.ilike.%${search}%,trading_name.ilike.%${search}%,location.ilike.%${search}%,contact_name.ilike.%${search}%`);
+      query = query.or(
+        `legal_name.ilike.%${search}%,trading_name.ilike.%${search}%,location.ilike.%${search}%`
+      );
     }
 
-    if (approved === 'true') {
-      query = query.eq('is_approved', true);
-    } else if (approved === 'false') {
-      query = query.eq('is_approved', false);
-    }
+    query = query.order('is_approved', { ascending: false });
 
-    const { data, error, count } = await query.range(offset, offset + limit - 1);
+    const { data, error } = await query;
 
     if (error) {
       console.error('[suppliers:GET] Supabase error:', error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({
-      suppliers: data,
-      pagination: {
-        page,
-        limit,
-        total: count ?? 0,
-        totalPages: Math.ceil((count ?? 0) / limit),
-      },
-    });
+    return NextResponse.json({ suppliers: data || [] });
   } catch (err) {
     if (err instanceof Response) return err;
     console.error('[suppliers:GET] Unexpected error:', err);
@@ -61,60 +50,41 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/admin/suppliers
+// POST /api/admin/suppliers — add a trusted supplier
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
-    const body = await req.json();
-    const {
-      company_id,
-      legal_name,
-      trading_name,
-      contact_name,
-      contact_email,
-      contact_phone,
-      contact_whatsapp,
-      contact_wechat,
-      location,
-      product_capabilities,
-      certifications,
-      payment_terms,
-      moq_notes,
-      typical_lead_time_days,
-      notes,
-    } = body;
-
-    if (!legal_name) {
-      return NextResponse.json({ error: 'legal_name required' }, { status: 400 });
-    }
-
-    const companyId = company_id || auth.companyId;
-    if (!companyId) {
+    if (!auth.companyId) {
       return NextResponse.json({ error: 'No company associated with this account' }, { status: 400 });
     }
-    if (auth.companyId && companyId !== auth.companyId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    const companyId = auth.companyId;
+    const body = await req.json();
+
+    const legalName = (body.legal_name || body.trading_name || '').trim();
+    if (!legalName) {
+      return NextResponse.json({ error: 'legal_name is required' }, { status: 400 });
     }
 
     const { data, error } = await supabaseAdmin
       .from('suppliers')
       .insert({
         company_id: companyId,
-        legal_name,
-        trading_name: trading_name || null,
-        contact_name: contact_name || null,
-        contact_email: contact_email || null,
-        contact_phone: contact_phone || null,
-        contact_whatsapp: contact_whatsapp || null,
-        contact_wechat: contact_wechat || null,
-        location: location || null,
-        product_capabilities: product_capabilities || [],
-        certifications: certifications || [],
-        payment_terms: payment_terms || null,
-        moq_notes: moq_notes || null,
-        typical_lead_time_days: typical_lead_time_days || null,
-        notes: notes || null,
-        is_approved: false,
+        legal_name: legalName,
+        trading_name: body.trading_name || null,
+        location: body.location || null,
+        product_capabilities: Array.isArray(body.product_capabilities) ? body.product_capabilities : [],
+        contact_name: body.contact_name || null,
+        contact_email: body.contact_email || null,
+        contact_phone: body.contact_phone || null,
+        contact_wechat: body.contact_wechat || null,
+        contact_whatsapp: body.contact_whatsapp || null,
+        moq_notes: body.moq_notes || null,
+        typical_lead_time_days: body.typical_lead_time_days ?? null,
+        payment_terms: body.payment_terms || null,
+        certifications: Array.isArray(body.certifications) ? body.certifications : [],
+        is_approved: body.is_approved ?? false,
+        tags: Array.isArray(body.tags) ? body.tags : [],
+        notes: body.notes || null,
       })
       .select()
       .single();
@@ -124,7 +94,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ supplier: data });
+    return NextResponse.json({ supplier: data }, { status: 201 });
   } catch (err) {
     if (err instanceof Response) return err;
     console.error('[suppliers:POST] Unexpected error:', err);

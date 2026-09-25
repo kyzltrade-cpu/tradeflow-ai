@@ -1,33 +1,40 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { MessageSquareText, UserPlus, Bookmark, Package, Inbox } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import { Mail, Search, Globe, Clock } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
+import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
 
-interface ConversationSummary {
+interface InboxRow {
   id: string;
   contact_name: string | null;
+  contact_email: string | null;
   contact_phone: string | null;
   channel: string;
   status: string;
   detected_language: string | null;
+  handoff_summary: string | null;
+  external_search_enabled: boolean;
   updated_at: string;
   last_message: { content: string; role: string; created_at: string } | null;
   message_count: number;
+  needs_reply: boolean;
+  waiting_on_customer: boolean;
 }
 
-interface DashboardData {
-  totalConversations: number;
-  newClientsThisWeek: number;
-  bookmarkedCount: number;
-  productsCount: number;
-  recentConversations: ConversationSummary[];
-  bookmarkedConversations: ConversationSummary[];
+interface InboxCounts {
+  needs_reply: number;
+  waiting: number;
+  bookmarked: number;
+  human: number;
+  ai: number;
+  total: number;
 }
+
+type Filter = 'needs_reply' | 'waiting' | 'all' | 'bookmarked' | 'human' | 'ai';
 
 function formatTimeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -40,372 +47,224 @@ function formatTimeAgo(dateStr: string): string {
   return `${days}d ago`;
 }
 
-function SkeletonCard() {
+function RowSkeleton() {
   return (
-    <div className="surface-elevated p-4 md:p-5 animate-pulse" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-      <div className="h-3 w-24 rounded mb-3" style={{ background: 'var(--border)' }} />
-      <div className="h-7 w-12 rounded" style={{ background: 'var(--border)' }} />
-    </div>
-  );
-}
-
-function SkeletonRow() {
-  return (
-    <div className="flex items-center gap-3 px-4 md:px-5 py-3 border-b last:border-b-0 animate-pulse" style={{ borderColor: 'var(--border)' }}>
-      <div className="w-8 h-8 rounded-full" style={{ background: 'var(--border)' }} />
+    <div className="flex items-start gap-3 px-4 py-3 border-b animate-pulse" style={{ borderColor: 'var(--border)' }}>
+      <div className="w-9 h-9 rounded-full flex-shrink-0" style={{ background: 'var(--border)' }} />
       <div className="flex-1 space-y-2">
-        <div className="h-3 w-28 rounded" style={{ background: 'var(--border)' }} />
-        <div className="h-3 w-48 rounded" style={{ background: 'var(--border)' }} />
+        <div className="h-3 w-32 rounded" style={{ background: 'var(--border)' }} />
+        <div className="h-3 w-56 rounded" style={{ background: 'var(--border)' }} />
       </div>
     </div>
   );
 }
 
-export default function AdminPage() {
+export default function AdminInboxPage() {
   const { t } = useLang();
   const { companyId, loading: companyLoading } = useCompany();
+  const { showToast } = useToast();
   const router = useRouter();
-  const [data, setData] = useState<DashboardData | null>(null);
+
+  const [rows, setRows] = useState<InboxRow[]>([]);
+  const [counts, setCounts] = useState<InboxCounts>({
+    needs_reply: 0, waiting: 0, bookmarked: 0, human: 0, ai: 0, total: 0,
+  });
+  const [filter, setFilter] = useState<Filter>('needs_reply');
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchInbox = useCallback(async (activeFilter: Filter) => {
+    if (companyLoading || !companyId) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const res = await authFetch(`/api/admin/inbox?filter=${activeFilter}`);
+      if (!res.ok) throw new Error('Failed to load inbox');
+      const data = await res.json();
+      setRows(data.conversations || []);
+      setCounts(data.counts || { needs_reply: 0, waiting: 0, bookmarked: 0, human: 0, ai: 0, total: 0 });
+    } catch (err) {
+      console.error('[inbox] fetch error:', err);
+      setError(t('Failed to load inbox. Please try again.', '載入收件匣失敗，請重試。'));
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [companyId, companyLoading, t]);
 
   useEffect(() => {
-    if (!companyLoading && !companyId) {
-      router.push('/onboarding');
-    }
-  }, [companyId, companyLoading, router]);
+    fetchInbox(filter);
+  }, [fetchInbox, filter]);
 
   useEffect(() => {
     if (companyLoading || !companyId) return;
+    // Polling fallback so new emails surface without a full reload
+    const interval = setInterval(() => fetchInbox(filter), 15000);
+    return () => clearInterval(interval);
+  }, [companyId, companyLoading, fetchInbox, filter]);
 
-    const fetchData = async () => {
-      try {
-        const [convRes, prodRes] = await Promise.all([
-          authFetch(`/api/admin/conversations?company_id=${companyId}`),
-          authFetch(`/api/admin/products?company_id=${companyId}`),
-        ]);
+  const contactLabel = (r: InboxRow) =>
+    r.contact_name || r.contact_email || r.contact_phone || 'Unknown';
 
-        const convJson = await convRes.json();
-        const prodJson = await prodRes.json();
+  const contactEmail = (r: InboxRow) => r.contact_email || r.contact_phone || '';
 
-        const allConvs: ConversationSummary[] = convJson.conversations || [];
-        const now = Date.now();
-        const weekAgo = now - 7 * 24 * 60 * 60 * 1000;
+  const tabs: Array<{ key: Filter; en: string; zh: string; n?: number }> = [
+    { key: 'needs_reply', en: 'Waiting on you', zh: '需要你回覆', n: counts.needs_reply },
+    { key: 'waiting', en: 'Waiting on them', zh: '等客戶回覆', n: counts.waiting },
+    { key: 'all', en: 'All', zh: '全部', n: counts.total },
+    { key: 'bookmarked', en: 'Bookmarked', zh: '已加書籤', n: counts.bookmarked },
+    { key: 'human', en: 'Human', zh: '人手', n: counts.human },
+    { key: 'ai', en: 'AI', zh: 'AI', n: counts.ai },
+  ];
 
-        const uniqueContacts = new Set(
-          allConvs
-            .filter((c) => new Date(c.updated_at).getTime() > weekAgo)
-            .map((c) => c.contact_phone || c.id)
-        );
-
-        setData({
-          totalConversations: allConvs.length,
-          newClientsThisWeek: uniqueContacts.size,
-          bookmarkedCount: allConvs.filter((c) => c.status === 'bookmarked').length,
-          productsCount: (prodJson.products || []).length,
-          recentConversations: allConvs.slice(0, 5),
-          bookmarkedConversations: allConvs.filter((c) => c.status === 'bookmarked').slice(0, 3),
-        });
-      } catch (err) {
-        console.error('[dashboard] fetch error:', err);
-        setData({
-          totalConversations: 0,
-          newClientsThisWeek: 0,
-          bookmarkedCount: 0,
-          productsCount: 0,
-          recentConversations: [],
-          bookmarkedConversations: [],
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, [companyId, companyLoading]);
-
-  const displayStatus = (conv: ConversationSummary): 'ai' | 'human' | 'flagged' => {
-    if (conv.status === 'bookmarked') return 'flagged';
-    if (conv.status === 'human') return 'human';
-    return 'ai';
-  };
-
-  const contactName = (conv: ConversationSummary) =>
-    conv.contact_name || conv.contact_phone || 'Unknown';
+  const visible = search.trim()
+    ? rows.filter((r) => {
+        const hay = `${contactLabel(r)} ${contactEmail(r)} ${r.last_message?.content || ''}`.toLowerCase();
+        return hay.includes(search.toLowerCase());
+      })
+    : rows;
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6 md:mb-8">
+    <div className="flex flex-col h-[calc(100vh-112px)]">
+      <div className="flex items-center justify-between gap-3 mb-4 flex-shrink-0 flex-wrap">
         <div>
-          <h1 className="text-[20px] md:text-[24px] font-semibold tracking-[-0.5px]">{t('Dashboard', '控制台')}</h1>
+          <h1 className="text-[20px] md:text-[24px] font-semibold tracking-[-0.5px]">
+            {t('Inbox', '收件匣')}
+          </h1>
           <p className="text-[13px] md:text-[14px] mt-1" style={{ color: 'var(--text-muted)' }}>
-            {t('Live overview of your inbox, pipeline, and catalog', '收件箱、管道與目錄的實時概覽')}
+            {t('Customer emails — owed replies first. Open one for the suggested quote & suppliers.', '客戶電郵——需要回覆的排前面。點開一封即見建議報價與供應商。')}
           </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2" width="14" height="14" style={{ color: 'var(--text-muted)' }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t('Search…', '搜尋…')}
+              className="border rounded-[4px] pl-8 pr-3 py-2 text-[13px] focus:outline-none w-44 md:w-56"
+              style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+            />
+          </div>
         </div>
       </div>
 
-      {/* KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
-        {loading ? (
-          <>
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-            <SkeletonCard />
-          </>
-        ) : (
-          <>
-            <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em]" style={{ color: 'var(--text-muted)' }}>
-                  {t('Total conversations', '總對話數')}
-                </p>
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-                  <MessageSquareText className="w-3.5 h-3.5" />
-                </span>
-              </div>
-              <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]">{data?.totalConversations ?? 0}</p>
-            </div>
-            <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em]" style={{ color: 'var(--text-muted)' }}>
-                  {t('New clients this week', '本週新客戶')}
-                </p>
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-                  <UserPlus className="w-3.5 h-3.5" />
-                </span>
-              </div>
-              <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]">{data?.newClientsThisWeek ?? 0}</p>
-            </div>
-            <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em]" style={{ color: 'var(--text-muted)' }}>
-                  {t('Bookmarked', '已加書籤')}
-                </p>
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
-                  <Bookmark className="w-3.5 h-3.5" />
-                </span>
-              </div>
-              <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]" style={{ color: 'var(--error)' }}>{data?.bookmarkedCount ?? 0}</p>
-            </div>
-            <div className="surface-elevated p-4 md:p-5" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-              <div className="flex items-center justify-between mb-1.5 md:mb-2">
-                <p className="text-[11px] md:text-[12px] font-medium uppercase tracking-[0.05em]" style={{ color: 'var(--text-muted)' }}>
-                  {t('Products listed', '已上架產品')}
-                </p>
-                <span className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-                  <Package className="w-3.5 h-3.5" />
-                </span>
-              </div>
-              <p className="text-[22px] md:text-[28px] font-semibold tracking-[-0.5px]">{data?.productsCount ?? 0}</p>
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Empty state — get connected */}
-      {!loading && (data?.totalConversations ?? 0) === 0 && (
-        <div className="surface-card mb-4 p-6 md:p-8 text-center" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-          <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
-            <Inbox className="w-[22px] h-[22px]" style={{ color: 'var(--accent)' }} />
-          </div>
-          <h2 className="text-[16px] font-semibold mb-1">{t('Connect your inbox to get started', '連接收件箱開始使用')}</h2>
-          <p className="text-[13px] mb-5 max-w-[420px] mx-auto" style={{ color: 'var(--text-muted)' }}>
-            {t('Sailwise needs a connected email inbox before inquiries can arrive. Connect your email in Settings, then upload your products.', 'Sailwise 需要連接電郵收件箱才能接收查詢。請在設定中連接電郵，然後上載產品。')}
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/admin/settings" className="accent-btn inline-flex items-center justify-center">
-              {t('Connect email', '連接電郵')}
-            </Link>
-            <Link href="/admin/products" className="secondary-btn inline-flex items-center justify-center">
-              {t('Add products', '新增產品')}
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Bookmarked — needs attention */}
-      <div className="surface-card mb-4">
-        <div className="px-4 md:px-5 py-3 md:py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="var(--error)" stroke="var(--error)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
-            </svg>
-            <h2 className="text-[14px] md:text-[15px] font-semibold">{t('Bookmarked for review', '已加書籤待審核')}</h2>
-            {!loading && (
-              <span className="text-[11px] md:text-[12px] px-2 py-0.5 rounded font-medium" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
-                {data?.bookmarkedConversations.length ?? 0}
-              </span>
-            )}
-          </div>
-          <Link href="/admin/conversations" className="text-[12px] md:text-[13px] font-medium" style={{ color: 'var(--accent)' }}>
-            {t('View all', '查看全部')}
-          </Link>
-        </div>
-        <div>
-          {loading ? (
-            <>
-              <SkeletonRow />
-              <SkeletonRow />
-              <SkeletonRow />
-            </>
-          ) : (data?.bookmarkedConversations.length ?? 0) === 0 ? (
-            <div className="px-4 md:px-5 py-6 text-center">
-              <svg className="mx-auto mb-2" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
-              </svg>
-              <p className="text-[13px] md:text-[14px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                {t('No bookmarked conversations', '沒有已加書籤的對話')}
-              </p>
-              <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                {t('Bookmark conversations that need your attention', '加書籤需要您關注的對話')}
-              </p>
-            </div>
-          ) : (
-            data?.bookmarkedConversations.map((conv) => (
-              <Link
-                key={conv.id}
-                href="/admin/conversations"
-                className="flex items-center justify-between px-4 md:px-5 py-3 border-b last:border-b-0 relative hover:bg-[#FEFBFB]"
-                style={{ borderColor: 'var(--border)' }}
+      <div className="flex flex-1 border rounded-[4px] overflow-hidden min-h-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <div className="flex flex-col w-full">
+          <div className="flex gap-1 px-3 pt-3 pb-2 flex-shrink-0 overflow-x-auto border-b" style={{ borderColor: 'var(--border)' }}>
+            {tabs.map((f) => (
+              <button
+                key={f.key}
+                onClick={() => setFilter(f.key)}
+                className="text-[11px] md:text-[12px] px-2.5 py-1 rounded-[4px] font-medium whitespace-nowrap"
+                style={{
+                  background: filter === f.key ? 'var(--accent)' : 'transparent',
+                  color: filter === f.key ? 'white' : 'var(--text-muted)',
+                }}
               >
-                <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: 'var(--error)' }} />
-                <div className="flex items-center gap-3 ml-1 min-w-0">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-medium shrink-0" style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                    {contactName(conv).charAt(0)}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[13px] md:text-[14px] font-medium truncate">{contactName(conv)}</p>
-                      <span className="text-[10px] md:text-[11px] px-1.5 py-0.5 rounded shrink-0" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
-                        {conv.channel}
-                      </span>
-                    </div>
-                    <p className="text-[12px] md:text-[13px] truncate" style={{ color: 'var(--text-muted)' }}>
-                      {conv.last_message?.content || '—'}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-2">
-                  <span className="text-[11px] md:text-[12px] hidden sm:inline" style={{ color: 'var(--text-muted)' }}>{formatTimeAgo(conv.updated_at)}</span>
-                  <span className="text-[12px] md:text-[13px] font-medium" style={{ color: 'var(--accent)' }}>{t('Review', '審核')}</span>
-                </div>
-              </Link>
-            ))
-          )}
-        </div>
-      </div>
+                {t(`${f.en}${f.n !== undefined ? ` (${f.n})` : ''}`, `${f.zh}${f.n !== undefined ? ` (${f.n})` : ''}`)}
+              </button>
+            ))}
+          </div>
 
-      {/* Recent conversations */}
-      <div className="surface-card">
-        <div className="px-4 md:px-5 py-3 md:py-4 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-[14px] md:text-[15px] font-semibold">{t('Recent conversations', '最近對話')}</h2>
-          <Link href="/admin/conversations" className="text-[12px] md:text-[13px] font-medium" style={{ color: 'var(--accent)' }}>
-            {t('View all', '查看全部')}
-          </Link>
-        </div>
-        {/* Desktop table */}
-        <table className="hidden md:table w-full text-[14px]">
-          <thead>
-            <tr className="border-b text-left" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
-              <th className="px-5 py-3 font-medium">{t('Contact', '聯絡人')}</th>
-              <th className="px-5 py-3 font-medium">{t('Channel', '渠道')}</th>
-              <th className="px-5 py-3 font-medium">{t('Last message', '最新訊息')}</th>
-              <th className="px-5 py-3 font-medium">{t('Status', '狀態')}</th>
-              <th className="px-5 py-3 font-medium">{t('Time', '時間')}</th>
-            </tr>
-          </thead>
-          <tbody>
+          <div className="flex-1 overflow-y-auto">
             {loading ? (
               <>
-                <tr><td colSpan={5}><SkeletonRow /></td></tr>
-                <tr><td colSpan={5}><SkeletonRow /></td></tr>
-                <tr><td colSpan={5}><SkeletonRow /></td></tr>
+                <RowSkeleton /><RowSkeleton /><RowSkeleton /><RowSkeleton /><RowSkeleton />
               </>
-            ) : (data?.recentConversations.length ?? 0) === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-5 py-6 text-center">
-                  <p className="text-[13px] md:text-[14px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                    {t('No conversations yet', '暫無對話')}
-                  </p>
-                  <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {t('Customer messages will appear here', '客戶訊息會顯示在這裡')}
-                  </p>
-                </td>
-              </tr>
+            ) : visible.length === 0 ? (
+              <div className="px-4 py-12 text-center">
+                <Mail className="mx-auto mb-3" width="32" height="32" style={{ stroke: 'var(--text-muted)' }} />
+                <p className="text-[14px] font-medium mb-1">
+                  {error || t('Nothing here', '這裡沒有內容')}
+                </p>
+                <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                  {t('Customer emails will appear here when they arrive', '客戶來信會顯示在這裡')}
+                </p>
+              </div>
             ) : (
-              data?.recentConversations.map((conv) => {
-                const s = displayStatus(conv);
+              visible.map((r) => {
+                const isHuman = r.status === 'human';
+                const isFlagged = r.status === 'bookmarked';
+                const paused = r.status === 'ai_paused';
                 return (
-                  <tr key={conv.id} className="border-b last:border-b-0 relative" style={{ borderColor: 'var(--border)' }}>
-                    {s === 'flagged' && (
-                      <td className="absolute left-0 top-0 bottom-0 w-[3px] p-0" style={{ background: 'var(--error)' }}></td>
-                    )}
-                    <td className="px-5 py-3 font-medium">{contactName(conv)}</td>
-                    <td className="px-5 py-3" style={{ color: 'var(--text-muted)' }}>{conv.channel}</td>
-                    <td className="px-5 py-3 truncate max-w-[300px]" style={{ color: 'var(--text-muted)' }}>{conv.last_message?.content || '—'}</td>
-                    <td className="px-5 py-3">
-                      <span
-                        className="text-[11px] px-2 py-0.5 rounded font-medium"
-                        style={{
-                          background: s === 'flagged' ? '#FEE8EA' : s === 'human' ? '#E8F5F1' : 'var(--accent-light)',
-                          color: s === 'flagged' ? 'var(--error)' : s === 'human' ? '#038153' : 'var(--accent)',
-                        }}
+                  <button
+                    key={r.id}
+                    onClick={() => router.push(`/admin/inbox/${r.id}`)}
+                    className="w-full text-left px-4 py-3 border-b hover:bg-black/[0.02] transition-colors"
+                    style={{ borderColor: 'var(--border)' }}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium text-white flex-shrink-0"
+                        style={{ background: isFlagged ? 'var(--error)' : isHuman ? '#038153' : 'var(--accent)' }}
                       >
-                        {s === 'flagged' ? t('Bookmarked', '已加書籤') : s === 'human' ? 'HUMAN' : 'AI'}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 text-[13px]" style={{ color: 'var(--text-muted)' }}>{formatTimeAgo(conv.updated_at)}</td>
-                  </tr>
+                        {contactLabel(r).charAt(0)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-medium text-[14px] truncate">{contactLabel(r)}</span>
+                          <span className="text-[11px] flex-shrink-0" style={{ color: 'var(--text-muted)' }}>
+                            {formatTimeAgo(r.updated_at)}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {contactEmail(r) && (
+                            <span className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
+                              {contactEmail(r)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                          {r.needs_reply && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                              <Clock className="inline-block mr-1" width="10" height="10" style={{ stroke: '#D97706' }} />
+                              {t('Waiting on you', '需要你回覆')}
+                            </span>
+                          )}
+                          {r.waiting_on_customer && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                              {t('Waiting on them', '等客戶回覆')}
+                            </span>
+                          )}
+                          {r.external_search_enabled && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium flex items-center gap-1" style={{ background: '#E8F5F1', color: '#038153' }}>
+                              <Globe width="10" height="10" />
+                              {t('External search', '外部搜尋')}
+                            </span>
+                          )}
+                          {isHuman && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#E8F5F1', color: '#038153' }}>
+                              HUMAN
+                            </span>
+                          )}
+                          {paused && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                              AI PAUSED
+                            </span>
+                          )}
+                          {!isHuman && !paused && !r.waiting_on_customer && !r.needs_reply && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                              AI
+                            </span>
+                          )}
+                          {r.detected_language && (
+                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                              {r.detected_language === 'zh' ? '中文' : 'EN'}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[12px] mt-1.5 truncate" style={{ color: 'var(--text-muted)' }}>
+                          {r.last_message?.content || '—'}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
                 );
               })
             )}
-          </tbody>
-        </table>
-        {/* Mobile list */}
-        <div className="md:hidden">
-          {loading ? (
-            <>
-              <SkeletonRow />
-              <SkeletonRow />
-              <SkeletonRow />
-            </>
-          ) : (data?.recentConversations.length ?? 0) === 0 ? (
-            <div className="px-4 py-6 text-center">
-              <p className="text-[13px] font-medium" style={{ color: 'var(--text-muted)' }}>
-                {t('No conversations yet', '暫無對話')}
-              </p>
-              <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                {t('Customer messages will appear here', '客戶訊息會顯示在這裡')}
-              </p>
-            </div>
-          ) : (
-            data?.recentConversations.map((conv) => {
-              const s = displayStatus(conv);
-              return (
-                <div key={conv.id} className="px-4 py-3 border-b last:border-b-0 relative" style={{ borderColor: 'var(--border)' }}>
-                  {s === 'flagged' && (
-                    <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: 'var(--error)' }} />
-                  )}
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-[13px] font-medium truncate">{contactName(conv)}</p>
-                    <span className="text-[11px] shrink-0 ml-2" style={{ color: 'var(--text-muted)' }}>{formatTimeAgo(conv.updated_at)}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{conv.last_message?.content || '—'}</p>
-                    <span
-                      className="text-[10px] px-1.5 py-0.5 rounded font-medium shrink-0 ml-2"
-                      style={{
-                        background: s === 'flagged' ? '#FEE8EA' : s === 'human' ? '#E8F5F1' : 'var(--accent-light)',
-                        color: s === 'flagged' ? 'var(--error)' : s === 'human' ? '#038153' : 'var(--accent)',
-                      }}
-                    >
-                      {s === 'flagged' ? t('Bookmarked', '已加書籤') : s === 'human' ? 'HUMAN' : 'AI'}
-                    </span>
-                  </div>
-                </div>
-              );
-            })
-          )}
+          </div>
         </div>
       </div>
     </div>

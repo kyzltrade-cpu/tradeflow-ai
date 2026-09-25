@@ -86,6 +86,10 @@ function SettingsContent() {
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [pendingCompanies, setPendingCompanies] = useState<Array<{ id: string; name: string; created_at: string }>>([]);
   const [demoRequests, setDemoRequests] = useState<Array<{ id: string; name: string; email: string; company: string; phone: string; status: string; created_at: string }>>([]);
+  const [currency, setCurrency] = useState('USD');
+  const [fxRate, setFxRate] = useState('7.82');
+  const [fxPair, setFxPair] = useState('USD → HKD');
+  const [marginRules, setMarginRules] = useState<Array<{ name: string; product_category: string; margin_pct: string }>>([]);
 
   useEffect(() => {
     const billing = searchParams.get('billing');
@@ -109,6 +113,21 @@ function SettingsContent() {
           setChatWidgetEnabled(data.settings.chat_widget_enabled ?? true);
           if (data.settings.image_response_prompt) {
             setImageResponsePrompt(data.settings.image_response_prompt);
+          }
+          if (data.settings.pricing && typeof data.settings.pricing === 'object') {
+            const p = data.settings.pricing as Record<string, unknown>;
+            if (p.currency) setCurrency(String(p.currency));
+            if (p.fx_rate) setFxRate(String(p.fx_rate));
+            if (p.fx_pair) setFxPair(String(p.fx_pair));
+            if (Array.isArray(p.margin_rules)) {
+              setMarginRules(
+                (p.margin_rules as Array<{ name: string; product_category?: string; margin_pct: number }>).map((r) => ({
+                  name: r.name,
+                  product_category: r.product_category || '',
+                  margin_pct: String(r.margin_pct),
+                }))
+              );
+            }
           }
         }
         if (data.company) {
@@ -210,6 +229,14 @@ function SettingsContent() {
           chat_widget_enabled: chatWidgetEnabled,
           image_response_prompt: imageResponsePrompt,
           company_name: companyName,
+          pricing: {
+            currency,
+            fx_rate: parseFloat(fxRate) || 7.82,
+            fx_pair: fxPair,
+            margin_rules: marginRules
+              .filter((r) => r.name.trim() && r.margin_pct)
+              .map((r) => ({ name: r.name.trim(), product_category: r.product_category.trim() || null, margin_pct: parseFloat(r.margin_pct) || 0 })),
+          },
         }),
       });
       if (!res.ok) {
@@ -331,6 +358,102 @@ function SettingsContent() {
           {chatWidgetEnabled
             ? t('Chat widget is active — visitors can message your AI', '聊天元件已啟用——訪客可以向您的 AI 發送訊息')
             : t('Chat widget is hidden — visitors cannot see the chat button', '聊天元件已隱藏——訪客看不到聊天按鈕')}
+        </p>
+      </section>
+
+      {/* Quote Pricing */}
+      <section className="border rounded-[4px] p-5 mb-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <h2 className="text-[15px] font-semibold mb-1">{t('Quote Pricing', '報價定價')}</h2>
+        <p className="text-[13px] mb-4" style={{ color: 'var(--text-muted)' }}>
+          {t('Margin rules and FX used by the suggested quotes in your inbox. Every figure is cited back to these rules.', '收件匣建議報價所使用的利潤規則與匯率。每個數字都會引述回這些規則。')}
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <div>
+            <label className="block text-[13px] font-medium mb-1">{t('Currency', '貨幣')}</label>
+            <input
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              disabled={loading}
+              className="w-full border rounded-[4px] px-3 py-2 text-[14px] focus:outline-none"
+              style={{ borderColor: 'var(--border)' }}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-medium mb-1">{t('FX rate', '匯率')}</label>
+            <input
+              value={fxRate}
+              onChange={(e) => setFxRate(e.target.value)}
+              disabled={loading}
+              className="w-full border rounded-[4px] px-3 py-2 text-[14px] focus:outline-none"
+              style={{ borderColor: 'var(--border)' }}
+            />
+          </div>
+          <div>
+            <label className="block text-[13px] font-medium mb-1">{t('FX pair', '匯率對')}</label>
+            <input
+              value={fxPair}
+              onChange={(e) => setFxPair(e.target.value)}
+              disabled={loading}
+              className="w-full border rounded-[4px] px-3 py-2 text-[14px] focus:outline-none"
+              style={{ borderColor: 'var(--border)' }}
+            />
+          </div>
+        </div>
+        <p className="text-[12px] font-medium mb-2">
+          {t('Margin rules', '利潤規則')} <span className="font-normal" style={{ color: 'var(--text-muted)' }}>
+            {t('(leave category empty to apply to all products)', '（類別留空即套用於所有產品）')}
+          </span>
+        </p>
+        <div className="space-y-2 mb-3">
+          {marginRules.map((r, i) => (
+            <div key={i} className="flex gap-2 items-center">
+              <input
+                value={r.name}
+                onChange={(e) => setMarginRules((prev) => prev.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))}
+                placeholder={t('Rule name (e.g. Bottle margin rule)', '規則名稱（例如：瓶類利潤規則）')}
+                className="flex-1 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                style={{ borderColor: 'var(--border)' }}
+                disabled={loading}
+              />
+              <input
+                value={r.product_category}
+                onChange={(e) => setMarginRules((prev) => prev.map((x, j) => (j === i ? { ...x, product_category: e.target.value } : x)))}
+                placeholder={t('Category (e.g. bottle)', '類別（例如：瓶子）')}
+                className="w-40 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                style={{ borderColor: 'var(--border)' }}
+                disabled={loading}
+              />
+              <input
+                value={r.margin_pct}
+                onChange={(e) => setMarginRules((prev) => prev.map((x, j) => (j === i ? { ...x, margin_pct: e.target.value } : x)))}
+                type="number"
+                placeholder="20"
+                className="w-20 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                style={{ borderColor: 'var(--border)' }}
+                disabled={loading}
+              />
+              <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>%</span>
+              <button
+                onClick={() => setMarginRules((prev) => prev.filter((_, j) => j !== i))}
+                className="text-[12px] px-2 py-1 rounded-[4px] border"
+                style={{ borderColor: 'var(--border)', color: 'var(--error)' }}
+                disabled={loading}
+              >
+                {t('Remove', '移除')}
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => setMarginRules((prev) => [...prev, { name: '', product_category: '', margin_pct: '' }])}
+          className="text-[12px] font-medium px-3 py-1.5 rounded-[4px] border"
+          style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+          disabled={loading}
+        >
+          + {t('Add margin rule', '新增利潤規則')}
+        </button>
+        <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
+          {t('Example: 20% on bottles, 10% on accessories — products without a matching rule are quoted at cost.', '例如：瓶類 20%、配件 10%——沒有匹配規則的產品會按成本價報出。')}
         </p>
       </section>
 

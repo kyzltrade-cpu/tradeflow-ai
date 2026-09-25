@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import { webSearch } from '@/lib/web-search';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
@@ -92,7 +93,7 @@ export async function handleChat(ctx: ChatContext): Promise<ChatResponse> {
   // 0. Check conversation status — skip AI if human/bookmarked
   const { data: conversation } = await supabaseAdmin
     .from('conversations')
-    .select('status')
+    .select('status, external_search_enabled')
     .eq('id', ctx.conversationId)
     .single();
 
@@ -180,6 +181,20 @@ Specs: ${typeof p.specs === 'object' ? JSON.stringify(p.specs) : p.specs || 'N/A
     .map((doc: any) => `--- ${doc.name} ---\n${doc.content}`)
     .join('\n\n');
 
+  // 8b. Web search context — only when the firm enabled external search for this customer
+  let webSearchContext = '';
+  const externalSearchEnabled = conversation?.external_search_enabled === true;
+  if (externalSearchEnabled) {
+    try {
+      const results = await webSearch(ctx.userMessage, 3);
+      if (results && !results.startsWith('[')) {
+        webSearchContext = `\n\n## Web Search Results (use current info to answer)\n${results}`;
+      }
+    } catch (err) {
+      console.error('[ai] Web search failed:', err);
+    }
+  }
+
   // 9. Detect language of user message
   const hasChinese = /[\u4e00-\u9fff]/.test(ctx.userMessage);
   const hasCantonese = /[嘅係冇唔哋呢嗰乜揾嘢畀]/.test(ctx.userMessage);
@@ -213,6 +228,7 @@ ${productCatalog || 'No products loaded yet. Tell the customer you will get back
 
 ${faqText ? `FAQ RULES:\n${faqText}\n` : ''}
 ${kbText ? `KNOWLEDGE BASE:\n${kbText}\n` : ''}
+${webSearchContext.trim() ? `${webSearchContext}\n` : ''}
 COMPANY NAME: ${company.name}
 YOUR ROLE: Sales assistant for ${company.name}
 `;

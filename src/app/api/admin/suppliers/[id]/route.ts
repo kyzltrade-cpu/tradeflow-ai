@@ -2,79 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 
-async function verifySupplierOwnership(supplierId: string, companyId: string) {
-  const { data, error } = await supabaseAdmin
+async function getOwnedSupplier(req: NextRequest, id: string) {
+  const auth = await requireAuth(req);
+  if (!auth.companyId) return null;
+  const { data } = await supabaseAdmin
     .from('suppliers')
-    .select('company_id')
-    .eq('id', supplierId)
+    .select('*')
+    .eq('id', id)
+    .eq('company_id', auth.companyId)
+    .is('deleted_at', null)
     .single();
-
-  if (error || !data) return false;
-  return data.company_id === companyId;
+  return { auth, data };
 }
 
 // GET /api/admin/suppliers/[id]
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireAuth(req);
     const { id } = await params;
-
-    if (!(await verifySupplierOwnership(id, auth.companyId!))) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    const owner = await getOwnedSupplier(req, id);
+    if (!owner || !owner.data) {
+      return NextResponse.json({ error: 'Supplier not found' }, { status: 404 });
     }
-
-    const [supplierResult, documentsResult, quotesResult, rfqsResult] = await Promise.all([
-      supabaseAdmin
-        .from('suppliers')
-        .select('*')
-        .eq('id', id)
-        .single(),
-      supabaseAdmin
-        .from('supplier_documents')
-        .select('*')
-        .eq('supplier_id', id)
-        .order('created_at', { ascending: false }),
-      supabaseAdmin
-        .from('supplier_quotes')
-        .select('id, status, quoted_price, currency, lead_time_days, created_at')
-        .eq('supplier_id', id)
-        .order('created_at', { ascending: false }),
-      supabaseAdmin
-        .from('supplier_rfqs')
-        .select('id, status, subject, sent_at, created_at')
-        .eq('supplier_id', id)
-        .order('created_at', { ascending: false }),
-    ]);
-
-    if (supplierResult.error) {
-      console.error('[suppliers/[id]:GET] Supabase error:', supplierResult.error.message);
-      return NextResponse.json({ error: supplierResult.error.message }, { status: 500 });
-    }
-
-    const performance = {
-      total_quotes: quotesResult.data?.length ?? 0,
-      accepted_quotes: quotesResult.data?.filter((q: { status: string }) => q.status === 'accepted').length ?? 0,
-      total_rfqs: rfqsResult.data?.length ?? 0,
-      response_rate: rfqsResult.data && rfqsResult.data.length > 0
-        ? Math.round(
-            ((quotesResult.data?.length ?? 0) / rfqsResult.data.length) * 100
-          )
-        : 0,
-    };
-
-    return NextResponse.json({
-      supplier: supplierResult.data,
-      documents: documentsResult.data ?? [],
-      quotes: quotesResult.data ?? [],
-      rfqs: rfqsResult.data ?? [],
-      performance,
-    });
+    return NextResponse.json({ supplier: owner.data });
   } catch (err) {
     if (err instanceof Response) return err;
-    console.error('[suppliers/[id]:GET] Unexpected error:', err);
+    console.error('[suppliers:GET.id] Unexpected error:', err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Internal server error' },
       { status: 500 }
@@ -82,38 +34,36 @@ export async function GET(
   }
 }
 
-// PUT /api/admin/suppliers/[id]
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+// PATCH /api/admin/suppliers/[id]
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireAuth(req);
     const { id } = await params;
+    const owner = await getOwnedSupplier(req, id);
+    const { auth, data: existing } = owner || {};
+    if (!owner || !existing) {
+      return NextResponse.json({ error: 'Supplier not found' }, { status: 404 });
+    }
+
     const body = await req.json();
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
 
-    if (!(await verifySupplierOwnership(id, auth.companyId!))) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    const scalarFields = [
+      'legal_name', 'trading_name', 'location', 'contact_name', 'contact_email',
+      'contact_phone', 'contact_wechat', 'contact_whatsapp', 'moq_notes',
+      'payment_terms', 'quality_notes', 'delivery_notes', 'notes',
+    ] as const;
+    for (const f of scalarFields) {
+      if (body[f] !== undefined) updates[f] = body[f] === '' ? null : body[f];
     }
 
-    const allowedFields = [
-      'legal_name', 'trading_name', 'contact_name', 'contact_email', 'contact_phone',
-      'contact_whatsapp', 'contact_wechat', 'location', 'product_capabilities', 'certifications',
-      'payment_terms', 'moq_notes', 'typical_lead_time_days', 'notes', 'is_approved',
-    ];
-
-    const updates: Record<string, unknown> = {};
-    for (const key of allowedFields) {
-      if (key in body) {
-        updates[key] = body[key];
-      }
-    }
-
-    if (Object.keys(updates).length === 0) {
-      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
-    }
-
-    updates.updated_at = new Date().toISOString();
+    if (body.is_approved !== undefined) updates.is_approved = Boolean(body.is_approved);
+    if (body.typical_lead_time_days !== undefined) updates.typical_lead_time_days = body.typical_lead_time_days;
+    if (body.performance_score !== undefined) updates.performance_score = body.performance_score;
+    if (body.on_time_rate !== undefined) updates.on_time_rate = body.on_time_rate;
+    if (body.quality_reject_rate !== undefined) updates.quality_reject_rate = body.quality_reject_rate;
+    if (Array.isArray(body.product_capabilities)) updates.product_capabilities = body.product_capabilities;
+    if (Array.isArray(body.certifications)) updates.certifications = body.certifications;
+    if (Array.isArray(body.tags)) updates.tags = body.tags;
 
     const { data, error } = await supabaseAdmin
       .from('suppliers')
@@ -123,14 +73,14 @@ export async function PUT(
       .single();
 
     if (error) {
-      console.error('[suppliers/[id]:PUT] Supabase error:', error.message);
+      console.error('[suppliers:PATCH.id] Supabase error:', error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ supplier: data });
   } catch (err) {
     if (err instanceof Response) return err;
-    console.error('[suppliers/[id]:PUT] Unexpected error:', err);
+    console.error('[suppliers:PATCH.id] Unexpected error:', err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Internal server error' },
       { status: 500 }
@@ -138,33 +88,29 @@ export async function PUT(
   }
 }
 
-// DELETE /api/admin/suppliers/[id]  (soft delete)
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+// DELETE /api/admin/suppliers/[id] — soft delete
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const auth = await requireAuth(req);
     const { id } = await params;
-
-    if (!(await verifySupplierOwnership(id, auth.companyId!))) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    const owner = await getOwnedSupplier(req, id);
+    if (!owner || !owner.data) {
+      return NextResponse.json({ error: 'Supplier not found' }, { status: 404 });
     }
 
     const { error } = await supabaseAdmin
       .from('suppliers')
-      .update({ deleted_at: new Date().toISOString() })
+      .update({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', id);
 
     if (error) {
-      console.error('[suppliers/[id]:DELETE] Supabase error:', error.message);
+      console.error('[suppliers:DELETE.id] Supabase error:', error.message);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
   } catch (err) {
     if (err instanceof Response) return err;
-    console.error('[suppliers/[id]:DELETE] Unexpected error:', err);
+    console.error('[suppliers:DELETE.id] Unexpected error:', err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Internal server error' },
       { status: 500 }
