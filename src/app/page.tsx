@@ -377,7 +377,8 @@ export default function LandingPage() {
             </p>
           </Reveal>
 
-          <Reveal delay={120}>
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <Reveal delay={120}>
               <div className="space-y-6">
                 <div className="flex gap-4">
                   <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
@@ -417,6 +418,34 @@ export default function LandingPage() {
                 </div>
               </div>
             </Reveal>
+
+            <Reveal delay={200}>
+              <div className="flex flex-col items-center justify-center p-8 rounded-2xl border" style={{ background: '#fff', borderColor: '#E5E5E5', minHeight: '400px' }}>
+                <div className="text-6xl mb-6">💬</div>
+                <h3 className="text-2xl font-bold mb-4 text-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+                  WhatsApp Ready
+                </h3>
+                <p className="text-center mb-6" style={{ color: '#555555' }}>
+                  Connect your WhatsApp account and start receiving instant alerts on important emails in seconds.
+                </p>
+                <div className="w-full h-1 rounded-full mb-6" style={{ background: '#25D366' }} />
+                <div className="space-y-3 w-full">
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">✓</span>
+                    <span style={{ color: '#555555' }}>No setup required</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">✓</span>
+                    <span style={{ color: '#555555' }}>Works with your phone</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">✓</span>
+                    <span style={{ color: '#555555' }}>Reply directly in WhatsApp</span>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
