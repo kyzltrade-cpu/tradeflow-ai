@@ -147,19 +147,11 @@ const NAV_GROUPS: NavGroup[] = [
 
 /* ── Sidebar ─────────────────────────────────────────────────────────────── */
 
-const TONE_BADGE: Record<BadgeTone, { bg: string; fg: string }> = {
-  accent: { bg: '#111111', fg: '#FFFFFF' },
-  warn: { bg: '#FEF3C7', fg: '#D97706' },
-  muted: { bg: '#F3F4F6', fg: '#6B7280' },
-};
-
 function SidebarItem({
   item,
-  collapsed,
   counts,
 }: {
   item: NavItem;
-  collapsed: boolean;
   counts: InboxCounts;
 }) {
   const pathname = usePathname();
@@ -177,44 +169,41 @@ function SidebarItem({
     : pathname === baseHref || pathname.startsWith(baseHref + '/');
 
   const count = item.countKey ? counts[item.countKey] ?? 0 : 0;
-  const showBadge = typeof item.countKey === 'string' && count > 0;
-  const tone = item.badgeTone || 'muted';
+  const showCount = typeof item.countKey === 'string' && count > 0;
 
   return (
     <Link
       href={item.href}
-      title={collapsed ? t(item.en, item.zh) : undefined}
-      className="flex items-center gap-3 rounded-lg px-3 py-2 text-[14px] font-medium transition-colors"
+      className="group/item relative flex items-center gap-2.5 rounded-md px-2.5 py-[5px] text-[13px] transition-colors"
       style={{
         background: active ? 'var(--accent-light)' : 'transparent',
         color: active ? 'var(--text)' : 'var(--text-muted)',
       }}
     >
+      {active && (
+        <span
+          className="absolute left-0 top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full"
+          style={{ background: 'var(--accent)' }}
+        />
+      )}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={active ? 2 : 1.5}
         stroke="currentColor"
-        className="h-5 w-5 shrink-0"
+        className="h-[18px] w-[18px] shrink-0"
       >
         <path strokeLinecap="round" strokeLinejoin="round" d={item.icon} />
       </svg>
-      {!collapsed && (
-        <>
-          <span className="min-w-0 flex-1 truncate">{t(item.en, item.zh)}</span>
-          {showBadge && (
-            <span
-              className="rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none"
-              style={{
-                background: active ? TONE_BADGE.accent.bg : TONE_BADGE[tone].bg,
-                color: active ? TONE_BADGE.accent.fg : TONE_BADGE[tone].fg,
-              }}
-            >
-              {count > 99 ? '99+' : count}
-            </span>
-          )}
-        </>
+      <span className="min-w-0 flex-1 truncate font-medium">{t(item.en, item.zh)}</span>
+      {showCount && (
+        <span
+          className="text-[12px] font-semibold tabular-nums"
+          style={{ color: active ? 'var(--text)' : 'var(--text-muted)' }}
+        >
+          {count > 99 ? '99+' : count}
+        </span>
       )}
     </Link>
   );
@@ -235,7 +224,6 @@ function Sidebar({
 }) {
   const { t } = useLang();
   const initial = (email || 'B').charAt(0).toUpperCase();
-  const focused = counts.needs_reply ?? 0;
 
   return (
     <>
@@ -245,136 +233,30 @@ function Sidebar({
       <aside
         className="fixed left-0 top-0 z-50 flex h-full flex-col border-r lg:static lg:z-auto"
         style={{
-          width: 240,
+          width: 232,
           background: 'var(--surface)',
           borderColor: 'var(--border)',
         }}
       >
-        {/* Logo */}
-        <div className="flex h-14 items-center gap-1.5 border-b px-4" style={{ borderColor: 'var(--border)' }}>
+        {/* Logo row */}
+        <div className="flex h-[52px] items-center gap-2 px-3.5">
           <Link
             href="/"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md"
+            title="Sailwise"
           >
-            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-10 w-10 rounded-lg object-cover" />
+            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-8 w-8 rounded-md object-cover" />
           </Link>
-          <Link
-            href="/"
-            className="text-base font-semibold"
+          <span
+            className="min-w-0 flex-1 truncate text-[15px] font-semibold tracking-[-0.2px]"
             style={{ color: 'var(--text)' }}
           >
             Sailwise
-          </Link>
-        </div>
-
-        {/* Nav groups */}
-        <nav className="flex-1 overflow-y-auto px-3 py-4">
-          {NAV_GROUPS.map((group, gi) => (
-            <div key={gi} className={gi > 0 ? 'mt-6' : ''}>
-              <div
-                className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                {t(group.label.en, group.label.zh)}
-              </div>
-              <div className="space-y-0.5">
-                {group.items.map((item) => (
-                  <SidebarItem key={item.href} item={item} collapsed={false} counts={counts} />
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {/* AI status card */}
-          <div className="mt-6">
-            <div
-              className="flex items-start gap-2.5 rounded-lg border px-3 py-2.5"
-              style={{
-                borderColor: 'var(--border)',
-                background: 'linear-gradient(135deg, rgba(99,102,241,0.06) 0%, rgba(56,189,248,0.05) 100%)',
-              }}
-            >
-              <span
-                className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-white"
-                style={{ background: '#6366F1' }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-3.5 w-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d={ICON_SPARKLES} />
-                </svg>
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="text-[12px] font-semibold" style={{ color: 'var(--text)' }}>
-                  {t('AI inbox', 'AI 收件匣')}
-                </div>
-                <div className="mt-0.5 text-[11px] leading-snug" style={{ color: 'var(--text-muted)' }}>
-                  {focused > 0
-                    ? t(`${focused} message${focused === 1 ? '' : 's'} waiting on you`, `有 ${focused} 封郵件等待你回覆`)
-                    : t('You’re all caught up', '所有郵件已處理')}
-                </div>
-              </div>
-              <span
-                className="mt-1 h-2 w-2 shrink-0 rounded-full"
-                style={{ background: 'var(--success)', boxShadow: '0 0 0 3px rgba(28,122,77,0.15)' }}
-                title="AI online"
-              />
-            </div>
-          </div>
-        </nav>
-
-        {/* Language */}
-        <div className="border-t px-3 py-3" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex justify-center">
-            <LangToggle />
-          </div>
-        </div>
-
-        {/* User badge */}
-        <div className="border-t px-3 py-3" style={{ borderColor: 'var(--border)' }}>
-          <div className="flex items-center gap-2 group">
-            <Link
-              href="/admin/settings"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-              style={{ background: '#6366F1' }}
-              title={email || t('Account', '帳戶')}
-            >
-              {initial}
-            </Link>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[13px] font-medium" style={{ color: 'var(--text)' }}>
-                {email}
-              </div>
-              <Link
-                href="/admin/settings"
-                className="truncate text-[11px] hover:underline"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                {t('Settings', '設定')}
-              </Link>
-            </div>
-            <button
-              onClick={onSignOut}
-              className="hidden lg:flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-red-50"
-              title={t('Sign out', '登出')}
-              style={{ color: 'var(--error, #ef4444)' }}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="h-4 w-4"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      {/* Minimize sidebar */}
-        <div className="border-t px-3 py-2" style={{ borderColor: 'var(--border)' }}>
+          </span>
           <button
             onClick={onMinimize}
-            className="hidden lg:flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-gray-100"
+            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-gray-100 lg:flex"
+            title={t('Minimize sidebar', '收窄側欄')}
             style={{ color: 'var(--text-muted)' }}
           >
             <svg
@@ -387,11 +269,70 @@ function Sidebar({
             >
               <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 9 6 6m0 0-6 6m6-6H3.75" />
             </svg>
-            <span>{t('Minimize sidebar', '收窄側欄')}</span>
           </button>
+        </div>
+
+        {/* Nav groups */}
+        <nav className="flex-1 overflow-y-auto px-2.5 pb-3 pt-1">
+          {NAV_GROUPS.map((group, gi) => (
+            <div key={gi} className={gi > 0 ? 'mt-[22px]' : ''}>
+              <div
+                className="mb-[5px] px-2.5 text-[10px] font-semibold uppercase tracking-[0.08em]"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {t(group.label.en, group.label.zh)}
+              </div>
+              <div className="space-y-[1px]">
+                {group.items.map((item) => (
+                  <SidebarItem key={item.href} item={item} counts={counts} />
+                ))}
+              </div>
+            </div>
+          ))}
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t px-2.5 py-2.5" style={{ borderColor: 'var(--border)' }}>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/admin/settings"
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-semibold text-white"
+              style={{ background: '#111111' }}
+              title={email || t('Account', '帳戶')}
+            >
+              {initial}
+            </Link>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[12px] font-medium" style={{ color: 'var(--text)' }}>
+                {email}
+              </div>
+            </div>
+            <div className="flex items-center gap-0.5">
+              <LangToggle />
+              <button
+                onClick={onSignOut}
+                className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-red-50 lg:flex"
+                title={t('Sign out', '登出')}
+                style={{ color: 'var(--text-muted)' }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-4 w-4"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile close (drawer) */}
           <button
             onClick={onClose}
-            className="flex lg:hidden w-full items-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-gray-100"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-gray-100 lg:hidden"
             style={{ color: 'var(--text-muted)' }}
           >
             <svg
@@ -426,12 +367,17 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
 
 function AdminShell({ children }: { children: ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { t } = useLang();
   const { user, loading, signOut } = useAuth();
   const { companyId, companyStatus, loading: companyLoading } = useCompany();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [counts, setCounts] = useState<InboxCounts>(EMPTY_COUNTS);
+
+  // Email surfaces (inbox list + reading pane) render full-bleed like a mail
+  // client; the rest of the admin app keeps its padded dashboard container.
+  const isEmailSurface = pathname === '/admin' || pathname.startsWith('/admin/inbox');
 
   const refreshCounts = useCallback(async () => {
     try {
@@ -642,10 +588,24 @@ function AdminShell({ children }: { children: ReactNode }) {
         </svg>
       </button>
 
-      {/* Main content */}
+      {/* Main content — email surfaces (inbox list & reading pane) go full-bleed */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto p-4 pt-14 lg:pt-4 md:p-6 md:pt-6 lg:pt-6">
-          <div className="mx-auto max-w-[1280px]">{children}</div>
+        <main
+          className={
+            isEmailSurface
+              ? 'flex-1 overflow-hidden'
+              : 'flex-1 overflow-y-auto p-4 pt-14 md:p-6 md:pt-6 lg:pt-6'
+          }
+        >
+          <div
+            className={
+              isEmailSurface
+                ? 'h-full min-h-0'
+                : 'mx-auto max-w-[1280px]'
+            }
+          >
+            {children}
+          </div>
         </main>
       </div>
     </div>

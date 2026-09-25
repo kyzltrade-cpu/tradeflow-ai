@@ -570,20 +570,24 @@ export default function InboxDetailPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-112px)]">
-      <div className="flex items-center justify-between gap-3 mb-4 flex-shrink-0 flex-wrap">
+    <div className="flex flex-col h-full min-h-0">
+      {/* Mail header */}
+      <div
+        className="flex items-center justify-between gap-3 px-3 md:px-5 py-2.5 md:py-3 flex-shrink-0 border-b"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+      >
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push('/admin')}
-            className="flex items-center gap-1.5 text-[13px] font-medium px-2 py-1.5 rounded-[4px] border"
-            style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+            className="flex items-center gap-1.5 text-[13px] font-medium px-2 py-1.5 rounded-full transition-colors hover:bg-gray-100"
+            style={{ color: 'var(--text-muted)' }}
           >
-            <ArrowLeft width="14" height="14" />
+            <ArrowLeft width="15" height="15" />
             {t('Inbox', '收件匣')}
           </button>
           <div>
-            <h1 className="text-[18px] md:text-[22px] font-semibold tracking-[-0.5px]">{contactLabel}</h1>
-            <p className="text-[12px] md:text-[13px]" style={{ color: 'var(--text-muted)' }}>
+            <h1 className="text-[15px] md:text-[16px] font-semibold tracking-[-0.3px]">{contactLabel}</h1>
+            <p className="text-[11px] md:text-[12px]" style={{ color: 'var(--text-muted)' }}>
               {body?.contact_email || body?.contact_phone || ''}
             </p>
           </div>
@@ -629,7 +633,7 @@ export default function InboxDetailPage() {
         </div>
       </div>
 
-      <div className="flex flex-1 border rounded-[4px] overflow-hidden min-h-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <div className="flex flex-1 min-h-0 overflow-hidden">
         {/* Thread */}
         <div className="flex-1 flex flex-col min-w-0">
           <div className="px-3 md:px-4 py-2 flex-shrink-0 border-b flex items-center gap-2 flex-wrap" style={{ borderColor: 'var(--border)' }}>

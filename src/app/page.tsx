@@ -194,9 +194,28 @@ export default function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="pt-36 pb-20 px-6 relative overflow-hidden">
+        {/* Hero background banner */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: 'url(/hero/hero-banner.jpg)',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        {/* Soft white wash so headline + demo stay crisp over the image */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.78) 22%, rgba(255,255,255,0.92) 55%, #FFFFFF 100%)',
+          }}
+        />
         <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 w-[940px] h-[640px]" style={{ marginLeft: -470, background: 'radial-gradient(50% 50% at 50% 28%, rgba(0,0,0,0.045), rgba(0,0,0,0) 70%)' }} />
         <div className="max-w-5xl mx-auto text-center relative">
-          <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: '#F4F4F4', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms' }}>
+          <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: 'rgba(255,255,255,0.85)', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms', backdropFilter: 'blur(6px)' }}>
             <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#000' }}></span>
             Built for HK &amp; SZ trading companies
           </div>
@@ -211,7 +230,7 @@ export default function LandingPage() {
             </span>
           </h1>
 
-          <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#555555', animationDelay: '330ms' }}>
+          <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style={{ color: '#4A4A4A', animationDelay: '330ms', textShadow: '0 1px 0 rgba(255,255,255,0.6)' }}>
             Sailwise is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, drafts a cited price from your products and margins, and follows up until the deal closes — in hours, not days.
           </p>
 
