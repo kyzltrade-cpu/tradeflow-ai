@@ -109,7 +109,7 @@ export async function buildInquiryContext(companyId: string): Promise<string> {
           : q.contact_id
             ? contactNames.get(q.contact_id)
             : null;
-        const margin = q.total_amount && q.total_margin != null
+        const margin = q.total_amount && q.total_margin && q.total_margin > 0
           ? `, margin ${((q.total_margin / q.total_amount) * 100).toFixed(0)}%`
           : '';
         return `- ${q.quote_number} — ${customer || 'unknown customer'} — ${q.status}${margin} (${q.sent_at ? `sent ${daysAgo(q.sent_at, now)}` : 'not sent yet'})`;

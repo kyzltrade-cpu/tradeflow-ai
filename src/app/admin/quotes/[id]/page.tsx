@@ -210,7 +210,8 @@ export default function QuoteDetailPage() {
     )
   }
 
-  const marginLow = quote.margin_percent < 10
+  const marginValid = quote.margin_percent != null && quote.margin_percent > 0
+  const marginLow = marginValid && quote.margin_percent < 10
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -531,7 +532,7 @@ export default function QuoteDetailPage() {
                           }}
                         >
                           <span>{t('Margin %', '利潤率')}</span>
-                          <span>{quote.margin_percent.toFixed(1)}%</span>
+                          <span>{quote.margin_percent != null && quote.margin_percent > 0 ? `${quote.margin_percent.toFixed(1)}%` : '—'}</span>
                         </div>
                       </div>
                     </td>

@@ -101,10 +101,10 @@ export async function GET(req: NextRequest) {
         titleLead(opp?.title) ||
         null;
       const marginPercent =
-        q.margin_pct != null
+        q.margin_pct != null && q.margin_pct > 0
           ? q.margin_pct * 100
-          : q.total_amount > 0
-          ? ((q.total_margin || 0) / q.total_amount) * 100
+          : q.total_amount > 0 && (q.total_margin || 0) > 0
+          ? (q.total_margin / q.total_amount) * 100
           : null;
       return {
         ...q,

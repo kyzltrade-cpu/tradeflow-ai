@@ -105,10 +105,10 @@ export async function GET(
       null;
 
     const marginPercent =
-      quote.margin_pct != null
+      quote.margin_pct != null && quote.margin_pct > 0
         ? quote.margin_pct * 100
-        : quote.total_amount > 0
-        ? ((quote.total_margin || 0) / quote.total_amount) * 100
+        : quote.total_amount > 0 && (quote.total_margin || 0) > 0
+        ? (quote.total_margin / quote.total_amount) * 100
         : null;
 
     const { quote_line_items: _qli, quote_cost_components: _qcc, ...rest } = quote;
