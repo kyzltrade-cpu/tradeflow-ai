@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     let companyContext = '';
     try {
       // Get company_id from request header or body
-      const companyId = req.headers.get('x-company-id') || (demoMode ? DEMO_COMPANY_ID : null);
+      const companyId = req.headers.get('x-company-id');
       
       if (companyId) {
         const { data: company } = await supabaseAdmin
