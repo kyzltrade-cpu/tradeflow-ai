@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 import { ensureAutoDraft } from '@/lib/auto-draft';
+import { getLiveFx, type LiveFx } from '@/lib/fx-rate';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
@@ -363,6 +364,16 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const extraction = await extractRequest(userThread, companyName);
 
+    const liveFx = await getLiveFx(config.fx_pair, config.fx_rate);
+    config.fx_rate = liveFx.rate;
+    const fx: { rate: number; pair: string; live: boolean; source: LiveFx['source']; updated_at: string } = {
+      rate: liveFx.rate,
+      pair: config.fx_pair,
+      live: liveFx.live,
+      source: liveFx.source,
+      updated_at: liveFx.updated_at,
+    };
+
     const currency = extraction.currency || config.currency;
     const lines: SuggestedLine[] = [];
     const matchedNames: string[] = [];
@@ -390,7 +401,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
           sources.push({ type: 'product', label: 'Product price list', ref: productName, detail: `${currency} ${listPrice.toFixed(2)} / ${item.unit || 'pc'}` });
           sources.push({ type: 'margin', label: 'Margin applied', ref: ruleName, detail: marginPct > 0 ? `+${marginPct}%` : 'at cost' });
-          sources.push({ type: 'fx', label: 'FX rate', ref: config.fx_pair, detail: String(config.fx_rate) });
+          sources.push({ type: 'fx', label: 'FX rate', ref: config.fx_pair, detail: `${config.fx_rate.toFixed(4)}${fx.live ? ' (live)' : ''}` });
         } else {
           sources.push({ type: 'product', label: 'Product price list', ref: productName, detail: 'no list price set' });
         }
@@ -427,7 +438,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const sourcesSummary: string[] = [
       `${lines.filter((l) => l.requires_manual_pricing).length === 0 ? 'All line items priced' : 'Some line items need manual pricing'}`,
       `${config.margin_rules.length} margin rule${config.margin_rules.length === 1 ? '' : 's'} applied · ${config.currency}`,
-      `FX ${config.fx_rate} · ${config.fx_pair}`,
+      `FX ${config.fx_rate.toFixed(4)} · ${config.fx_pair}${liveFx.live ? ' · live' : ''}`,
     ];
 
     const draft = await ensureAutoDraft({
@@ -449,7 +460,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       currency,
       lines,
       subtotal,
-      fx: { rate: config.fx_rate, pair: config.fx_pair },
+      fx,
       margin_rules: config.margin_rules,
       sources_summary: sourcesSummary,
       suppliers: suppliersMatch,

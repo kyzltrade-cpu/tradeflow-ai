@@ -61,8 +61,60 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
+    const rows = data || [];
+
+    // Enrich each quote with a display customer name + computed margin so the
+    // list renders meaningful values (quotes table has no denormalized fields).
+    const oppIds = [...new Set(rows.map((q: any) => q.opportunity_id).filter(Boolean))];
+    const custIds = [...new Set(rows.map((q: any) => q.customer_id).filter(Boolean))];
+    const contactIds = [...new Set(rows.map((q: any) => q.contact_id).filter(Boolean))];
+
+    const [oppRes, custRes, contactRes] = await Promise.all([
+      oppIds.length
+        ? supabaseAdmin.from('opportunities').select('id, title').in('id', oppIds)
+        : Promise.resolve({ data: [] as any[] }),
+      custIds.length
+        ? supabaseAdmin.from('customers').select('id, trading_name, legal_name').in('id', custIds)
+        : Promise.resolve({ data: [] as any[] }),
+      contactIds.length
+        ? supabaseAdmin.from('contacts').select('id, name, trading_name').in('id', contactIds)
+        : Promise.resolve({ data: [] as any[] }),
+    ]);
+
+    const oppById = new Map<string, any>((oppRes.data || []).map((o: any) => [o.id, o]));
+    const custById = new Map<string, any>((custRes.data || []).map((c: any) => [c.id, c]));
+    const contactById = new Map<string, any>((contactRes.data || []).map((c: any) => [c.id, c]));
+
+    const titleLead = (title: string | null | undefined): string | null => {
+      if (!title || !title.trim()) return null;
+      const cut = title.split(/\s*[-–—]\s*|—/)[0]?.trim();
+      return cut || title.trim();
+    };
+
+    const enriched = (rows as any[]).map((q: any) => {
+      const contact = q.contact_id ? contactById.get(q.contact_id) : null;
+      const customer = q.customer_id ? custById.get(q.customer_id) : null;
+      const opp = q.opportunity_id ? oppById.get(q.opportunity_id) : null;
+      const customerName =
+        (contact && (contact.name || contact.trading_name)) ||
+        (customer && (customer.trading_name || customer.legal_name)) ||
+        titleLead(opp?.title) ||
+        null;
+      const marginPercent =
+        q.margin_pct != null
+          ? q.margin_pct * 100
+          : q.total_amount > 0
+          ? ((q.total_margin || 0) / q.total_amount) * 100
+          : null;
+      return {
+        ...q,
+        customer_name: customerName,
+        margin_percent: marginPercent != null ? Math.round(marginPercent * 100) / 100 : null,
+      };
+    });
+
     return NextResponse.json({
-      quotes: data || [],
+      quotes: enriched,
       total: count || 0,
       page,
       page_size: pageSize,

@@ -269,8 +269,8 @@ export default function HeroDemo() {
   const autoplaying = !reduceMotion.current && !paused && !interacting;
 
   return (
-    <div className="max-w-4xl mx-auto rounded-2xl border p-5 md:p-7 text-left btk-anim-rise" style={{ background: '#fff', borderColor: '#E5E5E5', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.85), 0 1px 2px rgba(0,0,0,0.05), 0 24px 60px -30px rgba(0,0,0,0.18)' }}>
-      <div className="flex items-center gap-2 mb-5 select-none">
+    <div className="max-w-4xl mx-auto rounded-2xl border p-4 md:p-5 text-left btk-anim-rise" style={{ background: '#fff', borderColor: '#E5E5E5', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.85), 0 1px 2px rgba(0,0,0,0.05), 0 24px 60px -30px rgba(0,0,0,0.18)' }}>
+      <div className="flex items-center gap-2 mb-3 select-none">
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FF5F57' }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#FEBC2E' }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: '#28C840' }} />
@@ -290,7 +290,7 @@ export default function HeroDemo() {
         </span>
       </div>
 
-      <div className="grid grid-cols-4 gap-2 mb-6" onMouseEnter={hold} onMouseLeave={release} onTouchStart={hold} onTouchEnd={release}>
+      <div className="grid grid-cols-4 gap-2 mb-4" onMouseEnter={hold} onMouseLeave={release} onTouchStart={hold} onTouchEnd={release}>
         {STAGES.map((s, i) => {
           const Icon = s.icon;
           const active = i === stage;
@@ -316,11 +316,11 @@ export default function HeroDemo() {
         })}
       </div>
 
-      <div key={stage} className="min-h-[300px] md:min-h-[286px]" onMouseEnter={hold} onMouseLeave={release} onTouchStart={hold} onTouchEnd={release}>
+      <div key={stage} className="min-h-[282px] md:min-h-[262px]" onMouseEnter={hold} onMouseLeave={release} onTouchStart={hold} onTouchEnd={release}>
         {scenes[stage]}
       </div>
 
-      <div className="mt-6 pt-4 border-t" style={{ borderColor: '#EEEEEE' }}>
+      <div className="mt-5 pt-3.5 border-t" style={{ borderColor: '#EEEEEE' }}>
         <span className="text-xs" style={{ color: '#9A9A9A' }}>Every step is a draft you approve before it goes out.</span>
       </div>
     </div>

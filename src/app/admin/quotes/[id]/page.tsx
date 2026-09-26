@@ -63,12 +63,12 @@ type Quote = {
   versions: QuoteVersion[]
 }
 
-const STATUS_COLORS: Record<string, string> = {
-  DRAFT: 'bg-gray-100 text-gray-700',
-  IN_REVIEW: 'bg-amber-100 text-amber-700',
-  APPROVED: 'bg-green-100 text-green-700',
-  SENT: 'bg-blue-100 text-blue-700',
-  REJECTED: 'bg-red-100 text-red-700',
+const STATUS_COLORS: Record<string, React.CSSProperties> = {
+  DRAFT: { background: '#f3f4f6', color: '#374151' },
+  IN_REVIEW: { background: '#FEF3C7', color: '#B45309' },
+  APPROVED: { background: '#ECFDF5', color: '#047857' },
+  SENT: { background: '#EFF6FF', color: '#1D4ED8' },
+  REJECTED: { background: '#FEF2F2', color: '#B91C1C' },
 }
 
 export default function QuoteDetailPage() {

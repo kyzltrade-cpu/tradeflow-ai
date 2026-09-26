@@ -79,30 +79,33 @@ export default function AdminInboxPage() {
   // folder links and the in-page tabs both navigate to the same query param.
   const view = searchParams.get('view');
   const filter: Filter =
-    view === 'waiting' || view === 'all' || view === 'bookmarked' || view === 'human' || view === 'ai'
+    view === 'waiting' || view === 'all' || view === 'needs_reply' || view === 'human' || view === 'ai'
       ? view
-      : 'needs_reply';
+      : 'all';
 
   const selectFilter = (key: Filter) => {
-    router.replace(key === 'needs_reply' ? '/admin' : `/admin?view=${key}`, { scroll: false });
+    router.replace(key === 'all' ? '/admin' : `/admin?view=${key}`, { scroll: false });
   };
 
-  const fetchInbox = useCallback(async (activeFilter: Filter) => {
+  const fetchInbox = useCallback(async (activeFilter: Filter, opts?: { silent?: boolean }) => {
     if (companyLoading || !companyId) return;
     try {
-      setLoading(true);
-      setError(null);
+      if (!opts?.silent) {
+        setLoading(true);
+        setError(null);
+      }
       const res = await authFetch(`/api/admin/inbox?filter=${activeFilter}`);
       if (!res.ok) throw new Error('Failed to load inbox');
       const data = await res.json();
       setRows(data.conversations || []);
       setCounts(data.counts || { needs_reply: 0, waiting: 0, bookmarked: 0, human: 0, ai: 0, total: 0 });
     } catch (err) {
+      if (opts?.silent) return;
       console.error('[inbox] fetch error:', err);
       setError(t('Failed to load inbox. Please try again.', '載入收件匣失敗，請重試。'));
       setRows([]);
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   }, [companyId, companyLoading, t]);
 
@@ -112,8 +115,9 @@ export default function AdminInboxPage() {
 
   useEffect(() => {
     if (companyLoading || !companyId) return;
-    // Polling fallback so new emails surface without a full reload
-    const interval = setInterval(() => fetchInbox(filter), 15000);
+    // Silent polling fallback so new emails surface without a full reload —
+    // existing rows stay visible, no skeleton flash.
+    const interval = setInterval(() => fetchInbox(filter, { silent: true }), 15000);
     return () => clearInterval(interval);
   }, [companyId, companyLoading, fetchInbox, filter]);
 
@@ -123,10 +127,9 @@ export default function AdminInboxPage() {
   const contactEmail = (r: InboxRow) => r.contact_email || r.contact_phone || '';
 
   const tabs: Array<{ key: Filter; en: string; zh: string; n?: number }> = [
-    { key: 'needs_reply', en: 'Waiting on you', zh: '需要你回覆', n: counts.needs_reply },
-    { key: 'waiting', en: 'Waiting on them', zh: '等客戶回覆', n: counts.waiting },
     { key: 'all', en: 'All', zh: '全部', n: counts.total },
-    { key: 'bookmarked', en: 'Bookmarked', zh: '已加書籤', n: counts.bookmarked },
+    { key: 'waiting', en: 'Waiting on them', zh: '等客戶回覆', n: counts.waiting },
+    { key: 'needs_reply', en: 'Waiting on you', zh: '需要你回覆', n: counts.needs_reply },
     { key: 'human', en: 'Human', zh: '人手', n: counts.human },
     { key: 'ai', en: 'AI', zh: 'AI', n: counts.ai },
   ];

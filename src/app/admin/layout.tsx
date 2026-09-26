@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth';
 import { CompanyProvider, useCompany } from '@/lib/company';
 import { authFetch } from '@/lib/auth-fetch';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import AdminChat from '@/components/admin/AdminChat';
 
 /* ── Navigation config ──────────────────────────────────────────────────── */
 
@@ -42,7 +43,6 @@ const EMPTY_COUNTS: InboxCounts = { needs_reply: 0, waiting: 0, bookmarked: 0, h
 const ICON_MAIL = 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75';
 const ICON_SPARKLES = 'M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z';
 const ICON_CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
-const ICON_BOOKMARK = 'M17.593 3.322c1.1.128 1.908 1.077 1.908 2.184V21l-7-4.5L5.75 21V5.506c0-1.107.81-2.056 1.907-2.185a48.507 48.507 0 0111.936 0z';
 const ICON_INBOX = 'M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.929 8.298a2.25 2.25 0 00-2.156-1.548h-2.986a2.25 2.25 0 01-2.157 1.54H11.37a2.25 2.25 0 01-2.157-1.54H6.227a2.25 2.25 0 00-2.156 1.548L1.6 13.177a5.25 5.25 0 00-.1.661z';
 
 const NAV_GROUPS: NavGroup[] = [
@@ -50,12 +50,12 @@ const NAV_GROUPS: NavGroup[] = [
     label: { en: 'Inbox', zh: '收件匣' },
     items: [
       {
-        href: '/admin?view=needs_reply',
-        en: 'Focused',
-        zh: '待回覆',
-        icon: ICON_MAIL,
-        countKey: 'needs_reply',
-        badgeTone: 'accent',
+        href: '/admin',
+        en: 'All mail',
+        zh: '全部郵件',
+        icon: ICON_INBOX,
+        countKey: 'total',
+        badgeTone: 'muted',
       },
       {
         href: '/admin?view=waiting',
@@ -66,27 +66,19 @@ const NAV_GROUPS: NavGroup[] = [
         badgeTone: 'muted',
       },
       {
+        href: '/admin?view=needs_reply',
+        en: 'Waiting on you',
+        zh: '待回覆',
+        icon: ICON_MAIL,
+        countKey: 'needs_reply',
+        badgeTone: 'accent',
+      },
+      {
         href: '/admin?view=ai',
         en: 'AI handled',
         zh: 'AI 已處理',
         icon: ICON_SPARKLES,
         countKey: 'ai',
-        badgeTone: 'muted',
-      },
-      {
-        href: '/admin?view=bookmarked',
-        en: 'Bookmarked',
-        zh: '已加書籤',
-        icon: ICON_BOOKMARK,
-        countKey: 'bookmarked',
-        badgeTone: 'muted',
-      },
-      {
-        href: '/admin?view=all',
-        en: 'All mail',
-        zh: '全部',
-        icon: ICON_INBOX,
-        countKey: 'total',
         badgeTone: 'muted',
       },
     ],
@@ -164,9 +156,11 @@ function SidebarItem({
   }, [item.href]);
 
   // Inbox folder items (with ?view=) become active when the current view matches.
+  // View-less items (All mail) get active when on /admin or a reading pane without a view param.
   const active = view
-    ? pathname === baseHref && (searchParams.get('view') || 'needs_reply') === view
-    : pathname === baseHref || pathname.startsWith(baseHref + '/');
+    ? pathname === baseHref && searchParams.get('view') === view
+    : (pathname === baseHref || (baseHref === '/admin' && pathname.startsWith('/admin/inbox/'))) &&
+      !searchParams.get('view');
 
   const count = item.countKey ? counts[item.countKey] ?? 0 : 0;
   const showCount = typeof item.countKey === 'string' && count > 0;
@@ -615,6 +609,9 @@ function AdminShell({ children }: { children: ReactNode }) {
           </div>
         </main>
       </div>
+
+      {/* Business AI chat widget (bottom-left) */}
+      <AdminChat />
     </div>
   );
 }

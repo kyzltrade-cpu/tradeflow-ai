@@ -83,14 +83,49 @@ export async function GET(
         .limit(50),
     ]);
 
+    void auditResult;
+
+    const lineItems = quote.quote_line_items ?? [];
+    const costComponents = quote.quote_cost_components ?? [];
+    const versions = (versionsResult.data || []).map((v: any) => ({
+      ...v,
+      version: v.version_number,
+      summary: v.change_summary,
+    }));
+    const approvals = approvalsResult.data || [];
+
+    const title = opportunityResult.data?.title ?? '';
+    const titleLead = title.split(/\s*[-–—]\s*|—/)[0]?.trim() || title || null;
+    const contact = contactResult.data;
+    const customer = customerResult.data;
+    const customerName =
+      (contact && (contact.name || contact.trading_name)) ||
+      (customer && (customer.trading_name || customer.legal_name)) ||
+      titleLead ||
+      null;
+
+    const marginPercent =
+      quote.margin_pct != null
+        ? quote.margin_pct * 100
+        : quote.total_amount > 0
+        ? ((quote.total_margin || 0) / quote.total_amount) * 100
+        : null;
+
+    const { quote_line_items: _qli, quote_cost_components: _qcc, ...rest } = quote;
+
     return NextResponse.json({
-      quote,
-      versions: versionsResult.data || [],
-      approvals: approvalsResult.data || [],
-      opportunity: opportunityResult.data,
-      customer: customerResult.data,
-      contact: contactResult.data,
-      audit_history: auditResult.data || [],
+      ...rest,
+      line_items: lineItems,
+      cost_components: costComponents,
+      customer_name: customerName,
+      contact_name: (contact && (contact.name || contact.trading_name)) || null,
+      contact_email: contact?.email || null,
+      opportunity_title: titleLead,
+      subtotal: quote.total_amount,
+      margin_amount: quote.total_margin,
+      margin_percent: marginPercent,
+      versions,
+      approvals,
     });
   } catch (err) {
     if (err instanceof Response) return err;

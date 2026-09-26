@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
 type Lang = 'en' | 'zh';
 
@@ -29,7 +29,10 @@ export function LangProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('lang', next);
     setLang(next);
   };
-  const t = (en: string, zh: string) => (lang === 'zh' ? zh : en);
+  const t = useCallback(
+    (en: string, zh: string) => (lang === 'zh' ? zh : en),
+    [lang]
+  );
 
   return (
     <LangContext.Provider value={{ lang, toggle, t }}>

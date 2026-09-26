@@ -108,7 +108,7 @@ interface Suggestion {
   currency: string | null;
   lines: SuggestionLine[];
   subtotal: number;
-  fx: { rate: number; pair: string } | null;
+  fx: { rate: number; pair: string; live?: boolean; source?: string; updated_at?: string } | null;
   margin_rules: Array<{ name: string; margin_pct: number }>;
   sources_summary: string[];
   suppliers: SupplierRec[];
@@ -838,7 +838,12 @@ export default function InboxDetailPage() {
             {suggestion?.fx && (
               <div className="flex items-center gap-1.5 text-[11px] mb-1.5" style={{ color: '#0EA5E9' }}>
                 <Globe width="11" height="11" />
-                {t('FX', '匯率')}: 1 → {suggestion.fx.rate} · {suggestion.fx.pair}
+                {t('FX', '匯率')}: 1 → {suggestion.fx.rate.toFixed(4)} · {suggestion.fx.pair}
+                {suggestion.fx.live && (
+                  <span className="text-[9px] px-1 py-0.5 rounded-full font-semibold uppercase tracking-wide" style={{ background: '#E8F5F1', color: '#038153' }}>
+                    {t('Live', '即時')}
+                  </span>
+                )}
               </div>
             )}
             {suggestion && suggestion.margin_rules.length > 0 && (
