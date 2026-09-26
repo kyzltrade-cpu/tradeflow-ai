@@ -1,4 +1,4 @@
-// API tests for TradeFlow AI
+// API tests for Sailwise
 // Run with: npm test
 
 describe('Health Check', () => {

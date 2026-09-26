@@ -1,5 +1,5 @@
 // =============================================================================
-// TradeFlow — Attachment Processing Pipeline
+// Sailwise — Attachment Processing Pipeline
 // =============================================================================
 // Extracts text content from email attachments (PDF, Excel, CSV, DOCX, images).
 // Used by the inquiry ingestion pipeline to normalize raw attachments into

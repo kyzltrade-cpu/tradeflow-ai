@@ -70,7 +70,6 @@ function SettingsContent() {
   const isAdmin = user?.email === ADMIN_EMAIL;
   const [companyName, setCompanyName] = useState('');
   const [industry, setIndustry] = useState('General Trading');
-  const [responseDelay, setResponseDelay] = useState(3);
   const [systemPrompt, setSystemPrompt] = useState('');
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -109,7 +108,6 @@ function SettingsContent() {
         if (data.settings) {
           setSystemPrompt(data.settings.system_prompt ?? '');
           setIndustry(data.settings.industry ?? 'General Trading');
-          setResponseDelay(data.settings.response_delay_seconds ?? 2);
           setChatWidgetEnabled(data.settings.chat_widget_enabled ?? true);
           if (data.settings.image_response_prompt) {
             setImageResponsePrompt(data.settings.image_response_prompt);
@@ -225,7 +223,6 @@ function SettingsContent() {
           company_id: companyId,
           system_prompt: systemPrompt,
           industry,
-          response_delay_seconds: responseDelay,
           chat_widget_enabled: chatWidgetEnabled,
           image_response_prompt: imageResponsePrompt,
           company_name: companyName,
@@ -454,53 +451,6 @@ function SettingsContent() {
         </button>
         <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
           {t('Example: 20% on bottles, 10% on accessories — products without a matching rule are flagged for your review and never automatically quoted.', '例如：瓶類 20%、配件 10%——沒有匹配規則的產品會標記為待審閱，絕不會自動報價。')}
-        </p>
-      </section>
-
-      {/* Response Delay */}
-      <section className="border rounded-[4px] p-5 mb-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-        <h2 className="text-[15px] font-semibold mb-1">{t('Response Delay', '回覆延遲')}</h2>
-        <p className="text-[13px] mb-4" style={{ color: 'var(--text-muted)' }}>
-          {t('Add a short delay before AI drafts appear, so reviewers have time to read them', '讓 AI 草稿稍作延遲才出現，方便審閱者有時間閱讀')}
-        </p>
-        <div className="flex items-center gap-4">
-          <div className="flex-1">
-            <input
-              type="range"
-              min="0"
-              max="120"
-              step="1"
-              value={responseDelay}
-              onChange={(e) => setResponseDelay(Number(e.target.value))}
-              disabled={loading}
-              className="w-full"
-            />
-          </div>
-          <div className="w-[80px] text-center">
-            <span className="text-[20px] font-semibold">{responseDelay}</span>
-            <span className="text-[13px] ml-1" style={{ color: 'var(--text-muted)' }}>
-              {responseDelay === 1 ? t('sec', '秒') : t('sec', '秒')}
-            </span>
-          </div>
-        </div>
-        <div className="flex justify-between mt-2">
-          <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-            {t('Instant (0s)', '即時 (0s)')}
-          </span>
-          <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-            {t('2 minutes', '2 分鐘')}
-          </span>
-        </div>
-        <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
-          {responseDelay === 0
-            ? t('AI replies instantly — may feel robotic', 'AI 即時回覆 — 可能感覺機械化')
-            : responseDelay <= 3
-            ? t('Quick reply — feels like a fast typer', '快速回覆 — 感覺像打字快的人')
-            : responseDelay <= 8
-            ? t('Natural pace — feels like a real person', '自然節奏 — 感覺像真人')
-            : responseDelay <= 30
-            ? t('Slow reply — thoughtful pace', '慢速回覆 — 深思熟慮的節奏')
-            : t('Very slow — may frustrate customers', '非常慢 — 可能令客戶不耐煩')}
         </p>
       </section>
 

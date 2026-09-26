@@ -86,7 +86,7 @@ export async function sendEmail(
 
   try {
     const result = await client.emails.send({
-      from: from || "TradeFlow AI <onboarding@resend.dev>",
+      from: from || "Sailwise <onboarding@resend.dev>",
       to: Array.isArray(to) ? to : [to],
       subject,
       html,

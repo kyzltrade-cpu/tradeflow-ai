@@ -188,6 +188,48 @@ export default function QuoteDetailPage() {
     return new Date(dateStr).toLocaleString()
   }
 
+  // All hooks must run unconditionally — React crashes (#310 / "Maximum update
+  // depth exceeded") when the hook count differs between renders.
+  const lineItems = useMemo(
+    () => (quote ? (Array.isArray(quote.line_items) ? quote.line_items : []) : []),
+    [quote]
+  )
+  const costComponents = useMemo(
+    () => (quote ? (Array.isArray(quote.cost_components) ? quote.cost_components : []) : []),
+    [quote]
+  )
+  const approvals = useMemo(
+    () => (quote ? (Array.isArray(quote.approvals) ? quote.approvals : []) : []),
+    [quote]
+  )
+  const versions = useMemo(
+    () => (quote ? (Array.isArray(quote.versions) ? quote.versions : []) : []),
+    [quote]
+  )
+
+  // Never let a wrong price go out: block Send while any line is zero-quantity or
+  // unpriced, the total is unset, or the margin is 0%/missing. Mirrors the
+  // server-side gate in the send route.
+  const sendBlocked = useMemo(() => {
+    if (!quote) return []
+    const reasons: string[] = []
+    if (!quote.total_amount || quote.total_amount <= 0) {
+      reasons.push(t('Quote total is not set', '報價總額未設定'))
+    }
+    if (quote.margin_percent == null || quote.margin_percent <= 0) {
+      reasons.push(t('Quote has 0% margin — review pricing', '報價利潤為 0%——請審核定價'))
+    }
+    for (const li of lineItems) {
+      const nm = li.product_name || 'line item'
+      if (Number(li.quantity) <= 0) reasons.push(`${t('Zero quantity line', '數量為零的項目')}: "${nm}"`)
+      else if (Number(li.unit_price) <= 0) reasons.push(`${t('Unpriced line', '未定價的項目')}: "${nm}"`)
+    }
+    return reasons
+  }, [quote, lineItems, t])
+
+  const marginValid = quote ? quote.margin_percent != null && quote.margin_percent > 0 : false
+  const marginLow = !!quote && quote.margin_percent != null && quote.margin_percent > 0 && quote.margin_percent < 10
+
   if (loading) {
     return (
       <div style={{ padding: '32px', color: 'var(--text-secondary)' }}>
@@ -209,23 +251,6 @@ export default function QuoteDetailPage() {
       </div>
     )
   }
-
-  const marginValid = quote.margin_percent != null && quote.margin_percent > 0
-  const marginLow = marginValid && quote.margin_percent < 10
-
-  // Never let a wrong price go out: block Send while any line is zero-quantity or
-  // unpriced, or the total is unset. Mirrors the server-side gate in the send route.
-  const lines = Array.isArray(quote.line_items) ? quote.line_items : []
-  const sendBlocked = useMemo(() => {
-    const reasons: string[] = []
-    if (!quote.total_amount || quote.total_amount <= 0) reasons.push(t('Quote total is not set', '報價總額未設定'))
-    for (const li of lines) {
-      const nm = li.product_name || 'line item'
-      if (Number(li.quantity) <= 0) reasons.push(`${t('Zero quantity line', '數量為零的項目')}: "${nm}"`)
-      else if (Number(li.unit_price) <= 0) reasons.push(`${t('Unpriced line', '未定價的項目')}: "${nm}"`)
-    }
-    return reasons
-  }, [quote.total_amount, lines])
 
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
@@ -451,7 +476,7 @@ export default function QuoteDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {quote.line_items.map((item) => (
+                  {lineItems.map((item) => (
                     <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
                       <td style={{ padding: '8px 12px' }}>{item.product_name}</td>
                       <td style={{ padding: '8px 12px', textAlign: 'right' }}>{item.quantity}</td>
@@ -518,7 +543,7 @@ export default function QuoteDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {quote.cost_components.map((comp) => (
+                  {costComponents.map((comp) => (
                     <tr key={comp.id} style={{ borderBottom: '1px solid var(--border)' }}>
                       <td style={{ padding: '8px 12px' }}>{comp.name}</td>
                       <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(comp.amount)}</td>
@@ -713,13 +738,13 @@ export default function QuoteDetailPage() {
               {t('Approval History', '審批歷史')}
             </div>
             <div style={{ padding: '12px 16px', fontSize: '13px' }}>
-              {quote.approvals.length === 0 ? (
+              {approvals.length === 0 ? (
                 <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '12px 0' }}>
                   {t('No approvals yet', '尚無審批記錄')}
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {quote.approvals.map((approval) => (
+                  {approvals.map((approval) => (
                     <div
                       key={approval.id}
                       style={{
@@ -782,13 +807,13 @@ export default function QuoteDetailPage() {
               {t('Version History', '版本歷史')}
             </div>
             <div style={{ padding: '12px 16px', fontSize: '13px' }}>
-              {quote.versions.length === 0 ? (
+              {versions.length === 0 ? (
                 <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '12px 0' }}>
                   {t('No versions yet', '尚無版本記錄')}
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  {quote.versions.map((version) => (
+                  {versions.map((version) => (
                     <div
                       key={version.id}
                       style={{

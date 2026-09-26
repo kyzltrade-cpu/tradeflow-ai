@@ -1,4 +1,4 @@
-// Language detection for TradeFlow AI chatbot
+// Language detection for Sailwise chatbot
 // Supports: English, Traditional Chinese, Simplified Chinese, Cantonese, Spanish
 
 export type SupportedLanguage = 'en' | 'zh' | 'yue' | 'es';

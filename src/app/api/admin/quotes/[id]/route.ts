@@ -86,7 +86,10 @@ export async function GET(
     void auditResult;
 
     const lineItems = quote.quote_line_items ?? [];
-    const costComponents = quote.quote_cost_components ?? [];
+    const costComponents = (quote.quote_cost_components ?? []).map((c: any) => ({
+      ...c,
+      name: c.component_name || null,
+    }));
     const versions = (versionsResult.data || []).map((v: any) => ({
       ...v,
       version: v.version_number,

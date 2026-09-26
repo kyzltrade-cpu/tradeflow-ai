@@ -1,5 +1,5 @@
 // =============================================================================
-// TradeFlow v2 — Trading Operations Type System
+// Sailwise v2 — Trading Operations Type System
 // =============================================================================
 // Comprehensive types for inquiry processing, opportunity management,
 // supplier RFQs, quote building, and follow-up automation.

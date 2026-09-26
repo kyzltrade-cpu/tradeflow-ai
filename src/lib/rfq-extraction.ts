@@ -1,5 +1,5 @@
 // =============================================================================
-// TradeFlow v2 — Structured RFQ Extraction Engine
+// Sailwise v2 — Structured RFQ Extraction Engine
 // =============================================================================
 // Uses NIM API (OpenAI-compatible) to extract structured trading request data
 // from email text + attachment content. Enforces strict field-level confidence

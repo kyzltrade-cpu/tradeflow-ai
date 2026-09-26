@@ -61,6 +61,18 @@ export async function POST(
       );
     }
 
+    const marginZero =
+      (quote.total_margin == null || Number(quote.total_margin) <= 0) &&
+      (quote.margin_pct == null || Number(quote.margin_pct) <= 0);
+    if (marginZero) {
+      return NextResponse.json(
+        {
+          error: `Quote has 0% margin (${quote.quote_number}). Never send a quote that makes no margin — review pricing first.`,
+        },
+        { status: 400 }
+      );
+    }
+
     const badLine = (quote.quote_line_items as Array<Record<string, unknown>>).find(
       (l) =>
         Number(l.quantity) <= 0 ||

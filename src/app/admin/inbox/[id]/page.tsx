@@ -400,7 +400,7 @@ export default function InboxDetailPage() {
       const existingQuote = detail.quotes && detail.quotes[0];
       if (existingQuote) {
         showToast(`${t('A draft quote already exists', '草稿報價已存在')} ${existingQuote.quote_number}`, 'success');
-        refreshDetail();
+        router.push(`/admin/quotes/${existingQuote.id}`);
         return;
       }
       const inquiry = detail.inquiries && detail.inquiries[0] as Record<string, unknown> | undefined;
@@ -453,7 +453,7 @@ export default function InboxDetailPage() {
       if (!quoteRes.ok) throw new Error('Quote create failed');
       const quoteData = await quoteRes.json();
       showToast(`${t('Quote created', '報價已建立')} ${quoteData.quote.quote_number}`, 'success');
-      refreshDetail();
+      router.push(`/admin/quotes/${quoteData.quote.id}`);
     } catch (err) {
       console.error('[inbox-quote] error:', err);
       showToast(t('Failed to create quote', '建立報價失敗'), 'error');
@@ -775,7 +775,7 @@ export default function InboxDetailPage() {
                     {(body.contact_name || body.contact_email || '?').slice(0, 1).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium truncate">{body.contact_name || t('Untitled customer', '未命名客戶')}</p>
+                    <p className="text-[13px] font-medium truncate">{body.contact_name || body.contact_email || t('Untitled customer', '未命名客戶')}</p>
                     {body.contact_email && <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{body.contact_email}</p>}
                     {body.contact_phone && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact_phone}</p>}
                   </div>
@@ -1182,7 +1182,7 @@ export default function InboxDetailPage() {
               <User width="14" height="14" style={{ color: 'var(--accent)' }} />
               <h3 className="text-[13px] font-semibold">{t('Customer', '客戶')}</h3>
             </div>
-            <p className="text-[13px] font-medium">{body.contact_name || t('Untitled customer', '未命名客戶')}</p>
+            <p className="text-[13px] font-medium">{body.contact_name || body.contact_email || t('Customer', '客戶')}</p>
             {body.contact_email && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact_email}</p>}
           </div>
         )}
