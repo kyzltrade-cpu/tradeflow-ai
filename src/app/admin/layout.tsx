@@ -176,8 +176,8 @@ function SidebarItem({
       href={item.href}
       className="group relative flex h-[34px] items-center gap-2.5 rounded-[8px] px-2.5 transition-colors"
       style={{
-        background: active ? '#F1F1F1' : 'transparent',
-        color: active ? 'var(--text)' : '#6B6B6B',
+        background: active ? 'var(--sb-active-bg)' : 'transparent',
+        color: active ? 'var(--sb-active-text)' : 'var(--sb-idle-text)',
       }}
     >
       <svg
@@ -200,8 +200,8 @@ function SidebarItem({
         <span
           className="flex h-[18px] min-w-[20px] items-center justify-center rounded-full px-1.5 text-[11px] font-semibold tabular-nums leading-none"
           style={{
-            background: active ? 'var(--accent)' : 'var(--accent-light)',
-            color: active ? '#FFFFFF' : 'var(--text)',
+            background: active ? 'var(--sb-badge-active-bg)' : 'var(--sb-badge-bg)',
+            color: active ? 'var(--sb-badge-active-text)' : 'var(--sb-badge-text)',
           }}
         >
           {count > 99 ? '99+' : count}
@@ -233,7 +233,7 @@ function Sidebar({
       <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={onClose} />
 
       <aside
-        className="fixed left-0 top-0 z-50 flex h-full flex-col border-r lg:static lg:z-auto"
+        className="sidebar sidebar-dark fixed left-0 top-0 z-50 flex h-full flex-col border-r lg:static lg:z-auto"
         style={{
           width: 232,
           background: 'var(--surface)',
@@ -247,7 +247,7 @@ function Sidebar({
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[7px] transition-opacity hover:opacity-80"
             title="Sailwise"
           >
-            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-7 w-7 rounded-[6px] object-cover" />
+            <img src="/brand/sailwise-mark-dashboard.png" alt="Sailwise" className="h-7 w-7 rounded-[6px] object-contain" />
           </Link>
           <span
             className="min-w-0 flex-1 truncate text-[14px] font-semibold tracking-[-0.2px]"
@@ -257,7 +257,7 @@ function Sidebar({
           </span>
           <button
             onClick={onMinimize}
-            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-black/[0.05] lg:flex"
+            className="hidden h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-[var(--sb-hover)] lg:flex"
             title={t('Minimize sidebar', '收窄側欄')}
             style={{ color: 'var(--text-muted)' }}
           >
@@ -269,7 +269,7 @@ function Sidebar({
               stroke="currentColor"
               className="h-4 w-4"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" d="m15.75 9 6 6m0 0-6 6m6-6H3.75" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 9-6 6m0 0 6 6m-6-6H20.25" />
             </svg>
           </button>
         </div>
@@ -280,7 +280,7 @@ function Sidebar({
             <div key={gi} className={gi > 0 ? 'mt-7' : ''}>
               <div
                 className="mb-2 px-2.5 text-[11px] font-semibold uppercase tracking-[0.08em]"
-                style={{ color: '#8A8A8A' }}
+                style={{ color: 'var(--sb-faint)' }}
               >
                 {t(group.label.en, group.label.zh)}
               </div>
@@ -298,8 +298,8 @@ function Sidebar({
           <div className="flex items-center gap-2.5">
             <Link
               href="/admin/settings"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold text-white transition-opacity hover:opacity-85"
-              style={{ background: '#111111' }}
+              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold transition-opacity hover:opacity-85"
+              style={{ background: 'var(--sb-avatar-bg)', color: 'var(--sb-avatar-text)' }}
               title={email || t('Account', '帳戶')}
             >
               {initial}
@@ -330,7 +330,7 @@ function Sidebar({
             </div>
           </div>
           <div className="mt-2.5 flex items-center justify-between border-t pt-2.5" style={{ borderColor: 'var(--border)' }}>
-            <span className="text-[11px] font-medium" style={{ color: '#8A8A8A' }}>
+            <span className="text-[11px] font-medium" style={{ color: 'var(--sb-faint)' }}>
               {t('Language', '語言')}
             </span>
             <LangToggle />
@@ -339,7 +339,7 @@ function Sidebar({
           {/* Mobile close (drawer) */}
           <button
             onClick={onClose}
-            className="mt-2 flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-black/[0.05] lg:hidden"
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors hover:bg-[var(--sb-hover)] lg:hidden"
             style={{ color: 'var(--text-muted)' }}
           >
             <svg
@@ -463,7 +463,7 @@ function AdminShell({ children }: { children: ReactNode }) {
         <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
           <div className="w-full max-w-[400px] text-center">
             <div className="mb-6">
-              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-16 mx-auto rounded-lg" />
+              <img src="/brand/sailwise-mark-dashboard.png" alt="Sailwise" className="h-16 mx-auto rounded-lg" />
             </div>
             <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#D1FAE5' }}>
@@ -484,7 +484,7 @@ function AdminShell({ children }: { children: ReactNode }) {
         <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
           <div className="w-full max-w-[400px] text-center">
             <div className="mb-6">
-              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-16 mx-auto rounded-lg" />
+              <img src="/brand/sailwise-mark-dashboard.png" alt="Sailwise" className="h-16 mx-auto rounded-lg" />
             </div>
             <div className="p-6 border rounded-[4px]" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
               <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: '#FEF3C7' }}>
@@ -530,7 +530,7 @@ function AdminShell({ children }: { children: ReactNode }) {
       <div className="hidden lg:block">
         {collapsed ? (
           <aside
-            className="flex h-full w-[60px] flex-col items-center border-r py-3"
+            className="sidebar sidebar-dark flex h-full w-[60px] flex-col items-center border-r py-3"
             style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
           >
             <Link
@@ -538,11 +538,11 @@ function AdminShell({ children }: { children: ReactNode }) {
               className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-opacity hover:opacity-80"
               aria-label="Sailwise"
             >
-              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-8 w-8 rounded-lg object-cover" />
+              <img src="/brand/sailwise-mark-dashboard.png" alt="Sailwise" className="h-8 w-8 rounded-lg object-contain" />
             </Link>
             <button
               onClick={toggleCollapse}
-              className="mt-3 flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-black/[0.05]"
+              className="mt-3 flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:bg-[var(--sb-hover)]"
               aria-label="Restore sidebar"
               title="Restore sidebar"
               style={{ color: 'var(--text-muted)' }}
@@ -560,8 +560,8 @@ function AdminShell({ children }: { children: ReactNode }) {
             </button>
             {counts.needs_reply > 0 && (
               <span
-                className="mt-2 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold leading-none text-white"
-                style={{ background: '#111111' }}
+                className="mt-2 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold leading-none"
+                style={{ background: 'var(--sb-avatar-bg)', color: 'var(--sb-avatar-text)' }}
                 title={`${counts.needs_reply} focused`}
               >
                 {counts.needs_reply > 99 ? '99+' : counts.needs_reply}

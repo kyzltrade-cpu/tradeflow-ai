@@ -77,6 +77,51 @@ body {
   --accent-light: #F4F4F4;
 }
 
+/* Sidebar scope — dark rail on the left; light content stays untouched.
+   The sidebar redeclares the shared vars it inherits, so children like
+   LangToggle adapt automatically without touching their own CSS. */
+.sidebar {
+  --surface: #FFFFFF;
+  --text: #0A0A0A;
+  --text-muted: #555555;
+  --border: #E7E7E7;
+  --accent: #111111;
+  --accent-light: #F1F1F1;
+
+  --sb-active-bg: #F1F1F1;
+  --sb-active-text: #0A0A0A;
+  --sb-idle-text: #6B6B6B;
+  --sb-faint: #8A8A8A;
+  --sb-hover: rgba(0, 0, 0, 0.05);
+  --sb-badge-active-bg: #111111;
+  --sb-badge-active-text: #FFFFFF;
+  --sb-badge-bg: #EFEFEF;
+  --sb-badge-text: #0A0A0A;
+  --sb-avatar-bg: #111111;
+  --sb-avatar-text: #FFFFFF;
+}
+
+.sidebar.sidebar-dark {
+  --surface: #101216;
+  --text: #F4F4F5;
+  --text-muted: #A1A1AA;
+  --border: #1E2026;
+  --accent: #3A3B40;
+  --accent-light: rgba(255, 255, 255, 0.10);
+
+  --sb-active-bg: #FFFFFF;
+  --sb-active-text: #0A0A0A;
+  --sb-idle-text: #C9C9CE;
+  --sb-faint: #9CA0A8;
+  --sb-hover: rgba(255, 255, 255, 0.07);
+  --sb-badge-active-bg: #0A0A0A;
+  --sb-badge-active-text: #FFFFFF;
+  --sb-badge-bg: rgba(255, 255, 255, 0.16);
+  --sb-badge-text: #FFFFFF;
+  --sb-avatar-bg: #FFFFFF;
+  --sb-avatar-text: #0A0A0A;
+}
+
 /* Dashboard utility classes */
 .surface-card {
   background: var(--surface);
