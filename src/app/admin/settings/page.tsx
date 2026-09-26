@@ -453,7 +453,7 @@ function SettingsContent() {
           + {t('Add margin rule', '新增利潤規則')}
         </button>
         <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
-          {t('Example: 20% on bottles, 10% on accessories — products without a matching rule are quoted at cost.', '例如：瓶類 20%、配件 10%——沒有匹配規則的產品會按成本價報出。')}
+          {t('Example: 20% on bottles, 10% on accessories — products without a matching rule are flagged for your review and never automatically quoted.', '例如：瓶類 20%、配件 10%——沒有匹配規則的產品會標記為待審閱，絕不會自動報價。')}
         </p>
       </section>
 
@@ -461,7 +461,7 @@ function SettingsContent() {
       <section className="border rounded-[4px] p-5 mb-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
         <h2 className="text-[15px] font-semibold mb-1">{t('Response Delay', '回覆延遲')}</h2>
         <p className="text-[13px] mb-4" style={{ color: 'var(--text-muted)' }}>
-          {t('Simulate human typing by delaying AI responses', '透過延遲 AI 回覆來模擬人手打字')}
+          {t('Add a short delay before AI drafts appear, so reviewers have time to read them', '讓 AI 草稿稍作延遲才出現，方便審閱者有時間閱讀')}
         </p>
         <div className="flex items-center gap-4">
           <div className="flex-1">

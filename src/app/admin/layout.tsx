@@ -45,6 +45,10 @@ const ICON_SPARKLES = 'M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L
 const ICON_CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
 const ICON_INBOX = 'M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.929 8.298a2.25 2.25 0 00-2.156-1.548h-2.986a2.25 2.25 0 01-2.157 1.54H11.37a2.25 2.25 0 01-2.157-1.54H6.227a2.25 2.25 0 00-2.156 1.548L1.6 13.177a5.25 5.25 0 00-.1.661z';
 
+/* MVP focus: inbox -> draft -> human approves -> send. These areas are
+   intentionally hidden until the quote flow is the centerpiece. */
+const HIDDEN_NAV_HREFS = new Set(['/admin/opportunities', '/admin/suppliers', '/admin/knowledge', '/admin/templates']);
+
 const NAV_GROUPS: NavGroup[] = [
   {
     label: { en: 'Inbox', zh: '收件匣' },
@@ -270,7 +274,13 @@ function Sidebar({
 
         {/* Nav groups */}
         <nav className="flex-1 overflow-y-auto px-2.5 pb-4 pt-4">
-          {NAV_GROUPS.map((group, gi) => (
+          {NAV_GROUPS
+            .map((group) => ({
+              ...group,
+              items: group.items.filter((item) => !HIDDEN_NAV_HREFS.has(item.href.split('?')[0])),
+            }))
+            .filter((group) => group.items.length > 0)
+            .map((group, gi) => (
             <div key={gi} className={gi > 0 ? 'mt-7' : ''}>
               <div
                 className="mb-2 px-2.5 text-[11px] font-semibold uppercase tracking-[0.08em]"

@@ -224,8 +224,8 @@ export default function ComposioConnections() {
     return (
       <div className="text-[13px] rounded-[4px] px-3 py-2 border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
         {t(
-          'App connections are not configured yet. Please contact tradeflow.hk@gmail.com.',
-          '應用程式連接尚未配置。請聯絡 tradeflow.hk@gmail.com。'
+          'Live app connections are not set up for this demo yet — the inbox runs on seeded conversations. You can connect Gmail after launch to receive and reply to real email.',
+          '此演示尚未設定即時應用程式連接 — 收件匣使用預載的對話記錄。正式推出後可連接 Gmail 接收及回覆真實電郵。'
         )}
       </div>
     );

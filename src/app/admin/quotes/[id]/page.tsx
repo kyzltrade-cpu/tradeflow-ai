@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { useLang } from '@/lib/lang'
@@ -213,6 +213,20 @@ export default function QuoteDetailPage() {
   const marginValid = quote.margin_percent != null && quote.margin_percent > 0
   const marginLow = marginValid && quote.margin_percent < 10
 
+  // Never let a wrong price go out: block Send while any line is zero-quantity or
+  // unpriced, or the total is unset. Mirrors the server-side gate in the send route.
+  const lines = Array.isArray(quote.line_items) ? quote.line_items : []
+  const sendBlocked = useMemo(() => {
+    const reasons: string[] = []
+    if (!quote.total_amount || quote.total_amount <= 0) reasons.push(t('Quote total is not set', '報價總額未設定'))
+    for (const li of lines) {
+      const nm = li.product_name || 'line item'
+      if (Number(li.quantity) <= 0) reasons.push(`${t('Zero quantity line', '數量為零的項目')}: "${nm}"`)
+      else if (Number(li.unit_price) <= 0) reasons.push(`${t('Unpriced line', '未定價的項目')}: "${nm}"`)
+    }
+    return reasons
+  }, [quote.total_amount, lines])
+
   return (
     <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
       {/* Header */}
@@ -277,7 +291,7 @@ export default function QuoteDetailPage() {
                 </button>
                 <button
                   onClick={handleSend}
-                  disabled={actionLoading}
+                  disabled={actionLoading || sendBlocked.length > 0}
                   style={{
                     fontSize: '13px',
                     padding: '6px 16px',
@@ -285,8 +299,8 @@ export default function QuoteDetailPage() {
                     borderRadius: '4px',
                     background: 'var(--accent)',
                     color: '#fff',
-                    cursor: actionLoading ? 'not-allowed' : 'pointer',
-                    opacity: actionLoading ? 0.6 : 1,
+                    cursor: actionLoading || sendBlocked.length > 0 ? 'not-allowed' : 'pointer',
+                    opacity: actionLoading || sendBlocked.length > 0 ? 0.6 : 1,
                   }}
                 >
                   {t('Send', '發送')}
@@ -334,7 +348,7 @@ export default function QuoteDetailPage() {
             {quote.status === 'APPROVED' && (
               <button
                 onClick={handleSend}
-                disabled={actionLoading}
+                disabled={actionLoading || sendBlocked.length > 0}
                 style={{
                   fontSize: '13px',
                   padding: '6px 16px',
@@ -342,14 +356,31 @@ export default function QuoteDetailPage() {
                   borderRadius: '4px',
                   background: 'var(--accent)',
                   color: '#fff',
-                  cursor: actionLoading ? 'not-allowed' : 'pointer',
-                  opacity: actionLoading ? 0.6 : 1,
+                  cursor: actionLoading || sendBlocked.length > 0 ? 'not-allowed' : 'pointer',
+                  opacity: actionLoading || sendBlocked.length > 0 ? 0.6 : 1,
                 }}
               >
                 {t('Send', '發送')}
               </button>
             )}
           </div>
+
+          {sendBlocked.length > 0 && (
+            <div
+              style={{
+                marginTop: '10px',
+                padding: '10px 14px',
+                borderRadius: '4px',
+                background: '#FEF3C7',
+                color: '#B45309',
+                fontSize: '12.5px',
+                lineHeight: 1.5,
+              }}
+            >
+              <strong>{t('Sending locked for review', '發送已鎖定待審閱')}:</strong>{' '}
+              {sendBlocked.join(' · ')}
+            </div>
+          )}
         </div>
 
         {quote.status === 'IN_REVIEW' && (

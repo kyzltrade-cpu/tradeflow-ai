@@ -151,11 +151,11 @@ export default function QuotesPage() {
           </p>
         </div>
         <Link
-          href="/admin/quotes/new"
+          href="/admin"
           className="text-[13px] md:text-[14px] font-medium px-4 py-2.5 rounded-[4px] text-white text-center w-full sm:w-auto"
           style={{ background: 'var(--accent)' }}
         >
-          {t('Create Quote', '建立報價')}
+          {t('Create Quote from Inbox', '從收件匣建立報價')}
         </Link>
       </div>
 
@@ -243,11 +243,11 @@ export default function QuotesPage() {
           </p>
           {!search && !statusFilter && !currencyFilter && (
             <Link
-              href="/admin/quotes/new"
+              href="/admin"
               className="inline-block text-[13px] font-medium px-4 py-2 rounded-[4px] text-white"
               style={{ background: 'var(--accent)' }}
             >
-              {t('Create Quote', '建立報價')}
+              {t('Create Quote from Inbox', '從收件匣建立報價')}
             </Link>
           )}
         </div>

@@ -695,7 +695,7 @@ export default function ConversationsPage() {
           {/* AI disclosure - only visible to admin */}
           <div className="px-3 md:px-5 py-2 text-center flex-shrink-0 border-t" style={{ borderColor: 'var(--border)' }}>
             <p className="text-[11px] md:text-[12px]" style={{ color: 'var(--text-muted)' }}>
-              {t('AI assistant — Customer sees this as a human rep', 'AI 助手 — 客戶看到的是人手代表')}
+              {t('AI drafts replies & quotes — you review before anything is sent', 'AI 起草回覆和報價——發送前須由你審批')}
             </p>
           </div>
 

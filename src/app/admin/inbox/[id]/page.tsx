@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle, User, Flag, CheckCircle, Download } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
@@ -87,6 +87,8 @@ interface SuggestionLine {
   total: number;
   at_cost: boolean;
   requires_manual_pricing: boolean;
+  needs_review: boolean;
+  tiers_pending_review: boolean;
   target_price?: string | null;
   sources: PriceSource[];
 }
@@ -656,7 +658,7 @@ export default function InboxDetailPage() {
               </span>
             )}
             <span className="text-[11px] ml-auto" style={{ color: 'var(--text-muted)' }}>
-              {t('AI assistant — customer sees this as a human rep', 'AI 助手 — 客戶看到的是人手代表')}
+              {t('AI drafts replies & quotes — you review before anything is sent', 'AI 起草回覆和報價——發送前須由你審批')}
             </span>
           </div>
 
@@ -748,7 +750,7 @@ export default function InboxDetailPage() {
                       ? t('AI paused — new messages will not get AI replies', 'AI 已暫停——新訊息不會收到 AI 回覆')
                       : displayStatus === 'bookmarked'
                         ? t('Bookmarked — take over to reply', '對話已加書籤——接管後可回覆')
-                        : t('AI handles replies', 'AI 正在處理回覆')}
+                        : t('AI drafts replies for your review', 'AI 起草回覆供你審閱')}
                 </span>
               </div>
             )}
@@ -949,10 +951,16 @@ export default function InboxDetailPage() {
                         {l.requires_manual_pricing && (
                           <p className="text-[10px] mt-1.5 font-medium flex items-center gap-1" style={{ color: 'var(--error)' }}>
                             <AlertTriangle width="10" height="10" />
-                            {t('Needs manual pricing', '需人手定價')}
+                            {t('Needs your review — not auto-priced', '需人手審閱——不會自動定價')}
                           </p>
                         )}
-                        {l.at_cost && !l.requires_manual_pricing && (
+                        {l.tiers_pending_review && !l.requires_manual_pricing && (
+                          <p className="text-[10px] mt-1.5 font-medium flex items-center gap-1" style={{ color: '#D97706' }}>
+                            <Clock width="10" height="10" />
+                            {t('Tier pricing pending your review', '階梯價待你審閱')}
+                          </p>
+                        )}
+                        {l.at_cost && !l.requires_manual_pricing && !l.tiers_pending_review && (
                           <p className="text-[10px] mt-1.5 font-medium" style={{ color: '#D97706' }}>
                             {t('Billed at cost', '按成本價計')}
                           </p>

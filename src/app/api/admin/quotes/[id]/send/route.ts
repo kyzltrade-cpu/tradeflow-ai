@@ -51,6 +51,31 @@ export async function POST(
       );
     }
 
+    // ── Safety gate: never send a quote with unverifiable prices ──────────
+    // A wrong price must never reach the customer. Block any quote that has no
+    // sellable total or that still contains unpriced / zero-quantity lines.
+    if (!quote.total_amount || quote.total_amount <= 0) {
+      return NextResponse.json(
+        { error: 'Quote total is not set. Resolve pricing before sending.' },
+        { status: 400 }
+      );
+    }
+
+    const badLine = (quote.quote_line_items as Array<Record<string, unknown>>).find(
+      (l) =>
+        Number(l.quantity) <= 0 ||
+        Number(l.unit_price) <= 0 ||
+        (typeof l.total_price === 'number' ? l.total_price : Number(l.quantity) * Number(l.unit_price)) <= 0
+    );
+    if (badLine) {
+      return NextResponse.json(
+        {
+          error: `Quote has an unpriced or zero-quantity line ("${String(badLine.product_name || 'line item')}"). Review it before sending — wrong prices must never reach a customer.`,
+        },
+        { status: 400 }
+      );
+    }
+
     if (!quote.currency) {
       return NextResponse.json(
         { error: 'Quote currency is not set.' },
