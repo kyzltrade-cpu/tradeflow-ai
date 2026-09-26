@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 import { ensureAutoDraft } from '@/lib/auto-draft';
 import { getLiveFx, type LiveFx } from '@/lib/fx-rate';
+import { enforcePlanLimit, planLimitResponse } from '@/lib/billing/limits';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
@@ -388,6 +389,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     if (!auth.companyId) {
       return NextResponse.json({ error: 'No company associated with this account' }, { status: 400 });
     }
+    const planGate = await enforcePlanLimit(auth.companyId, 'ai_quote_draft');
+    if (!planGate.allowed) {
+      return NextResponse.json(planLimitResponse(planGate), { status: planGate.status });
+    }
+
     const { id } = await params;
 
     const { data: conversation } = await supabaseAdmin

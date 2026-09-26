@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/api-auth';
 import { createDefaultSequence } from '@/lib/follow-up-engine';
 import { generateQuoteHTML, generateQuotePDF } from '@/lib/quote-generator';
 import { sendEmail } from '@/lib/email';
+import { enforcePlanLimit, planLimitResponse } from '@/lib/billing/limits';
 
 // POST /api/admin/quotes/[id]/send
 export async function POST(
@@ -16,6 +17,13 @@ export async function POST(
       return NextResponse.json({ error: 'No company associated with this account' }, { status: 400 });
     }
     const companyId = auth.companyId;
+
+    // ── Plan gate: trial email-send cap (no-op unless limits are enforced) ─
+    const planGate = await enforcePlanLimit(companyId, 'quote_send');
+    if (!planGate.allowed) {
+      return NextResponse.json(planLimitResponse(planGate), { status: planGate.status });
+    }
+
     const { id } = await params;
     const body = await req.json().catch(() => ({}));
     const { recipient_email, subject, message } = body;
@@ -215,16 +223,43 @@ export async function POST(
       to: toEmail,
       subject: emailSubject,
       html: customHtml,
-      from: company?.email_sender_name
-        ? `${company.email_sender_name} <onboarding@resend.dev>`
-        : undefined,
-      replyTo: company?.email_domain ? `noreply@${company.email_domain}` : undefined,
+      companyId,
       attachments: pdfBuffer
         ? [{ filename: `${quote.id}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }]
         : undefined,
     });
 
     const now = new Date().toISOString();
+
+    if (!emailResult.success) {
+      await supabaseAdmin.from('audit_events').insert({
+        company_id: companyId,
+        event_type: 'send_failed',
+        entity_type: 'quote',
+        entity_id: id,
+        actor_id: auth.user.id,
+        actor_email: auth.user.email,
+        metadata: {
+          quote_number: quote.id,
+          recipient_email: toEmail,
+          email_sent: false,
+          email_code: emailResult.code || null,
+          email_error: emailResult.error || null,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          error: 'Quote was NOT sent. The email could not be delivered — the quote status is unchanged. Configure a sending address (connect your mailbox or set EMAIL_FROM_ADDRESS) and retry.',
+          email: {
+            success: false,
+            code: emailResult.code || null,
+            error: emailResult.error || null,
+          },
+        },
+        { status: 502 }
+      );
+    }
 
     // ── Update quote status to SENT ──────────────────────────────────
     const { error: updateError } = await supabaseAdmin
@@ -282,9 +317,9 @@ export async function POST(
         recipient_email: toEmail,
         total_amount: quote.total_amount,
         currency: quote.currency,
-        email_sent: emailResult.success,
+        email_sent: true,
         email_id: emailResult.id || null,
-        email_error: emailResult.error || null,
+        email_from: emailResult.from || null,
         follow_up_created: !!followUpSequence,
       },
     });

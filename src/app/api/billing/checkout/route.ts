@@ -2,14 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { requireAuth } from '@/lib/api-auth';
 import { supabaseAdmin } from '@/lib/supabase';
+import { getBillingConfig, isPlaceholderSecret, type PlanId } from '@/lib/billing/limits';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let stripeClient: any = null;
 function getStripe() {
   if (!stripeClient && process.env.STRIPE_SECRET_KEY) {
-    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2026-08-26.dahlia',
-    });
+    try {
+      stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY, {
+        apiVersion: '2026-08-26.dahlia',
+      });
+    } catch (err) {
+      console.error(
+        '[billing:checkout] STRIPE_SECRET_KEY could not initialise the Stripe SDK (placeholder or malformed):',
+        err instanceof Error ? err.message : 'unknown error'
+      );
+      return null;
+    }
   }
   return stripeClient;
 }
@@ -18,33 +27,58 @@ const TIERS = {
   starter: {
     name: 'Sailwise Starter',
     description: 'Email-first assistant · 1,000 AI conversations/mo',
-    monthly: 188000, // HKD HK$1,880.00
-    annual: 150400, // HKD HK$1,504.00/mo (20% off)
+    monthly: 188000,
+    annual: 150400,
   },
   growth: {
     name: 'Sailwise Growth',
     description: 'Email-first assistant · 5,000 AI conversations/mo',
-    monthly: 248000, // HKD HK$2,480.00
-    annual: 198400, // HKD HK$1,984.00/mo (20% off)
+    monthly: 248000,
+    annual: 198400,
   },
   enterprise: {
     name: 'Sailwise Enterprise',
     description: 'Email-first assistant · Unlimited AI · Dedicated manager',
-    monthly: 488000, // HKD HK$4,880.00
-    annual: 390400, // HKD HK$3,904.00/mo (20% off)
+    monthly: 488000,
+    annual: 390400,
   },
 } as const;
 
 type Tier = keyof typeof TIERS;
 
+const BILLING_NOT_CONFIGURED =
+  'Billing is not configured by the operator yet. Set STRIPE_SECRET_KEY (and STRIPE_WEBHOOK_SECRET) to a real Stripe key, then reload.';
+
+function priceIdEnvKey(tier: Tier, interval: 'month' | 'year'): string {
+  return `STRIPE_PRICE_${tier.toUpperCase()}_${interval === 'year' ? 'YEAR' : 'MONTH'}`;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const stripe = getStripe();
-    if (!stripe) {
-      return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
+    const billing = getBillingConfig();
+
+    if (!billing.stripe_usable) {
+      const reason = !process.env.STRIPE_SECRET_KEY
+        ? 'STRIPE_SECRET_KEY is not set'
+        : isPlaceholderSecret(process.env.STRIPE_SECRET_KEY)
+          ? 'STRIPE_SECRET_KEY is still a placeholder value'
+          : 'STRIPE_SECRET_KEY is not a recognised Stripe key';
+      console.warn(`[billing:checkout] ${reason} — checkout disabled, returning 503.`);
+      return NextResponse.json(
+        { error: BILLING_NOT_CONFIGURED, code: 'billing_not_configured', reason, mode: billing.mode },
+        { status: 503 }
+      );
     }
 
-    // Parse tier from request body
+    const stripe = getStripe();
+    if (!stripe) {
+      console.warn('[billing:checkout] Stripe SDK unavailable — checkout disabled.');
+      return NextResponse.json(
+        { error: BILLING_NOT_CONFIGURED, code: 'billing_not_configured', mode: billing.mode },
+        { status: 503 }
+      );
+    }
+
     let tier: Tier = 'starter';
     let interval: 'month' | 'year' = 'month';
     try {
@@ -73,7 +107,6 @@ export async function POST(req: NextRequest) {
 
     let customerId = company.stripe_customer_id;
 
-    // Create or reuse Stripe customer
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: auth.user.email,
@@ -90,13 +123,11 @@ export async function POST(req: NextRequest) {
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const tierConfig = TIERS[tier];
+    const configuredPriceId = process.env[priceIdEnvKey(tier, interval)];
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
+    const lineItem: Record<string, unknown> = configuredPriceId
+      ? { price: configuredPriceId, quantity: 1 }
+      : {
           price_data: {
             currency: 'hkd',
             product_data: {
@@ -107,12 +138,28 @@ export async function POST(req: NextRequest) {
             unit_amount: interval === 'year' ? tierConfig.annual : tierConfig.monthly,
           },
           quantity: 1,
-        },
-      ],
+        };
+
+    if (!configuredPriceId) {
+      console.warn(
+        `[billing:checkout] ${priceIdEnvKey(tier, interval)} is not set — using inline price_data for ${tier}/${interval}.`
+      );
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      customer: customerId,
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      line_items: [lineItem as never],
       metadata: {
         company_id: auth.companyId,
         tier,
         interval,
+        plan: tier as PlanId,
+      },
+      client_reference_id: auth.companyId,
+      subscription_data: {
+        metadata: { company_id: auth.companyId, tier, plan: tier },
       },
       success_url: `${appUrl}/admin/settings?billing=success`,
       cancel_url: `${appUrl}/admin/settings?billing=cancelled`,

@@ -11,6 +11,25 @@ import ComposioConnections from '@/components/ComposioConnections';
 
 const ADMIN_EMAIL = 'tradeflow.hk@gmail.com';
 
+interface BillingStatus {
+  plan: 'trial' | 'starter' | 'growth' | 'enterprise';
+  plan_label?: { en: string; zh: string };
+  plan_source: 'plan_column' | 'subscription_status' | 'default_trial';
+  subscription_status: string;
+  subscription_current_period_end: string | null;
+  has_billing_customer: boolean;
+  is_demo_company: boolean;
+  billing: {
+    mode: string;
+    usable: boolean;
+    enforcement_enabled: boolean;
+    enforcement_off_reason: string | null;
+    missing_env: string[];
+  };
+  usage: { ai_quote_draft: number; quote_send: number; period_start: string; period_end: string };
+  limits: { ai_quote_drafts_per_month: number | null; emails_sent_per_month: number | null };
+}
+
 const BILLING_PLANS = [
   {
     id: 'starter',
@@ -81,6 +100,7 @@ function SettingsContent() {
   const [subscriptionPeriodEnd, setSubscriptionPeriodEnd] = useState<string>('');
   const [annual, setAnnual] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [billingStatus, setBillingStatus] = useState<BillingStatus | null>(null);
   const [pendingCompanies, setPendingCompanies] = useState<Array<{ id: string; name: string; created_at: string }>>([]);
   const [demoRequests, setDemoRequests] = useState<Array<{ id: string; name: string; email: string; company: string; phone: string; status: string; created_at: string }>>([]);
   const [currency, setCurrency] = useState('USD');
@@ -135,6 +155,18 @@ function SettingsContent() {
       .catch(() => setError('Failed to load settings'))
       .finally(() => setLoading(false));
   }, [companyId]);
+
+  const billingQueryParam = searchParams.get('billing');
+
+  useEffect(() => {
+    if (!companyId) return;
+    authFetch('/api/billing/status')
+      .then(r => (r.ok ? r.json() : null))
+      .then(data => {
+        if (data && data.plan) setBillingStatus(data as BillingStatus);
+      })
+      .catch(() => {});
+  }, [companyId, billingQueryParam]);
 
   const handleCheckout = async (tier: string) => {
     setCheckoutLoading(true);
@@ -493,11 +525,37 @@ function SettingsContent() {
       </section>
 
       {/* Billing */}
-      <section className="border rounded-[4px] p-5 mb-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <section id="billing" className="border rounded-[4px] p-5 mb-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
         <h2 className="text-[15px] font-semibold mb-1">{t('Billing', '帳單')}</h2>
         <p className="text-[13px] mb-4" style={{ color: 'var(--text-muted)' }}>
           {t('Manage your subscription and payment', '管理您的訂閱和付款')}
         </p>
+
+        {/* Operator notice: Stripe is not configured */}
+        {billingStatus && !billingStatus.billing.usable && (
+          <div className="p-3 rounded-[4px] mb-4 border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+            <p className="text-[13px] font-semibold">
+              {t('Billing is not configured by the operator yet', '營運方尚未設定收款')}
+            </p>
+            <p className="text-[12px] mt-1" style={{ color: 'var(--text-muted)' }}>
+              {t(
+                'Checkout and the customer portal are switched off, so no card can be charged. Your account is running on the free trial and nothing will be billed.',
+                '結帳與客戶自助頁面已停用，因此不會收取任何費用。您的帳戶正在免費試用期內，不會產生任何費用。'
+              )}
+            </p>
+            {billingStatus.billing.missing_env.length > 0 && (
+              <p className="text-[11px] mt-2" style={{ color: 'var(--text-muted)' }}>
+                {t('Missing server configuration', '缺少伺服器設定')}:{' '}
+                <span style={{ color: 'var(--accent)' }}>{billingStatus.billing.missing_env.join(', ')}</span>
+              </p>
+            )}
+            {billingStatus.billing.enforcement_off_reason && (
+              <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                {t('Usage limits', '用量上限')}: {t('off', '未啟用')} — {billingStatus.billing.enforcement_off_reason}
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Current plan */}
         <div className="flex items-center justify-between p-3 rounded-[4px] mb-4" style={{ background: 'var(--bg)' }}>
@@ -507,7 +565,9 @@ function SettingsContent() {
             </p>
             {subscriptionStatus === 'active' ? (
               <>
-                <p className="text-[15px] font-semibold mt-0.5">Starter SDR · HK$1,880/mo</p>
+                <p className="text-[15px] font-semibold mt-0.5">
+                  {billingStatus?.plan_label?.en ?? 'Starter SDR'} · HK$1,880/mo
+                </p>
                 {subscriptionPeriodEnd && (
                   <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                     {t('Next billing', '下次扣費')}: {new Date(subscriptionPeriodEnd).toLocaleDateString()}
@@ -518,12 +578,17 @@ function SettingsContent() {
               <>
                 <p className="text-[15px] font-semibold mt-0.5">{t('Free trial', '免費試用')}</p>
                 <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  {t('14-day free trial included', '包含 14 天免費試用')}
+                  {billingStatus
+                    ? t(
+                        `${billingStatus.usage.ai_quote_draft}/${billingStatus.limits.ai_quote_drafts_per_month ?? '∞'} AI quote drafts · ${billingStatus.usage.quote_send}/${billingStatus.limits.emails_sent_per_month ?? '∞'} emails sent this month`,
+                        `本月 AI 報價草稿 ${billingStatus.usage.ai_quote_draft}/${billingStatus.limits.ai_quote_drafts_per_month ?? '∞'} · 已發送電郵 ${billingStatus.usage.quote_send}/${billingStatus.limits.emails_sent_per_month ?? '∞'}`
+                      )
+                    : t('14-day free trial included', '包含 14 天免費試用')}
                 </p>
               </>
             )}
           </div>
-          {subscriptionStatus === 'active' ? (
+          {subscriptionStatus === 'active' && billingStatus?.billing.usable ? (
             <button
               onClick={handlePortal}
               disabled={checkoutLoading}
@@ -532,6 +597,11 @@ function SettingsContent() {
             >
               {t('Manage subscription', '管理訂閱')}
             </button>
+          ) : subscriptionStatus === 'active' ? (
+            <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+              {t('Manage subscription', '管理訂閱')} —
+              {t('billing not configured', '尚未設定收款')}
+            </span>
           ) : (
             <div className="text-right">
               <span className="text-[18px] font-semibold">HK$1,880</span>
@@ -600,7 +670,7 @@ function SettingsContent() {
                     </li>
                   ))}
                 </ul>
-                {isActive ? (
+                {isActive && billingStatus?.billing.usable ? (
                   <button
                     onClick={handlePortal}
                     disabled={checkoutLoading}
@@ -612,11 +682,15 @@ function SettingsContent() {
                 ) : (
                   <button
                     onClick={() => handleCheckout(plan.id)}
-                    disabled={checkoutLoading}
+                    disabled={checkoutLoading || billingStatus?.billing.usable === false}
                     className="w-full text-[13px] font-medium py-2.5 rounded-[4px] text-white"
-                    style={{ background: 'var(--accent)' }}
+                    style={{ background: 'var(--accent)', opacity: billingStatus?.billing.usable === false ? 0.5 : 1 }}
                   >
-                    {checkoutLoading ? t('Redirecting…', '跳轉中…') : t('Subscribe now', '立即訂閱')}
+                    {billingStatus?.billing.usable === false
+                      ? t('Checkout unavailable', '結帳暫不可用')
+                      : checkoutLoading
+                        ? t('Redirecting…', '跳轉中…')
+                        : t('Subscribe now', '立即訂閱')}
                   </button>
                 )}
               </div>
@@ -627,6 +701,14 @@ function SettingsContent() {
         <p className="text-[12px] text-center mt-4" style={{ color: 'var(--text-muted)' }}>
           {t('All plans include 14-day free trial. Free self-serve setup (optional done-for-you setup +HK$1,000). Annual billing saves 20%.', '所有方案包含 14 天免費試用。自行設定免費（可選 +HK$1,000 專人設定）。年付可節省 20%。')}
         </p>
+        {billingStatus && !billingStatus.billing.usable && (
+          <p className="text-[12px] text-center mt-2" style={{ color: 'var(--text-muted)' }}>
+            {t(
+              'Checkout is disabled until the operator connects a live Stripe account. Contact us to activate billing.',
+              '在營運方連接 Stripe 帳戶前，結帳功能維持停用。請聯繫我們以啟用收款。'
+            )}
+          </p>
+        )}
       </section>
 
       {/* Admin Panel - Only visible to admin */}

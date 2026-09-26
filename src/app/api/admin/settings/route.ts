@@ -5,31 +5,9 @@ import { requireAuth } from '@/lib/api-auth';
 // GET — get company settings
 export async function GET(req: NextRequest) {
   try {
-    const companyId = req.nextUrl.searchParams.get('company_id');
-
-    // If company_id is provided, try to load directly (used by client after onboarding)
-    if (companyId) {
-      const { data, error } = await supabaseAdmin
-        .from('company_settings')
-        .select('*')
-        .eq('company_id', companyId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        return NextResponse.json({ error: error.message }, { status: 500 });
-      }
-
-      const { data: company } = await supabaseAdmin
-        .from('companies')
-        .select('id, name, whatsapp_number, whatsapp_phone_number_id, whatsapp_verify_token, whatsapp_waba_id, wechat_corp_id, wechat_agent_id, wechat_work_secret, wechat_work_token, wechat_work_encoding_aes_key, stripe_customer_id, stripe_subscription_id, subscription_status, subscription_current_period_end')
-        .eq('id', companyId)
-        .single();
-
-      return NextResponse.json({ settings: data, company });
-    }
-
-    // Otherwise require auth
     const auth = await requireAuth(req);
+
+    const companyId = auth.companyId;
 
     const { data, error } = await supabaseAdmin
       .from('company_settings')

@@ -1,8 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
+import { seedStarterKit } from '@/lib/starter-kit';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
+
+/* Self-serve accounts are created without a `plan` value today because the
+   `companies.plan` column does not exist yet. `billing/limits` already falls
+   back to trial in that case, so this is only forward compatibility: probe the
+   column once per process and start stamping new companies as soon as it
+   lands, instead of firing a failing UPDATE on every signup. */
+let planColumnChecked = false;
+let planColumnExists = false;
+
+async function ensureTrialPlan(companyId: string): Promise<void> {
+  if (planColumnChecked && !planColumnExists) return;
+
+  const { error } = await supabaseAdmin
+    .from('companies')
+    .update({ plan: 'trial' })
+    .eq('id', companyId);
+
+  planColumnChecked = true;
+  planColumnExists = !error;
+  if (error) {
+    console.warn(
+      `[company:POST] companies.plan unavailable, leaving plan implicit (trial fallback): ${error.message}`
+    );
+  }
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -140,23 +166,32 @@ export async function POST(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-    // Seed demo FAQ rules
-    const demoFaq = [
-      { company_id: company.id, question_pattern: 'Payment terms', answer: 'We accept T/T (bank transfer) for orders under USD 5,000. L/C for larger orders. 30% deposit, 70% before shipping.', priority: 10, keywords: ['payment', 'pay', 'bank', 'transfer', 'deposit'] },
-      { company_id: company.id, question_pattern: 'Shipping & delivery', answer: 'FOB Shenzhen standard. SE Asia 7-10 days, Europe 25-35 days, US 20-30 days by sea. Express DHL/FedEx for samples: 3-5 days.', priority: 9, keywords: ['shipping', 'delivery', 'freight', 'dhl', 'fedex'] },
-      { company_id: company.id, question_pattern: 'Sample policy', answer: 'Free samples for qualified buyers — you cover shipping (USD 20-40 via DHL). Lead time 3-5 days. Deducted from first bulk order.', priority: 8, keywords: ['sample', 'trial', 'test'] },
-      { company_id: company.id, question_pattern: 'Certifications', answer: 'FDA, CE, LFGB, RoHS certified. SGS testing available on request.', priority: 7, keywords: ['certification', 'fda', 'ce', 'quality'] },
-      { company_id: company.id, question_pattern: 'OEM/ODM customization', answer: 'Full OEM/ODM: custom logo (silk screen, laser, UV), custom packaging, custom colors (Pantone), custom molds (5000+ pcs).', priority: 6, keywords: ['custom', 'logo', 'oem', 'odm', 'print'] },
-    ];
+    // Self-serve trials start on the trial plan (no-op until the column exists).
+    await ensureTrialPlan(company.id);
 
-    await supabaseAdmin.from('faq_rules').insert(demoFaq);
+    // Seed a deletable starter kit so a brand-new account is not empty:
+    // products, suppliers, FAQ rules, a starter goal, sample conversations
+    // and a sample quote. Never touches the protected demo company.
+    const starter = await seedStarterKit(company.id);
+    if (starter.errors.length > 0) {
+      console.warn('[company:POST] starter kit partial:', JSON.stringify(starter.errors));
+    }
 
-    // Seed default settings
-    await supabaseAdmin.from('company_settings').insert({
-      company_id: company.id,
-      system_prompt: `You are a helpful sales assistant for ${finalName}, a Hong Kong trading company. You reply professionally, concisely, and in the same language the customer uses. You know all products, pricing, MOQ, shipping terms, and certifications. If a question is beyond your knowledge, say you will connect them with a human agent.`,
-      industry: industry || 'General Trading',
-    });
+    // Default settings row (upserted: company_settings.company_id is UNIQUE).
+    const industryLabel = industry || 'General Trading';
+    const { error: settingsError } = await supabaseAdmin
+      .from('company_settings')
+      .upsert(
+        {
+          company_id: company.id,
+          system_prompt: `You are a helpful sales assistant for ${finalName}, a ${industryLabel.toLowerCase()} company. You reply professionally, concisely, and in the same language the customer uses. You know all products, pricing, MOQ, shipping terms, and certifications. If a question is beyond your knowledge, say you will connect them with a human agent.`,
+          industry: industryLabel,
+        },
+        { onConflict: 'company_id' }
+      );
+    if (settingsError) {
+      console.warn('[company:POST] company_settings seed failed:', settingsError.message);
+    }
 
     // Upsert user row then link to company
     if (user_id) {
@@ -169,7 +204,16 @@ export async function POST(req: NextRequest) {
         .eq('id', user_id);
     }
 
-    return NextResponse.json({ id: company.id });
+    return NextResponse.json({
+      id: company.id,
+      starter_kit: {
+        products: starter.products,
+        suppliers: starter.suppliers,
+        conversations: starter.conversations,
+        quotes: starter.quotes,
+        seeded: starter.seeded,
+      },
+    });
   } catch (err) {
     if (err instanceof Response) return err;
     console.error('[company:POST] Unexpected error:', err);
@@ -186,8 +230,13 @@ export async function GET(req: NextRequest) {
     const companyId = req.nextUrl.searchParams.get('id');
     const userId = req.nextUrl.searchParams.get('user_id');
 
-    // If user_id is provided, try to find company directly (used by company provider on login)
+    const auth = await requireAuth(req, { requireCompany: false });
+
     if (userId) {
+      if (userId !== auth.user.id) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
       const { data: user } = await supabaseAdmin
         .from('users')
         .select('company_id')
@@ -206,11 +255,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(data);
     }
 
-    // For other lookups, require auth
-    const auth = await requireAuth(req);
-
     if (companyId) {
-      if (auth.companyId && companyId !== auth.companyId) {
+      if (companyId !== auth.companyId) {
         return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
       }
 
@@ -225,6 +271,8 @@ export async function GET(req: NextRequest) {
     }
 
     // Default: return the user's own company
+    if (!auth.companyId) return NextResponse.json({ error: 'No company found' }, { status: 404 });
+
     const { data, error } = await supabaseAdmin
       .from('companies')
       .select('*')

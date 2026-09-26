@@ -4,9 +4,22 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLang } from '@/lib/lang';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
-import { COMPOSIO_APPS, type ComposioAppCategory, type ComposioAppModule } from '@/lib/composio-apps';
+import { COMPOSIO_APPS, type CompanyMailboxState, type ComposioAppCategory, type ComposioAppModule } from '@/lib/composio-apps';
 
-type StatusPayload = { configured: boolean; apps: ComposioAppModule[]; error?: string };
+type EmailStatus = {
+  configured: boolean;
+  senderConfigured: boolean;
+  defaultFrom: string | null;
+  gate: string | null;
+};
+
+type StatusPayload = {
+  configured: boolean;
+  apps: ComposioAppModule[];
+  mailbox?: CompanyMailboxState | null;
+  email?: EmailStatus;
+  error?: string;
+};
 
 const CATEGORY_LABEL: Record<ComposioAppCategory, [string, string]> = {
   Email: ['Email', '電郵'],
@@ -17,6 +30,60 @@ const CATEGORY_LABEL: Record<ComposioAppCategory, [string, string]> = {
 };
 
 const PENDING_STATUSES = new Set(['INITIALIZING', 'INITIATED']);
+
+const PROVIDER_LABEL: Record<string, string> = { google: 'Gmail', microsoft: 'Outlook' };
+
+/**
+ * Answers the only two questions a customer has here: is my real inbox
+ * connected, and will my replies actually go out.
+ */
+function MailboxSummary({ mailbox, email }: { mailbox?: CompanyMailboxState | null; email?: EmailStatus }) {
+  const { t } = useLang();
+
+  return (
+    <div className="rounded-[4px] border p-3 space-y-2" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-[13px] font-medium">{t('Your inbox', '你的收件匣')}</p>
+          <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
+            {mailbox?.connected && mailbox.address
+              ? `${mailbox.address}${mailbox.provider ? ` · ${PROVIDER_LABEL[mailbox.provider] ?? mailbox.provider}` : ''}`
+              : mailbox?.pending
+                ? t('Finishing connection…', '正在完成連接…')
+                : t('Not connected — real email will not appear in your inbox.', '尚未連接 — 真實電郵不會出現在收件匣。')}
+          </p>
+        </div>
+        {mailbox?.connected ? (
+          <span className="text-[11px] px-2 py-0.5 rounded-full font-medium whitespace-nowrap" style={{ background: 'rgba(34,197,94,0.1)', color: '#16a34a' }}>
+            {t('Connected', '已連接')}
+          </span>
+        ) : mailbox?.pending ? (
+          <span className="text-[11px] px-2 py-0.5 rounded-full font-medium whitespace-nowrap" style={{ background: 'rgba(245,158,11,0.1)', color: '#b45309' }}>
+            {t('Pending', '等待中')}
+          </span>
+        ) : (
+          <span className="text-[11px] px-2 py-0.5 rounded-full font-medium whitespace-nowrap" style={{ background: '#F3F4F6', color: '#6B7280' }}>
+            {t('Not connected', '未連接')}
+          </span>
+        )}
+      </div>
+
+      {email && !email.configured && (
+        <p className="text-[11px]" style={{ color: '#b45309' }}>
+          {t(
+            'Outbound email is not configured on this deployment — quotes and follow-ups cannot be sent yet.',
+            '此部署尚未設定外發電郵 — 報價與跟進電郵暫時無法寄出。'
+          )}
+        </p>
+      )}
+      {email?.configured && email.gate && !mailbox?.connected && (
+        <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+          {email.gate}
+        </p>
+      )}
+    </div>
+  );
+}
 
 function StatusBadge({ status }: { status: ComposioAppModule['connection'] }) {
   const { t } = useLang();
@@ -84,7 +151,7 @@ function AppTile({
           <div className="min-w-0">
             <p className="text-[13px] font-medium truncate">{app.name}</p>
             <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
-              {connection?.alias ?? connection?.id ?? app.slug}
+              {connection?.address ?? connection?.alias ?? connection?.id ?? app.slug}
             </p>
           </div>
         </div>
@@ -128,7 +195,6 @@ export default function ComposioConnections() {
   const [payload, setPayload] = useState<StatusPayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [busyApp, setBusyApp] = useState<string | null>(null);
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -144,7 +210,10 @@ export default function ComposioConnections() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    // Loaded after mount rather than during render, so the initial paint stays
+    // synchronous and the state update is never part of the effect body.
+    const id = window.setTimeout(() => void refresh(), 0);
+    return () => window.clearTimeout(id);
   }, [refresh]);
 
   const hasPending = useCallback(
@@ -152,20 +221,27 @@ export default function ComposioConnections() {
     [payload]
   );
 
+  // OAuth happens in a popup, so the connection only becomes ACTIVE after the
+  // user returns. Poll while anything is pending, keep polling briefly after a
+  // connect attempt, and re-check whenever this tab regains focus.
+  const watchUntilRef = useRef<number>(0);
+
   useEffect(() => {
-    if (hasPending()) {
-      if (!pollingRef.current) {
-        pollingRef.current = setInterval(() => refresh(), 3000);
-      }
-    } else if (pollingRef.current) {
-      clearInterval(pollingRef.current);
-      pollingRef.current = null;
+    const tick = () => {
+      void refresh();
+    };
+    if (hasPending() || Date.now() < watchUntilRef.current) {
+      const id = setInterval(tick, 3000);
+      return () => clearInterval(id);
     }
+    const onFocus = () => {
+      if (hasPending() || Date.now() < watchUntilRef.current) tick();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
     return () => {
-      if (pollingRef.current) {
-        clearInterval(pollingRef.current);
-        pollingRef.current = null;
-      }
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
     };
   }, [hasPending, refresh]);
 
@@ -180,6 +256,8 @@ export default function ComposioConnections() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to connect');
       if (data.url) {
+        // Give the user ~90s to finish in the popup before we stop refreshing.
+        watchUntilRef.current = Date.now() + 90_000;
         window.open(data.url, '_blank', 'noopener,noreferrer');
       }
       showToast(t('Opening authorization…', '正在開啟授權…'), 'success');
@@ -222,22 +300,28 @@ export default function ComposioConnections() {
 
   if (!payload?.configured) {
     return (
-      <div className="text-[13px] rounded-[4px] px-3 py-2 border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
-        {t(
-          'Live app connections are not set up for this demo yet — the inbox runs on seeded conversations. You can connect Gmail after launch to receive and reply to real email.',
-          '此演示尚未設定即時應用程式連接 — 收件匣使用預載的對話記錄。正式推出後可連接 Gmail 接收及回覆真實電郵。'
-        )}
+      <div className="space-y-3">
+        <MailboxSummary mailbox={payload?.mailbox} email={payload?.email} />
+        <div className="text-[13px] rounded-[4px] px-3 py-2 border" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+          {t(
+            'Live app connections are not set up for this demo yet — the inbox runs on seeded conversations. You can connect Gmail after launch to receive and reply to real email.',
+            '此演示尚未設定即時應用程式連接 — 收件匣使用預載的對話記錄。正式推出後可連接 Gmail 接收及回覆真實電郵。'
+          )}
+        </div>
       </div>
     );
   }
 
   if (payload.error && !payload.apps?.length) {
     return (
-      <div
-        className="text-[12px] rounded-[4px] px-3 py-2"
-        style={{ background: 'rgba(239,68,68,0.08)', color: 'var(--error, #ef4444)' }}
-      >
-        {t('Connections are temporarily unavailable — please try again later.', '暫時無法載入連接 — 請稍後再試。')}
+      <div className="space-y-3">
+        <MailboxSummary mailbox={payload.mailbox} email={payload.email} />
+        <div
+          className="text-[12px] rounded-[4px] px-3 py-2"
+          style={{ background: 'rgba(239,68,68,0.08)', color: 'var(--error, #ef4444)' }}
+        >
+          {t('Connections are temporarily unavailable — please try again later.', '暫時無法載入連接 — 請稍後再試。')}
+        </div>
       </div>
     );
   }
@@ -250,6 +334,7 @@ export default function ComposioConnections() {
 
   return (
     <div className="space-y-4">
+      <MailboxSummary mailbox={payload.mailbox} email={payload.email} />
       {visibleCategories.map((category) => {
         const apps = COMPOSIO_APPS
           .filter((a) => a.category === category && bySlug.has(a.slug))

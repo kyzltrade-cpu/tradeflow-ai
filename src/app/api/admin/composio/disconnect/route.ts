@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { disconnectConnection, isComposioConfigured } from '@/lib/composio';
 
+// POST /api/admin/composio/disconnect — revoke one of the caller's company's
+// connected accounts. Ownership is re-checked server-side, so an account id
+// from another tenant can never be deleted.
 export async function POST(req: NextRequest) {
   let auth;
   try {
@@ -15,11 +18,15 @@ export async function POST(req: NextRequest) {
   }
 
   if (!isComposioConfigured()) {
-    return NextResponse.json({ error: 'Integrations are not configured yet.' }, { status: 503 });
+    return NextResponse.json(
+      { error: 'Mailbox connections are not available on this deployment yet.', code: 'COMPOSIO_NOT_CONFIGURED' },
+      { status: 503 }
+    );
   }
 
   const body = await req.json().catch(() => ({}));
-  const connectedAccountId = typeof body.connectedAccountId === 'string' ? body.connectedAccountId.trim() : '';
+  const connectedAccountId =
+    typeof body.connectedAccountId === 'string' ? body.connectedAccountId.trim() : '';
   if (!connectedAccountId) {
     return NextResponse.json({ error: 'Missing connected account id.' }, { status: 400 });
   }

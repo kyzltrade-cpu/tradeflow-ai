@@ -242,7 +242,19 @@ export default function InboxDetailPage() {
     try {
       if (!silent) setLoadingSuggest(true);
       const res = await authFetch(`/api/admin/inbox/${id}/suggest`);
-      if (!res.ok) throw new Error('Failed to load suggestion');
+      if (!res.ok) {
+        if (res.status === 402) {
+          const data = await res.json().catch(() => null);
+          if (!silent) {
+            showToast(
+              data?.error || t('Monthly AI quote limit reached. Upgrade to keep generating quotes.', '本月的 AI 報價額度已用完，升級方案即可繼續。'),
+              'error'
+            );
+          }
+          return;
+        }
+        throw new Error('Failed to load suggestion');
+      }
       const data = await res.json();
       setSuggestion(data);
       if (data.draft && (data.draft.created_opportunity || data.draft.created_quote)) {

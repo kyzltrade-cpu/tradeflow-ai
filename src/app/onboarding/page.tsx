@@ -74,6 +74,8 @@ export default function OnboardingPage() {
   const [industry, setIndustry] = useState('');
   const [saving, setSaving] = useState(false);
   const [setupError, setSetupError] = useState<string | null>(null);
+  // Counts of the deletable starter data the company API seeded for this account
+  const [starterKit, setStarterKit] = useState<{ products?: number; suppliers?: number; conversations?: number; quotes?: number } | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -191,6 +193,7 @@ export default function OnboardingPage() {
 
       const companyId = companyData.id;
       localStorage.setItem('tradeflow_company_id', companyId);
+      if (companyData.starter_kit) setStarterKit(companyData.starter_kit);
 
       // 2. Save settings + system prompt
       const settingsRes = await fetch('/api/admin/settings', {
@@ -632,7 +635,30 @@ export default function OnboardingPage() {
                     <span style={{ color: 'var(--success)' }}>✓</span>
                     <span className="text-[13px]">{t('Languages', '語言')}：<span className="font-medium">{t('English + Chinese (auto)', '英文 + 中文（自動）')}</span></span>
                   </div>
+                  {starterKit && (starterKit.products || starterKit.suppliers || starterKit.conversations) ? (
+                    <div className="flex items-start gap-2.5">
+                      <span style={{ color: 'var(--success)' }}>✓</span>
+                      <span className="text-[13px]">
+                        {t('Sample data', '範例資料')}：<span className="font-medium">
+                          {[
+                            starterKit.products ? `${starterKit.products} ${t('products', '產品')}` : null,
+                            starterKit.suppliers ? `${starterKit.suppliers} ${t('suppliers', '供應商')}` : null,
+                            starterKit.conversations ? `${starterKit.conversations} ${t('conversations', '對話')}` : null,
+                          ].filter(Boolean).join(' · ')}
+                        </span>
+                      </span>
+                    </div>
+                  ) : null}
                 </div>
+
+                {starterKit && (starterKit.products || starterKit.suppliers || starterKit.conversations) ? (
+                  <p className="text-[12px] leading-[1.6] mt-3" style={{ color: 'var(--text-muted)' }}>
+                    {t(
+                      'We added a sample catalog, suppliers and conversations so you can explore Sailwise with real-looking data. Delete anything you don\'t need — your own products are always kept separate.',
+                      '我們已加入範例產品、供應商及對話，讓您可以用真實感資料體驗 Sailwise。您可隨時刪除不需要的項目 — 您自己上載的產品會獨立保留。'
+                    )}
+                  </p>
+                ) : null}
               </div>
 
               {/* Connect your inbox */}

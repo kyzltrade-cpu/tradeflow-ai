@@ -28,8 +28,8 @@ const CRON_SECRET = process.env.CRON_SECRET;
 
 function verifyCron(req: NextRequest): boolean {
   if (!CRON_SECRET) {
-    console.warn('[cron/follow-ups] CRON_SECRET not set — allowing request in dev');
-    return true;
+    console.warn('[cron/follow-ups] CRON_SECRET not set — rejecting cron trigger');
+    return false;
   }
   const auth = req.headers.get('authorization');
   return auth === `Bearer ${CRON_SECRET}`;
@@ -185,19 +185,11 @@ export async function GET(req: NextRequest) {
       let sendResult: { success: boolean; error?: string } = { success: false, error: 'Unknown channel' };
 
       if (channel === 'email' && customerEmail) {
-        const { data: company } = await supabaseAdmin
-          .from('companies')
-          .select('name, email_sender_name')
-          .eq('id', item.company_id)
-          .single();
-
         const result = await sendEmail({
           to: customerEmail,
           subject,
           html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #374151; font-size: 14px; line-height: 1.7; max-width: 600px; margin: 0 auto; padding: 24px;">${messageBody.replace(/\n/g, '<br>')}</div>`,
-          from: company?.email_sender_name
-            ? `${company.email_sender_name} <onboarding@resend.dev>`
-            : undefined,
+          companyId: item.company_id,
         });
         sendResult = { success: result.success, error: result.error };
       }
