@@ -175,7 +175,7 @@ export default function AdminChat() {
                   <span className="absolute inline-flex h-full w-full rounded-full animate-ping opacity-60" style={{ background: '#1C7A4D' }} />
                   <span className="relative inline-flex rounded-full w-2 h-2" style={{ background: '#1C7A4D' }} />
                 </span>
-                {t('Context: goals · products · knowledge', '已載入：目標 · 產品 · 知識庫')}
+                {t('Context: goals · products · inquiries · deals', '已載入：目標 · 產品 · 詢盤 · 商機')}
               </div>
             </div>
             <button

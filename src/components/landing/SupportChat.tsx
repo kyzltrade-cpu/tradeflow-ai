@@ -12,15 +12,15 @@ interface Msg {
 const WELCOME: Msg = {
   role: 'assistant',
   content:
-    "Hi! I'm the Sailwise support assistant. Ask me anything about the product, pricing, or getting started — I reply in your language.",
+    "Hi! I'm the Sailwise support assistant. Ask me anything about the product, or about the demo clients, inquiries and quotes in your mailbox — prices, who's waiting on a reply, quote status, and more. I reply in your language.",
 };
 
 const QUICK_QUESTIONS = [
   'How does the free trial work?',
   'How much does it cost?',
+  'Which demo client inquiries need a reply?',
+  "What's the status of the pending quotes?",
   'How do I connect my email inbox?',
-  'Can I connect Excel or Google Sheets?',
-  'Which languages are supported?',
 ];
 
 export default function SupportChat() {
@@ -89,7 +89,7 @@ export default function SupportChat() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history }),
+        body: JSON.stringify({ message: text, history, demoMode: true }),
       });
 
       if (!res.ok) {
@@ -137,7 +137,7 @@ export default function SupportChat() {
           aria-label="Sailwise support chat"
           className="btk-anim-rise fixed flex flex-col rounded-[20px] border z-40 overflow-hidden"
           style={{
-            left: 'max(1.25rem, env(safe-area-inset-left))',
+            right: 'max(1.25rem, env(safe-area-inset-right))',
             bottom: 'calc(max(1.25rem, env(safe-area-inset-bottom)) + 5rem)',
             width: 'min(24rem, calc(100vw - 2.5rem))',
             height: 'min(34rem, calc(100dvh - 9rem))',
@@ -286,7 +286,7 @@ export default function SupportChat() {
               </button>
             </div>
             <p className="text-[11px] mt-2 text-center" style={{ color: '#9A9A9A' }}>
-              Powered by NVIDIA NIM · Human review on request
+              Powered by NVIDIA NIM · Demo data loaded
             </p>
           </form>
         </div>
@@ -301,7 +301,7 @@ export default function SupportChat() {
         aria-expanded={open}
         className="fixed flex items-center justify-center z-40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
         style={{
-          left: 'max(1.25rem, env(safe-area-inset-left))',
+          right: 'max(1.25rem, env(safe-area-inset-right))',
           bottom: 'max(1.25rem, env(safe-area-inset-bottom))',
           width: 58,
           height: 58,

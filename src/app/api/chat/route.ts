@@ -3,6 +3,7 @@ import { TRADEFLOW_KNOWLEDGE } from '@/lib/tradeflow-knowledge';
 import { detectLanguage, buildLanguageInstruction } from '@/lib/language-detect';
 import { supabaseAdmin } from '@/lib/supabase';
 import { webSearch, needsWebSearch } from '@/lib/web-search';
+import { DEMO_COMPANY_ID, buildInquiryContext } from '@/lib/inquiry-context';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
@@ -111,10 +112,24 @@ export async function POST(req: NextRequest) {
       console.error('[chat] Failed to fetch company context:', err);
     }
 
+    // Load the live business snapshot (inquiries, deals, quotes, follow-ups) so
+    // users can ask about individual clients. Uses the demo company for the
+    // public landing chat; the authenticated admin chat sends its own company.
+    const companyId = req.headers.get('x-company-id') || (demoMode ? DEMO_COMPANY_ID : null);
+    let inquiryContext = '';
+    if (companyId) {
+      try {
+        inquiryContext = await buildInquiryContext(companyId);
+      } catch (err) {
+        console.error('[chat] Failed to fetch inquiry context:', err);
+      }
+    }
+
     // Build system prompt with full context + language rules
+    const base = `${TRADEFLOW_KNOWLEDGE}${companyContext}${inquiryContext}${webSearchContext}`;
     const systemPrompt = demoMode && systemContext
       ? `${systemContext}\n${languageInstruction}`
-      : `${TRADEFLOW_KNOWLEDGE}${companyContext}${webSearchContext}\n${languageInstruction}`;
+      : `${base}\n${languageInstruction}`;
 
     // Build messages array (last 10 turns for context)
     const messages: ChatMessage[] = [

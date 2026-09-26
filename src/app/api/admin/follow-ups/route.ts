@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
 
     let query = supabaseAdmin
       .from('follow_up_sequences')
-      .select('*, follow_up_items(*)', { count: 'exact' })
+      .select('*, follow_up_items(*), opportunities(title, stage)', { count: 'exact' })
       .eq('company_id', companyId);
 
     if (status) {
