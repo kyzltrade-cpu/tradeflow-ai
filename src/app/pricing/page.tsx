@@ -76,7 +76,7 @@ export default function PricingPage() {
             {t('Simple pricing', '簡單定價')}
           </h1>
           <p className="text-[16px] max-w-[600px] mx-auto mb-8" style={{ color: 'var(--text-muted)' }}>
-            {t('Start free, pay HK$1,880/month when ready. No setup fee.', '免費開始，準備好再按每月 HK$1,880 付費。無設置費。')}
+            {t('Start free, pay HK$1,880/month when ready. Self-serve setup is free (optional done-for-you setup +HK$1,000).', '免費開始，準備好再按每月 HK$1,880 付費。自行設定免費（可選 +HK$1,000 專人設定）。')}
           </p>
 
           {/* Billing toggle */}
@@ -181,7 +181,7 @@ export default function PricingPage() {
           </p>
           <div className="inline-block p-5 rounded-[4px] border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
             <p className="text-[14px] font-medium mb-1">{t('Done-for-you setup', '代客設定')}</p>
-            <p className="text-[24px] font-semibold mb-2">HK$1,288 <span className="text-[13px] font-normal" style={{ color: 'var(--text-muted)' }}>{t('one-time', '一次性')}</span></p>
+            <p className="text-[24px] font-semibold mb-2">HK$1,000 <span className="text-[13px] font-normal" style={{ color: 'var(--text-muted)' }}>{t('one-time', '一次性')}</span></p>
             <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
               {t('Contact us to arrange: tradeflow.hk@gmail.com', '聯繫我們安排：tradeflow.hk@gmail.com')}
             </p>

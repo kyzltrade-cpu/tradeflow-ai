@@ -2,6 +2,7 @@
 
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { useAuth } from '@/lib/auth';
+import { authFetch } from '@/lib/auth-fetch';
 
 interface CompanyContextType {
   companyId: string | null;
@@ -26,7 +27,7 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
     if (stored) {
       // Verify the stored company still exists and belongs to this user
       try {
-        const res = await fetch(`/api/admin/company?id=${stored}`);
+        const res = await authFetch(`/api/admin/company?id=${stored}`);
         if (res.ok) {
           const data = await res.json();
           setCompanyId(stored);

@@ -235,7 +235,7 @@ export default function LandingPage() {
                 From inquiry to quote.
               </span>
               <span className="relative inline-block btk-anim-rise" style={{ color: '#000', animationDelay: '210ms' }}>
-                End to end.
+                In hours, not days.
                 <span className="absolute left-0 -bottom-1 h-[3px] w-full rounded-full" style={{ background: '#000', opacity: 0.35, animation: 'btk-trace 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s backwards' }} />
               </span>
             </h1>
@@ -697,7 +697,7 @@ export default function LandingPage() {
             14-day free trial · Card required · 50 AI responses included · Cancel anytime.
           </p>
           <p className="text-xs mt-4 max-w-xl mx-auto" style={{ color: '#555555' }}>
-            Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,288</span> one-time we connect your mailbox, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,504/month —{' '}
+            Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,000</span> one-time we connect your mailbox, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,504/month —{' '}
             <Link href="/pricing" className="font-medium underline underline-offset-2" style={{ color: '#000' }}>see pricing</Link>.
           </p>
           <p className="text-xs mt-3" style={{ color: '#8A8A8A' }}>
@@ -778,7 +778,7 @@ export default function LandingPage() {
               <span className="text-sm font-semibold" style={{ color: '#0A0A0A' }}>Sailwise</span>
             </div>
             <p className="text-sm max-w-[280px]" style={{ color: '#555555' }}>
-              The AI copilot for HK and Shenzhen trading companies — inquiry to quote, end to end.
+              The AI copilot for HK and Shenzhen trading companies — inquiry to signed quote, on autopilot.
             </p>
             <p className="text-xs mt-6" style={{ color: '#9A9A9A' }}>© 2026 Sailwise. All rights reserved.</p>
           </div>

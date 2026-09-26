@@ -37,7 +37,6 @@ const BILLING_PLANS = [
       'Analytics & reporting',
       'Priority support',
     ],
-    comingSoon: true,
   },
   {
     id: 'enterprise',
@@ -49,7 +48,6 @@ const BILLING_PLANS = [
       'Dedicated account manager',
       'Custom integrations',
     ],
-    comingSoon: true,
   },
 ];
 
@@ -577,11 +575,6 @@ function SettingsContent() {
                   background: 'var(--surface)',
                 }}
               >
-                {plan.comingSoon && (
-                  <span className="absolute -top-2.5 right-3 px-2 py-0.5 text-[10px] font-semibold rounded-full" style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
-                    {t('Coming Soon', '即將推出')}
-                  </span>
-                )}
                 {plan.id === 'starter' && (
                   <span className="absolute -top-2.5 right-3 px-2 py-0.5 text-[10px] font-semibold text-white rounded-full" style={{ background: 'var(--accent)' }}>
                     {t('POPULAR', '熱門')}
@@ -607,15 +600,7 @@ function SettingsContent() {
                     </li>
                   ))}
                 </ul>
-                {plan.comingSoon ? (
-                  <button
-                    disabled
-                    className="w-full text-[13px] font-medium py-2.5 rounded-[4px] opacity-50 cursor-not-allowed"
-                    style={{ background: 'var(--bg)', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
-                  >
-                    {t('Coming Soon', '即將推出')}
-                  </button>
-                ) : isActive ? (
+                {isActive ? (
                   <button
                     onClick={handlePortal}
                     disabled={checkoutLoading}
@@ -640,7 +625,7 @@ function SettingsContent() {
         </div>
 
         <p className="text-[12px] text-center mt-4" style={{ color: 'var(--text-muted)' }}>
-          {t('All plans include 14-day free trial. No setup fees. Annual billing saves 20%.', '所有方案包含 14 天免費試用。無設置費。年付可節省 20%。')}
+          {t('All plans include 14-day free trial. Free self-serve setup (optional done-for-you setup +HK$1,000). Annual billing saves 20%.', '所有方案包含 14 天免費試用。自行設定免費（可選 +HK$1,000 專人設定）。年付可節省 20%。')}
         </p>
       </section>
 

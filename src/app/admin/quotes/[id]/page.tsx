@@ -78,6 +78,8 @@ export default function QuoteDetailPage() {
   const params = useParams()
   const quoteId = params.id as string
 
+  const isQuoteId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(quoteId ?? '')
+
   const [quote, setQuote] = useState<Quote | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -102,6 +104,10 @@ export default function QuoteDetailPage() {
   }, [quoteId, companyId])
 
   useEffect(() => {
+    if (quoteId && !isQuoteId) {
+      router.replace('/admin/quotes')
+      return
+    }
     fetchQuote()
   }, [fetchQuote])
 

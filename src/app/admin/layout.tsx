@@ -47,7 +47,7 @@ const ICON_INBOX = 'M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25
 
 /* MVP focus: inbox -> draft -> human approves -> send. These areas are
    intentionally hidden until the quote flow is the centerpiece. */
-const HIDDEN_NAV_HREFS = new Set(['/admin/opportunities', '/admin/suppliers', '/admin/knowledge', '/admin/templates']);
+const HIDDEN_NAV_HREFS = new Set(['/admin/opportunities', '/admin/templates']);
 
 const NAV_GROUPS: NavGroup[] = [
   {

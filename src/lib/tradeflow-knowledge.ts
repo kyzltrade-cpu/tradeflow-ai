@@ -49,9 +49,9 @@ CORE FEATURES:
 14. Free 14-day trial on all plans
 
 PRICING (HKD):
-- Starter: HK$1,880/mo, or HK$1,504/mo billed annually (20% off). 14-day free trial, card required, 50 AI responses included during the trial. No setup fee. Optional one-time done-for-you setup for +HK$1,000 (we connect your email, upload products, configure the AI).
-- Growth: HK$2,480/mo, HK$1,984/mo annually — Coming Soon. Multiple email inbox accounts, multi-user dashboard, analytics & reporting, priority support.
-- Enterprise: HK$4,880/mo, HK$3,904/mo annually — Coming Soon. Automated quote generation, dedicated account manager, custom integrations.
+- Starter: HK$1,880/mo, or HK$1,504/mo billed annually (20% off). 14-day free trial, card required, 50 AI responses included during the trial. Self-serve setup is free; optional one-time done-for-you setup for +HK$1,000 (we connect your email, upload products, configure the AI).
+- Growth: HK$2,480/mo, HK$1,984/mo annually. Multiple email inbox accounts, multi-user dashboard, analytics & reporting, priority support.
+- Enterprise: HK$4,880/mo, HK$3,904/mo annually. Automated quote generation, dedicated account manager, custom integrations.
 - If someone asks about a price or plan feature you don't see here, say "Let me check with the team" — don't guess.
 
 HOW IT WORKS:

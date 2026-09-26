@@ -191,6 +191,7 @@ export default function InboxDetailPage() {
   const id = String(params?.id || '');
 
   const [detail, setDetail] = useState<ConversationWithRelations | null>(null);
+  const [detailError, setDetailError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
@@ -207,13 +208,15 @@ export default function InboxDetailPage() {
     if (companyLoading || !companyId || !id) return;
     try {
       setLoadingDetail(true);
+      setDetailError(null);
       const res = await authFetch(`/api/admin/inbox/${id}`);
       if (!res.ok) throw new Error('Failed to load conversation');
       const data = await res.json();
       setDetail(data);
-      if (data.detected_language) setDetectLang(data.detected_language);
+      if (data?.detected_language) setDetectLang(data.detected_language);
     } catch (err) {
       console.error('[inbox-detail] fetch error:', err);
+      setDetailError(t('Failed to load this conversation', '載入對話失敗'));
       showToast(t('Failed to load this conversation', '載入對話失敗'), 'error');
     } finally {
       setLoadingDetail(false);
@@ -675,7 +678,21 @@ export default function InboxDetailPage() {
               <>
                 <SkeletonBlock /><div className="h-2" /><SkeletonBlock />
               </>
-            ) : !body || body.messages.length === 0 ? (
+            ) : detailError || !body?.messages ? (
+              <div className="flex flex-col items-center justify-center h-full gap-3">
+                <p className="text-[14px]" style={{ color: 'var(--text-muted)' }}>
+                  {detailError || t('Failed to load this conversation', '載入對話失敗')}
+                </p>
+                <button
+                  onClick={fetchDetail}
+                  className="flex items-center gap-1.5 text-[12px] font-medium px-3 py-1.5 rounded-[4px] border"
+                  style={{ borderColor: 'var(--border)', color: 'var(--accent)' }}
+                >
+                  <RefreshCw width="13" height="13" />
+                  {t('Retry', '重試')}
+                </button>
+              </div>
+            ) : body.messages.length === 0 ? (
               <div className="flex items-center justify-center h-full">
                 <p className="text-[14px]" style={{ color: 'var(--text-muted)' }}>
                   {t('No messages yet — customer emails appear here', '暫無訊息——客戶來信會顯示在這裡')}
