@@ -137,7 +137,7 @@ export default function SupportChat() {
           aria-label="Sailwise support chat"
           className="btk-anim-rise fixed flex flex-col rounded-[20px] border z-40 overflow-hidden"
           style={{
-            right: 'max(1.25rem, env(safe-area-inset-right))',
+            left: 'max(1.25rem, env(safe-area-inset-left))',
             bottom: 'calc(max(1.25rem, env(safe-area-inset-bottom)) + 5rem)',
             width: 'min(24rem, calc(100vw - 2.5rem))',
             height: 'min(34rem, calc(100dvh - 9rem))',
@@ -301,7 +301,7 @@ export default function SupportChat() {
         aria-expanded={open}
         className="fixed flex items-center justify-center z-40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
         style={{
-          right: 'max(1.25rem, env(safe-area-inset-right))',
+          left: 'max(1.25rem, env(safe-area-inset-left))',
           bottom: 'max(1.25rem, env(safe-area-inset-bottom))',
           width: 58,
           height: 58,
