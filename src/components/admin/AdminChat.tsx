@@ -152,7 +152,7 @@ export default function AdminChat() {
             aria-label="Business AI chat"
             className="fixed flex flex-col rounded-[16px] border z-40 overflow-hidden btk-anim-rise"
             style={{
-              left: 'max(1.25rem, env(safe-area-inset-left))',
+              right: 'max(1.25rem, env(safe-area-inset-right))',
               bottom: 'calc(max(1.25rem, env(safe-area-inset-bottom)) + 5rem)',
               width: 'min(24rem, calc(100vw - 2.5rem))',
               height: 'min(34rem, calc(100dvh - 9rem))',
@@ -299,7 +299,7 @@ export default function AdminChat() {
         aria-expanded={open}
         className="fixed flex items-center justify-center z-40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
         style={{
-          left: 'max(1.25rem, env(safe-area-inset-left))',
+          right: 'max(1.25rem, env(safe-area-inset-right))',
           bottom: 'max(1.25rem, env(safe-area-inset-bottom))',
           width: 56,
           height: 56,
