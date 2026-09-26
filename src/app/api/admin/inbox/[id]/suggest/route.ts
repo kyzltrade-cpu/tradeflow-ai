@@ -146,7 +146,7 @@ async function extractRequest(
 Return STRICT JSON only, no prose:
 {
   "request_summary": "one-line summary of what the buyer wants",
-  "currency": "USD | HKD | CNY | null if not stated",
+  "currency": "the single ISO 4217 currency code the buyer used in the email (e.g. USD, EUR, CNY, HKD); if none is stated use USD. ALWAYS a single clean code, never a list.",
   "items": [
     {
       "product": "product description as written (e.g. 500ml Double-Wall Vacuum Bottle, 304 stainless)",
