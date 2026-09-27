@@ -40,6 +40,8 @@ interface SuggestedLine {
   quantity?: number;
   unit: string;
   unit_price: number;
+  cost_price?: number;
+  margin_pct?: number;
   currency: string;
   total: number;
   at_cost: boolean;
@@ -248,7 +250,7 @@ function isCustomizationPhrase(item: ExtractItem): boolean {
 function matchProduct(
   item: ExtractItem,
   products: Array<Record<string, unknown>>
-): { product: Record<string, unknown>; score: number } | null {
+): { product: Record<string, unknown>; score: number; strong: boolean } | null {
   const text = `${item.product} ${item.specs || ''}`.toLowerCase();
   const tokens = tokenize(text);
 
@@ -284,7 +286,18 @@ function matchProduct(
 
     if (!best || score > best.score) best = { product: p, score };
   }
-  return best && best.score > 0 ? best : null;
+  if (!best || best.score <= 0) return null;
+
+  // A match is only strong enough to auto-price when it is unambiguous:
+  // the catalog product name appears verbatim in the request, or enough
+  // request tokens are covered. A weak best-guess is surfaced for manual
+  // review instead of being auto-quoted (prevents product mismatches in
+  // auto-drafted quotes).
+  const name = String(best.product.name || '').toLowerCase();
+  const namePhraseHit = name.length >= 6 && text.includes(name);
+  const strong = customization ? best.score >= 2 : best.score >= 2 || namePhraseHit;
+
+  return { product: best.product, score: best.score, strong };
 }
 
 function applyMargin(
@@ -483,8 +496,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     for (const item of extraction.items) {
       const match = matchProduct(item, products);
       const product = match?.product || null;
+      const strongMatch = match?.strong ?? false;
 
       let unitPrice = 0;
+      let costPrice: number | undefined;
+      let marginPct: number | undefined;
       let requiresManual = true;
       const sources: PriceSource[] = [];
 
@@ -501,9 +517,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         const productName = String(product.name || 'Matched product');
         matchedNames.push(productName);
 
-        if (listPrice) {
+        // Only a STRONG match gets auto-priced. A weak best-guess is kept for
+        // display but flagged for manual review — never quoted on the AI's word.
+        if (listPrice && strongMatch) {
           const margin = applyMargin(item, product, config);
           unitPrice = Math.round(listPrice * (1 + margin.marginPct / 100) * 100) / 100;
+          costPrice = listPrice;
+          marginPct = margin.marginPct;
 
           if (margin.matched) {
             requiresManual = false;
@@ -517,6 +537,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
           if (tiersPendingReview) {
             sources.push({ type: 'alert', label: 'Tier pricing', ref: '—', detail: 'customer asked about tiers/volumes — pending your review' });
           }
+        } else if (listPrice && !strongMatch) {
+          sources.push({ type: 'product', label: 'Product price list', ref: productName, detail: `${currency} ${listPrice.toFixed(2)} / ${item.unit || 'pc'} — match needs your review` });
+          sources.push({ type: 'alert', label: 'Weak match', ref: item.product.slice(0, 60), detail: 'verify product before pricing — not auto-quoted' });
         } else {
           sources.push({ type: 'product', label: 'Product price list', ref: productName, detail: 'no list price set — needs your review' });
         }
@@ -537,6 +560,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         quantity,
         unit: item.unit || 'pcs',
         unit_price: unitPrice,
+        cost_price: costPrice,
+        margin_pct: marginPct,
         currency,
         total,
         at_cost: atCost,
