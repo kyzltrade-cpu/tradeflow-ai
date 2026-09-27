@@ -195,14 +195,29 @@ export async function POST(req: NextRequest) {
 
     // Default trading margin for the auto-quote engine. A rule with no
     // category is the fallback used by suggest when no product rule matches,
-    // so a fresh catalog never auto-quotes at 0% margin. User-editable.
-    const { error: pricingError } = await supabaseAdmin
+    // so a fresh catalog never auto-quotes at 0% margin. Only applied when
+    // pricing is unset or empty — configured rules are never overwritten.
+    const DEFAULT_PRICING = { currency: 'USD', fx_rate: 7.82, fx_pair: 'USD → HKD', margin_rules: [{ name: 'Standard trading margin', margin_pct: 30 }] };
+    const { data: existingPricing } = await supabaseAdmin
       .from('company_settings')
-      .update({ pricing: { currency: 'USD', fx_rate: 7.82, fx_pair: 'USD → HKD', margin_rules: [{ name: 'Standard trading margin', margin_pct: 30 }] } })
+      .select('pricing')
       .eq('company_id', company.id)
-      .is('pricing', null);
-    if (pricingError) {
-      console.warn('[company:POST] default pricing seed failed:', pricingError.message);
+      .maybeSingle();
+    const currentPricing = (existingPricing?.pricing ?? null) as Record<string, unknown> | null;
+    const pricingEmpty =
+      currentPricing == null ||
+      (typeof currentPricing === 'object' &&
+        (Array.isArray(currentPricing) ? currentPricing.length === 0 : Object.keys(currentPricing).length === 0)) ||
+      !Array.isArray(currentPricing?.margin_rules) ||
+      (currentPricing?.margin_rules as unknown[]).length === 0;
+    if (pricingEmpty) {
+      const { error: pricingError } = await supabaseAdmin
+        .from('company_settings')
+        .update({ pricing: DEFAULT_PRICING })
+        .eq('company_id', company.id);
+      if (pricingError) {
+        console.warn('[company:POST] default pricing seed failed:', pricingError.message);
+      }
     }
 
     // Upsert user row then link to company
