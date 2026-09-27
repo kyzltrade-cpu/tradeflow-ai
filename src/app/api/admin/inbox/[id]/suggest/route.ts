@@ -344,6 +344,14 @@ function applyMargin(
     }
   }
 
+  // 3. A rule without a category is the trading default — applies to any
+  //    product that no specific rule claims, so a configured catalog never
+  //    silently quotes at cost.
+  const defaultRule = config.margin_rules.find((r) => !r.product_category);
+  if (defaultRule) {
+    return { marginPct: n(defaultRule.margin_pct), ruleName: defaultRule.name, matched: true };
+  }
+
   return { marginPct: 0, ruleName: 'Needs review — no margin rule', matched: false };
 }
 

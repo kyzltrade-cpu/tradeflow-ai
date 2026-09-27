@@ -193,6 +193,18 @@ export async function POST(req: NextRequest) {
       console.warn('[company:POST] company_settings seed failed:', settingsError.message);
     }
 
+    // Default trading margin for the auto-quote engine. A rule with no
+    // category is the fallback used by suggest when no product rule matches,
+    // so a fresh catalog never auto-quotes at 0% margin. User-editable.
+    const { error: pricingError } = await supabaseAdmin
+      .from('company_settings')
+      .update({ pricing: { currency: 'USD', fx_rate: 7.82, fx_pair: 'USD → HKD', margin_rules: [{ name: 'Standard trading margin', margin_pct: 30 }] } })
+      .eq('company_id', company.id)
+      .is('pricing', null);
+    if (pricingError) {
+      console.warn('[company:POST] default pricing seed failed:', pricingError.message);
+    }
+
     // Upsert user row then link to company
     if (user_id) {
       await supabaseAdmin
