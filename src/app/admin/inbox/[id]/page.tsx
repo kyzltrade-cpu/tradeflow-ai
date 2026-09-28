@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
@@ -19,6 +19,12 @@ interface Message {
   role: 'user' | 'customer' | 'assistant' | 'human';
   content: string;
   created_at: string;
+  kind?: string | null;
+  status?: string | null;
+  subject?: string | null;
+  sender_email?: string | null;
+  recipient_email?: string | null;
+  attachments?: Array<Record<string, unknown>> | null;
 }
 
 interface ConversationWithRelations {
@@ -28,6 +34,10 @@ interface ConversationWithRelations {
   contact_phone: string | null;
   channel: string;
   status: string;
+  subject: string | null;
+  folder: string;
+  read_at: string | null;
+  flagged: boolean;
   detected_language: string | null;
   handoff_summary: string | null;
   external_search_enabled: boolean;
@@ -214,6 +224,11 @@ export default function InboxDetailPage() {
       const data = await res.json();
       setDetail(data);
       if (data?.detected_language) setDetectLang(data.detected_language);
+      authFetch(`/api/admin/inbox/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ read: true }),
+      }).catch(() => null);
     } catch (err) {
       console.error('[inbox-detail] fetch error:', err);
       setDetailError(t('Failed to load this conversation', '載入對話失敗'));
@@ -359,23 +374,54 @@ export default function InboxDetailPage() {
     }
   };
 
+  const toggleFlag = async () => {
+    if (!detail) return;
+    const next = !detail.flagged;
+    const prev = detail.flagged;
+    setDetail((d) => (d ? { ...d, flagged: next } : d));
+    const ok = await patchConversation({ flagged: next });
+    if (!ok) {
+      setDetail((d) => (d ? { ...d, flagged: prev } : d));
+      showToast(t('Failed to update flag', '更新標記失敗'), 'error');
+    }
+  };
+
+  const moveFolder = async (folder: 'archive' | 'trash' | 'inbox') => {
+    if (!detail) return;
+    const ok = await patchConversation({ folder });
+    if (!ok) {
+      showToast(t('Failed to move conversation', '移動對話失敗'), 'error');
+      return;
+    }
+    router.push('/admin');
+  };
+
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || !detail || detail.status !== 'human') return;
+    if (!inputValue.trim() || !detail) return;
     const content = inputValue.trim();
+    const subject = detail.subject || undefined;
     setSending(true);
     try {
-      const res = await authFetch(`/api/admin/conversations/${id}/messages`, {
+      const res = await authFetch(`/api/admin/inbox/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ role: 'human', content }),
+        body: JSON.stringify({ content, subject, kind: 'reply', status: 'human' }),
       });
-      if (!res.ok) throw new Error('Send failed');
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || 'Send failed');
+      }
       const data = await res.json();
-      setDetail((prev) => prev ? { ...prev, messages: [...prev.messages, data.message] } : prev);
+      setDetail((prev) => prev ? { ...prev, messages: [...prev.messages, data.message], status: 'human' } : prev);
       setInputValue('');
       setDraft('');
-    } catch {
-      showToast(t('Failed to send message', '發送訊息失敗'), 'error');
+      if (data.email_delivered === false) {
+        showToast(t('Stored locally — outbound email not configured (add RESEND_API_KEY)', '已儲存——尚未設定外寄郵件（需加入 RESEND_API_KEY）'), 'error');
+      } else {
+        showToast(t('Message sent', '訊息已寄出'), 'success');
+      }
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('Failed to send message', '發送訊息失敗'), 'error');
     } finally {
       setSending(false);
     }
@@ -608,7 +654,59 @@ export default function InboxDetailPage() {
             <p className="truncate text-[11px] md:text-[12px]" style={{ color: 'var(--text-muted)' }}>
               {body?.contact_email || body?.contact_phone || ''}
             </p>
+            {body?.subject && (
+              <p className="truncate text-[12px] md:text-[13px] font-medium" style={{ color: 'var(--text)' }}>
+                {body.subject}
+              </p>
+            )}
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          {body && (
+            <>
+              <button
+                onClick={toggleFlag}
+                className="flex items-center gap-1.5 text-[11px] md:text-[12px] font-semibold px-2.5 md:px-3 py-1.5 rounded-lg border"
+                style={{
+                  borderColor: 'var(--border)',
+                  color: body.flagged ? 'var(--error)' : 'var(--text-muted)',
+                }}
+                title={t('Star conversation', '為對話加星')}
+              >
+                <Flag width="13" height="13" />
+                {body.flagged ? t('Starred', '已加星') : t('Star', '加星')}
+              </button>
+              {body.folder !== 'archive' && (
+                <button
+                  onClick={() => moveFolder('archive')}
+                  className="flex items-center gap-1.5 text-[11px] md:text-[12px] font-semibold px-2.5 md:px-3 py-1.5 rounded-lg border"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                >
+                  <Archive width="13" height="13" />
+                  {t('Archive', '封存')}
+                </button>
+              )}
+              {body.folder === 'trash' ? (
+                <button
+                  onClick={() => moveFolder('inbox')}
+                  className="flex items-center gap-1.5 text-[11px] md:text-[12px] font-semibold px-2.5 md:px-3 py-1.5 rounded-lg border"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                >
+                  <Inbox width="13" height="13" />
+                  {t('Restore', '還原')}
+                </button>
+              ) : (
+                <button
+                  onClick={() => moveFolder('trash')}
+                  className="flex items-center gap-1.5 text-[11px] md:text-[12px] font-semibold px-2.5 md:px-3 py-1.5 rounded-lg border"
+                  style={{ borderColor: 'var(--border)', color: 'var(--error)' }}
+                >
+                  <Trash2 width="13" height="13" />
+                  <span className="hidden md:inline">{t('Trash', '垃圾桶')}</span>
+                </button>
+              )}
+            </>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {body && (
@@ -722,10 +820,24 @@ export default function InboxDetailPage() {
                       }`,
                     }}
                   >
+                    {msg.subject && msg.role === 'human' && (
+                      <p className="text-[10px] md:text-[11px] font-semibold mb-1 truncate" style={{ color: '#038153' }}>{msg.subject}</p>
+                    )}
                     {msg.role === 'human' && <p className="text-[10px] md:text-[11px] font-medium mb-1" style={{ color: '#038153' }}>{t('You (human)', '您（人手）')}</p>}
                     {msg.role === 'assistant' && <p className="text-[10px] md:text-[11px] font-medium mb-1" style={{ color: 'var(--accent)' }}>{t('AI', 'AI')}</p>}
                     <p className="whitespace-pre-wrap">{msg.content}</p>
-                    <p className="text-[10px] md:text-[11px] mt-2" style={{ color: 'var(--text-muted)' }}>{formatMessageTime(msg.created_at)}</p>
+                    <p className="text-[10px] md:text-[11px] mt-2 flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+                      {formatMessageTime(msg.created_at)}
+                      {msg.kind === 'sent' ? (
+                        msg.status === 'failed'
+                          ? <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#FBE9EA', color: 'var(--error)' }}>
+                              {t('Not delivered', '未能送達')}
+                            </span>
+                          : <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#E8F5F1', color: '#038153' }}>
+                              {t('Delivered', '已送達')}
+                            </span>
+                      ) : null}
+                    </p>
                   </div>
                 </div>
               ))
@@ -735,17 +847,17 @@ export default function InboxDetailPage() {
 
           {/* Composer */}
           <div className="px-3 md:px-5 py-3 md:py-4 border-t flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
-            {body && displayStatus === 'human' ? (
+            {body ? (
               <div>
                 <div className="flex gap-2 mb-2">
                   <textarea
                     value={inputValue}
                     onChange={(e) => { setInputValue(e.target.value); setDraft(e.target.value); }}
                     onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
-                    placeholder={t('Type your reply...', '輸入回覆...')}
+                    placeholder={t('Type your reply…', '輸入回覆...')}
                     rows={2}
                     className="flex-1 border rounded-[4px] px-3 py-2.5 text-[16px] focus:outline-none resize-none"
-                    style={{ borderColor: 'var(--border)' }}
+                    style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
                     disabled={sending}
                   />
                   <button
@@ -754,34 +866,28 @@ export default function InboxDetailPage() {
                     className="text-[12px] md:text-[13px] font-medium px-4 md:px-5 rounded-[4px] text-white self-end disabled:opacity-50"
                     style={{ background: '#038153' }}
                   >
-                    {sending ? t('Sending...', '發送中...') : t('Send', '發送')}
+                    {sending ? t('Sending...', '發送中...') : t('Send', '傳送')}
                   </button>
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] md:text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                    {t("You're replying as a human.", '您正在以人手身份回覆。')}
+                    {displayStatus === 'human'
+                      ? t("You're replying as a human.", '您正在以人手身份回覆。')
+                      : t('Replying takes over from the AI.', '回覆會把對話從 AI 手中接管。')}
                   </p>
                   <button
-                    onClick={() => setStatus('active')}
+                    onClick={() => setStatus(displayStatus === 'human' ? 'active' : 'human')}
                     className="text-[11px] md:text-[12px] font-medium px-3 py-1.5 rounded-[4px] border shrink-0"
-                    style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                    style={{ borderColor: 'var(--border)', color: displayStatus === 'human' ? 'var(--text)' : '#038153' }}
                   >
-                    {t('Release to AI', '交還 AI')}
+                    {displayStatus === 'human' ? t('Release to AI', '交還 AI') : t('Take over', '接管')}
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 py-2.5 px-3 rounded-[4px]" style={{ background: 'var(--bg)' }}>
-                <span className="text-[12px] md:text-[13px]" style={{ color: 'var(--text-muted)' }}>
-                  {displayStatus === 'human'
-                    ? ''
-                    : displayStatus === 'ai_paused'
-                      ? t('AI paused — new messages will not get AI replies', 'AI 已暫停——新訊息不會收到 AI 回覆')
-                      : displayStatus === 'bookmarked'
-                        ? t('Bookmarked — take over to reply', '對話已加書籤——接管後可回覆')
-                        : t('AI drafts replies for your review', 'AI 起草回覆供你審閱')}
-                </span>
-              </div>
+              <p className="text-[12px] md:text-[13px]" style={{ color: 'var(--text-muted)' }}>
+                {t('Load this conversation to reply', '載入此對話即可回覆')}
+              </p>
             )}
           </div>
         </div>

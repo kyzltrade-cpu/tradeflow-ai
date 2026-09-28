@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
+import { sendEmail } from '@/lib/email';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -26,7 +27,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const { data: messages } = await supabaseAdmin
       .from('messages')
-      .select('id, role, content, tokens_used, created_at')
+      .select('id, role, content, tokens_used, created_at, kind, status, subject, sender_email, recipient_email, attachments')
       .eq('conversation_id', id)
       .order('created_at', { ascending: true });
 
@@ -140,6 +141,20 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       updates.status = body.status;
     }
     if (body.contact_name !== undefined) updates.contact_name = body.contact_name || null;
+    if (body.subject !== undefined) updates.subject = body.subject || null;
+    if (typeof body.flagged === 'boolean') updates.flagged = body.flagged;
+    if (body.folder !== undefined) {
+      const folders = ['inbox', 'archive', 'trash'];
+      if (!folders.includes(body.folder)) {
+        return NextResponse.json({ error: 'Invalid folder' }, { status: 400 });
+      }
+      updates.folder = body.folder;
+    }
+    if (body.read === true) {
+      updates.read_at = new Date().toISOString();
+    } else if (body.read === false) {
+      updates.read_at = null;
+    }
 
     const { data, error } = await supabaseAdmin
       .from('conversations')
@@ -157,6 +172,106 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   } catch (err) {
     if (err instanceof Response) return err;
     console.error('[inbox:PATCH.id] Unexpected error:', err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+
+// POST /api/admin/inbox/[id] — send an outbound message on a thread (reply/forward).
+// Attempts delivery via email; on failure stores the outgoing message with
+// status 'failed' and returns a structured email result so the UI can warn.
+export async function POST(req: NextRequest, { params }: RouteParams) {
+  try {
+    const auth = await requireAuth(req);
+    if (!auth.companyId) {
+      return NextResponse.json({ error: 'No company associated with this account' }, { status: 400 });
+    }
+    const { id } = await params;
+
+    const { data: conversation } = await supabaseAdmin
+      .from('conversations')
+      .select('*')
+      .eq('id', id)
+      .eq('company_id', auth.companyId)
+      .single();
+
+    if (!conversation) {
+      return NextResponse.json({ error: 'Conversation not found' }, { status: 404 });
+    }
+
+    const body = await req.json();
+    const content = typeof body.content === 'string' ? body.content.trim() : '';
+    const subject = typeof body.subject === 'string' ? body.subject.trim() : conversation.subject || null;
+    const recipientEmail = conversation.contact_email || body.recipient_email || null;
+    const kind = body.kind === 'forward' ? 'forward' : 'reply';
+
+    if (!content) {
+      return NextResponse.json({ error: 'content is required' }, { status: 400 });
+    }
+    if (!recipientEmail) {
+      return NextResponse.json(
+        { error: 'No contact email on this conversation; add one to send outbound' },
+        { status: 400 }
+      );
+    }
+
+    const now = new Date().toISOString();
+
+    let emailResult: { success: boolean; [key: string]: unknown } = { success: false, code: 'SKIPPED' };
+    if (kind === 'reply') {
+      const attempt = await sendEmail({
+        to: recipientEmail,
+        subject: subject || 'Re: your inquiry',
+        html: content.replace(/\n/g, '<br/>'),
+        companyId: auth.companyId,
+      }).catch((err) => ({
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      }));
+      emailResult = attempt as { success: boolean; [key: string]: unknown };
+    }
+
+    const emailSent = emailResult.success === true;
+    const { data: message, error: msgError } = await supabaseAdmin
+      .from('messages')
+      .insert({
+        conversation_id: id,
+        role: 'human',
+        kind,
+        status: emailSent ? 'sent' : 'failed',
+        subject: subject || null,
+        content,
+        sender_email: null,
+        recipient_email: recipientEmail,
+        created_at: now,
+      })
+      .select('*')
+      .single();
+
+    if (msgError) {
+      console.error('[inbox:POST.id] message insert error:', msgError.message);
+    }
+
+    await supabaseAdmin
+      .from('conversations')
+      .update({
+        updated_at: now,
+        folder: 'inbox',
+        ...(body.status ? { status: body.status } : {}),
+      })
+      .eq('id', id);
+
+    return NextResponse.json({
+      message: message || null,
+      email: emailResult,
+      email_delivered: emailSent,
+      warning: !emailSent ? 'Message stored but could not be delivered by email.' : null,
+    });
+  } catch (err) {
+    if (err instanceof Response) return err;
+    console.error('[inbox:POST.id] Unexpected error:', err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Internal server error' },
       { status: 500 }
