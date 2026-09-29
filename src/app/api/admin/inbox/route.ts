@@ -13,13 +13,35 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No company associated with this account' }, { status: 400 });
     }
     const body = await req.json();
-    const { contact_name, contact_email, subject, body: text } = body || {};
-    if (!contact_email || !subject || !text?.trim()) {
+    const {
+      contact_name,
+      contact_email,
+      subject,
+      body: text,
+      recipients,
+      cc,
+      bcc,
+    } = body || {};
+
+    const cleanList = (v: unknown): string[] => {
+      const raw = Array.isArray(v) ? v : typeof v === 'string' ? v.split(',') : [];
+      return raw.map((s) => String(s).trim()).filter(Boolean);
+    };
+
+    const to = cleanList(recipients).length ? cleanList(recipients) : cleanList(contact_email);
+    const ccList = cleanList(cc);
+    const bccList = cleanList(bcc);
+
+    if (to.length === 0 || !subject || !text?.trim()) {
       return NextResponse.json(
         { error: 'contact_email, subject, and body are required' },
         { status: 400 }
       );
     }
+
+    // The thread is keyed on the primary recipient so a reply later lands in
+    // the same conversation.
+    const primary = to[0];
 
     const now = new Date().toISOString();
     const { data: conversation, error: convError } = await supabaseAdmin
@@ -27,8 +49,8 @@ export async function POST(req: NextRequest) {
       .insert({
         company_id: auth.companyId,
         channel: 'email',
-        contact_name: contact_name || contact_email,
-        contact_email,
+        contact_name: contact_name || primary,
+        contact_email: primary,
         subject,
         status: 'active',
         folder: 'inbox',
@@ -64,7 +86,7 @@ export async function POST(req: NextRequest) {
         subject,
         content: text.trim(),
         sender_email: null,
-        recipient_email: contact_email,
+        recipient_email: to.join(', '),
         created_at: now,
       })
       .select('*')
@@ -75,7 +97,9 @@ export async function POST(req: NextRequest) {
     }
 
     const emailResult = await sendEmail({
-      to: contact_email,
+      to,
+      cc: ccList.length ? ccList : undefined,
+      bcc: bccList.length ? bccList : undefined,
       subject,
       html: text.trim().replace(/\n/g, '<br/>'),
       companyId: auth.companyId,

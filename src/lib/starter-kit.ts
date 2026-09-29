@@ -457,6 +457,7 @@ const STARTER_GOAL = {
 interface ConversationSeed {
   contact_name: string;
   contact_email: string;
+  subject: string;
   detected_language: string;
   product_summary: string;
   estimated_value: number;
@@ -471,6 +472,7 @@ const CONVERSATIONS: ConversationSeed[] = [
   {
     contact_name: 'Sample — Maria Chen',
     contact_email: 'maria.chen@ocean-and-co.example.com',
+    subject: 'Q4 event gifts — 5,000 vacuum bottles + 3,000 canvas totes (FOB quote)',
     detected_language: 'en',
     product_summary: 'Custom printed vacuum bottles and canvas totes for a Q4 event',
     estimated_value: 16850,
@@ -488,6 +490,7 @@ const CONVERSATIONS: ConversationSeed[] = [
   {
     contact_name: 'Sample — Daniel Weber',
     contact_email: 'daniel.weber@rhein-retail.example.com',
+    subject: 'Spring range — 3,000 embroidered caps + 2,000 five-fold umbrellas',
     detected_language: 'en',
     product_summary: 'Embroidered cotton caps and 5-fold umbrellas for a German retail chain',
     estimated_value: 11240,
@@ -670,13 +673,15 @@ async function seedConversations(
 ): Promise<{ conversations: number; messages: number }> {
   const { data: existing } = await supabaseAdmin
     .from('conversations')
-    .select('id, contact_email')
+    .select('id, contact_email, subject, folder')
     .eq('company_id', companyId);
   const idByEmail = new Map(
-    ((existing ?? []) as Array<{ id: string; contact_email: string | null }>).map((c) => [
-      c.contact_email,
-      c.id,
-    ])
+    ((existing ?? []) as Array<{
+      id: string;
+      contact_email: string | null;
+      subject: string | null;
+      folder: string | null;
+    }>).map((c) => [c.contact_email, c])
   );
 
   let conversations = 0;
@@ -687,6 +692,7 @@ async function seedConversations(
       conversation_id: conversationId,
       role: m.role,
       content: m.text,
+      subject: seed.subject,
       created_at: isoOffset(
         new Date(lastAt).getTime() - (seed.thread.length - 1 - i) * 4 * 60 * 1000
       ),
@@ -694,19 +700,30 @@ async function seedConversations(
 
   for (const seed of CONVERSATIONS) {
     const lastAt = isoOffset(Date.now() - seed.hours_ago * 60 * 60 * 1000);
-    const existingId = idByEmail.get(seed.contact_email);
+    const existingRow = idByEmail.get(seed.contact_email);
 
-    if (existingId) {
+    if (existingRow) {
+      // A conversation seeded by an older run has no subject, so it renders
+      // in the mailbox as a blank line. Patch the mailbox columns the inbox
+      // list depends on before checking the thread.
+      await supabaseAdmin
+        .from('conversations')
+        .update({
+          subject: existingRow.subject ?? seed.subject,
+          folder: existingRow.folder ?? 'inbox',
+        })
+        .eq('id', existingRow.id);
+
       // An earlier run may have inserted the conversation but failed on its
       // thread, which would leave a permanently empty conversation in the
       // inbox. Repair that case instead of skipping.
       const { count } = await supabaseAdmin
         .from('messages')
         .select('id', { count: 'exact', head: true })
-        .eq('conversation_id', existingId);
+        .eq('conversation_id', existingRow.id);
       if (count) continue;
 
-      const repairRows = buildThread(existingId, seed, lastAt);
+      const repairRows = buildThread(existingRow.id, seed, lastAt);
       const { error: repairErr } = await supabaseAdmin.from('messages').insert(repairRows);
       if (repairErr) {
         throw new Error(
@@ -726,6 +743,10 @@ async function seedConversations(
         contact_name: seed.contact_name,
         contact_email: seed.contact_email,
         contact_phone: null,
+        subject: seed.subject,
+        folder: 'inbox',
+        read_at: null,
+        flagged: false,
         status: seed.status,
         detected_language: seed.detected_language,
         product_summary: seed.product_summary,

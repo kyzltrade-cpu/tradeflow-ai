@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Mail, Search, Clock, RefreshCw, Star, Plus, Archive, Trash2, Inbox,
-  Inbox as InboxIcon, Check, Send,
+  Inbox as InboxIcon, Check, Send, Sparkles, ChevronDown, ChevronUp, X,
 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
@@ -94,6 +94,7 @@ export default function AdminInboxPage() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showCompose, setShowCompose] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const folderParam = searchParams.get('folder');
@@ -185,6 +186,30 @@ export default function AdminInboxPage() {
     }
   }, [fetchInbox, showToast]);
 
+  const loadDemoData = async () => {
+    setSeeding(true);
+    try {
+      const res = await authFetch('/api/admin/demo-data', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to load demo data');
+      if (data.skippedReason === 'protected-demo-company') {
+        showToast(t('This account already has its own sample data.', '此帳戶已有示範資料。'), 'error');
+      } else {
+        const n = (data.conversations || 0) + (data.messages || 0);
+        showToast(
+          t('Demo data loaded', '示範資料已載入'),
+          'success'
+        );
+        console.log('[demo-data] seeded', JSON.stringify(data), 'threadRows', n);
+      }
+      await fetchInbox();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to load demo data', 'error');
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const toggleStar = async (row: InboxRow) => {
     try {
       const res = await authFetch(`/api/admin/inbox/${row.id}`, {
@@ -254,29 +279,37 @@ export default function AdminInboxPage() {
           {t('Compose', '撰寫')}
         </button>
 
-        <div className="mx-1 hidden md:flex items-center gap-1 overflow-x-auto py-0.5 ml-4">
-          {folderTabs.map((f) => (
-            <button
-              key={f.key}
-              onClick={() => selectNav(f.key, view)}
-              className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors"
-              style={{
-                background: folder === f.key ? 'var(--accent)' : 'transparent',
-                color: folder === f.key ? 'white' : 'var(--text-muted)',
-              }}
-            >
-              <f.icon width="12" height="12" />
-              {t(f.en, f.zh)}
-              {f.n !== undefined && f.n > 0 && (
-                <span className="tabular-nums">{f.n > 99 ? '99+' : f.n}</span>
-              )}
-            </button>
-          ))}
+        <div
+          className="ml-3 flex items-center gap-0.5 rounded-[10px] p-0.5 overflow-x-auto"
+          style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+        >
+          {folderTabs.map((f) => {
+            const active = folder === f.key;
+            return (
+              <button
+                key={f.key}
+                onClick={() => selectNav(f.key, view)}
+                className="flex items-center gap-1.5 whitespace-nowrap rounded-[8px] px-2.5 py-1 text-[12.5px] transition-colors"
+                style={{
+                  background: active ? 'var(--surface)' : 'transparent',
+                  color: active ? 'var(--text)' : 'var(--text-muted)',
+                  fontWeight: active ? 600 : 500,
+                  boxShadow: active ? '0 1px 2px rgba(0,0,0,0.07)' : 'none',
+                }}
+              >
+                <f.icon width="13" height="13" strokeWidth="1.8" />
+                {t(f.en, f.zh)}
+                {f.n !== undefined && f.n > 0 && (
+                  <span className="tabular-nums text-[11px]">{f.n > 99 ? '99+' : f.n}</span>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         <div className="ml-auto flex items-center gap-1.5">
           {counts.unread > 0 && folder === 'inbox' && (
-            <span className="hidden md:inline text-[11px] font-medium tabular-nums" style={{ color: 'var(--text-muted)' }}>
+            <span className="hidden md:inline text-[11px] font-medium tabular-nums whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
               {t('{{count}} unread', '{{count}} 封未讀').replace('{{count}}', String(counts.unread))}
             </span>
           )}
@@ -288,7 +321,7 @@ export default function AdminInboxPage() {
           >
             <RefreshCw width="15" height="15" />
           </button>
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2" width="15" height="15" style={{ color: 'var(--text-muted)' }} />
             <input
               ref={searchInputRef}
@@ -342,27 +375,33 @@ export default function AdminInboxPage() {
         </div>
       )}
 
-      {/* View tabs (desktop, second row) */}
+      {/* View tabs (second row) */}
       <div
-        className="hidden md:flex items-center gap-1 border-b px-5 py-1.5 flex-shrink-0 overflow-x-auto"
-        style={{ borderColor: 'var(--border)', background: '#FBFBFB' }}
+        className="hidden md:flex items-center gap-1 border-b px-5 flex-shrink-0 overflow-x-auto"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
       >
-        {viewTabs.map((f) => (
-          <button
-            key={f.key}
-            onClick={() => selectNav(folder, f.key)}
-            className="flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold transition-colors"
-            style={{
-              background: view === f.key ? 'var(--accent)' : 'transparent',
-              color: view === f.key ? 'white' : 'var(--text-muted)',
-            }}
-          >
-            {t(f.en, f.zh)}
-            {f.n !== undefined && f.n > 0 && (
-              <span className="tabular-nums">{f.n > 99 ? '99+' : f.n}</span>
-            )}
-          </button>
-        ))}
+        {viewTabs.map((f) => {
+          const active = view === f.key;
+          return (
+            <button
+              key={f.key}
+              onClick={() => selectNav(folder, f.key)}
+              className="relative whitespace-nowrap px-2.5 py-2 text-[12.5px] transition-colors"
+              style={{ color: active ? 'var(--text)' : 'var(--text-muted)', fontWeight: active ? 600 : 500 }}
+            >
+              {t(f.en, f.zh)}
+              {f.n !== undefined && f.n > 0 && (
+                <span className="ml-1 tabular-nums text-[11px]">{f.n > 99 ? '99+' : f.n}</span>
+              )}
+              {active && (
+                <span
+                  className="absolute left-2 right-2 -bottom-px h-[2px] rounded-full"
+                  style={{ background: 'var(--accent)' }}
+                />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Column headers */}
@@ -394,9 +433,24 @@ export default function AdminInboxPage() {
             <p className="text-[14px] font-medium mb-1">
               {error || t('Nothing here', '這裡沒有內容')}
             </p>
-            <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-              {t('Incoming mail will show here', '來信會顯示在這裡')}
+            <p className="text-[12px] mb-4" style={{ color: 'var(--text-muted)' }}>
+              {error
+                ? t('Check your connection and try again.', '請檢查連線後再試。')
+                : folder === 'inbox' && !qParam && counts.total === 0
+                  ? t('Load sample conversations, products and suppliers to explore the workspace.', '載入示範對話、產品與供應商，先看看工作區。')
+                  : t('Incoming mail will show here', '來信會顯示在這裡')}
             </p>
+            {!error && folder === 'inbox' && !qParam && counts.total === 0 && (
+              <button
+                onClick={loadDemoData}
+                disabled={seeding}
+                className="inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                style={{ background: 'var(--accent)' }}
+              >
+                <Sparkles width="14" height="14" />
+                {seeding ? t('Loading…', '載入中…') : t('Load demo data', '載入示範資料')}
+              </button>
+            )}
           </div>
         ) : (
           visibleRows().map((r) => {
@@ -521,13 +575,21 @@ export default function AdminInboxPage() {
 function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: () => void }) {
   const { t } = useLang();
   const { showToast } = useToast();
-  const [email, setEmail] = useState('');
+  const [minimized, setMinimized] = useState(false);
+  const [showCc, setShowCc] = useState(false);
+  const [to, setTo] = useState('');
+  const [cc, setCc] = useState('');
+  const [bcc, setBcc] = useState('');
   const [subject, setSubject] = useState('');
   const [body, setBody] = useState('');
   const [sending, setSending] = useState(false);
+  const toRef = useRef<HTMLInputElement>(null);
+
+  const split = (s: string) => s.split(/[,;]/).map((x) => x.trim()).filter(Boolean);
 
   const send = async () => {
-    if (!email.trim() || !subject.trim() || !body.trim()) {
+    const toList = split(to);
+    if (toList.length === 0 || !subject.trim() || !body.trim()) {
       showToast(t('Recipient, subject, and message are required', '請填寫收件人、主旨和內容'), 'error');
       return;
     }
@@ -535,7 +597,14 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: () => 
     try {
       const res = await authFetch('/api/admin/inbox', {
         method: 'POST',
-        body: JSON.stringify({ contact_email: email.trim(), subject: subject.trim(), body: body.trim(), contact_name: email.trim() }),
+        body: JSON.stringify({
+          recipients: toList,
+          cc: split(cc),
+          bcc: split(bcc),
+          contact_name: toList[0],
+          subject: subject.trim(),
+          body: body.trim(),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to send');
@@ -552,48 +621,175 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: () => 
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
-      <div
-        className="w-full max-w-lg rounded-2xl border shadow-xl mx-4"
-        style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: 'var(--border)' }}>
-          <h3 className="text-[15px] font-semibold" style={{ color: 'var(--text)' }}>
-            {t('New message', '新訊息')}
-          </h3>
-          <button onClick={onClose} className="text-[20px] leading-none" style={{ color: 'var(--text-muted)' }}>×</button>
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+        return;
+      }
+      if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        if (!sending) send();
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  useEffect(() => {
+    if (!minimized) toRef.current?.focus();
+  }, [minimized]);
+
+  const fieldStyle = {
+    borderColor: 'var(--border)',
+    background: 'transparent',
+    color: 'var(--text)',
+  } as const;
+
+  const panelStyle = {
+    borderColor: 'var(--border)',
+    background: 'var(--surface)',
+    color: 'var(--text)',
+  } as const;
+
+  if (minimized) {
+    return (
+      <div className="fixed bottom-0 right-0 z-50 w-full sm:w-[580px]">
+        <div
+          className="flex items-center gap-2 rounded-t-xl border border-b-0 px-4 py-2.5 shadow-lg"
+          style={panelStyle}
+        >
+          <span
+            className="flex-1 text-[13px] font-semibold truncate cursor-pointer"
+            onClick={() => setMinimized(false)}
+          >
+            {subject.trim() || to.trim() || t('New message', '新訊息')}
+          </span>
+          <button
+            onClick={() => setMinimized(false)}
+            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-black/[0.05]"
+            title={t('Expand', '展開')}
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <ChevronUp width="15" height="15" />
+          </button>
+          <button
+            onClick={onClose}
+            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-black/[0.05]"
+            title={t('Discard', '丟棄')}
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <X width="15" height="15" />
+          </button>
         </div>
-        <div className="px-5 py-4 space-y-3">
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={t('Recipient email', '收件人電子郵件')}
-            type="email"
-            className="w-full border rounded-[10px] px-3 py-2 text-[13px] focus:outline-none"
-            style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
-          />
-          <input
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            placeholder={t('Subject', '主旨')}
-            className="w-full border rounded-[10px] px-3 py-2 text-[13px] focus:outline-none"
-            style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
-          />
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed bottom-0 right-0 z-50 w-full sm:w-[580px]">
+      <div
+        className="flex flex-col h-[70vh] max-h-[640px] rounded-t-2xl border border-b-0 shadow-2xl overflow-hidden"
+        style={panelStyle}
+      >
+        <div
+          className="flex items-center gap-2 px-4 py-2.5 border-b flex-shrink-0"
+          style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+        >
+          <button
+            onClick={() => setMinimized(true)}
+            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-black/[0.05]"
+            title={t('Minimise', '縮到最小')}
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <ChevronDown width="15" height="15" />
+          </button>
+          <span className="flex-1 text-[13px] font-semibold" style={{ color: 'var(--text)' }}>
+            {t('New message', '新訊息')}
+          </span>
+          <button
+            onClick={onClose}
+            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-black/[0.05]"
+            title={t('Discard', '丟棄')}
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <X width="15" height="15" />
+          </button>
+        </div>
+
+        <div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
+          <div className="flex items-center gap-3 px-4 py-2 border-b" style={fieldStyle}>
+            <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+              {t('To', '收件人')}
+            </span>
+            <input
+              ref={toRef}
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              placeholder={t('name@company.com, second@company.com', '名稱@公司.com，第二位@公司.com')}
+              className="flex-1 text-[13px] focus:outline-none min-w-0"
+              style={fieldStyle}
+            />
+          </div>
+
+          {showCc ? (
+            <>
+              <div className="flex items-center gap-3 px-4 py-2 border-b" style={fieldStyle}>
+                <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>Cc</span>
+                <input
+                  value={cc}
+                  onChange={(e) => setCc(e.target.value)}
+                  className="flex-1 text-[13px] focus:outline-none min-w-0"
+                  style={fieldStyle}
+                />
+              </div>
+              <div className="flex items-center gap-3 px-4 py-2 border-b" style={fieldStyle}>
+                <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>Bcc</span>
+                <input
+                  value={bcc}
+                  onChange={(e) => setBcc(e.target.value)}
+                  className="flex-1 text-[13px] focus:outline-none min-w-0"
+                  style={fieldStyle}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center px-4 py-1 border-b" style={fieldStyle}>
+              <button
+                onClick={() => setShowCc(true)}
+                className="text-[12px] hover:underline"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                Cc / Bcc
+              </button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 px-4 py-2 border-b" style={fieldStyle}>
+            <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+              {t('Subject', '主旨')}
+            </span>
+            <input
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="flex-1 text-[13px] focus:outline-none min-w-0"
+              style={fieldStyle}
+            />
+          </div>
+
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder={t('Message', '內容')}
-            rows={6}
-            className="w-full border rounded-[10px] px-3 py-2 text-[13px] focus:outline-none resize-none"
-            style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text)' }}
+            placeholder={t('Write your message…', '輸入訊息內容…')}
+            className="flex-1 min-h-[180px] px-4 py-3 text-[13.5px] leading-[1.65] focus:outline-none resize-none"
+            style={fieldStyle}
           />
         </div>
-        <div className="flex items-center justify-end gap-2 px-5 py-3 border-t" style={{ borderColor: 'var(--border)' }}>
-          <button onClick={onClose} className="px-3 py-2 rounded-[10px] text-[13px] font-medium" style={{ color: 'var(--text-muted)' }}>
-            {t('Cancel', '取消')}
-          </button>
+
+        <div
+          className="flex items-center gap-2 px-3 py-2.5 border-t flex-shrink-0"
+          style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+        >
           <button
             onClick={send}
             disabled={sending}
@@ -603,6 +799,17 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: () => 
             <Send width="13" height="13" />
             {sending ? t('Sending…', '傳送中…') : t('Send', '傳送')}
           </button>
+          <button
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/[0.05]"
+            title={t('Discard', '丟棄')}
+            style={{ color: 'var(--text-muted)' }}
+          >
+            <Trash2 width="15" height="15" />
+          </button>
+          <span className="ml-auto pr-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+            {t('⌘ + Enter to send', '⌘ + Enter 傳送')}
+          </span>
         </div>
       </div>
     </div>
