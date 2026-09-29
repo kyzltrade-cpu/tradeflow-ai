@@ -227,7 +227,7 @@ export async function GET(req: NextRequest) {
       }) => {
         const { data: last } = await supabaseAdmin
           .from('messages')
-          .select('id, content, role, created_at, kind, status, subject')
+          .select(hasColumns ? 'id, content, role, created_at, kind, status, subject' : 'id, content, role, created_at')
           .eq('conversation_id', conv.id)
           .order('created_at', { ascending: false })
           .limit(1)
