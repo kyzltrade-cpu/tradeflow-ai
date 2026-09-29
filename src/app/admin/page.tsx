@@ -651,11 +651,14 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: () => 
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center pointer-events-none sm:inset-x-auto sm:bottom-5 sm:right-5 sm:justify-end">
       <div
-        className="glass glass-anim-in pointer-events-auto flex w-full flex-col overflow-hidden rounded-t-[24px] transition-[height] duration-[420ms] sm:w-[580px] sm:rounded-[24px]"
+        className="glass-anim-in pointer-events-auto flex w-full flex-col overflow-hidden rounded-t-[24px] transition-[height] duration-[420ms] sm:w-[580px] sm:rounded-[24px]"
         style={{
           height: minimized ? 54 : 'min(72vh, 660px)',
           transitionTimingFunction: EASE,
           color: 'var(--text)',
+          background: 'var(--surface)',
+          border: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-float)',
         }}
       >
         {/* The header stays put while the body morphs, so minimise and expand
