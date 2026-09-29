@@ -526,26 +526,65 @@ section[id] { scroll-margin-top: 84px; }
    the panel sits above the page. Colours come from vars so the material
    flips with the dashboard theme. */
 :root {
-  --glass-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0.56) 100%);
-  --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 45%);
-  --glass-highlight: rgba(255, 255, 255, 0.9);
-  --glass-ring: rgba(255, 255, 255, 0.4);
-  --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 28px 70px -30px rgba(0, 0, 0, 0.38);
-  --glass-blur: 28px;
+  /* A glass panel reads as glass through depth, not through a tint: the fill
+     stays mostly clear so the page visibly frosts behind it, brightness keeps
+     the panel lighter than what it covers, and saturation gives the glass
+     the subtle colour-stained feel of Liquid Glass. */
+  --glass-fill: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.18) 55%,
+    rgba(255, 255, 255, 0.34) 100%
+  );
+  --glass-blur: 38px;
+  --glass-saturate: 200%;
+  --glass-brighten: 1.06;
+  /* Specular sweep: crams most of the light into a soft-edged diagonal band
+     that slowly glides across the glass so it reads as a living surface. */
+  --glass-sheen: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 12%,
+    rgba(255, 255, 255, 0.72) 27%,
+    rgba(255, 255, 255, 0.14) 42%,
+    rgba(255, 255, 255, 0) 63%
+  );
+  /* Top rim reads as a lit curved edge: bright hairline, then a blush that
+     fades down a short band. */
+  --glass-rim: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.65) 0%,
+    rgba(255, 255, 255, 0.16) 22%,
+    rgba(255, 255, 255, 0) 46%
+  );
+  --glass-ring: rgba(255, 255, 255, 0.55);
+  --glass-edge: rgba(255, 255, 255, 0.28);
+  --glass-shadow: 0 1px 2px rgba(20, 30, 70, 0.06), 0 24px 64px -24px rgba(20, 30, 70, 0.4);
 }
 
 .glass {
   position: relative;
   background: var(--glass-fill);
-  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brighten));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brighten));
   box-shadow:
-    inset 0 1px 0 var(--glass-highlight),
+    inset 0 1px 0 var(--glass-ring),
     inset 0 0 0 1px var(--glass-ring),
+    inset 0 -1px 0 var(--glass-edge),
     var(--glass-shadow);
 }
 
-/* Specular sheen. Kept as its own layer so content above it stays crisp. */
+/* Top rim light — reads as the curved lit edge of the pane. */
+.glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--glass-rim);
+}
+
+/* Specular sweep: crams most of the light into a soft-edged diagonal band
+   that slowly glides across the glass so it reads as a living surface. */
 .glass::before {
   content: "";
   position: absolute;
@@ -553,6 +592,22 @@ section[id] { scroll-margin-top: 84px; }
   border-radius: inherit;
   pointer-events: none;
   background: var(--glass-sheen);
+  background-size: 260% 100%;
+  background-position: 120% 0%;
+  animation: glass-sweep 9s var(--ease-out) infinite;
+}
+
+@keyframes glass-sweep {
+  0% { background-position: 120% 0%; }
+  12% { background-position: -40% 0%; }
+  100% { background-position: -40% 0%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glass::before {
+    animation: none;
+    background-position: 8% 0%;
+  }
 }
 
 /* Interactive glass: only for controls that actually respond. */
