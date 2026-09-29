@@ -287,11 +287,6 @@ export default function InboxDetailPage() {
     fetchDetail();
   }, [fetchDetail]);
 
-  // Auto-suggest the quote when the workspace opens
-  useEffect(() => {
-    if (!companyLoading && companyId && id) fetchSuggestion();
-  }, [companyLoading, companyId, id, fetchSuggestion]);
-
   // Realtime messages
   useEffect(() => {
     if (!id) return;
@@ -428,7 +423,10 @@ export default function InboxDetailPage() {
   };
 
   const handleClarify = () => {
-    if (!suggestion) return;
+    if (!suggestion) {
+      void fetchSuggestion();
+      return;
+    }
     const missing = suggestion.lines.find((l) => !l.quantity || l.requires_manual_pricing);
     const question = missing
       ? t(
@@ -907,10 +905,10 @@ export default function InboxDetailPage() {
                     className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-white text-[13px] font-semibold"
                     style={{ background: '#6366F1' }}
                   >
-                    {(body.contact_name || body.contact_email || '?').slice(0, 1).toUpperCase()}
+                    {(body.contact_name || body.contact_email || body.contact_phone || '?').slice(0, 1).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium truncate">{body.contact_name || body.contact_email || t('Untitled customer', '未命名客戶')}</p>
+                    <p className="text-[13px] font-medium truncate">{body.contact_name || body.contact_email || body.contact_phone || t('Customer', '客戶')}</p>
                     {body.contact_email && <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{body.contact_email}</p>}
                     {body.contact_phone && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact_phone}</p>}
                   </div>
@@ -968,7 +966,7 @@ export default function InboxDetailPage() {
               </p>
             ) : (
               <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('Could not extract a request from this thread yet', '暫時未能從對話提取查詢')}
+                {t('Press "Price" to draft a quote from this thread', '按「定價」從此對話產生報價草稿')}
               </p>
             )}
 
@@ -1022,7 +1020,8 @@ export default function InboxDetailPage() {
               </button>
               <button
                 onClick={handleQuote}
-                className="flex-1 text-[12px] font-medium px-3 py-2 rounded-[4px] text-white"
+                disabled={!suggestion || suggestion.lines.filter((l) => l.unit_price > 0).length === 0}
+                className="flex-1 text-[12px] font-medium px-3 py-2 rounded-[4px] text-white disabled:opacity-40"
                 style={{ background: 'var(--accent)' }}
               >
                 {t('Create draft', '建立草稿')}
@@ -1057,10 +1056,16 @@ export default function InboxDetailPage() {
                             )}
                           </div>
                           <div className="text-right flex-shrink-0">
-                            <p className="text-[14px] font-semibold">{fmtAmount(l.unit_price, suggestion.currency || 'USD')}</p>
-                            <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                              / {l.unit || 'pc'} · {fmtAmount(l.total, suggestion.currency || 'USD')}
-                            </p>
+                            {l.requires_manual_pricing || l.unit_price <= 0 ? (
+                              <p className="text-[14px] font-semibold" style={{ color: 'var(--text-muted)' }}>—</p>
+                            ) : (
+                              <>
+                                <p className="text-[14px] font-semibold">{fmtAmount(l.unit_price, suggestion.currency || 'USD')}</p>
+                                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                                  / {l.unit || 'pc'} · {fmtAmount(l.total, suggestion.currency || 'USD')}
+                                </p>
+                              </>
+                            )}
                           </div>
                         </div>
                         <div className="flex flex-wrap gap-1 mt-2">
@@ -1106,7 +1111,9 @@ export default function InboxDetailPage() {
                 </div>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
                   <span className="text-[12px] font-semibold">{t('Subtotal', '小計')}</span>
-                  <span className="text-[15px] font-semibold">{fmtAmount(suggestion.subtotal, suggestion.currency || 'USD')}</span>
+                  <span className="text-[15px] font-semibold">
+                    {suggestion.subtotal > 0 ? fmtAmount(suggestion.subtotal, suggestion.currency || 'USD') : '—'}
+                  </span>
                 </div>
                 {suggestion.sources_summary && suggestion.sources_summary.length > 0 && (
                   <p className="text-[11px] mt-3 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
@@ -1117,14 +1124,14 @@ export default function InboxDetailPage() {
             )}
           </div>
 
-          {/* ── Pod: Stage ─────────────────────────────────────── */}
+          {/* ── Pod: Stage (only once an opportunity exists) ────── */}
+          {detail?.opportunities && detail.opportunities.length > 0 && (
           <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center gap-2 mb-3">
               <Flag width="14" height="14" style={{ color: 'var(--accent)' }} />
               <h3 className="text-[13px] font-semibold">{t('Stage', '階段')}</h3>
             </div>
-            {detail?.opportunities && detail.opportunities.length > 0 ? (
-              detail.opportunities.map((opp) => {
+            {detail.opportunities.map((opp) => {
                 const meta = STAGE_META[opp.stage] || STAGE_META.NEW;
                 const nexts = STAGE_TRANSITIONS[opp.stage] || [];
                 return (
@@ -1155,22 +1162,18 @@ export default function InboxDetailPage() {
                     )}
                   </div>
                 );
-              })
-            ) : (
-              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('No opportunity yet — auto-created when the AI extracts the request', '暫無商機——AI 提取需求後會自動建立')}
-              </p>
-            )}
+              })}
           </div>
+          )}
 
-          {/* ── Pod: Approvals ─────────────────────────────────── */}
+          {/* ── Pod: Approvals (only once a quote exists) ───────── */}
+          {detail?.quotes && detail.quotes.length > 0 && (
           <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center gap-2 mb-3">
               <CheckCircle width="14" height="14" style={{ color: 'var(--accent)' }} />
               <h3 className="text-[13px] font-semibold">{t('Approvals', '審批')}</h3>
             </div>
-            {detail?.quotes && detail.quotes.length > 0 ? (
-              detail.quotes.map((q) => {
+            {detail.quotes.map((q) => {
                 const qm = QUOTE_STATUS_META[q.status] || QUOTE_STATUS_META.DRAFT;
                 const approval = detail.approvals.find((a) => a.quote_id === q.id);
                 return (
@@ -1218,59 +1221,50 @@ export default function InboxDetailPage() {
                     )}
                   </div>
                 );
-              })
-            ) : (
-              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('No quote yet — it is created automatically from the suggestion', '暫無報價——會按建議自動建立')}
-              </p>
-            )}
+              })}
           </div>
+          )}
 
-          {/* ── Pod: PDFs ──────────────────────────────────────── */}
+          {/* ── Pod: PDFs (only once a quote exists) ────────────── */}
+          {detail?.quotes && detail.quotes.length > 0 && (
           <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center gap-2 mb-3">
               <Download width="14" height="14" style={{ color: 'var(--accent)' }} />
               <h3 className="text-[13px] font-semibold">{t('Quote PDFs', '報價 PDF')}</h3>
             </div>
-            {detail?.quotes && detail.quotes.length > 0 ? (
-              <div className="space-y-2">
-                {detail.quotes.map((q) => (
-                  <div key={q.id} className="flex items-center justify-between gap-2 rounded-[4px] border p-2.5" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                    <div className="min-w-0">
-                      <p className="text-[12px] font-medium truncate">{q.quote_number || q.id.slice(0, 8)}</p>
-                      {q.valid_until && (
-                        <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                          {t('Valid until', '有效期至')} {new Date(q.valid_until).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => downloadQuotePdf(q.id, `${q.quote_number || q.id}.pdf`)}
-                      className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1.5 rounded-[4px] border shrink-0"
-                      style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                    >
-                      <Download width="11" height="11" />
-                      {t('Download', '下載')}
-                    </button>
+            <div className="space-y-2">
+              {detail.quotes.map((q) => (
+                <div key={q.id} className="flex items-center justify-between gap-2 rounded-[4px] border p-2.5" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
+                  <div className="min-w-0">
+                    <p className="text-[12px] font-medium truncate">{q.quote_number || q.id.slice(0, 8)}</p>
+                    {q.valid_until && (
+                      <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                        {t('Valid until', '有效期至')} {new Date(q.valid_until).toLocaleDateString()}
+                      </p>
+                    )}
                   </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('No PDF yet — create the draft quote to download', '暫無 PDF——建立報價草稿後即可下載')}
-              </p>
-            )}
+                  <button
+                    onClick={() => downloadQuotePdf(q.id, `${q.quote_number || q.id}.pdf`)}
+                    className="flex items-center gap-1 text-[11px] font-medium px-2.5 py-1.5 rounded-[4px] border shrink-0"
+                    style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+                  >
+                    <Download width="11" height="11" />
+                    {t('Download', '下載')}
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
+          )}
 
-          {/* ── Pod: Suppliers ──────────────────────────────────── */}
+          {/* ── Pod: Suppliers (only once priced) ───────────────── */}
+          {suggestion && (
           <div className="p-4">
             <div className="flex items-center gap-2 mb-3">
               <Building2 width="14" height="14" style={{ color: 'var(--accent)' }} />
               <h3 className="text-[13px] font-semibold">{t('Recommended suppliers', '推薦供應商')}</h3>
             </div>
-            {loadingSuggest ? (
-              <SkeletonBlock lines={4} />
-            ) : !suggestion || suggestion.suppliers.length === 0 ? (
+            {suggestion.suppliers.length === 0 ? (
               <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
                 {t('No suppliers in your directory match yet', '目錄中暫無匹配的供應商')}
               </p>
@@ -1306,6 +1300,7 @@ export default function InboxDetailPage() {
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
 
