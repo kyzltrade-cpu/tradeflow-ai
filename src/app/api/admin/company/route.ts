@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 import { seedStarterKit } from '@/lib/starter-kit';
+import { DEMO_COMPANY_ID } from '@/lib/inquiry-context';
 import { cookies } from 'next/headers';
 import { createClient } from '@supabase/supabase-js';
 
@@ -92,6 +93,13 @@ export async function POST(req: NextRequest) {
     if (authResult instanceof Response) return authResult;
     const body = await req.json().catch(() => ({}));
     const { company_id, name, industry, user_id } = body;
+
+    // The demo login is always an existing seeded company. Bounce it back to
+    // its pinned company instead of letting onboarding create a scratch
+    // company and re-point the demo account at an empty mailbox.
+    if (authResult.user.email?.toLowerCase() === 'demo@broadust.io') {
+      return NextResponse.json({ id: DEMO_COMPANY_ID });
+    }
 
     // If company_id provided, just return it
     if (company_id) {

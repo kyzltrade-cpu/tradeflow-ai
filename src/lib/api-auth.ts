@@ -1,11 +1,16 @@
 import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
+import { DEMO_COMPANY_ID } from '@/lib/inquiry-context';
 
 export interface AuthResult {
   user: { id: string; email: string };
   companyId: string | null;
 }
+
+/** The demo login is always pinned to the seeded demo company so it can never
+ * be stranded on an onboarding-created scratch company. */
+const DEMO_EMAILS = new Set(['demo@broadust.io']);
 
 function jsonError(message: string, status: number) {
   return Response.json({ error: message }, { status });
@@ -82,7 +87,15 @@ export async function requireAuth(
     .eq('id', user.id)
     .single();
 
-  const companyId = userRecord?.company_id || null;
+  let companyId = userRecord?.company_id || null;
+
+  // Demo login is pinned to the seeded demo company. If the users row was
+  // repointed (e.g. by an onboarding test), heal it so the demo mailbox is
+  // never empty and onboarding can never strand it on a scratch company.
+  if (user.email && DEMO_EMAILS.has(user.email.toLowerCase()) && companyId !== DEMO_COMPANY_ID) {
+    await supabaseAdmin.from('users').update({ company_id: DEMO_COMPANY_ID }).eq('id', user.id);
+    companyId = DEMO_COMPANY_ID;
+  }
 
   if (options?.requireCompany !== false && !companyId) {
     throw jsonError(
