@@ -230,7 +230,7 @@ export default function LandingPage() {
               Built for HK &amp; SZ trading companies
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-normal tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'var(--serif)', letterSpacing: '-0.02em' }}>
+            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
               <span className="btk-anim-rise block" style={{ animationDelay: '90ms' }}>
                 From inquiry to quote.
               </span>
@@ -285,11 +285,11 @@ export default function LandingPage() {
       <section id="features" className="py-24 px-6">
         <div className="max-w-6xl mx-auto">
           <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'var(--serif)', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               01
             </div>
             <p className="btk-kicker mb-5">01 · The pipeline</p>
-            <h2 className="text-3xl md:text-5xl font-normal tracking-tight mb-4" style={{ fontFamily: 'var(--serif)' }}>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Everything you need. Nothing you don&apos;t.
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
@@ -328,11 +328,11 @@ export default function LandingPage() {
       <section className="py-24 px-6" style={{ background: '#FAFAFA' }}>
         <div className="max-w-6xl mx-auto">
           <Reveal className="relative text-center mb-14">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'var(--serif)', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               02
             </div>
             <p className="btk-kicker mb-5">02 · Built-in control</p>
-            <h2 className="text-2xl md:text-4xl font-normal tracking-tight mb-3" style={{ fontFamily: 'var(--serif)' }}>
+            <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-3" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               AI does the legwork. You stay in control.
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: '#555555' }}>
@@ -365,11 +365,11 @@ export default function LandingPage() {
       <section className="py-24 px-6" style={{ background: '#FAFAFA' }}>
         <div className="max-w-5xl mx-auto">
           <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'var(--serif)', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               02
             </div>
             <p className="btk-kicker mb-5">02 · Mobile-first alerts</p>
-            <h2 className="text-3xl md:text-5xl font-normal tracking-tight mb-4" style={{ fontFamily: 'var(--serif)' }}>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Get alerts where you are
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: '#555555' }}>
@@ -474,11 +474,11 @@ export default function LandingPage() {
       <section id="how-it-works" className="py-24 px-6">
         <div className="max-w-3xl mx-auto">
           <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'var(--serif)', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               03
             </div>
             <p className="btk-kicker mb-5">03 · The workflow</p>
-            <h2 className="text-3xl md:text-5xl font-normal tracking-tight mb-4" style={{ fontFamily: 'var(--serif)' }}>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               From inquiry to quote in 4 steps
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
@@ -525,11 +525,11 @@ export default function LandingPage() {
       <section id="see-it-in-action" className="py-24 px-6" style={{ background: '#FAFAFA' }}>
         <div className="max-w-5xl mx-auto">
           <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'var(--serif)', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               04
             </div>
             <p className="btk-kicker mb-5">04 · Product demo</p>
-            <h2 className="text-3xl md:text-5xl font-normal tracking-tight mb-4" style={{ fontFamily: 'var(--serif)' }}>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               See it in action
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
@@ -642,11 +642,11 @@ export default function LandingPage() {
         <div aria-hidden="true" className="btk-breathe pointer-events-none absolute -top-48 left-1/2 w-[820px] h-[460px] rounded-full" style={{ marginLeft: -410, background: 'radial-gradient(closest-side, rgba(0,0,0,0.06), rgba(0,0,0,0) 70%)' }} />
         <div className="max-w-4xl mx-auto text-center relative">
           <Reveal className="relative text-center">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'var(--serif)', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               05
             </div>
             <p className="btk-kicker mb-5">05 · Pricing</p>
-            <h2 className="text-3xl md:text-5xl font-normal tracking-tight mb-4" style={{ fontFamily: 'var(--serif)' }}>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Simple, transparent pricing
             </h2>
             <p className="text-lg mb-16" style={{ color: '#555555' }}>
@@ -713,11 +713,11 @@ export default function LandingPage() {
       <section className="py-24 px-6" style={{ background: '#FAFAFA' }}>
         <div className="max-w-3xl mx-auto">
           <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'var(--serif)', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
+            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               06
             </div>
             <p className="btk-kicker mb-5">06 · FAQ</p>
-            <h2 className="text-3xl md:text-5xl font-normal tracking-tight mb-4" style={{ fontFamily: 'var(--serif)' }}>
+            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Questions, answered
             </h2>
             <p className="text-lg" style={{ color: '#555555' }}>
@@ -746,11 +746,11 @@ export default function LandingPage() {
 
       {/* ── Final CTA ── */}
       <section className="py-24 px-6 relative overflow-hidden">
-        <div aria-hidden="true" className="btk-drift pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-normal leading-none" style={{ fontFamily: 'var(--serif)', color: '#F4F4F4', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
+        <div aria-hidden="true" className="btk-drift pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-bold leading-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#F4F4F4', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
           Sailwise
         </div>
         <Reveal className="relative max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-normal tracking-tight mb-6" style={{ fontFamily: 'var(--serif)' }}>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
             Stop copy-pasting quotes.<br />
             <span style={{ color: '#000' }}>Start closing deals.</span>
           </h2>
