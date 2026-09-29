@@ -529,12 +529,14 @@ section[id] { scroll-margin-top: 84px; }
   /* A glass panel reads as glass through depth, not through a tint: the fill
      stays mostly clear so the page visibly frosts behind it, brightness keeps
      the panel lighter than what it covers, and saturation gives the glass
-     the subtle colour-stained feel of Liquid Glass. */
+     the subtle colour-stained feel of Liquid Glass. The wash is kept solid
+     enough that controls and text on the panel stay legible over a busy
+     mailbox — glassy, but never see-through. */
   --glass-fill: linear-gradient(
     180deg,
-    rgba(255, 255, 255, 0.42) 0%,
-    rgba(255, 255, 255, 0.18) 55%,
-    rgba(255, 255, 255, 0.34) 100%
+    rgba(255, 255, 255, 0.78) 0%,
+    rgba(255, 255, 255, 0.62) 55%,
+    rgba(255, 255, 255, 0.72) 100%
   );
   --glass-blur: 38px;
   --glass-saturate: 200%;
@@ -556,9 +558,9 @@ section[id] { scroll-margin-top: 84px; }
     rgba(255, 255, 255, 0.16) 22%,
     rgba(255, 255, 255, 0) 46%
   );
-  --glass-ring: rgba(255, 255, 255, 0.55);
-  --glass-edge: rgba(255, 255, 255, 0.28);
-  --glass-shadow: 0 1px 2px rgba(20, 30, 70, 0.06), 0 24px 64px -24px rgba(20, 30, 70, 0.4);
+  --glass-ring: rgba(255, 255, 255, 0.65);
+  --glass-edge: rgba(15, 22, 50, 0.16);
+  --glass-shadow: 0 1px 2px rgba(20, 30, 70, 0.08), 0 24px 64px -24px rgba(20, 30, 70, 0.45);
 }
 
 .glass {
@@ -571,6 +573,20 @@ section[id] { scroll-margin-top: 84px; }
     inset 0 0 0 1px var(--glass-ring),
     inset 0 -1px 0 var(--glass-edge),
     var(--glass-shadow);
+}
+
+/* Fields sitting on glass get a soft white wash so text stays readable and
+   the field you're editing reads as clearly distinct from the surface. */
+.glass input,
+.glass textarea {
+  background: rgba(255, 255, 255, 0.55);
+  border-radius: 8px;
+  transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
+}
+.glass input:focus,
+.glass textarea:focus {
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
 }
 
 /* Top rim light — reads as the curved lit edge of the pane. */
