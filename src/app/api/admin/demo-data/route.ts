@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
     const summary = await seedStarterKit(auth.companyId);
     return NextResponse.json(summary);
   } catch (err) {
+    if (err instanceof Response) return err;
     console.error('[demo-data:POST]', err);
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'Failed to load demo data' },
