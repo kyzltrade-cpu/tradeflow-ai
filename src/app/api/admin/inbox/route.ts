@@ -5,6 +5,28 @@ import { sendEmail } from '@/lib/email';
 
 const MAX_PAGE_SIZE = 200;
 
+/* `024_inbox_upgrade` adds subject/folder/read_at/flagged to conversations.
+   Until that migration has run on a given database, filtering on folder or
+   flagged and searching on subject are hard errors from PostgREST, which
+   empties the mailbox even when the rows exist. Probe once per process and
+   fall back to the subset of filters the schema actually supports. */
+let mailboxColumnsChecked = false;
+let mailboxColumnsReady = false;
+
+async function hasMailboxColumns(): Promise<boolean> {
+  if (mailboxColumnsChecked) return mailboxColumnsReady;
+  const { error } = await supabaseAdmin
+    .from('conversations')
+    .select('id, subject, folder, read_at, flagged')
+    .limit(1);
+  mailboxColumnsChecked = true;
+  mailboxColumnsReady = !error;
+  if (error) {
+    console.warn('[inbox] migration 024 columns unavailable, running without folder/flag/subject filters:', error.message);
+  }
+  return mailboxColumnsReady;
+}
+
 // POST /api/admin/inbox — compose a new outbound thread
 export async function POST(req: NextRequest) {
   try {
@@ -139,22 +161,26 @@ export async function GET(req: NextRequest) {
       Math.max(1, parseInt(url.searchParams.get('pageSize') || '50', 10) || 50)
     );
 
+    const hasColumns = await hasMailboxColumns();
+
     let query = supabaseAdmin
       .from('conversations')
       .select('*')
       .eq('company_id', companyId);
 
-    if (folder === 'all') {
-      // nothing extra — include everything
-    } else if (folder === 'archive') {
-      query = query.eq('folder', 'archive');
-    } else if (folder === 'trash') {
-      query = query.eq('folder', 'trash');
-    } else {
-      query = query.eq('folder', 'inbox');
+    // Folders only exist once the column does. A null folder already counts as
+    // inbox, so skipping the filter is equivalent to "everything is inbox".
+    if (hasColumns) {
+      if (folder === 'archive') {
+        query = query.eq('folder', 'archive');
+      } else if (folder === 'trash') {
+        query = query.eq('folder', 'trash');
+      } else if (folder !== 'all') {
+        query = query.eq('folder', 'inbox');
+      }
     }
 
-    if (filter === 'flagged') {
+    if (filter === 'flagged' && hasColumns) {
       query = query.eq('flagged', true);
     } else if (filter === 'human') {
       query = query.eq('status', 'human');
@@ -165,7 +191,10 @@ export async function GET(req: NextRequest) {
     }
 
     if (q) {
-      query = query.or(`contact_name.ilike.%${q}%,contact_email.ilike.%${q}%,subject.ilike.%${q}%`);
+      const term = `%${q}%`;
+      query = hasColumns
+        ? query.or(`contact_name.ilike.${term},contact_email.ilike.${term},subject.ilike.${term}`)
+        : query.or(`contact_name.ilike.${term},contact_email.ilike.${term}`);
     }
 
     const { data: conversations, error, count } = await query
@@ -257,7 +286,7 @@ export async function GET(req: NextRequest) {
     // tabs stay accurate regardless of the current folder.
     const { data: allConvs } = await supabaseAdmin
       .from('conversations')
-      .select('id, folder, status, flagged, read_at')
+      .select(hasColumns ? 'id, folder, status, flagged, read_at' : 'id, status')
       .eq('company_id', companyId);
 
     const allRows = await Promise.all(

@@ -519,6 +519,66 @@ section[id] { scroll-margin-top: 84px; }
   animation: btk-flow 5.5s var(--ease-out) infinite;
 }
 
+/* ── Liquid glass ────────────────────────────────────────────────────────
+   Floating surfaces get a translucent material rather than an opaque fill:
+   a blurred, saturated base wash, a specular sheen across the top-left, a
+   hairline inner ring that reads as a lit edge, and a tinted drop shadow so
+   the panel sits above the page. Colours come from vars so the material
+   flips with the dashboard theme. */
+:root {
+  --glass-fill: linear-gradient(180deg, rgba(255, 255, 255, 0.74) 0%, rgba(255, 255, 255, 0.56) 100%);
+  --glass-sheen: linear-gradient(135deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0) 45%);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+  --glass-ring: rgba(255, 255, 255, 0.4);
+  --glass-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 28px 70px -30px rgba(0, 0, 0, 0.38);
+  --glass-blur: 28px;
+}
+
+.glass {
+  position: relative;
+  background: var(--glass-fill);
+  backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(180%);
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 1px var(--glass-ring),
+    var(--glass-shadow);
+}
+
+/* Specular sheen. Kept as its own layer so content above it stays crisp. */
+.glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: var(--glass-sheen);
+}
+
+/* Interactive glass: only for controls that actually respond. */
+.glass-press {
+  transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+.glass-press:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+@keyframes glass-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.glass-anim-in {
+  animation: glass-in 460ms var(--ease-out) backwards;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -529,6 +589,9 @@ section[id] { scroll-margin-top: 84px; }
   }
   .btk-marquee, .btk-anim-rise, .btk-anim-rise-sm, .btk-anim-fade-down, .btk-chat-dot,
   .btk-breathe, .btk-drift, .btk-flow-track {
+    animation: none;
+  }
+  .glass-anim-in {
     animation: none;
   }
 }

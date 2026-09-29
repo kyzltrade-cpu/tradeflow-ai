@@ -668,12 +668,39 @@ async function seedGoal(companyId: string): Promise<number> {
   return 1;
 }
 
+/* `024_inbox_upgrade` adds subject/folder/read_at/flagged to conversations and
+   subject to messages. Seeding must still work on a database where that
+   migration has not run, so probe once and only write the columns that exist.
+   Without folder the rows read as inbox anyway, and the list falls back to the
+   first message body when subject is absent. */
+let mailboxColumnsChecked = false;
+let mailboxColumnsReady = false;
+
+async function hasMailboxColumns(): Promise<boolean> {
+  if (mailboxColumnsChecked) return mailboxColumnsReady;
+  const [conv, msg] = await Promise.all([
+    supabaseAdmin.from('conversations').select('id, subject, folder').limit(1),
+    supabaseAdmin.from('messages').select('id, subject').limit(1),
+  ]);
+  mailboxColumnsChecked = true;
+  mailboxColumnsReady = !conv.error && !msg.error;
+  if (!mailboxColumnsReady) {
+    console.warn(
+      '[starter-kit] migration 024 columns unavailable, seeding without subject/folder:',
+      conv.error?.message || msg.error?.message
+    );
+  }
+  return mailboxColumnsReady;
+}
+
 async function seedConversations(
   companyId: string
 ): Promise<{ conversations: number; messages: number }> {
+  const hasColumns = await hasMailboxColumns();
+
   const { data: existing } = await supabaseAdmin
     .from('conversations')
-    .select('id, contact_email, subject, folder')
+    .select(hasColumns ? 'id, contact_email, subject, folder' : 'id, contact_email')
     .eq('company_id', companyId);
   const idByEmail = new Map(
     ((existing ?? []) as Array<{
@@ -692,7 +719,7 @@ async function seedConversations(
       conversation_id: conversationId,
       role: m.role,
       content: m.text,
-      subject: seed.subject,
+      ...(hasColumns ? { subject: seed.subject } : {}),
       created_at: isoOffset(
         new Date(lastAt).getTime() - (seed.thread.length - 1 - i) * 4 * 60 * 1000
       ),
@@ -706,13 +733,15 @@ async function seedConversations(
       // A conversation seeded by an older run has no subject, so it renders
       // in the mailbox as a blank line. Patch the mailbox columns the inbox
       // list depends on before checking the thread.
-      await supabaseAdmin
-        .from('conversations')
-        .update({
-          subject: existingRow.subject ?? seed.subject,
-          folder: existingRow.folder ?? 'inbox',
-        })
-        .eq('id', existingRow.id);
+      if (hasColumns) {
+        await supabaseAdmin
+          .from('conversations')
+          .update({
+            subject: existingRow.subject ?? seed.subject,
+            folder: existingRow.folder ?? 'inbox',
+          })
+          .eq('id', existingRow.id);
+      }
 
       // An earlier run may have inserted the conversation but failed on its
       // thread, which would leave a permanently empty conversation in the
@@ -734,30 +763,34 @@ async function seedConversations(
       continue;
     }
 
+    const conversationRow: Record<string, unknown> = {
+      company_id: companyId,
+      channel: 'email',
+      source_channel: 'email',
+      contact_name: seed.contact_name,
+      contact_email: seed.contact_email,
+      contact_phone: null,
+      status: seed.status,
+      detected_language: seed.detected_language,
+      product_summary: seed.product_summary,
+      estimated_value: seed.estimated_value,
+      currency: seed.currency,
+      next_action: seed.next_action,
+      missing_info: [],
+      external_search_enabled: false,
+      created_at: lastAt,
+      updated_at: lastAt,
+    };
+    if (hasColumns) {
+      conversationRow.subject = seed.subject;
+      conversationRow.folder = 'inbox';
+      conversationRow.read_at = null;
+      conversationRow.flagged = false;
+    }
+
     const { data: conv, error: convErr } = await supabaseAdmin
       .from('conversations')
-      .insert({
-        company_id: companyId,
-        channel: 'email',
-        source_channel: 'email',
-        contact_name: seed.contact_name,
-        contact_email: seed.contact_email,
-        contact_phone: null,
-        subject: seed.subject,
-        folder: 'inbox',
-        read_at: null,
-        flagged: false,
-        status: seed.status,
-        detected_language: seed.detected_language,
-        product_summary: seed.product_summary,
-        estimated_value: seed.estimated_value,
-        currency: seed.currency,
-        next_action: seed.next_action,
-        missing_info: [],
-        external_search_enabled: false,
-        created_at: lastAt,
-        updated_at: lastAt,
-      })
+      .insert(conversationRow)
       .select('id')
       .single();
     if (convErr || !conv) {

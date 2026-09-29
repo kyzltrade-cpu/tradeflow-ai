@@ -272,7 +272,7 @@ export default function AdminInboxPage() {
       >
         <button
           onClick={() => setShowCompose(true)}
-          className="flex items-center gap-1.5 rounded-[10px] px-3 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 whitespace-nowrap"
+          className="glass-press flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[13px] font-semibold text-white whitespace-nowrap"
           style={{ background: 'var(--accent)' }}
         >
           <Plus width="14" height="14" />
@@ -646,70 +646,43 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: () => 
     color: 'var(--text)',
   } as const;
 
-  const panelStyle = {
-    borderColor: 'var(--border)',
-    background: 'var(--surface)',
-    color: 'var(--text)',
-  } as const;
-
-  if (minimized) {
-    return (
-      <div className="fixed bottom-0 right-0 z-50 w-full sm:w-[580px]">
-        <div
-          className="flex items-center gap-2 rounded-t-xl border border-b-0 px-4 py-2.5 shadow-lg"
-          style={panelStyle}
-        >
-          <span
-            className="flex-1 text-[13px] font-semibold truncate cursor-pointer"
-            onClick={() => setMinimized(false)}
-          >
-            {subject.trim() || to.trim() || t('New message', '新訊息')}
-          </span>
-          <button
-            onClick={() => setMinimized(false)}
-            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-black/[0.05]"
-            title={t('Expand', '展開')}
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <ChevronUp width="15" height="15" />
-          </button>
-          <button
-            onClick={onClose}
-            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-black/[0.05]"
-            title={t('Discard', '丟棄')}
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <X width="15" height="15" />
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const EASE = 'cubic-bezier(0.16, 1, 0.3, 1)';
 
   return (
-    <div className="fixed bottom-0 right-0 z-50 w-full sm:w-[580px]">
+    <div className="fixed inset-x-0 bottom-0 z-50 flex justify-center pointer-events-none sm:inset-x-auto sm:bottom-5 sm:right-5 sm:justify-end">
       <div
-        className="flex flex-col h-[70vh] max-h-[640px] rounded-t-2xl border border-b-0 shadow-2xl overflow-hidden"
-        style={panelStyle}
+        className="glass glass-anim-in pointer-events-auto flex w-full flex-col overflow-hidden rounded-t-[24px] transition-[height] duration-[420ms] sm:w-[580px] sm:rounded-[24px]"
+        style={{
+          height: minimized ? 54 : 'min(72vh, 660px)',
+          transitionTimingFunction: EASE,
+          color: 'var(--text)',
+        }}
       >
-        <div
-          className="flex items-center gap-2 px-4 py-2.5 border-b flex-shrink-0"
-          style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
-        >
+        {/* The header stays put while the body morphs, so minimise and expand
+            read as one continuous surface rather than two screens. */}
+        <div className="relative z-10 flex h-[54px] flex-shrink-0 items-center gap-2 px-4">
           <button
-            onClick={() => setMinimized(true)}
-            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-black/[0.05]"
-            title={t('Minimise', '縮到最小')}
+            onClick={() => setMinimized((m) => !m)}
+            className="glass-press flex h-7 w-7 items-center justify-center rounded-full hover:bg-black/[0.05]"
+            title={minimized ? t('Expand', '展開') : t('Minimise', '縮到最小')}
             style={{ color: 'var(--text-muted)' }}
           >
-            <ChevronDown width="15" height="15" />
+            {minimized ? <ChevronUp width="15" height="15" /> : <ChevronDown width="15" height="15" />}
           </button>
-          <span className="flex-1 text-[13px] font-semibold" style={{ color: 'var(--text)' }}>
-            {t('New message', '新訊息')}
+          <span
+            className={`flex-1 truncate text-[13px] font-semibold ${minimized ? 'cursor-pointer' : ''}`}
+            style={{ color: 'var(--text)' }}
+            onClick={() => {
+              if (minimized) setMinimized(false);
+            }}
+          >
+            {minimized
+              ? subject.trim() || to.trim() || t('New message', '新訊息')
+              : t('New message', '新訊息')}
           </span>
           <button
             onClick={onClose}
-            className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-black/[0.05]"
+            className="glass-press flex h-7 w-7 items-center justify-center rounded-full hover:bg-black/[0.05]"
             title={t('Discard', '丟棄')}
             style={{ color: 'var(--text-muted)' }}
           >
@@ -717,99 +690,106 @@ function ComposeModal({ onClose, onSent }: { onClose: () => void; onSent: () => 
           </button>
         </div>
 
-        <div className="flex-1 min-h-0 flex flex-col overflow-y-auto">
-          <div className="flex items-center gap-3 px-4 py-2 border-b" style={fieldStyle}>
-            <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>
-              {t('To', '收件人')}
-            </span>
-            <input
-              ref={toRef}
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              placeholder={t('name@company.com, second@company.com', '名稱@公司.com，第二位@公司.com')}
-              className="flex-1 text-[13px] focus:outline-none min-w-0"
-              style={fieldStyle}
-            />
-          </div>
-
-          {showCc ? (
-            <>
-              <div className="flex items-center gap-3 px-4 py-2 border-b" style={fieldStyle}>
-                <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>Cc</span>
-                <input
-                  value={cc}
-                  onChange={(e) => setCc(e.target.value)}
-                  className="flex-1 text-[13px] focus:outline-none min-w-0"
-                  style={fieldStyle}
-                />
-              </div>
-              <div className="flex items-center gap-3 px-4 py-2 border-b" style={fieldStyle}>
-                <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>Bcc</span>
-                <input
-                  value={bcc}
-                  onChange={(e) => setBcc(e.target.value)}
-                  className="flex-1 text-[13px] focus:outline-none min-w-0"
-                  style={fieldStyle}
-                />
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center px-4 py-1 border-b" style={fieldStyle}>
-              <button
-                onClick={() => setShowCc(true)}
-                className="text-[12px] hover:underline"
-                style={{ color: 'var(--text-muted)' }}
-              >
-                Cc / Bcc
-              </button>
-            </div>
-          )}
-
-          <div className="flex items-center gap-3 px-4 py-2 border-b" style={fieldStyle}>
-            <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>
-              {t('Subject', '主旨')}
-            </span>
-            <input
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="flex-1 text-[13px] focus:outline-none min-w-0"
-              style={fieldStyle}
-            />
-          </div>
-
-          <textarea
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder={t('Write your message…', '輸入訊息內容…')}
-            className="flex-1 min-h-[180px] px-4 py-3 text-[13.5px] leading-[1.65] focus:outline-none resize-none"
-            style={fieldStyle}
-          />
-        </div>
-
         <div
-          className="flex items-center gap-2 px-3 py-2.5 border-t flex-shrink-0"
-          style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+          className="relative z-10 flex min-h-0 flex-1 flex-col transition-[opacity,transform] duration-[300ms]"
+          style={{
+            opacity: minimized ? 0 : 1,
+            transform: minimized ? 'translateY(-10px)' : 'translateY(0)',
+            pointerEvents: minimized ? 'none' : 'auto',
+            transitionTimingFunction: EASE,
+          }}
         >
-          <button
-            onClick={send}
-            disabled={sending}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
-            style={{ background: 'var(--accent)' }}
-          >
-            <Send width="13" height="13" />
-            {sending ? t('Sending…', '傳送中…') : t('Send', '傳送')}
-          </button>
-          <button
-            onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full transition-colors hover:bg-black/[0.05]"
-            title={t('Discard', '丟棄')}
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <Trash2 width="15" height="15" />
-          </button>
-          <span className="ml-auto pr-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-            {t('⌘ + Enter to send', '⌘ + Enter 傳送')}
-          </span>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            <div className="flex items-center gap-3 px-4 py-2.5 border-b" style={fieldStyle}>
+              <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                {t('To', '收件人')}
+              </span>
+              <input
+                ref={toRef}
+                value={to}
+                onChange={(e) => setTo(e.target.value)}
+                placeholder={t('name@company.com, second@company.com', '名稱@公司.com，第二位@公司.com')}
+                className="flex-1 text-[13px] focus:outline-none min-w-0"
+                style={fieldStyle}
+              />
+            </div>
+
+            {showCc ? (
+              <>
+                <div className="flex items-center gap-3 px-4 py-2.5 border-b" style={fieldStyle}>
+                  <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>Cc</span>
+                  <input
+                    value={cc}
+                    onChange={(e) => setCc(e.target.value)}
+                    className="flex-1 text-[13px] focus:outline-none min-w-0"
+                    style={fieldStyle}
+                  />
+                </div>
+                <div className="flex items-center gap-3 px-4 py-2.5 border-b" style={fieldStyle}>
+                  <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>Bcc</span>
+                  <input
+                    value={bcc}
+                    onChange={(e) => setBcc(e.target.value)}
+                    className="flex-1 text-[13px] focus:outline-none min-w-0"
+                    style={fieldStyle}
+                  />
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center px-4 py-1.5" style={fieldStyle}>
+                <button
+                  onClick={() => setShowCc(true)}
+                  className="text-[12px] hover:underline"
+                  style={{ color: 'var(--text-muted)' }}
+                >
+                  Cc / Bcc
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 px-4 py-2.5 border-b" style={fieldStyle}>
+              <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                {t('Subject', '主旨')}
+              </span>
+              <input
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                className="flex-1 text-[13px] focus:outline-none min-w-0"
+                style={fieldStyle}
+              />
+            </div>
+
+            <textarea
+              value={body}
+              onChange={(e) => setBody(e.target.value)}
+              placeholder={t('Write your message…', '輸入訊息內容…')}
+              className="flex-1 min-h-[190px] px-4 py-3.5 text-[13.5px] leading-[1.7] focus:outline-none resize-none"
+              style={fieldStyle}
+            />
+          </div>
+
+          <div className="flex items-center gap-2 px-3 py-3 flex-shrink-0" style={{ borderTop: '1px solid var(--border)' }}>
+            <button
+              onClick={send}
+              disabled={sending}
+              className="glass-press flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-semibold text-white disabled:opacity-50"
+              style={{ background: 'var(--accent)' }}
+            >
+              <Send width="13" height="13" />
+              {sending ? t('Sending…', '傳送中…') : t('Send', '傳送')}
+            </button>
+            <button
+              onClick={onClose}
+              className="glass-press flex h-8 w-8 items-center justify-center rounded-full hover:bg-black/[0.05]"
+              title={t('Discard', '丟棄')}
+              style={{ color: 'var(--text-muted)' }}
+            >
+              <Trash2 width="15" height="15" />
+            </button>
+            <span className="ml-auto pr-1 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+              {t('⌘ + Enter to send', '⌘ + Enter 傳送')}
+            </span>
+          </div>
         </div>
       </div>
     </div>
