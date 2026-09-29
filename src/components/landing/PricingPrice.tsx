@@ -19,8 +19,8 @@ export default function PricingPrice({ monthly, annual, period = '/mo' }: Pricin
       <div className="flex items-baseline gap-2">
         <span
           key={mode}
-          className="btk-anim-fade-down inline-block text-4xl font-bold tracking-tight tabular-nums"
-          style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+          className="btk-anim-fade-down inline-block text-4xl font-normal tracking-tight tabular-nums"
+          style={{ fontFamily: 'var(--serif)' }}
         >
           {price}
         </span>
