@@ -105,6 +105,26 @@ export async function POST(
 
     const companyProducts = (products || []).map((p: { name: string }) => p.name);
 
+    // Load existing user-confirmed fields. These are ground truth —
+    // handed to the model as overrides and never overwritten on upsert.
+    const { data: existingFields } = await supabaseAdmin
+      .from('extracted_fields')
+      .select('id, field_name, field_value, status')
+      .eq('inquiry_id', id)
+      .eq('company_id', auth.companyId);
+
+    const confirmedByField = new Map<string, { id: string; field_value: string | null }>();
+    for (const f of existingFields ?? []) {
+      if (f.status === 'CONFIRMED') {
+        confirmedByField.set(f.field_name, { id: f.id, field_value: f.field_value });
+      }
+    }
+
+    const userConfirmedFields = [...confirmedByField.entries()].map(([name, f]) => ({
+      name,
+      value: f.field_value,
+    }));
+
     // Run RFQ extraction
     const extractionInput = {
       emailText: inquiry.original_message,
@@ -112,6 +132,7 @@ export async function POST(
       companyProducts,
       subject: inquiry.subject,
       sourceChannel: inquiry.source_channel,
+      userConfirmedFields,
     };
 
     let extractionResult;
@@ -139,9 +160,11 @@ export async function POST(
       } else {
         extractionRunId = run.id;
 
-        // Store extracted fields
-        const fieldsToInsert = Object.entries(extractionResult.partiallyExtractedFields || {}).map(
-          ([fieldName, fieldData]) => ({
+        // Store extracted fields (upsert by field_name; user-confirmed
+        // fields are preserved verbatim and never overwritten).
+        const fieldsToInsert = Object.entries(extractionResult.partiallyExtractedFields || {})
+          .filter(([fieldName]) => !confirmedByField.has(fieldName))
+          .map(([fieldName, fieldData]) => ({
             extraction_run_id: run.id,
             inquiry_id: id,
             company_id: auth.companyId,
@@ -151,10 +174,22 @@ export async function POST(
             source_location: fieldData?.source || 'message',
             status: fieldData?.status || 'EXTRACTED',
             human_confirmation_required: fieldData?.requiresConfirmation ?? true,
-          })
-        );
+          }));
 
         if (fieldsToInsert.length > 0) {
+          // Remove previous AI-generated rows whose field_name is re-extracted,
+          // so a re-run never leaves stale duplicates. User-confirmed rows
+          // (which are excluded from fieldsToInsert) are never touched.
+          const newFieldNames = new Set(fieldsToInsert.map((f) => f.field_name));
+          const confirmedIds = new Set([...confirmedByField.values()].map((f) => f.id));
+          const staleIds = (existingFields ?? [])
+            .filter((f: { id: string; field_name: string }) => newFieldNames.has(f.field_name) && !confirmedIds.has(f.id))
+            .map((f: { id: string }) => f.id);
+
+          if (staleIds.length > 0) {
+            await supabaseAdmin.from('extracted_fields').delete().in('id', staleIds);
+          }
+
           await supabaseAdmin.from('extracted_fields').insert(fieldsToInsert);
         }
       }

@@ -71,6 +71,17 @@ const STATUS_COLORS: Record<string, React.CSSProperties> = {
   REJECTED: { background: '#FEF2F2', color: '#B91C1C' },
 }
 
+const editInputStyle: React.CSSProperties = {
+  width: '100%',
+  minWidth: '120px',
+  fontSize: '13px',
+  padding: '4px 8px',
+  border: '1px solid var(--border)',
+  borderRadius: '4px',
+  background: 'var(--surface)',
+  color: 'var(--text)',
+}
+
 export default function QuoteDetailPage() {
   const { t } = useLang()
   const { companyId } = useCompany()
@@ -86,6 +97,11 @@ export default function QuoteDetailPage() {
 
   const [rejectComment, setRejectComment] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
+
+  const [editing, setEditing] = useState(false)
+  const [savingEdit, setSavingEdit] = useState(false)
+  const [editItems, setEditItems] = useState<LineItem[]>([])
+  const [editCosts, setEditCosts] = useState<CostComponent[]>([])
 
   const fetchQuote = useCallback(async () => {
     if (!quoteId || !companyId) return
@@ -180,20 +196,6 @@ export default function QuoteDetailPage() {
     }
   }
 
-  const formatCurrency = (amount: number) => {
-    return `${quote?.currency || 'USD'} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  }
-
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString()
-  }
-
-  const formatDateTime = (dateStr: string) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleString()
-  }
-
   // All hooks must run unconditionally — React crashes (#310 / "Maximum update
   // depth exceeded") when the hook count differs between renders.
   const lineItems = useMemo(
@@ -212,6 +214,82 @@ export default function QuoteDetailPage() {
     () => (quote ? (Array.isArray(quote.versions) ? quote.versions : []) : []),
     [quote]
   )
+
+  const formatCurrency = (amount: number) => {
+    return `${quote?.currency || 'USD'} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '-'
+    return new Date(dateStr).toLocaleDateString()
+  }
+
+  const formatDateTime = (dateStr: string) => {
+    if (!dateStr) return '-'
+    return new Date(dateStr).toLocaleString()
+  }
+
+  const startEditing = () => {
+    setEditItems(lineItems.map((it) => ({ ...it })))
+    setEditCosts(costComponents.map((c) => ({ ...c })))
+    setEditing(true)
+  }
+
+  const updateEditItem = (index: number, patch: Partial<LineItem>) => {
+    setEditItems((prev) => {
+      const next = prev.map((it, i) => (i === index ? { ...it, ...patch } : it))
+      return next.map((it) => ({
+        ...it,
+        total_price: Math.round((Number(it.quantity) || 0) * (Number(it.unit_price) || 0) * 100) / 100,
+      }))
+    })
+  }
+
+  const updateEditCost = (index: number, patch: Partial<CostComponent>) => {
+    setEditCosts((prev) => prev.map((c, i) => (i === index ? { ...c, ...patch } : c)))
+  }
+
+  const handleSaveEdit = async () => {
+    setSavingEdit(true)
+    try {
+      const res = await authFetch(`/api/admin/quotes/${quoteId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          company_id: companyId,
+          line_items: editItems.map((it) => ({
+            product_name: it.product_name,
+            quantity: Number(it.quantity) || 0,
+            unit: it.unit,
+            unit_price: Number(it.unit_price) || 0,
+          })),
+          cost_components: editCosts.map((c) => ({
+            component_name: c.name,
+            amount: Number(c.amount) || 0,
+            source: c.source,
+            status: c.status,
+          })),
+        }),
+      })
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        throw new Error(json.error || 'Failed to save draft')
+      }
+      setEditing(false)
+      await fetchQuote()
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Failed to save draft')
+    } finally {
+      setSavingEdit(false)
+    }
+  }
+
+  const editSubtotal = editItems.reduce((sum, it) => sum + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0), 0)
+
+  const editCostTotal = editCosts.reduce((sum, c) => sum + (Number(c.amount) || 0), 0)
+
+  const editMarginPct =
+    editing && editSubtotal > 0 ? ((editSubtotal - editCostTotal) / editSubtotal) * 100 : null
 
   // Never let a wrong price go out: block Send while any line is zero-quantity or
   // unpriced, the total is unset, or the margin is 0%/missing. Mirrors the
@@ -302,6 +380,58 @@ export default function QuoteDetailPage() {
           </div>
 
           <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {(quote.status === 'DRAFT' || quote.status === 'IN_REVIEW') && !editing && (
+              <button
+                onClick={startEditing}
+                style={{
+                  fontSize: '13px',
+                  padding: '6px 16px',
+                  border: '1px solid var(--border)',
+                  borderRadius: '4px',
+                  background: 'var(--surface)',
+                  color: 'var(--accent)',
+                  cursor: 'pointer',
+                }}
+              >
+                {t('Edit Draft', '編輯草稿')}
+              </button>
+            )}
+            {editing && (
+              <>
+                <button
+                  onClick={() => setEditing(false)}
+                  disabled={savingEdit}
+                  style={{
+                    fontSize: '13px',
+                    padding: '6px 16px',
+                    border: '1px solid var(--border)',
+                    borderRadius: '4px',
+                    background: 'var(--surface)',
+                    color: 'var(--text)',
+                    cursor: savingEdit ? 'not-allowed' : 'pointer',
+                    opacity: savingEdit ? 0.6 : 1,
+                  }}
+                >
+                  {t('Cancel', '取消')}
+                </button>
+                <button
+                  onClick={handleSaveEdit}
+                  disabled={savingEdit}
+                  style={{
+                    fontSize: '13px',
+                    padding: '6px 16px',
+                    border: '1px solid var(--accent)',
+                    borderRadius: '4px',
+                    background: 'var(--accent)',
+                    color: '#fff',
+                    cursor: savingEdit ? 'not-allowed' : 'pointer',
+                    opacity: savingEdit ? 0.6 : 1,
+                  }}
+                >
+                  {savingEdit ? '...' : t('Save Draft', '儲存草稿')}
+                </button>
+              </>
+            )}
             {quote.status === 'DRAFT' && (
               <>
                 <button
@@ -482,13 +612,63 @@ export default function QuoteDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {lineItems.map((item) => (
-                    <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '8px 12px' }}>{item.product_name}</td>
-                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>{item.quantity}</td>
-                      <td style={{ padding: '8px 12px' }}>{item.unit}</td>
-                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(item.unit_price)}</td>
-                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(item.total_price)}</td>
+                  {(editing ? editItems : lineItems).map((item, idx) => (
+                    <tr key={item.id || idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '8px 12px' }}>
+                        {editing ? (
+                          <input
+                            type="text"
+                            value={item.product_name}
+                            onChange={(e) => updateEditItem(idx, { product_name: e.target.value })}
+                            style={editInputStyle}
+                          />
+                        ) : (
+                          item.product_name
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                        {editing ? (
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={item.quantity}
+                            onChange={(e) => updateEditItem(idx, { quantity: Number(e.target.value) })}
+                            style={{ ...editInputStyle, textAlign: 'right', width: '80px' }}
+                          />
+                        ) : (
+                          item.quantity
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 12px' }}>
+                        {editing ? (
+                          <input
+                            type="text"
+                            value={item.unit}
+                            onChange={(e) => updateEditItem(idx, { unit: e.target.value })}
+                            style={{ ...editInputStyle, width: '70px' }}
+                          />
+                        ) : (
+                          item.unit
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                        {editing ? (
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={item.unit_price}
+                            onChange={(e) => updateEditItem(idx, { unit_price: Number(e.target.value) })}
+                            style={{ ...editInputStyle, textAlign: 'right', width: '100px' }}
+                          />
+                        ) : (
+                          formatCurrency(item.unit_price)
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                        {formatCurrency(editing ? item.total_price : item.total_price)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -497,7 +677,9 @@ export default function QuoteDetailPage() {
                     <td colSpan={4} style={{ padding: '8px 12px', textAlign: 'right' }}>
                       {t('Subtotal', '小計')}
                     </td>
-                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(quote.subtotal)}</td>
+                    <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                      {formatCurrency(editing ? editSubtotal : quote.subtotal)}
+                    </td>
                   </tr>
                 </tfoot>
               </table>
@@ -549,25 +731,71 @@ export default function QuoteDetailPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {costComponents.map((comp) => (
-                    <tr key={comp.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                      <td style={{ padding: '8px 12px' }}>{comp.name}</td>
-                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>{formatCurrency(comp.amount)}</td>
-                      <td style={{ padding: '8px 12px', color: 'var(--text-secondary)' }}>{comp.source}</td>
+                  {(editing ? editCosts : costComponents).map((comp, idx) => (
+                    <tr key={comp.id || idx} style={{ borderBottom: '1px solid var(--border)' }}>
+                      <td style={{ padding: '8px 12px' }}>
+                        {editing ? (
+                          <input
+                            type="text"
+                            value={comp.name}
+                            onChange={(e) => updateEditCost(idx, { name: e.target.value })}
+                            style={editInputStyle}
+                          />
+                        ) : (
+                          comp.name
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 12px', textAlign: 'right' }}>
+                        {editing ? (
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={comp.amount}
+                            onChange={(e) => updateEditCost(idx, { amount: Number(e.target.value) })}
+                            style={{ ...editInputStyle, textAlign: 'right', width: '120px' }}
+                          />
+                        ) : (
+                          formatCurrency(comp.amount)
+                        )}
+                      </td>
+                      <td style={{ padding: '8px 12px', color: 'var(--text-secondary)' }}>
+                        {editing ? (
+                          <input
+                            type="text"
+                            value={comp.source}
+                            onChange={(e) => updateEditCost(idx, { source: e.target.value })}
+                            style={editInputStyle}
+                          />
+                        ) : (
+                          comp.source
+                        )}
+                      </td>
                       <td style={{ padding: '8px 12px', textAlign: 'center' }}>
-                        <span
-                          style={{
-                            fontSize: '11px',
-                            padding: '1px 8px',
-                            borderRadius: '4px',
-                            border: '1px solid var(--border)',
-                            ...(comp.status === 'confirmed'
-                              ? { background: '#dcfce7', color: '#166534' }
-                              : { background: '#fef9c3', color: '#854d0e' }),
-                          }}
-                        >
-                          {comp.status}
-                        </span>
+                        {editing ? (
+                          <select
+                            value={comp.status}
+                            onChange={(e) => updateEditCost(idx, { status: e.target.value as 'confirmed' | 'estimated' })}
+                            style={{ fontSize: '13px', padding: '4px 8px', border: '1px solid var(--border)', borderRadius: '4px', background: 'var(--surface)', color: 'var(--text)' }}
+                          >
+                            <option value="estimated">estimated</option>
+                            <option value="confirmed">confirmed</option>
+                          </select>
+                        ) : (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              padding: '1px 8px',
+                              borderRadius: '4px',
+                              border: '1px solid var(--border)',
+                              ...(comp.status === 'confirmed'
+                                ? { background: '#dcfce7', color: '#166534' }
+                                : { background: '#fef9c3', color: '#854d0e' }),
+                            }}
+                          >
+                            {comp.status}
+                          </span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -578,11 +806,15 @@ export default function QuoteDetailPage() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>{t('Total Cost', '總成本')}</span>
-                          <span style={{ fontWeight: 500 }}>{formatCurrency(quote.total_cost)}</span>
+                          <span style={{ fontWeight: 500 }}>
+                            {formatCurrency(editing ? editCostTotal : quote.total_cost)}
+                          </span>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px' }}>
                           <span style={{ color: 'var(--text-secondary)' }}>{t('Margin', '利潤')}</span>
-                          <span style={{ fontWeight: 500 }}>{formatCurrency(quote.margin_amount)}</span>
+                          <span style={{ fontWeight: 500 }}>
+                            {formatCurrency(editing ? editSubtotal - editCostTotal : quote.margin_amount)}
+                          </span>
                         </div>
                         <div
                           style={{
@@ -594,7 +826,13 @@ export default function QuoteDetailPage() {
                           }}
                         >
                           <span>{t('Margin %', '利潤率')}</span>
-                          <span>{quote.margin_percent != null && quote.margin_percent > 0 ? `${quote.margin_percent.toFixed(1)}%` : '—'}</span>
+                          <span>
+                            {editing
+                              ? editMarginPct != null ? `${editMarginPct.toFixed(1)}%` : '—'
+                              : quote.margin_percent != null && quote.margin_percent > 0
+                                ? `${quote.margin_percent.toFixed(1)}%`
+                                : '—'}
+                          </span>
                         </div>
                       </div>
                     </td>

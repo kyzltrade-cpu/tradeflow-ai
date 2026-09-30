@@ -328,6 +328,31 @@ function FieldRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
+function DetailInput({
+  label,
+  value,
+  onChange,
+  type = 'text',
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+}) {
+  return (
+    <div>
+      <label className="block text-[12px] font-medium mb-1" style={{ color: 'var(--text-muted)' }}>{label}</label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full border rounded-[4px] px-2 py-1 text-[13px] focus:outline-none"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+      />
+    </div>
+  );
+}
+
 function Badge({ bg, color, children }: { bg: string; color: string; children: React.ReactNode }) {
   return (
     <span className="text-[11px] font-medium px-2 py-0.5 rounded inline-flex items-center" style={{ background: bg, color }}>
@@ -420,9 +445,71 @@ function TabOverview({
   const [editingNotes, setEditingNotes] = useState(false);
   const [notesValue, setNotesValue] = useState(opp.notes || '');
   const [savingNotes, setSavingNotes] = useState(false);
+  const [editingDetails, setEditingDetails] = useState(false);
+  const [savingDetails, setSavingDetails] = useState(false);
+  const [detailsDraft, setDetailsDraft] = useState<Record<string, string>>({});
   const { showToast } = useToast();
   const { companyId } = useCompany();
   const router = useRouter();
+
+  const startEditingDetails = () => {
+    setDetailsDraft({
+      title: opp.title || '',
+      priority: opp.priority || 'normal',
+      product_category: opp.product_category || '',
+      product_name: opp.product_name || '',
+      estimated_order_value: opp.estimated_order_value != null ? String(opp.estimated_order_value) : '',
+      currency: opp.currency || 'USD',
+      expected_margin_pct: opp.expected_margin_pct != null ? String(opp.expected_margin_pct) : '',
+      country: opp.country || '',
+      destination: opp.destination || '',
+      required_delivery_date: opp.required_delivery_date ? opp.required_delivery_date.slice(0, 10) : '',
+      next_action: opp.next_action || '',
+      next_action_due: opp.next_action_due ? opp.next_action_due.slice(0, 10) : '',
+    });
+    setEditingDetails(true);
+  };
+
+  const handleSaveDetails = async () => {
+    setSavingDetails(true);
+    try {
+      const payload: Record<string, unknown> = { company_id: companyId };
+      if (typeof detailsDraft.title === 'string') payload.title = detailsDraft.title;
+      if (typeof detailsDraft.priority === 'string') payload.priority = detailsDraft.priority;
+      payload.product_category = detailsDraft.product_category || null;
+      payload.product_name = detailsDraft.product_name || null;
+      const ev = detailsDraft.estimated_order_value;
+      payload.estimated_order_value = ev ? Number(ev) : null;
+      payload.currency = detailsDraft.currency || 'USD';
+      const margin = detailsDraft.expected_margin_pct;
+      payload.expected_margin_pct = margin ? Number(margin) : null;
+      payload.country = detailsDraft.country || null;
+      payload.destination = detailsDraft.destination || null;
+      payload.required_delivery_date = detailsDraft.required_delivery_date || null;
+      payload.next_action = detailsDraft.next_action || null;
+      payload.next_action_due = detailsDraft.next_action_due || null;
+
+      const res = await authFetch(`/api/admin/opportunities/${opp.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to save details');
+      const json = await res.json();
+      const updated = json.opportunity || json;
+      if (updated) {
+        for (const k of ['title', 'priority', 'product_category', 'product_name', 'estimated_order_value', 'currency', 'expected_margin_pct', 'country', 'destination', 'required_delivery_date', 'next_action', 'next_action_due']) {
+          if (k in updated) onFieldChange(k, updated[k]);
+        }
+      }
+      setEditingDetails(false);
+      showToast(t('Details saved', '詳情已儲存'), 'success');
+    } catch {
+      showToast(t('Failed to save details', '儲存詳情失敗'), 'error');
+    } finally {
+      setSavingDetails(false);
+    }
+  };
 
   const stageInfo = getStage(opp.stage);
   const priorityInfo = getPriority(opp.priority);
@@ -524,64 +611,182 @@ function TabOverview({
       </SectionCard>
 
       {/* Title + Priority */}
-      <SectionCard title={t('Opportunity Details', '商機詳情')}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
-          <FieldRow label={t('Title', '標題')} value={<span className="font-medium">{opp.title}</span>} />
-          <FieldRow
-            label={t('Priority', '優先級')}
-            value={
-              <Badge bg={`${priorityInfo.color}15`} color={priorityInfo.color}>
-                {t(priorityInfo.en, priorityInfo.zh)}
-              </Badge>
-            }
-          />
-          <FieldRow label={t('Owner', '負責人')} value={opp.owner_id || '—'} />
-          <FieldRow label={t('Trading Model', '交易模式')} value={opp.trading_model} />
-          <FieldRow label={t('Product Category', '產品類別')} value={opp.product_category} />
-          <FieldRow label={t('Product Name', '產品名稱')} value={opp.product_name} />
-          <FieldRow
-            label={t('Est. Order Value', '預估訂單金額')}
-            value={<span className="font-semibold">{formatCurrency(opp.estimated_order_value, opp.currency)}</span>}
-          />
-          <FieldRow label={t('Currency', '幣別')} value={opp.currency} />
-          <FieldRow label={t('Expected Margin', '預期利潤率')} value={opp.expected_margin_pct != null ? `${opp.expected_margin_pct}%` : '—'} />
-          <FieldRow label={t('Country', '國家')} value={opp.country} />
-          <FieldRow label={t('Destination', '目的地')} value={opp.destination} />
-          <FieldRow
-            label={t('Delivery Date', '交貨日期')}
-            value={
-              <span style={{ color: isOverdue(opp.required_delivery_date) && opp.stage !== 'WON' ? 'var(--error)' : undefined }}>
-                {formatDate(opp.required_delivery_date)}
-                {isOverdue(opp.required_delivery_date) && opp.stage !== 'WON' && (
-                  <span className="ml-1.5 text-[11px] font-medium" style={{ color: 'var(--error)' }}>
-                    {t('(overdue)', '（已逾期）')}
-                  </span>
-                )}
-              </span>
-            }
-          />
-          <FieldRow
-            label={t('Next Action', '下一步行動')}
-            value={
-              <span style={{ color: isOverdue(opp.next_action_due) ? 'var(--error)' : undefined }}>
-                {opp.next_action || '—'}
-              </span>
-            }
-          />
-          <FieldRow
-            label={t('Next Action Due', '行動截止日')}
-            value={
-              <span style={{ color: isOverdue(opp.next_action_due) ? 'var(--error)' : undefined }}>
-                {formatDate(opp.next_action_due)}
-                {isOverdue(opp.next_action_due) && (
-                  <span className="ml-1.5 text-[11px] font-medium" style={{ color: 'var(--error)' }}>
-                    {t('(overdue)', '（已逾期）')}
-                  </span>
-                )}
-              </span>
-            }
-          />
-        </div>
+      <SectionCard
+        title={t('Opportunity Details', '商機詳情')}
+        actions={
+          !editingDetails ? (
+            <button
+              onClick={startEditingDetails}
+              className="text-[11px] font-medium px-2.5 py-1 rounded-[4px] border"
+              style={{ borderColor: 'var(--border)', color: 'var(--accent)' }}
+            >
+              {t('Edit', '編輯')}
+            </button>
+          ) : (
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setEditingDetails(false)}
+                disabled={savingDetails}
+                className="text-[11px] px-2.5 py-1 rounded-[4px] border"
+                style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+              >
+                {t('Cancel', '取消')}
+              </button>
+              <button
+                onClick={handleSaveDetails}
+                disabled={savingDetails}
+                className="text-[11px] font-medium px-2.5 py-1 rounded-[4px] text-white disabled:opacity-50"
+                style={{ background: 'var(--accent)' }}
+              >
+                {savingDetails ? '...' : t('Save', '儲存')}
+              </button>
+            </div>
+          )
+        }
+      >
+        {editingDetails ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+            <DetailInput
+              label={t('Title', '標題')}
+              type="text"
+              value={detailsDraft.title || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, title: v }))}
+            />
+            <div>
+              <label className="block text-[12px] font-medium mb-1" style={{ color: 'var(--text-muted)' }}>
+                {t('Priority', '優先級')}
+              </label>
+              <select
+                value={detailsDraft.priority || 'normal'}
+                onChange={(e) => setDetailsDraft((d) => ({ ...d, priority: e.target.value }))}
+                className="w-full border rounded-[4px] px-2 py-1 text-[13px] focus:outline-none"
+                style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+              >
+                {PRIORITIES.map((p) => (
+                  <option key={p.key} value={p.key}>{p.en}</option>
+                ))}
+              </select>
+            </div>
+            <DetailInput
+              label={t('Product Category', '產品類別')}
+              type="text"
+              value={detailsDraft.product_category || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, product_category: v }))}
+            />
+            <DetailInput
+              label={t('Product Name', '產品名稱')}
+              type="text"
+              value={detailsDraft.product_name || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, product_name: v }))}
+            />
+            <DetailInput
+              label={t('Est. Order Value', '預估訂單金額')}
+              type="number"
+              value={detailsDraft.estimated_order_value || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, estimated_order_value: v }))}
+            />
+            <DetailInput
+              label={t('Currency', '幣別')}
+              type="text"
+              value={detailsDraft.currency || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, currency: v }))}
+            />
+            <DetailInput
+              label={t('Expected Margin', '預期利潤率')}
+              type="number"
+              value={detailsDraft.expected_margin_pct || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, expected_margin_pct: v }))}
+            />
+            <DetailInput
+              label={t('Country', '國家')}
+              type="text"
+              value={detailsDraft.country || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, country: v }))}
+            />
+            <DetailInput
+              label={t('Destination', '目的地')}
+              type="text"
+              value={detailsDraft.destination || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, destination: v }))}
+            />
+            <DetailInput
+              label={t('Delivery Date', '交貨日期')}
+              type="date"
+              value={detailsDraft.required_delivery_date || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, required_delivery_date: v }))}
+            />
+            <DetailInput
+              label={t('Next Action', '下一步行動')}
+              type="text"
+              value={detailsDraft.next_action || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, next_action: v }))}
+            />
+            <DetailInput
+              label={t('Next Action Due', '行動截止日')}
+              type="date"
+              value={detailsDraft.next_action_due || ''}
+              onChange={(v) => setDetailsDraft((d) => ({ ...d, next_action_due: v }))}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1">
+            <FieldRow label={t('Title', '標題')} value={<span className="font-medium">{opp.title}</span>} />
+            <FieldRow
+              label={t('Priority', '優先級')}
+              value={
+                <Badge bg={`${priorityInfo.color}15`} color={priorityInfo.color}>
+                  {t(priorityInfo.en, priorityInfo.zh)}
+                </Badge>
+              }
+            />
+            <FieldRow label={t('Owner', '負責人')} value={opp.owner_id || '—'} />
+            <FieldRow label={t('Trading Model', '交易模式')} value={opp.trading_model} />
+            <FieldRow label={t('Product Category', '產品類別')} value={opp.product_category} />
+            <FieldRow label={t('Product Name', '產品名稱')} value={opp.product_name} />
+            <FieldRow
+              label={t('Est. Order Value', '預估訂單金額')}
+              value={<span className="font-semibold">{formatCurrency(opp.estimated_order_value, opp.currency)}</span>}
+            />
+            <FieldRow label={t('Currency', '幣別')} value={opp.currency} />
+            <FieldRow label={t('Expected Margin', '預期利潤率')} value={opp.expected_margin_pct != null ? `${opp.expected_margin_pct}%` : '—'} />
+            <FieldRow label={t('Country', '國家')} value={opp.country} />
+            <FieldRow label={t('Destination', '目的地')} value={opp.destination} />
+            <FieldRow
+              label={t('Delivery Date', '交貨日期')}
+              value={
+                <span style={{ color: isOverdue(opp.required_delivery_date) && opp.stage !== 'WON' ? 'var(--error)' : undefined }}>
+                  {formatDate(opp.required_delivery_date)}
+                  {isOverdue(opp.required_delivery_date) && opp.stage !== 'WON' && (
+                    <span className="ml-1.5 text-[11px] font-medium" style={{ color: 'var(--error)' }}>
+                      {t('(overdue)', '（已逾期）')}
+                    </span>
+                  )}
+                </span>
+              }
+            />
+            <FieldRow
+              label={t('Next Action', '下一步行動')}
+              value={
+                <span style={{ color: isOverdue(opp.next_action_due) ? 'var(--error)' : undefined }}>
+                  {opp.next_action || '—'}
+                </span>
+              }
+            />
+            <FieldRow
+              label={t('Next Action Due', '行動截止日')}
+              value={
+                <span style={{ color: isOverdue(opp.next_action_due) ? 'var(--error)' : undefined }}>
+                  {formatDate(opp.next_action_due)}
+                  {isOverdue(opp.next_action_due) && (
+                    <span className="ml-1.5 text-[11px] font-medium" style={{ color: 'var(--error)' }}>
+                      {t('(overdue)', '（已逾期）')}
+                    </span>
+                  )}
+                </span>
+              }
+            />
+          </div>
+        )}
       </SectionCard>
 
       {/* Customer Info */}
@@ -674,21 +879,54 @@ function TabInquiry({
   inquiry,
   extractedFields,
   t,
+  onFieldsChanged,
 }: {
   inquiry: Inquiry | null;
   extractedFields: ExtractedField[];
   t: (en: string, zh: string) => string;
+  onFieldsChanged: (fields: ExtractedField[]) => void;
 }) {
-  const [confirmingField, setConfirmingField] = useState<string | null>(null);
+  const [busyField, setBusyField] = useState<string | null>(null);
+  const [editingFieldId, setEditingFieldId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const { showToast } = useToast();
 
-  const handleConfirmField = async (fieldId: string) => {
-    setConfirmingField(fieldId);
+  const patchField = async (fieldId: string, value?: string) => {
+    if (!inquiry) return;
+    setBusyField(fieldId);
     try {
-      // Placeholder — would need an API endpoint to confirm fields
-      await new Promise((r) => setTimeout(r, 500));
+      const res = await authFetch(`/api/admin/inquiries/${inquiry.id}/extracted-fields`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ field_id: fieldId, value }),
+      });
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.error || 'Failed to update field');
+      }
+      const json = await res.json();
+      const updated = json.field as ExtractedField;
+      if (updated) {
+        onFieldsChanged(
+          extractedFields.map((f) => (f.id === updated.id ? { ...f, ...updated } : f))
+        );
+      }
+      showToast(value !== undefined ? 'Field updated' : 'Field confirmed', 'success');
+    } catch (err) {
+      console.error('[TabInquiry] PATCH field error:', err);
+      showToast(err instanceof Error ? err.message : 'Failed to update field', 'error');
     } finally {
-      setConfirmingField(null);
+      setBusyField(null);
+      setEditingFieldId(null);
     }
+  };
+
+  const handleConfirmField = async (fieldId: string) => patchField(fieldId);
+  const handleSaveEdit = async (fieldId: string) => patchField(fieldId, editValue);
+
+  const startEdit = (field: ExtractedField) => {
+    setEditValue(field.field_value || '');
+    setEditingFieldId(field.id);
   };
 
   if (!inquiry) {
@@ -760,13 +998,49 @@ function TabInquiry({
               <tbody>
                 {extractedFields.map((field) => {
                   const fieldStatus = FIELD_STATUSES[field.status] || FIELD_STATUSES.EXTRACTED;
+                  const isEditing = editingFieldId === field.id;
+                  const isConfirmed = field.status === 'CONFIRMED';
                   return (
                     <tr key={field.id} className="border-b last:border-b-0" style={{ borderColor: 'var(--border)' }}>
                       <td className="py-2.5 px-3 font-medium" style={{ color: 'var(--text)' }}>
                         {field.field_name}
                       </td>
                       <td className="py-2.5 px-3" style={{ color: 'var(--text)' }}>
-                        {field.field_value || '—'}
+                        {isEditing ? (
+                          <div className="flex items-center gap-2">
+                            <input
+                              value={editValue}
+                              onChange={(e) => setEditValue(e.target.value)}
+                              className="border rounded-[4px] px-2 py-1 text-[13px] w-48 focus:outline-none"
+                              style={{ borderColor: 'var(--border)', background: 'var(--surface)', color: 'var(--text)' }}
+                              autoFocus
+                            />
+                            <button
+                              onClick={() => handleSaveEdit(field.id)}
+                              disabled={busyField === field.id}
+                              className="text-[11px] font-medium px-2 py-0.5 rounded text-white disabled:opacity-50"
+                              style={{ background: 'var(--accent)' }}
+                            >
+                              {busyField === field.id ? '...' : t('Save', '儲存')}
+                            </button>
+                            <button
+                              onClick={() => setEditingFieldId(null)}
+                              className="text-[11px] px-2 py-0.5 rounded border"
+                              style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                            >
+                              {t('Cancel', '取消')}
+                            </button>
+                          </div>
+                        ) : (
+                          <span
+                            className="cursor-pointer decoration-dotted underline underline-offset-4"
+                            style={{ color: isConfirmed ? 'var(--accent)' : 'var(--text)', textDecorationColor: 'var(--border)' }}
+                            title={t('Click to edit', '點擊以編輯')}
+                            onClick={() => startEdit(field)}
+                          >
+                            {field.field_value || '—'}
+                          </span>
+                        )}
                       </td>
                       <td className="py-2.5 px-3">
                         <ConfidenceBar confidence={field.confidence} />
@@ -785,15 +1059,29 @@ function TabInquiry({
                         )}
                       </td>
                       <td className="py-2.5 px-3 text-right">
-                        {(field.status === 'EXTRACTED' || field.status === 'INFERRED') && (
-                          <button
-                            onClick={() => handleConfirmField(field.id)}
-                            disabled={confirmingField === field.id}
-                            className="text-[11px] font-medium px-2 py-0.5 rounded border disabled:opacity-50"
-                            style={{ borderColor: '#059669', color: '#059669' }}
-                          >
-                            {confirmingField === field.id ? '...' : t('Confirm', '確認')}
-                          </button>
+                        {isConfirmed ? (
+                          <Badge bg="#D1FAE5" color="#059669">
+                            ✓ {t('Confirmed', '已確認')}
+                          </Badge>
+                        ) : (
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => startEdit(field)}
+                              disabled={busyField === field.id}
+                              className="text-[11px] font-medium px-2 py-0.5 rounded border disabled:opacity-50"
+                              style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+                            >
+                              {t('Edit', '編輯')}
+                            </button>
+                            <button
+                              onClick={() => handleConfirmField(field.id)}
+                              disabled={busyField === field.id}
+                              className="text-[11px] font-medium px-2 py-0.5 rounded border disabled:opacity-50"
+                              style={{ borderColor: '#059669', color: '#059669' }}
+                            >
+                              {busyField === field.id ? '...' : t('Confirm', '確認')}
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -1309,6 +1597,13 @@ export default function OpportunityDetailPage({ params }: { params: Promise<Para
     });
   }, []);
 
+  const handleFieldsChanged = useCallback((fields: ExtractedField[]) => {
+    setData((prev) => {
+      if (!prev) return prev;
+      return { ...prev, extracted_fields: fields };
+    });
+  }, []);
+
   // Loading skeleton
   if (loading || companyLoading) {
     return (
@@ -1419,7 +1714,12 @@ export default function OpportunityDetailPage({ params }: { params: Promise<Para
           <TabOverview opp={opp} customer={customer} t={t} onFieldChange={handleFieldChange} />
         )}
         {activeTab === 'inquiry' && (
-          <TabInquiry inquiry={inquiry} extractedFields={extracted_fields} t={t} />
+          <TabInquiry
+            inquiry={inquiry}
+            extractedFields={extracted_fields}
+            t={t}
+            onFieldsChanged={handleFieldsChanged}
+          />
         )}
         {activeTab === 'cost' && (
           <TabCostMargin costBuildUp={cost_build_up} currency={opp.currency} t={t} />

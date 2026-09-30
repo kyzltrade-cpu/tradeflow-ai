@@ -38,6 +38,12 @@ export interface ExtractionInput {
   requirementTemplate?: ProductRequirementTemplate | null;
   subject?: string | null;
   sourceChannel?: SourceChannel;
+  /**
+   * Field values the user has explicitly confirmed or edited.
+   * These are ground truth — the AI must reproduce them exactly and
+   * never re-derive or contradict them.
+   */
+  userConfirmedFields?: Array<{ name: string; value: string | null }>;
 }
 
 export interface MissingField {
@@ -93,6 +99,34 @@ function parseJsonResponse<T>(raw: string): T {
     .replace(/^```(?:json)?\s*\n?/i, '')
     .replace(/\n?```\s*$/i, '')
     .trim();
+
+  // The model sometimes appends trailing prose after a valid JSON object.
+  // Locate the first `{` and extract a balanced JSON object instead of
+  // requiring the entire response to parse as JSON.
+  const start = cleaned.indexOf('{');
+  if (start !== -1) {
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+    for (let i = start; i < cleaned.length; i++) {
+      const ch = cleaned[i];
+      if (inString) {
+        if (escaped) escaped = false;
+        else if (ch === '\\') escaped = true;
+        else if (ch === '"') inString = false;
+        continue;
+      }
+      if (ch === '"') inString = true;
+      else if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) {
+          return JSON.parse(cleaned.slice(start, i + 1)) as T;
+        }
+      }
+    }
+  }
+
   return JSON.parse(cleaned) as T;
 }
 
@@ -148,6 +182,7 @@ export async function extractTradingRequest(
     requirementTemplate,
     subject,
     sourceChannel = 'email',
+    userConfirmedFields,
   } = params;
 
   const systemPrompt = `You are a senior trade operations data extraction specialist. Your job is to extract structured trading request data from customer inquiry emails and their attachments.
@@ -214,6 +249,11 @@ ${emailText}
 ${attachmentsBlock}
 ${productContext}
 ${templateContext}
+${userConfirmedFields && userConfirmedFields.length > 0
+    ? `\n\nUSER-CONFIRMED VALUES (ground truth — the user has already verified these. Use EXACTLY these values, mark them CONFIRMED, and do NOT change or contradict them even if the email seems to differ):\n${userConfirmedFields
+        .map((f) => `- ${f.name}: ${f.value ?? ''}`)
+        .join('\n')}`
+    : ''}
 
 Return the extracted TradingRequest as a JSON object.`;
 
@@ -227,7 +267,7 @@ Return the extracted TradingRequest as a JSON object.`;
   const parsed = parseJsonResponse<TradingRequest>(rawResponse);
 
   // Post-processing: enforce rules that the model might violate
-  return sanitizeExtractedRequest(parsed, sourceChannel);
+  return sanitizeExtractedRequest(parsed, sourceChannel, userConfirmedFields);
 }
 
 /**
@@ -239,12 +279,38 @@ Return the extracted TradingRequest as a JSON object.`;
 function sanitizeExtractedRequest(
   raw: TradingRequest,
   sourceChannel: SourceChannel,
+  userConfirmedFields?: Array<{ name: string; value: string | null }>,
 ): TradingRequest {
   const fields = raw.partiallyExtractedFields ?? {};
+
+  // User-confirmed fields are ground truth. Whatever the model returned,
+  // overwrite with the confirmed value and mark as CONFIRMED so they can
+  // never be re-derived, re-confirmed, or downgraded.
+  const overrides = new Map((userConfirmedFields ?? []).map((f) => [f.name, f]));
 
   for (const key of Object.keys(fields)) {
     const field = fields[key];
     if (!field) continue;
+
+    const confirmed = overrides.get(key);
+    if (confirmed) {
+      const evidence: ExtractedField['evidence'] = {
+        value: confirmed.value,
+        confidence: 1,
+        source: 'user_confirmed',
+        status: 'CONFIRMED',
+        requiresConfirmation: false,
+        rawText: null,
+      };
+      field.value = confirmed.value;
+      field.status = 'CONFIRMED';
+      field.confidence = 1;
+      field.requiresConfirmation = false;
+      field.source = 'user_confirmed';
+      field.evidence = evidence;
+      overrides.delete(key);
+      continue;
+    }
 
     // Enforce confirmation requirement
     if (field.status === 'INFERRED' || field.status === 'CONFLICTING') {
@@ -268,6 +334,26 @@ function sanitizeExtractedRequest(
         rawText: null,
       };
     }
+  }
+
+  // Any confirmed override the model omitted entirely must still be present
+  for (const [name, confirmed] of overrides) {
+    fields[name] = {
+      name,
+      value: confirmed.value,
+      confidence: 1,
+      source: 'user_confirmed',
+      status: 'CONFIRMED',
+      requiresConfirmation: false,
+      evidence: {
+        value: confirmed.value,
+        confidence: 1,
+        source: 'user_confirmed',
+        status: 'CONFIRMED',
+        requiresConfirmation: false,
+        rawText: null,
+      },
+    };
   }
 
   // Force source channel from input
