@@ -102,7 +102,7 @@ export async function GET(
     const contact = contactResult.data;
     const customer = customerResult.data;
     const customerName =
-      (contact && (contact.name || contact.trading_name)) ||
+      (contact && contact.full_name) ||
       (customer && (customer.trading_name || customer.legal_name)) ||
       titleLead ||
       null;
@@ -121,7 +121,7 @@ export async function GET(
       line_items: lineItems,
       cost_components: costComponents,
       customer_name: customerName,
-      contact_name: (contact && (contact.name || contact.trading_name)) || null,
+      contact_name: contact?.full_name || null,
       contact_email: contact?.email || null,
       opportunity_title: titleLead,
       subtotal: quote.total_amount,

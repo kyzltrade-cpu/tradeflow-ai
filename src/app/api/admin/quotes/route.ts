@@ -77,7 +77,7 @@ export async function GET(req: NextRequest) {
         ? supabaseAdmin.from('customers').select('id, trading_name, legal_name').in('id', custIds)
         : Promise.resolve({ data: [] as any[] }),
       contactIds.length
-        ? supabaseAdmin.from('contacts').select('id, name, trading_name').in('id', contactIds)
+        ? supabaseAdmin.from('contacts').select('id, full_name, email').in('id', contactIds)
         : Promise.resolve({ data: [] as any[] }),
     ]);
 
@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
       const customer = q.customer_id ? custById.get(q.customer_id) : null;
       const opp = q.opportunity_id ? oppById.get(q.opportunity_id) : null;
       const customerName =
-        (contact && (contact.name || contact.trading_name)) ||
+        (contact && contact.full_name) ||
         (customer && (customer.trading_name || customer.legal_name)) ||
         titleLead(opp?.title) ||
         null;
@@ -109,6 +109,8 @@ export async function GET(req: NextRequest) {
       return {
         ...q,
         customer_name: customerName,
+        contact_name: contact?.full_name ?? null,
+        contact_email: contact?.email ?? null,
         margin_percent: marginPercent != null ? Math.round(marginPercent * 100) / 100 : null,
       };
     });

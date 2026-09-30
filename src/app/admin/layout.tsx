@@ -35,15 +35,18 @@ interface InboxCounts {
   human: number;
   ai: number;
   total: number;
+  queue_you: number;
+  queue_approve: number;
 }
 
-const EMPTY_COUNTS: InboxCounts = { needs_reply: 0, waiting: 0, bookmarked: 0, human: 0, ai: 0, total: 0 };
+const EMPTY_COUNTS: InboxCounts = { needs_reply: 0, waiting: 0, bookmarked: 0, human: 0, ai: 0, total: 0, queue_you: 0, queue_approve: 0 };
 
 /* Inbox folder icons */
 const ICON_MAIL = 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75';
 const ICON_SPARKLES = 'M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z';
 const ICON_CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
 const ICON_INBOX = 'M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.929 8.298a2.25 2.25 0 00-2.156-1.548h-2.986a2.25 2.25 0 01-2.157 1.54H11.37a2.25 2.25 0 01-2.157-1.54H6.227a2.25 2.25 0 00-2.156 1.548L1.6 13.177a5.25 5.25 0 00-.1.661z';
+const ICON_QUEUE = 'M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.008v.008H3.75V6.75zm0 5.25h.008v.008H3.75V12zm0 5.25h.008v.008H3.75v-.008z';
 
 /* MVP focus: inbox -> draft -> human approves -> send. These areas are
    intentionally hidden until the quote flow is the centerpiece. */
@@ -51,10 +54,23 @@ const HIDDEN_NAV_HREFS = new Set(['/admin/opportunities', '/admin/templates']);
 
 const NAV_GROUPS: NavGroup[] = [
   {
-    label: { en: 'Inbox', zh: '收件匣' },
+    label: { en: 'Queue', zh: '工作隊列' },
     items: [
       {
         href: '/admin',
+        en: 'Queue',
+        zh: '工作隊列',
+        icon: ICON_QUEUE,
+        countKey: 'queue_you',
+        badgeTone: 'accent',
+      },
+    ],
+  },
+  {
+    label: { en: 'Inbox', zh: '收件匣' },
+    items: [
+      {
+        href: '/admin/inbox',
         en: 'All mail',
         zh: '全部郵件',
         icon: ICON_INBOX,
@@ -62,7 +78,7 @@ const NAV_GROUPS: NavGroup[] = [
         badgeTone: 'muted',
       },
       {
-        href: '/admin?view=waiting',
+        href: '/admin/inbox?view=waiting',
         en: 'Waiting on them',
         zh: '等客戶',
         icon: ICON_CLOCK,
@@ -70,7 +86,7 @@ const NAV_GROUPS: NavGroup[] = [
         badgeTone: 'muted',
       },
       {
-        href: '/admin?view=needs_reply',
+        href: '/admin/inbox?view=needs_reply',
         en: 'Waiting on you',
         zh: '待回覆',
         icon: ICON_MAIL,
@@ -78,7 +94,7 @@ const NAV_GROUPS: NavGroup[] = [
         badgeTone: 'accent',
       },
       {
-        href: '/admin?view=ai',
+        href: '/admin/inbox?view=ai',
         en: 'AI handled',
         zh: 'AI 已處理',
         icon: ICON_SPARKLES,
@@ -160,11 +176,12 @@ function SidebarItem({
   }, [item.href]);
 
   // Inbox folder items (with ?view=) become active when the current view matches.
-  // View-less items (All mail) get active when on /admin or a reading pane without a view param.
+  // View-less items get active when on their own page or a child reading pane
+  // (All mail at /admin/inbox stays active inside the /admin/inbox/{id} pane).
+  const isChildOfBase = baseHref === '/admin/inbox' && pathname.startsWith('/admin/inbox/');
   const active = view
     ? pathname === baseHref && searchParams.get('view') === view
-    : (pathname === baseHref || (baseHref === '/admin' && pathname.startsWith('/admin/inbox/'))) &&
-      !searchParams.get('view');
+    : (pathname === baseHref || isChildOfBase) && !searchParams.get('view');
 
   const count = item.countKey ? counts[item.countKey] ?? 0 : 0;
   const showCount = typeof item.countKey === 'string' && count > 0;
@@ -387,25 +404,34 @@ function AdminShell({ children }: { children: ReactNode }) {
   const [counts, setCounts] = useState<InboxCounts>(EMPTY_COUNTS);
 
   // Email surfaces (inbox list + reading pane) render full-bleed like a mail
-  // client; the rest of the admin app keeps its padded dashboard container.
-  const isEmailSurface = pathname === '/admin' || pathname.startsWith('/admin/inbox');
+  // client; the rest of the admin app (including the Queue home) keeps the
+  // padded dashboard container.
+  const isEmailSurface = pathname.startsWith('/admin/inbox');
 
   const refreshCounts = useCallback(async () => {
     try {
-      const res = await authFetch('/api/admin/inbox?filter=all');
-      if (!res.ok) return;
-      const json = (await res.json()) as { counts?: InboxCounts };
-      const counts = json?.counts;
+      const [inboxRes, queueRes] = await Promise.all([
+        authFetch('/api/admin/inbox?filter=all'),
+        authFetch('/api/admin/queue'),
+      ]);
+      const inboxJson = inboxRes.ok ? ((await inboxRes.json()) as { counts?: InboxCounts }) : null;
+      const queueJson = queueRes.ok ? ((await queueRes.json()) as { totals?: Record<string, number> }) : null;
+      const counts = inboxJson?.counts;
+      const totals = queueJson?.totals;
+      const next: Partial<InboxCounts> = {};
       if (counts && typeof counts === 'object') {
-        setCounts({
-          needs_reply: counts.needs_reply ?? 0,
-          waiting: counts.waiting ?? 0,
-          bookmarked: counts.bookmarked ?? 0,
-          human: counts.human ?? 0,
-          ai: counts.ai ?? 0,
-          total: counts.total ?? 0,
-        });
+        next.needs_reply = counts.needs_reply ?? 0;
+        next.waiting = counts.waiting ?? 0;
+        next.bookmarked = counts.bookmarked ?? 0;
+        next.human = counts.human ?? 0;
+        next.ai = counts.ai ?? 0;
+        next.total = counts.total ?? 0;
       }
+      if (totals && typeof totals === 'object') {
+        next.queue_you = totals.you_owe ?? 0;
+        next.queue_approve = totals.needs_approval ?? 0;
+      }
+      setCounts((prev) => ({ ...prev, ...next }));
     } catch {
       // silent — counts are non-critical
     }
@@ -562,13 +588,13 @@ function AdminShell({ children }: { children: ReactNode }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9 6 6m0 0-6 6m6-6H3.75" />
               </svg>
             </button>
-            {counts.needs_reply > 0 && (
+            {counts.queue_you > 0 && (
               <span
                 className="mt-2 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold leading-none"
                 style={{ background: 'var(--sb-avatar-bg)', color: 'var(--sb-avatar-text)' }}
-                title={`${counts.needs_reply} focused`}
+                title={`${counts.queue_you} need action`}
               >
-                {counts.needs_reply > 99 ? '99+' : counts.needs_reply}
+                {counts.queue_you > 99 ? '99+' : counts.queue_you}
               </span>
             )}
           </aside>

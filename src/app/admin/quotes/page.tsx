@@ -151,7 +151,7 @@ export default function QuotesPage() {
           </p>
         </div>
         <Link
-          href="/admin"
+          href="/admin/inbox"
           className="text-[13px] md:text-[14px] font-medium px-4 py-2.5 rounded-[4px] text-white text-center w-full sm:w-auto"
           style={{ background: 'var(--accent)' }}
         >
@@ -243,7 +243,7 @@ export default function QuotesPage() {
           </p>
           {!search && !statusFilter && !currencyFilter && (
             <Link
-              href="/admin"
+              href="/admin/inbox"
               className="inline-block text-[13px] font-medium px-4 py-2 rounded-[4px] text-white"
               style={{ background: 'var(--accent)' }}
             >

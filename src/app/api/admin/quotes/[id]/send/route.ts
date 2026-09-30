@@ -131,24 +131,15 @@ export async function POST(
     if (!toEmail && quote.contact_id) {
       const { data: contact } = await supabaseAdmin
         .from('contacts')
-        .select('email, name')
+        .select('email, full_name')
         .eq('id', quote.contact_id)
         .single();
       toEmail = contact?.email || null;
     }
 
-    if (!toEmail && quote.customer_id) {
-      const { data: customer } = await supabaseAdmin
-        .from('customers')
-        .select('email, name')
-        .eq('id', quote.customer_id)
-        .single();
-      toEmail = customer?.email || null;
-    }
-
     if (!toEmail) {
       return NextResponse.json(
-        { error: 'No recipient email found. Provide recipient_email or link a contact/customer with an email.' },
+        { error: 'No recipient email found. Provide recipient_email or link a contact with an email.' },
         { status: 400 }
       );
     }

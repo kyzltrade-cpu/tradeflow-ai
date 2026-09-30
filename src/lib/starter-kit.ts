@@ -11,6 +11,9 @@ export interface StarterKitSummary {
   skippedReason?: string;
   products: number;
   suppliers: number;
+  customers: number;
+  contacts: number;
+  quotesLinked: number;
   faqRules: number;
   goals: number;
   conversations: number;
@@ -454,6 +457,272 @@ const STARTER_GOAL = {
     'New lead: {client_info} | Product: {product} | Volume: {volume} | Status: {status}. Priority: {priority}',
 };
 
+interface CustomerSeed {
+  legal_name: string;
+  trading_name: string;
+  email_domain: string;
+  country: string;
+  industry: string;
+  currency: string;
+  preferred_language: string;
+  notes: string;
+  tags: string[];
+}
+
+interface ContactSeed {
+  customer_trading_name: string;
+  full_name: string;
+  email: string | null;
+  title: string;
+  preferred_language: string;
+}
+
+const DEMO_CUSTOMERS: CustomerSeed[] = [
+  {
+    legal_name: 'Nagoya Greens Trading Co., Ltd.',
+    trading_name: 'Nagoya Greens',
+    email_domain: 'nagoya-greens.jp',
+    country: 'Japan',
+    industry: 'Stationery & Eco Products',
+    currency: 'JPY',
+    preferred_language: 'en',
+    notes: 'Stationery retailer. Orders bamboo notebooks and branded stationery in bulk.',
+    tags: ['stationery', 'eco', 'jp'],
+  },
+  {
+    legal_name: 'Müller Event GmbH',
+    trading_name: 'Müller Event',
+    email_domain: 'mueller-event.de',
+    country: 'Germany',
+    industry: 'Event / Promo',
+    currency: 'EUR',
+    preferred_language: 'de',
+    notes: 'Sustainably-minded event agency. Buys giveaway items for summit packs.',
+    tags: ['event', 'promo', 'de'],
+  },
+  {
+    legal_name: 'Blue Ocean Retail Ltd.',
+    trading_name: 'Blue Ocean Retail',
+    email_domain: 'blueoceanretail.com',
+    country: 'South Korea',
+    industry: 'Retail',
+    currency: 'KRW',
+    preferred_language: 'en',
+    notes: 'Retail buyer for insulated drinkware. Repeated orders for steel bottles.',
+    tags: ['retail', 'drinkware', 'kr'],
+  },
+  {
+    legal_name: 'Northwind Promotions Inc.',
+    trading_name: 'Northwind Promo',
+    email_domain: 'northwindpromo.com',
+    country: 'Hong Kong',
+    industry: 'Promotional Products',
+    currency: 'HKD',
+    preferred_language: 'en',
+    notes: 'Promo distributor. Runs retail launch and trade-show promo lines.',
+    tags: ['promo', 'distributor', 'hk'],
+  },
+  {
+    legal_name: 'Harbin Trading Co., Ltd.',
+    trading_name: 'Harbin Trading',
+    email_domain: 'harbingtrade.com',
+    country: 'China',
+    industry: 'Promotional Gifts',
+    currency: 'CNY',
+    preferred_language: 'zh',
+    notes: 'China-based trader. Sourcing keychain bottle openers and giveaway lines.',
+    tags: ['gifts', 'cn'],
+  },
+  {
+    legal_name: 'Ocean & Co Pte Ltd.',
+    trading_name: 'Ocean & Co',
+    email_domain: 'oceancoltd.com',
+    country: 'Singapore',
+    industry: 'Corporate Gifts',
+    currency: 'USD',
+    preferred_language: 'en',
+    notes: 'Corporate event gifts buyer. Buys vacuum bottles and canvas totes.',
+    tags: ['corporate', 'gifts', 'sg'],
+  },
+  {
+    legal_name: 'Fontaine Paris SAS',
+    trading_name: 'Fontaine Paris',
+    email_domain: 'fontaine-paris.fr',
+    country: 'France',
+    industry: 'Event / Promo',
+    currency: 'EUR',
+    preferred_language: 'fr',
+    notes: 'Paris agency. Orders lanyards and badges for conferences.',
+    tags: ['event', 'fr'],
+  },
+  {
+    legal_name: 'LuxE Events HK Limited',
+    trading_name: 'LuxE Events HK',
+    email_domain: 'luxeevents.hk',
+    country: 'Hong Kong',
+    industry: 'Corporate Events',
+    currency: 'HKD',
+    preferred_language: 'en',
+    notes: 'HK event organiser. Corporate giveaway tote bags for January events.',
+    tags: ['event', 'hk'],
+  },
+  {
+    legal_name: 'Rahma Bags CV',
+    trading_name: 'Rahma Bags',
+    email_domain: 'rahma-bags.co',
+    country: 'Indonesia',
+    industry: 'Giftware',
+    currency: 'IDR',
+    preferred_language: 'en',
+    notes: 'Giftware buyer in Jakarta. Executive gift sets for corporate clients.',
+    tags: ['gifts', 'id'],
+  },
+  {
+    legal_name: 'Kim Trading Co., Ltd.',
+    trading_name: 'Kim Trading',
+    email_domain: 'kimtrading.co.kr',
+    country: 'South Korea',
+    industry: 'Trading / Bags',
+    currency: 'KRW',
+    preferred_language: 'ko',
+    notes: 'Seoul trading house. Canvas messenger bags and apparel accessories.',
+    tags: ['trading', 'bags', 'kr'],
+  },
+  {
+    legal_name: 'Hoffmann GmbH',
+    trading_name: 'Hoffmann GmbH',
+    email_domain: 'hoffmann-gmbh.de',
+    country: 'Germany',
+    industry: 'Apparel / Promo',
+    currency: 'EUR',
+    preferred_language: 'de',
+    notes: 'Berlin buyer. Embroidered caps for trade-show staff.',
+    tags: ['apparel', 'de'],
+  },
+  {
+    legal_name: 'Greenfields Catering Ltd.',
+    trading_name: 'Greenfields Catering',
+    email_domain: 'greenfields-catering.com',
+    country: 'United Kingdom',
+    industry: 'Catering',
+    currency: 'GBP',
+    preferred_language: 'en',
+    notes: 'UK caterer. Annual branded staff kit order.',
+    tags: ['catering', 'uk'],
+  },
+  {
+    legal_name: 'Mendes Promo LTDA',
+    trading_name: 'Mendes Promo',
+    email_domain: 'mendespromo.com.br',
+    country: 'Brazil',
+    industry: 'Promotional Products',
+    currency: 'BRL',
+    preferred_language: 'pt',
+    notes: 'São Paulo promo distributor. Woven polypropylene bags for supermarkets.',
+    tags: ['promo', 'br'],
+  },
+  {
+    legal_name: 'Verde & Co S.r.l.',
+    trading_name: 'Verde & Co',
+    email_domain: 'verdegoods.it',
+    country: 'Italy',
+    industry: 'Giftware',
+    currency: 'EUR',
+    preferred_language: 'it',
+    notes: 'Milan giftware distributor. Ceramic mugs and eco desk items.',
+    tags: ['gifts', 'it'],
+  },
+  {
+    legal_name: 'Petrova Supply LLC',
+    trading_name: 'Petrova Supply',
+    email_domain: 'petrova-supply.ru',
+    country: 'Russia',
+    industry: 'Tech Accessories',
+    currency: 'RUB',
+    preferred_language: 'ru',
+    notes: 'Moscow buyer. Cordura laptop sleeves in black only.',
+    tags: ['tech', 'ru'],
+  },
+  {
+    legal_name: 'Sharma Imports Pvt. Ltd.',
+    trading_name: 'Sharma Imports',
+    email_domain: 'sharma-imports.in',
+    country: 'India',
+    industry: 'Giftware',
+    currency: 'INR',
+    preferred_language: 'en',
+    notes: 'Delhi importer. Ceramic travel mugs with custom lid colours.',
+    tags: ['imports', 'in'],
+  },
+  {
+    legal_name: 'Almeida & Companhia',
+    trading_name: 'Almeida & Co',
+    email_domain: 'almeida.pt',
+    country: 'Portugal',
+    industry: 'Sports / Promo',
+    currency: 'EUR',
+    preferred_language: 'pt',
+    notes: 'Lisbon buyer. Silicone wristbands for a charity run.',
+    tags: ['sports', 'pt'],
+  },
+  {
+    legal_name: 'Shenzhen Retail Chain Co., Ltd.',
+    trading_name: 'Shenzhen Retail Chain',
+    email_domain: '',
+    country: 'China',
+    industry: 'Retail',
+    currency: 'CNY',
+    preferred_language: 'zh',
+    notes: 'Shenzhen retail chain. Enquiry current stock of insulated bottles.',
+    tags: ['retail', 'cn'],
+  },
+  {
+    legal_name: 'Smart Cup Brand (Wei Landt)',
+    trading_name: 'Smart Cup Brand',
+    email_domain: '',
+    country: 'China',
+    industry: 'Smart Drinkware',
+    currency: 'CNY',
+    preferred_language: 'zh',
+    notes: 'New smart water-bottle brand exploring temperature-display stock or ODM.',
+    tags: ['smart', 'cn'],
+  },
+  {
+    legal_name: 'George Wong Trading',
+    trading_name: 'George Wong Trading',
+    email_domain: '',
+    country: 'Hong Kong',
+    industry: 'Retail',
+    currency: 'HKD',
+    preferred_language: 'zh',
+    notes: 'HK buyer. Current stock of 500ml insulated bottles.',
+    tags: ['retail', 'hk'],
+  },
+];
+
+const DEMO_CONTACTS: ContactSeed[] = [
+  { customer_trading_name: 'Nagoya Greens', full_name: 'Tom Nakamura', email: 'tom@nagoya-greens.jp', title: 'Purchasing Manager', preferred_language: 'en' },
+  { customer_trading_name: 'Müller Event', full_name: 'Hans Müller', email: 'hans.mueller@mueller-event.de', title: 'Event Producer', preferred_language: 'de' },
+  { customer_trading_name: 'Blue Ocean Retail', full_name: 'James Park', email: 'james.park@blueoceanretail.com', title: 'Senior Buyer', preferred_language: 'en' },
+  { customer_trading_name: 'Northwind Promo', full_name: 'Amy Liu', email: 'amy.l@northwindpromo.com', title: 'Head of Procurement', preferred_language: 'en' },
+  { customer_trading_name: 'Harbin Trading', full_name: 'Emily Zhao', email: 'emily.zhao@harbingtrade.com', title: 'Lead Sourcer', preferred_language: 'zh' },
+  { customer_trading_name: 'Ocean & Co', full_name: 'Maria Chen', email: 'partner@oceancoltd.com', title: 'Procurement Partner', preferred_language: 'en' },
+  { customer_trading_name: 'Fontaine Paris', full_name: 'Chloe Fontaine', email: 'chloe@fontaine-paris.fr', title: 'Operations Director', preferred_language: 'fr' },
+  { customer_trading_name: 'LuxE Events HK', full_name: 'Amelia Wong', email: 'amelia.wong@luxeevents.hk', title: 'Event Buyer', preferred_language: 'en' },
+  { customer_trading_name: 'Rahma Bags', full_name: 'Siti Rahma', email: 'siti@rahma-bags.co', title: 'Owner', preferred_language: 'en' },
+  { customer_trading_name: 'Kim Trading', full_name: 'Daniel Kim', email: 'daniel@kimtrading.co.kr', title: 'Director', preferred_language: 'ko' },
+  { customer_trading_name: 'Hoffmann GmbH', full_name: 'Ingrid Hoffmann', email: 'ingrid@hoffmann-gmbh.de', title: 'Marketing Lead', preferred_language: 'de' },
+  { customer_trading_name: 'Greenfields Catering', full_name: 'Peter Hale', email: 'peter@greenfields-catering.com', title: 'Field Ops Manager', preferred_language: 'en' },
+  { customer_trading_name: 'Mendes Promo', full_name: 'Ricardo Mendes', email: 'ricardo@mendespromo.com.br', title: 'Buyer', preferred_language: 'pt' },
+  { customer_trading_name: 'Verde & Co', full_name: 'Sofia Rossi', email: 'sofia.rossi@verdegoods.it', title: 'Product Manager', preferred_language: 'it' },
+  { customer_trading_name: 'Petrova Supply', full_name: 'Elena Petrova', email: 'elena@petrova-supply.ru', title: 'Procurement Lead', preferred_language: 'ru' },
+  { customer_trading_name: 'Sharma Imports', full_name: 'Priya Sharma', email: 'priya@sharma-imports.in', title: 'Import Manager', preferred_language: 'en' },
+  { customer_trading_name: 'Almeida & Co', full_name: 'Sara Almeida', email: 'sara@almeida.pt', title: 'Buyer', preferred_language: 'pt' },
+  { customer_trading_name: 'Shenzhen Retail Chain', full_name: 'Lin Jie', email: null, title: 'Purchasing Manager', preferred_language: 'zh' },
+  { customer_trading_name: 'Smart Cup Brand', full_name: 'Wei Landt', email: null, title: 'Founder', preferred_language: 'zh' },
+  { customer_trading_name: 'George Wong Trading', full_name: 'George Wong', email: null, title: 'Owner', preferred_language: 'zh' },
+];
+
 interface ConversationSeed {
   contact_name: string;
   contact_email: string;
@@ -625,6 +894,117 @@ async function seedSuppliers(companyId: string): Promise<number> {
   const { error } = await supabaseAdmin.from('suppliers').insert(rows);
   if (error) throw new Error(`suppliers insert failed: ${error.message}`);
   return rows.length;
+}
+
+async function seedCustomers(companyId: string): Promise<number> {
+  const { data: existing } = await supabaseAdmin
+    .from('customers')
+    .select('trading_name')
+    .eq('company_id', companyId)
+    .is('deleted_at', null);
+  const have = new Set(
+    ((existing ?? []) as Array<{ trading_name: string }>).map((c) => c.trading_name)
+  );
+
+  const rows = DEMO_CUSTOMERS.filter((c) => !have.has(c.trading_name)).map((c) => ({
+    company_id: companyId,
+    legal_name: c.legal_name,
+    trading_name: c.trading_name,
+    email_domain: c.email_domain || null,
+    country: c.country,
+    industry: c.industry,
+    currency: c.currency,
+    preferred_language: c.preferred_language,
+    notes: c.notes,
+    tags: c.tags,
+  }));
+
+  if (rows.length === 0) return 0;
+  const { error } = await supabaseAdmin.from('customers').insert(rows);
+  if (error) throw new Error(`customers insert failed: ${error.message}`);
+  return rows.length;
+}
+
+async function seedContacts(companyId: string): Promise<number> {
+  const { data: customers } = await supabaseAdmin
+    .from('customers')
+    .select('id, trading_name')
+    .eq('company_id', companyId)
+    .is('deleted_at', null);
+  const customerByTradingName = new Map<string, string>(
+    ((customers ?? []) as Array<{ id: string; trading_name: string }>).map((c) => [c.trading_name, c.id])
+  );
+
+  const { data: existing } = await supabaseAdmin
+    .from('contacts')
+    .select('email')
+    .eq('company_id', companyId)
+    .is('deleted_at', null);
+  const have = new Set(
+    ((existing ?? []) as Array<{ email: string | null }>).map((c) => c.email)
+  );
+
+  const rows = DEMO_CONTACTS.filter((c) => c.email && !have.has(c.email)).map((c) => ({
+    company_id: companyId,
+    customer_id: customerByTradingName.get(c.customer_trading_name) || null,
+    full_name: c.full_name,
+    email: c.email,
+    title: c.title,
+    is_primary: true,
+    preferred_language: c.preferred_language,
+  }));
+
+  if (rows.length === 0) return 0;
+  const { error } = await supabaseAdmin.from('contacts').insert(rows);
+  if (error) throw new Error(`contacts insert failed: ${error.message}`);
+  return rows.length;
+}
+
+async function linkQuotesToCustomers(companyId: string): Promise<number> {
+  const { data: contacts } = await supabaseAdmin
+    .from('contacts')
+    .select('id, customer_id, full_name, email')
+    .eq('company_id', companyId)
+    .is('deleted_at', null);
+
+  const { data: quotes } = await supabaseAdmin
+    .from('quotes')
+    .select('id, opportunity_id')
+    .eq('company_id', companyId)
+    .is('contact_id', null);
+
+  const oppIds = [
+    ...new Set((quotes ?? []).map((q: { opportunity_id: string | null }) => q.opportunity_id).filter(Boolean)),
+  ];
+  const oppTitles = new Map<string, string | null>();
+  if (oppIds.length) {
+    const { data: opps } = await supabaseAdmin
+      .from('opportunities')
+      .select('id, title')
+      .in('id', oppIds);
+    for (const o of opps ?? []) oppTitles.set(o.id, o.title);
+  }
+
+  let linked = 0;
+  for (const quote of quotes ?? []) {
+    const title = oppTitles.get(quote.opportunity_id) || '';
+    const stripped = title.replace(/^\s*Sample\s*[-–—]\s*/i, '').trim();
+    const lead = stripped.split(/\s*[-–—]\s*|—/)[0]?.trim() || '';
+    const contact = (contacts ?? []).find((c: { full_name: string | null }) =>
+      lead.includes(c.full_name || '') || (c.full_name || '').includes(lead)
+    );
+    if (!contact) continue;
+    const { error } = await supabaseAdmin
+      .from('quotes')
+      .update({
+        customer_id: contact.customer_id,
+        contact_id: contact.id,
+      })
+      .eq('id', quote.id);
+    if (error) continue;
+    linked += 1;
+  }
+  return linked;
 }
 
 async function seedFaqRules(companyId: string): Promise<number> {
@@ -1005,6 +1385,9 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
     seeded: false,
     products: 0,
     suppliers: 0,
+    customers: 0,
+    contacts: 0,
+    quotesLinked: 0,
     faqRules: 0,
     goals: 0,
     conversations: 0,
@@ -1023,13 +1406,24 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
   }
 
   if (companyId === DEMO_COMPANY_ID) {
-    summary.skippedReason = 'protected-demo-company';
+    // Demo workspace is pre-seeded; only backfill customers/contacts that are
+    // missing and link existing quotes. Additive and idempotent — never touch
+    // the protected conversations/quotes/suppliers already in place.
+    const customers = await runStep('customers', summary.errors, () => seedCustomers(companyId));
+    if (customers) summary.customers = customers;
+    const contacts = await runStep('contacts', summary.errors, () => seedContacts(companyId));
+    if (contacts) summary.contacts = contacts;
+    const linked = await runStep('quotes_link', summary.errors, () => linkQuotesToCustomers(companyId));
+    if (linked) summary.quotesLinked = linked;
+    summary.seeded = true;
     return summary;
   }
 
   const steps: Array<[string, () => Promise<number>]> = [
     ['products', () => seedProducts(companyId)],
     ['suppliers', () => seedSuppliers(companyId)],
+    ['customers', () => seedCustomers(companyId)],
+    ['contacts', () => seedContacts(companyId)],
     ['faq_rules', () => seedFaqRules(companyId)],
     ['company_goals', () => seedGoal(companyId)],
   ];
@@ -1039,6 +1433,8 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
     if (count === null) continue;
     if (step === 'products') summary.products = count;
     else if (step === 'suppliers') summary.suppliers = count;
+    else if (step === 'customers') summary.customers = count;
+    else if (step === 'contacts') summary.contacts = count;
     else if (step === 'faq_rules') summary.faqRules = count;
     else if (step === 'company_goals') summary.goals = count;
   }
@@ -1057,6 +1453,9 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
     summary.quoteCostComponents = q.costComponents;
     summary.quoteVersions = q.versions;
   }
+
+  const linked = await runStep('quotes_link', summary.errors, () => linkQuotesToCustomers(companyId));
+  if (linked) summary.quotesLinked = linked;
 
   summary.seeded = true;
   return summary;

@@ -388,7 +388,7 @@ export default function InboxDetailPage() {
       showToast(t('Failed to move conversation', '移動對話失敗'), 'error');
       return;
     }
-    router.push('/admin');
+    router.push('/admin/inbox');
   };
 
   const handleSendMessage = async () => {
@@ -639,7 +639,7 @@ export default function InboxDetailPage() {
       >
         <div className="flex items-center gap-3 min-w-0">
           <button
-            onClick={() => router.push('/admin')}
+            onClick={() => router.push('/admin/inbox')}
             className="flex items-center gap-1.5 text-[13px] font-medium px-2.5 py-1.5 rounded-lg transition-colors hover:bg-black/[0.05]"
             style={{ color: 'var(--text-muted)' }}
           >
