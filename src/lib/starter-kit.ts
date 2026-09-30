@@ -10,7 +10,6 @@ export interface StarterKitSummary {
   seeded: boolean;
   skippedReason?: string;
   products: number;
-  suppliers: number;
   customers: number;
   contacts: number;
   quotesLinked: number;
@@ -238,148 +237,6 @@ const PRODUCTS: ProductSeed[] = [
   },
 ];
 
-interface SupplierSeed {
-  legal_name: string;
-  trading_name: string;
-  location: string;
-  product_capabilities: string[];
-  contact_name: string;
-  contact_email: string;
-  contact_phone: string;
-  contact_wechat: string;
-  moq_notes: string;
-  typical_lead_time_days: number;
-  payment_terms: string;
-  certifications: string[];
-  is_approved: boolean;
-  performance_score: number;
-  total_orders: number;
-  on_time_rate: number;
-  quality_reject_rate: number;
-  quality_notes: string;
-  delivery_notes: string;
-  notes: string;
-  tags: string[];
-}
-
-const SUPPLIERS: SupplierSeed[] = [
-  {
-    legal_name: 'Shenzhen Yantian Precision Drinkware Manufacturing Co., Ltd.',
-    trading_name: 'Yantian Precision Drinkware',
-    location: 'Shenzhen, Guangdong, China',
-    product_capabilities: ['Drinkware', 'Vacuum bottles', 'Ceramic mugs', 'Stainless steel'],
-    contact_name: 'Lena Zhou',
-    contact_email: 'sales@yantian-drinkware.example.com',
-    contact_phone: '+86 755 8888 1201',
-    contact_wechat: 'yantian_drinkware',
-    moq_notes: 'MOQ 500 pcs per model, mixed colours allowed across one order. Minimum order value USD 3,000 per PO.',
-    typical_lead_time_days: 30,
-    payment_terms: '30% deposit, 70% against B/L copy',
-    certifications: ['BSCI audited', 'ISO 9001', 'LFGB test reports', 'FDA declaration'],
-    is_approved: true,
-    performance_score: 4.6,
-    total_orders: 34,
-    on_time_rate: 96,
-    quality_reject_rate: 1.2,
-    quality_notes:
-      'Consistent vacuum seal performance across batches. Reject one 304-steel lot in 2025 for lid thread tolerance; corrected without charge.',
-    delivery_notes: 'Owns export packing team. Loads 40HQ in 3 days, photos on request.',
-    notes: 'Primary drinkware partner. Holds FDA and LFGB reports on file, 3-year validity on most SKUs.',
-    tags: ['primary', 'drinkware', 'shenzhen', 'audited'],
-  },
-  {
-    legal_name: 'Dongguan Evergreen Textile & Bag Manufacturing Ltd.',
-    trading_name: 'Evergreen Textile & Bags',
-    location: 'Dongguan, Guangdong, China',
-    product_capabilities: ['Eco products', 'Tote bags', 'Reusable bags', 'Cotter canvas'],
-    contact_name: 'Marco Ng',
-    contact_email: 'marco@evergreen-bags.example.com',
-    contact_phone: '+86 769 8899 4410',
-    contact_wechat: 'evergreen_bags',
-    moq_notes: 'MOQ 500 pcs per colourway, 1,000 pcs per model. Minimum order value USD 2,500 per PO.',
-    typical_lead_time_days: 30,
-    payment_terms: '30% deposit, 70% before shipment',
-    certifications: ['GOTS certified cotton available', 'OEKO-TEX Standard 100', 'SEDEX'],
-    is_approved: true,
-    performance_score: 4.4,
-    total_orders: 26,
-    on_time_rate: 93,
-    quality_reject_rate: 2.0,
-    quality_notes: 'Strong on GOTS organic cotton chains. Print adhesion good; request a wash test on new substrates.',
-    delivery_notes: 'Ex-works Dongguan. Consolidates with drinkware orders for one booking.',
-    notes: 'Go-to partner for reusable bags. Can supply recycled and GOTS cotton to 1000pcs MOQ.',
-    tags: ['bags', 'eco', 'dongguan', 'gots'],
-  },
-  {
-    legal_name: 'Huizhou NovaPower Electronics Technology Co., Ltd.',
-    trading_name: 'NovaPower Electronics',
-    location: 'Huizhou, Guangdong, China',
-    product_capabilities: ['Electronics', 'Power banks', 'Chargers', 'Bluetooth accessories'],
-    contact_name: 'Kevin Lam',
-    contact_email: 'kevin@novapower-elec.example.com',
-    contact_phone: '+86 752 8877 6630',
-    contact_wechat: 'novapower_elec',
-    moq_notes: 'MOQ 200 pcs per model, custom shell MOQ 1,000 pcs. Minimum order value USD 5,000 per PO.',
-    typical_lead_time_days: 35,
-    payment_terms: '40% deposit, 60% before shipment',
-    certifications: ['CE', 'FCC', 'RoHS', 'UN38.3', 'MSDS', 'ISO 14001'],
-    is_approved: true,
-    performance_score: 4.2,
-    total_orders: 18,
-    on_time_rate: 90,
-    quality_reject_rate: 2.6,
-    quality_notes: 'Electronics QC is the weak point — specify A-grade cells and require a 100% capacity test report on every lot.',
-    delivery_notes: 'Longer lead time than other partners. Book production slot 10 days before you need ex-factory date.',
-    notes: 'Only partner approved for battery goods. Un38.3 and MSDS on file, mandatory for sea freight.',
-    tags: ['electronics', 'powerbank', 'huizhou', 'certified'],
-  },
-  {
-    legal_name: 'Yangjiang Sunrise Headwear Factory Co., Ltd.',
-    trading_name: 'Sunrise Headwear',
-    location: 'Yangjiang, Guangdong, China',
-    product_capabilities: ['Accessories & Fashion', 'Caps', 'Hats', 'Beanies'],
-    contact_name: 'Sunny Chen',
-    contact_email: 'sunny@sunrise-caps.example.com',
-    contact_phone: '+86 662 8666 2205',
-    contact_wechat: 'sunrise_caps',
-    moq_notes: 'MOQ 300 pcs per style, 500 pcs per colour. Blank caps MOQ 300 pcs. Minimum order value USD 1,500 per PO.',
-    typical_lead_time_days: 25,
-    payment_terms: '30% deposit, 70% before shipment',
-    certifications: ['OEKO-TEX Standard 100', 'BSCI audited'],
-    is_approved: true,
-    performance_score: 4.5,
-    total_orders: 22,
-    on_time_rate: 97,
-    quality_reject_rate: 1.0,
-    quality_notes: 'Best-in-class embroidery. Sends a stitch-count proof before production on every order.',
-    delivery_notes: 'Flexible — can add 500 pcs mid-production if capacity allows. Useful for top-up orders.',
-    notes: 'Fastest and most reliable cap supplier. Keep on call for small reorders and top-ups.',
-    tags: ['caps', 'headwear', 'yangjiang', 'fast-lead'],
-  },
-  {
-    legal_name: 'Thanh Ha Umbrella & Promotional Goods JSC',
-    trading_name: 'Thanh Ha Umbrella',
-    location: 'Hanoi, Vietnam',
-    product_capabilities: ['Accessories & Fashion', 'Umbrellas', 'Rain gear', 'Promotional items'],
-    contact_name: 'Linh Pham',
-    contact_email: 'linh@thanhha-umbrella.example.com',
-    contact_phone: '+84 24 3333 7788',
-    contact_wechat: 'thanhha_umbrella',
-    moq_notes: 'MOQ 1,000 pcs per model. Minimum order value USD 1,800 per PO.',
-    typical_lead_time_days: 30,
-    payment_terms: '30% deposit, 70% against shipping documents',
-    certifications: ['REACH', 'SGS test report', 'ISO 9001'],
-    is_approved: true,
-    performance_score: 4.1,
-    total_orders: 9,
-    on_time_rate: 89,
-    quality_reject_rate: 2.4,
-    quality_notes: 'Good canopy stitching, occasional handle friction reported. Ask for a wind-tolerance check on automatic models.',
-    delivery_notes: 'Origin flexibility option outside China. Useful for EU buyers avoiding China-origin tariffs.',
-    notes: 'Non-China origin backup. Lower labour cost on umbrellas, smaller capacity — book early.',
-    tags: ['umbrella', 'vietnam', 'alternate-origin', 'tariff-option'],
-  },
-];
 
 const FAQ_RULES = [
   {
@@ -999,30 +856,6 @@ async function seedProducts(companyId: string): Promise<number> {
   return rows.length;
 }
 
-async function seedSuppliers(companyId: string): Promise<number> {
-  const { data: existing } = await supabaseAdmin
-    .from('suppliers')
-    .select('legal_name')
-    .eq('company_id', companyId)
-    .is('deleted_at', null);
-  const have = new Set(
-    ((existing ?? []) as Array<{ legal_name: string }>).map((s) => s.legal_name)
-  );
-
-  const verified = dateOnly(isoOffset(Date.now() - 45 * 24 * 60 * 60 * 1000));
-  const rows = SUPPLIERS.filter((s) => !have.has(s.legal_name)).map((s) => ({
-    company_id: companyId,
-    ...s,
-    contact_whatsapp: s.contact_phone,
-    last_verification_date: verified,
-  }));
-
-  if (rows.length === 0) return 0;
-  const { error } = await supabaseAdmin.from('suppliers').insert(rows);
-  if (error) throw new Error(`suppliers insert failed: ${error.message}`);
-  return rows.length;
-}
-
 async function seedCustomers(companyId: string): Promise<number> {
   const { data: existing } = await supabaseAdmin
     .from('customers')
@@ -1511,7 +1344,6 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
     companyId,
     seeded: false,
     products: 0,
-    suppliers: 0,
     customers: 0,
     contacts: 0,
     quotesLinked: 0,
@@ -1535,7 +1367,7 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
   if (companyId === DEMO_COMPANY_ID) {
     // Demo workspace is pre-seeded; only backfill customers/contacts that are
     // missing and link existing quotes. Additive and idempotent — never touch
-    // the protected conversations/quotes/suppliers already in place.
+    // the protected conversations/quotes already in place.
     const customers = await runStep('customers', summary.errors, () => seedCustomers(companyId));
     if (customers) summary.customers = customers;
     const contacts = await runStep('contacts', summary.errors, () => seedContacts(companyId));
@@ -1552,7 +1384,6 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
 
   const steps: Array<[string, () => Promise<number>]> = [
     ['products', () => seedProducts(companyId)],
-    ['suppliers', () => seedSuppliers(companyId)],
     ['customers', () => seedCustomers(companyId)],
     ['contacts', () => seedContacts(companyId)],
     ['faq_rules', () => seedFaqRules(companyId)],
@@ -1563,7 +1394,6 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
     const count = await runStep(step, summary.errors, fn);
     if (count === null) continue;
     if (step === 'products') summary.products = count;
-    else if (step === 'suppliers') summary.suppliers = count;
     else if (step === 'customers') summary.customers = count;
     else if (step === 'contacts') summary.contacts = count;
     else if (step === 'faq_rules') summary.faqRules = count;

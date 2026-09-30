@@ -52,18 +52,6 @@ interface SuggestedLine {
   sources: PriceSource[];
 }
 
-interface SupplierMatch {
-  id: string;
-  name: string;
-  location: string | null;
-  is_approved: boolean;
-  capabilities: string[];
-  match_reason: string;
-  performance_score: number | null;
-  typical_lead_time_days: number | null;
-  payment_terms: string | null;
-}
-
 interface PricingConfig {
   currency: string;
   fx_rate: number;
@@ -142,10 +130,17 @@ function tokenize(text: string): string[] {
 
 async function extractRequest(
   input: string,
-  companyName?: string
+  companyName?: string,
+  confirmedFacts?: Array<{ name: string; value: string | null }>
 ): Promise<ExtractedRequest & { source: 'ai' | 'heuristic' }> {
-  const prompt = `You are a procurement assistant for ${companyName || 'a trading company'}. Extract the buying request from this customer email.
+  const factsBlock = confirmedFacts && confirmedFacts.length > 0
+    ? `\n\nUSER-CONFIRMED FACTS (the user already verified these on the linked inquiry — they are ground truth. Use EXACTLY these values and never contradict them, even if the email differs):\n${confirmedFacts
+        .map((f) => `- ${f.name}: ${f.value ?? ''}`)
+        .join('\n')}\n`
+    : '';
 
+  const prompt = `You are a procurement assistant for ${companyName || 'a trading company'}. Extract the buying request from this customer email.
+${factsBlock}
 Return STRICT JSON only, no prose:
 {
   "request_summary": "one-line summary of what the buyer wants",
@@ -355,55 +350,7 @@ function applyMargin(
   return { marginPct: 0, ruleName: 'Needs review — no margin rule', matched: false };
 }
 
-function matchSuppliers(
-  items: ExtractItem[],
-  matchedNames: string[],
-  suppliers: Array<Record<string, unknown>>
-): SupplierMatch[] {
-  const terms = new Set<string>();
-  items.forEach((i) => tokenize(`${i.product} ${i.specs || ''}`).forEach((t) => terms.add(t)));
-  matchedNames.forEach((name) => tokenize(name).forEach((t) => terms.add(t)));
-
-  const scored: Array<{ s: Record<string, unknown>; score: number; matched: string[] }> = [];
-  for (const s of suppliers) {
-    const caps: string[] = Array.isArray(s.product_capabilities) ? s.product_capabilities : [];
-    const capsText = caps.join(' ').toLowerCase();
-    const nameText = `${s.trading_name || s.legal_name || ''} ${s.location || ''}`.toLowerCase();
-    let score = 0;
-    const matched: string[] = [];
-    terms.forEach((t) => {
-      if (capsText.includes(t) || nameText.includes(t)) {
-        score += 1;
-        matched.push(t);
-      }
-    });
-    if (score > 0) scored.push({ s, score, matched });
-  }
-
-  return scored
-    .sort((a, b) => {
-      if (Boolean(a.s.is_approved) !== Boolean(b.s.is_approved)) return a.s.is_approved ? -1 : 1;
-      if (b.score !== a.score) return b.score - a.score;
-      return n(typeof b.s.performance_score === 'number' ? b.s.performance_score : 0, 0) - n(typeof a.s.performance_score === 'number' ? a.s.performance_score : 0, 0);
-    })
-    .slice(0, 4)
-    .map(({ s, score, matched }) => {
-      const caps: string[] = Array.isArray(s.product_capabilities) ? s.product_capabilities : [];
-      return {
-        id: String(s.id),
-        name: String(s.trading_name || s.legal_name || 'Supplier'),
-        location: (s.location as string | null) || null,
-        is_approved: Boolean(s.is_approved),
-        capabilities: caps.slice(0, 3).map(String),
-        match_reason: matched.length ? `Capabilities match: ${matched.slice(0, 4).join(', ')}` : 'In directory',
-        performance_score: typeof s.performance_score === 'number' ? s.performance_score : null,
-        typical_lead_time_days: typeof s.typical_lead_time_days === 'number' ? s.typical_lead_time_days : null,
-        payment_terms: (s.payment_terms as string | null) || null,
-      };
-    });
-}
-
-// GET /api/admin/inbox/[id]/suggest — auto-suggested quote (with citations) + request extraction + trusted suppliers
+// GET /api/admin/inbox/[id]/suggest — auto-suggested quote (with citations) + request extraction
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
     const auth = await requireAuth(req);
@@ -451,22 +398,19 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         fx: null,
         margin_rules: [],
         sources_summary: [],
-        suppliers: [],
         extraction: { source: 'none' as const, items: [] },
         draft: null,
       });
     }
 
-    const [companyRes, productsRes, suppliersRes, settingsRes] = await Promise.all([
+    const [companyRes, productsRes, settingsRes] = await Promise.all([
       supabaseAdmin.from('companies').select('name').eq('id', auth.companyId).single(),
       supabaseAdmin.from('products').select('*').eq('company_id', auth.companyId),
-      supabaseAdmin.from('suppliers').select('*').eq('company_id', auth.companyId).is('deleted_at', null),
       supabaseAdmin.from('company_settings').select('pricing').eq('company_id', auth.companyId).maybeSingle(),
     ]);
 
     const companyName = companyRes.data?.name as string | undefined;
     const products = (productsRes.data || []) as Array<Record<string, unknown>>;
-    const suppliers = (suppliersRes.data || []) as Array<Record<string, unknown>>;
 
     let config = defaultPricing();
     const stored = settingsRes.data?.pricing as Record<string, unknown> | undefined;
@@ -485,7 +429,33 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       };
     }
 
-    const extraction = await extractRequest(userThread, companyName);
+    // User-confirmed extracted fields from the linked inquiry (if any) are
+    // ground truth — the re-extraction must never contradict them.
+    const { data: linkedInquiries } = await supabaseAdmin
+      .from('inquiries')
+      .select('id')
+      .eq('conversation_id', id)
+      .eq('company_id', auth.companyId)
+      .limit(1);
+
+    let confirmedFacts: Array<{ name: string; value: string | null }> = [];
+    const linkedInquiryId = linkedInquiries?.[0]?.id;
+    if (linkedInquiryId) {
+      const { data: confirmedFields } = await supabaseAdmin
+        .from('extracted_fields')
+        .select('field_name, field_value')
+        .eq('inquiry_id', linkedInquiryId)
+        .eq('company_id', auth.companyId)
+        .eq('status', 'CONFIRMED');
+      confirmedFacts = (confirmedFields ?? [])
+        .filter((f: { field_value: string | null }) => f.field_value != null)
+        .map((f: { field_name: string; field_value: string | null }) => ({
+          name: f.field_name,
+          value: f.field_value,
+        }));
+    }
+
+    const extraction = await extractRequest(userThread, companyName, confirmedFacts);
 
     const liveFx = await getLiveFx(config.fx_pair, config.fx_rate);
     config.fx_rate = liveFx.rate;
@@ -499,7 +469,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const currency = extraction.currency || config.currency;
     const lines: SuggestedLine[] = [];
-    const matchedNames: string[] = [];
 
     for (const item of extraction.items) {
       const match = matchProduct(item, products);
@@ -523,7 +492,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
           parseUnitPriceFromRange(String(product.price || '')).price;
 
         const productName = String(product.name || 'Matched product');
-        matchedNames.push(productName);
 
         // Only a STRONG match gets auto-priced. A weak best-guess is kept for
         // display but flagged for manual review — never quoted on the AI's word.
@@ -583,8 +551,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const subtotal = Math.round(lines.reduce((sum, l) => sum + l.total, 0) * 100) / 100;
 
-    const suppliersMatch = matchSuppliers(extraction.items, matchedNames, suppliers);
-
     const sourcesSummary: string[] = [
       `${lines.filter((l) => l.needs_review).length === 0 ? 'All line items priced' : 'Some line items need your review — nothing is sent automatically'}`,
       `${config.margin_rules.length} margin rule${config.margin_rules.length === 1 ? '' : 's'} applied · ${config.currency}`,
@@ -613,7 +579,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       fx,
       margin_rules: config.margin_rules,
       sources_summary: sourcesSummary,
-      suppliers: suppliersMatch,
       extraction,
       draft,
     });

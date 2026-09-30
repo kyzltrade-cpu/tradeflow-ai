@@ -9,16 +9,15 @@ import {
 const base = (overrides: Partial<QueueDataInput> = {}): QueueDataInput => ({
   conversations: [],
   quotes: [],
-  rfqs: [],
   followUps: [],
   ...overrides,
 })
 
 describe('deriveQueueGroups', () => {
-  it('always returns the four fixed groups in order', () => {
+  it('always returns the three fixed groups in order', () => {
     const groups = deriveQueueGroups(base())
     expect(groups.map((g) => g.key)).toEqual(QUEUE_GROUPS)
-    expect(groups.map((g) => g.count)).toEqual([0, 0, 0, 0])
+    expect(groups.map((g) => g.count)).toEqual([0, 0, 0])
   })
 
   it('puts un-replied conversations in You owe them with Reply action', () => {
@@ -99,21 +98,6 @@ describe('deriveQueueGroups', () => {
     const na = groups.find((g) => g.key === 'needs_approval')!
     expect(na.items[0].kind).toBe('reapproval')
     expect(na.items[0].primaryAction).toBe('re-approve')
-  })
-
-  it('tracks awaiting RFQs and parse-issue reviews in Waiting on factory', () => {
-    const groups = deriveQueueGroups(
-      base({
-        rfqs: [
-          { id: 'r1', supplier: 'NingboCo', quote_number: 'QT-0004', reply_status: 'awaiting' },
-          { id: 'r2', supplier: 'WuxiCo', quote_number: 'QT-0005', reply_status: 'replied', parse_issue: true },
-          { id: 'r3', supplier: 'HefaCo', quote_number: 'QT-0006', reply_status: 'declined' },
-        ],
-      }),
-    )
-    const wf = groups.find((g) => g.key === 'waiting_factory')!
-    expect(wf.count).toBe(2)
-    expect(wf.items.map((i) => i.primaryAction).sort()).toEqual(['review-factory', 'wait'])
   })
 
   it('puts sent quotes awaiting reply into They owe you', () => {

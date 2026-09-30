@@ -432,7 +432,7 @@ export default function AdminInboxPage() {
               {error
                 ? t('Check your connection and try again.', '請檢查連線後再試。')
                 : folder === 'inbox' && !qParam && counts.total === 0
-                  ? t('Load sample conversations, products and suppliers to explore the workspace.', '載入示範對話、產品與供應商，先看看工作區。')
+                  ? t('Load sample conversations and products to explore the workspace.', '載入示範對話與產品，先看看工作區。')
                   : t('Incoming mail will show here', '來信會顯示在這裡')}
             </p>
             {!error && folder === 'inbox' && !qParam && counts.total === 0 && (

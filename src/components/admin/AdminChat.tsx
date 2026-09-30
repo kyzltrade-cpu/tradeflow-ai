@@ -24,7 +24,6 @@ const QUICK_QUESTIONS_EN = [
   'What should I reply to today\'s pending quotes?',
   'Summarize the OpenAI deal status',
   'Which products have the best margin?',
-  'Do we have suppliers for recycled bulk orders?',
   'PTE. LTD. vs US LLC — which entity?',
 ];
 
@@ -32,7 +31,6 @@ const QUICK_QUESTIONS_ZH = [
   '今日待報價應點回覆？',
   '總結 OpenAI 訂單最新進度',
   '邊款產品利潤最好？',
-  '有冇適合回收大批採購嘅供應商？',
   '較多訂單來自邊個國家？',
 ];
 

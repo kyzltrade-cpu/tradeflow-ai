@@ -121,7 +121,7 @@ export default function QuoteDetailPage() {
 
   useEffect(() => {
     if (quoteId && !isQuoteId) {
-      router.replace('/admin/quotes')
+      router.replace('/admin')
       return
     }
     fetchQuote()
@@ -327,10 +327,10 @@ export default function QuoteDetailPage() {
       <div style={{ padding: '32px' }}>
         <div style={{ color: 'var(--error, #ef4444)', marginBottom: '12px' }}>{error || t('Quote not found', '找不到報價')}</div>
         <Link
-          href="/admin/quotes"
+          href="/admin"
           style={{ color: 'var(--accent)', fontSize: '13px', textDecoration: 'underline' }}
         >
-          {t('Back to Quotes', '返回報價列表')}
+          {t('Back to Queue', '返回工作隊列')}
         </Link>
       </div>
     )
@@ -341,7 +341,7 @@ export default function QuoteDetailPage() {
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <Link
-          href="/admin/quotes"
+          href="/admin"
           style={{
             color: 'var(--text-secondary)',
             fontSize: '13px',
@@ -352,7 +352,7 @@ export default function QuoteDetailPage() {
             marginBottom: '12px',
           }}
         >
-          ← {t('Back to Quotes', '返回報價列表')}
+          ← {t('Back to Queue', '返回工作隊列')}
         </Link>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>

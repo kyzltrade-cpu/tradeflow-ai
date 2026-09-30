@@ -1,33 +1,31 @@
 /**
  * Pure Queue derivation.
  *
- * Turns the company's working data into the four fixed groups shown at
+ * Turns the company's working data into the fixed groups shown at
  * /admin (the authenticated home). Every row has exactly ONE primary action.
  * No side effects here — the API layer gathers data, this pure module
  * classifies it, tests pin the rules down.
  */
 
-export type QueueGroupKey = 'you_owe' | 'needs_approval' | 'waiting_factory' | 'they_owe';
+export type QueueGroupKey = 'you_owe' | 'needs_approval' | 'they_owe';
 
 export const QUEUE_GROUPS: QueueGroupKey[] = [
   'you_owe',
   'needs_approval',
-  'waiting_factory',
   'they_owe',
 ];
 
 export const QUEUE_GROUP_LABELS: Record<QueueGroupKey, { en: string; zh: string }> = {
   you_owe: { en: 'You owe them', zh: '你欠回复' },
   needs_approval: { en: 'Needs approval', zh: '待审批' },
-  waiting_factory: { en: 'Waiting on factory', zh: '等工厂回复' },
   they_owe: { en: 'They owe you', zh: '等客户回复' },
 };
 
-export type PrimaryAction = 'reply' | 'approve' | 're-approve' | 'review-factory' | 'send-followup' | 'wait';
+export type PrimaryAction = 'reply' | 'approve' | 're-approve' | 'send-followup' | 'wait';
 
 export type QueueItem = {
   id: string;
-  kind: 'reply' | 'draft_ready' | 'approval' | 'reapproval' | 'rfq' | 'factory_review' | 'awaiting_customer' | 'followup';
+  kind: 'reply' | 'draft_ready' | 'approval' | 'reapproval' | 'awaiting_customer' | 'followup';
   group: QueueGroupKey;
   title: string;
   sender?: string | null;
@@ -35,7 +33,6 @@ export type QueueItem = {
   quoteNumber?: string | null;
   quoteCurrency?: string | null;
   amount?: number | null;
-  supplier?: string | null;
   primaryAction: PrimaryAction;
   href: string;
   time: string | null;
@@ -82,15 +79,6 @@ export type QuoteInput = {
   updated_at?: string | null;
 };
 
-export type RfqInput = {
-  id: string;
-  supplier?: string | null;
-  quote_number?: string | null;
-  reply_status?: string | null;
-  parse_issue?: boolean | null;
-  updated_at?: string | null;
-};
-
 export type FollowUpInput = {
   id: string;
   subject?: string | null;
@@ -101,7 +89,6 @@ export type FollowUpInput = {
 export type QueueDataInput = {
   conversations: ConversationInput[];
   quotes: QuoteInput[];
-  rfqs: RfqInput[];
   followUps: FollowUpInput[];
 };
 
@@ -123,7 +110,6 @@ export function daysAgo(iso: string | null | undefined): number {
 export function deriveQueueGroups(input: QueueDataInput): QueueGroup[] {
   const youOwe: QueueItem[] = [];
   const needsApproval: QueueItem[] = [];
-  const waitingFactory: QueueItem[] = [];
   const theyOwe: QueueItem[] = [];
 
   // ── You owe them: un-replied conversations (customer wrote) ─────────────
@@ -196,34 +182,6 @@ export function deriveQueueGroups(input: QueueDataInput): QueueGroup[] {
     }
   }
 
-  // ── Waiting on factory: open RFQs + factory replies needing review ──────
-  for (const r of input.rfqs) {
-    if (r.parse_issue) {
-      waitingFactory.push({
-        id: `rfq-${r.id}`,
-        kind: 'factory_review',
-        group: 'waiting_factory',
-        title: `Factory reply needs review for ${r.quote_number ?? 'quote'}`,
-        supplier: r.supplier ?? null,
-        quoteNumber: r.quote_number ?? null,
-        primaryAction: 'review-factory',
-        href: `/admin/quotes/${r.quote_number ?? ''}`,
-        time: r.updated_at ?? null,
-      });
-    } else if (!r.reply_status || r.reply_status === 'awaiting') {
-      waitingFactory.push({
-        id: `rfq-${r.id}`,
-        kind: 'rfq',
-        group: 'waiting_factory',
-        title: `RFQ ${r.quote_number ?? r.id.slice(0, 8)} awaiting ${r.supplier ?? 'factory'}`,
-        supplier: r.supplier ?? null,
-        primaryAction: 'wait',
-        href: `/admin/quotes/${r.quote_number ?? ''}`,
-        time: r.updated_at ?? null,
-      });
-    }
-  }
-
   // ── They owe you: sent quotes awaiting customer reply + due follow-ups ──
   for (const q of input.quotes) {
     if (q.status === 'SENT' && !q.customer_replied_at && !q.accepted_at && !q.rejected_at) {
@@ -260,7 +218,6 @@ export function deriveQueueGroups(input: QueueDataInput): QueueGroup[] {
   const groups: Array<[QueueGroupKey, QueueItem[]]> = [
     ['you_owe', youOwe],
     ['needs_approval', needsApproval],
-    ['waiting_factory', waitingFactory],
     ['they_owe', theyOwe],
   ];
 

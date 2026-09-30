@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
-  RefreshCw, Reply, CheckCircle2, AlertTriangle, Factory, Clock, Send,
+  RefreshCw, Reply, CheckCircle2, AlertTriangle, Clock, Send,
   ArrowUpRight, Inbox, Mail, Trophy, ChevronRight,
 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
@@ -51,7 +51,6 @@ const ACTION_SPECS: Record<PrimaryAction, ActionSpec> = {
   reply: { label: { en: 'Reply', zh: '回覆' }, tone: 'accent', icon: Reply },
   approve: { label: { en: 'Approve', zh: '審批' }, tone: 'accent', icon: CheckCircle2 },
   're-approve': { label: { en: 'Re-approve', zh: '重新審批' }, tone: 'warn', icon: AlertTriangle },
-  'review-factory': { label: { en: 'Review', zh: '查看' }, tone: 'warn', icon: Factory },
   'send-followup': { label: { en: 'Follow up', zh: '跟進' }, tone: 'accent', icon: Send },
   wait: { label: { en: 'Waiting…', zh: '等回覆…' }, tone: 'plain', icon: Clock },
 };
@@ -67,8 +66,6 @@ const CHIP_SPECS: Partial<Record<QueueItem['kind'], ChipSpec>> = {
   draft_ready: { label: { en: 'Draft ready', zh: '草稿就緒' }, bg: '#EFF6FF', fg: '#2563EB' },
   approval: { label: { en: 'Needs approval', zh: '待審批' }, bg: '#EFF6FF', fg: '#2563EB' },
   reapproval: { label: { en: 'Needs re-approval', zh: '需重新審批' }, bg: '#FEE2E2', fg: '#DC2626' },
-  rfq: { label: { en: 'Sent to factory', zh: '已發送工廠' }, bg: '#F3E8FF', fg: '#9333EA' },
-  factory_review: { label: { en: 'Factory reply', zh: '工廠回覆' }, bg: '#FEE2E2', fg: '#DC2626' },
   awaiting_customer: { label: { en: 'Waiting on customer', zh: '等客戶回覆' }, bg: '#F3F4F6', fg: '#6B7280' },
   followup: { label: { en: 'Follow-up due', zh: '跟進到期' }, bg: '#FEF3C7', fg: '#D97706' },
 };
@@ -82,7 +79,6 @@ interface GroupMeta {
 const GROUP_META: Record<QueueGroupKey, GroupMeta> = {
   you_owe: { icon: AlertTriangle, color: '#DC2626', hint: { en: 'Replies & drafts on you', zh: '待你回覆與草稿' } },
   needs_approval: { icon: CheckCircle2, color: '#2563EB', hint: { en: 'Quotes awaiting sign-off', zh: '待你審批的報價' } },
-  waiting_factory: { icon: Factory, color: '#7C3AED', hint: { en: 'RFQs out to suppliers', zh: '發送給供應商的詢價' } },
   they_owe: { icon: Clock, color: '#6B7280', hint: { en: 'Customer replies & follow-ups due', zh: '等客戶回覆或跟進' } },
 };
 
@@ -110,8 +106,6 @@ function emptyHint(group: QueueGroupKey): { en: string; zh: string } {
       return { en: 'No open items waiting on you.', zh: '沒有需要你處理的項目。' };
     case 'needs_approval':
       return { en: 'Nothing pending your approval.', zh: '沒有待審批項目。' };
-    case 'waiting_factory':
-      return { en: 'No RFQs waiting on suppliers.', zh: '沒有等待供應商回覆的詢價。' };
     case 'they_owe':
       return { en: 'Nothing waiting on customers.', zh: '沒有等客戶的項目。' };
   }
@@ -276,7 +270,7 @@ export default function AdminQueuePage() {
                     const chip = CHIP_SPECS[item.kind] || CHIP_SPECS.reply!;
                     const action = ACTION_SPECS[item.primaryAction] || ACTION_SPECS.wait;
                     const amount = formatAmount(item);
-                    const sender = item.sender || item.supplier || '—';
+                    const sender = item.sender || '—';
                     return (
                       <div
                         key={`${item.kind}-${item.id}`}

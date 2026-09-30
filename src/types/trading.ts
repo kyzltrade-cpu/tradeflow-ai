@@ -2,7 +2,7 @@
 // Sailwise v2 — Trading Operations Type System
 // =============================================================================
 // Comprehensive types for inquiry processing, opportunity management,
-// supplier RFQs, quote building, and follow-up automation.
+// quote building, and follow-up automation.
 // =============================================================================
 
 // ---------------------------------------------------------------------------
@@ -61,16 +61,6 @@ export type QuoteStatus =
   | "REJECTED"
   | "EXPIRED"
   | "SUPERSEDED";
-
-/** Supplier RFQ lifecycle status */
-export type SupplierRfqStatus =
-  | "DRAFT"
-  | "READY"
-  | "SENT"
-  | "PARTIALLY_RESPONDED"
-  | "COMPLETE"
-  | "EXPIRED"
-  | "CANCELLED";
 
 /** Follow-up action status */
 export type FollowUpStatus =
@@ -133,38 +123,6 @@ export interface Contact {
   isPrimary: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-export interface Supplier {
-  id: string;
-  companyId: string;
-  name: string;
-  contactName?: string | null;
-  email?: string | null;
-  phone?: string | null;
-  whatsappNumber?: string | null;
-  wechatId?: string | null;
-  country?: string | null;
-  specialties: string[];
-  certifications: string[];
-  rating?: number | null;
-  leadTimeDays?: number | null;
-  paymentTerms?: string | null;
-  notes?: string | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface SupplierDocument {
-  id: string;
-  supplierId: string;
-  name: string;
-  type: "certificate" | "specification" | "price_list" | "catalog" | "other";
-  fileUrl?: string | null;
-  content?: string | null;
-  metadata?: Record<string, unknown> | null;
-  createdAt: string;
 }
 
 // -- Inquiry (incoming customer request) --------------------------------------
@@ -254,23 +212,19 @@ export interface Opportunity {
   closedAt?: string | null;
 }
 
-// -- Supplier RFQ ------------------------------------------------------------
+// -- Supplier quote (input to quote generation) -------------------------------
+// The Suppliers admin module is retired, but supplier-supplied cost records are
+// still read when building a customer quote (see lib/quote-generator.ts).
 
-export interface SupplierRfq {
+export interface SupplierDocument {
   id: string;
-  opportunityId: string;
   supplierId: string;
-  status: SupplierRfqStatus;
-  subject?: string | null;
-  message?: string | null;
-  lineItems: SupplierRfqLineItem[];
-  sentAt?: string | null;
-  expiresAt?: string | null;
-  responseCount: number;
-  totalRequested: number;
-  notes?: string | null;
+  name: string;
+  type: "certificate" | "specification" | "price_list" | "catalog" | "other";
+  fileUrl?: string | null;
+  content?: string | null;
+  metadata?: Record<string, unknown> | null;
   createdAt: string;
-  updatedAt: string;
 }
 
 export interface SupplierRfqLineItem {
@@ -282,6 +236,18 @@ export interface SupplierRfqLineItem {
   unit: string;
   targetPrice?: number | null;
   currency?: string | null;
+  notes?: string | null;
+}
+
+export interface SupplierQuoteLineItem {
+  id: string;
+  quoteId: string;
+  rfqLineItemId?: string | null;
+  productName: string;
+  unitPrice: number;
+  currency: string;
+  quantity: number;
+  leadTimeDays?: number | null;
   notes?: string | null;
 }
 
@@ -301,18 +267,6 @@ export interface SupplierQuote {
   attachments: SupplierDocument[];
   createdAt: string;
   updatedAt: string;
-}
-
-export interface SupplierQuoteLineItem {
-  id: string;
-  quoteId: string;
-  rfqLineItemId?: string | null;
-  productName: string;
-  unitPrice: number;
-  currency: string;
-  quantity: number;
-  leadTimeDays?: number | null;
-  notes?: string | null;
 }
 
 // -- Quote (outgoing to customer) --------------------------------------------
@@ -487,15 +441,7 @@ export interface WorkflowJob {
 
 export interface AuditEvent {
   id: string;
-  entityType:
-    | "inquiry"
-    | "opportunity"
-    | "quote"
-    | "supplier_rfq"
-    | "supplier_quote"
-    | "follow_up"
-    | "customer"
-    | "supplier";
+  entityType: "inquiry" | "opportunity" | "quote" | "follow_up" | "customer";
   entityId: string;
   companyId: string;
   action: string;
@@ -510,12 +456,7 @@ export interface AuditEvent {
 export interface Document {
   id: string;
   companyId: string;
-  entityType:
-    | "inquiry"
-    | "opportunity"
-    | "quote"
-    | "supplier_rfq"
-    | "supplier_quote";
+  entityType: "inquiry" | "opportunity" | "quote";
   entityId: string;
   name: string;
   type:

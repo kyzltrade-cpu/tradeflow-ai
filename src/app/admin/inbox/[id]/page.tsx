@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
@@ -106,18 +106,6 @@ interface SuggestionLine {
   sources: PriceSource[];
 }
 
-interface SupplierRec {
-  id: string;
-  name: string;
-  location: string | null;
-  is_approved: boolean;
-  capabilities: string[];
-  match_reason: string;
-  performance_score: number | null;
-  typical_lead_time_days: number | null;
-  payment_terms: string | null;
-}
-
 interface Suggestion {
   request_summary: string | null;
   currency: string | null;
@@ -126,7 +114,6 @@ interface Suggestion {
   fx: { rate: number; pair: string; live?: boolean; source?: string; updated_at?: string } | null;
   margin_rules: Array<{ name: string; margin_pct: number }>;
   sources_summary: string[];
-  suppliers: SupplierRec[];
   extraction: { source: 'ai' | 'heuristic' | 'none'; items: Array<Record<string, unknown>> };
   [key: string]: unknown;
 }
@@ -1294,51 +1281,6 @@ export default function InboxDetailPage() {
                 </div>
               ))}
             </div>
-          </div>
-          )}
-
-          {/* ── Pod: Suppliers (only once priced) ───────────────── */}
-          {suggestion && (
-          <div className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Building2 width="14" height="14" style={{ color: 'var(--accent)' }} />
-              <h3 className="text-[13px] font-semibold">{t('Recommended suppliers', '推薦供應商')}</h3>
-            </div>
-            {suggestion.suppliers.length === 0 ? (
-              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('No suppliers in your directory match yet', '目錄中暫無匹配的供應商')}
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {suggestion.suppliers.map((s) => (
-                  <div key={s.id} className="rounded-[4px] border p-2.5" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-[13px] font-medium truncate">{s.name}</p>
-                      {s.is_approved && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded font-semibold flex-shrink-0" style={{ background: '#E8F5F1', color: '#038153' }}>
-                          {t('APPROVED', '已核准')}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      {s.location || '—'}
-                      {s.typical_lead_time_days ? ` · ${t('lead', '交期')} ${s.typical_lead_time_days}d` : ''}
-                      {s.payment_terms ? ` · ${s.payment_terms}` : ''}
-                    </p>
-                    {s.capabilities.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1.5">
-                        {s.capabilities.map((c) => (
-                          <span key={c} className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <p className="text-[10px] mt-1.5" style={{ color: 'var(--accent)' }}>{s.match_reason}</p>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
           )}
         </div>

@@ -105,7 +105,6 @@ DASHBOARD OVERVIEW:
 - Dashboard (/admin): KPIs, recent inquiries, open opportunities
 - Inquiries (/admin/inquiries): Extracted specs from customer emails + attachments; ask for missing details here
 - Opportunities (/admin/opportunities): Your deal pipeline, stage by stage
-- Quotes (/admin/quotes): AI-drafted, versioned, pending your approval
 - Follow-ups (/admin/follow-ups): Scheduled follow-up emails, on autopilot
 - Conversations (/admin/conversations): Full email threads, take over from the AI anytime
 - Products (/admin/products): Your catalog — the source of truth for AI quotes

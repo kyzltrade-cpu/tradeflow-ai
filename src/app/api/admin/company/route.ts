@@ -243,7 +243,6 @@ export async function POST(req: NextRequest) {
       id: company.id,
       starter_kit: {
         products: starter.products,
-        suppliers: starter.suppliers,
         conversations: starter.conversations,
         quotes: starter.quotes,
         seeded: starter.seeded,

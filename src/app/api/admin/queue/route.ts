@@ -5,7 +5,6 @@ import {
   deriveQueueGroups,
   type ConversationInput,
   type QuoteInput,
-  type RfqInput,
   type FollowUpInput,
 } from '@/lib/queue-status';
 import { evaluateSendGate, type LineItemInput, type ApprovalSnapshotInput } from '@/lib/quote-gate';
@@ -15,7 +14,7 @@ const MAX_ROWS = 200;
 const INBOUND_ROLES = ['user', 'customer'];
 
 // GET /api/admin/queue — the authenticated home. Gathers each company's
-// working state and derives the four fixed Queue groups.
+// working state and derives the fixed Queue groups.
 export async function GET(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
@@ -25,7 +24,7 @@ export async function GET(req: NextRequest) {
     const companyId = auth.companyId;
 
     // ── Phase A: base rows ──────────────────────────────────────────────
-    const [convsRes, quotesRes, rfqsRes, followRes, suppliersRes, oppsAllRes] = await Promise.all([
+    const [convsRes, quotesRes, followRes, oppsAllRes] = await Promise.all([
       supabaseAdmin
         .from('conversations')
         .select('id, contact_name, contact_email, subject, status, folder, read_at, updated_at, created_at')
@@ -41,12 +40,6 @@ export async function GET(req: NextRequest) {
         .order('updated_at', { ascending: false })
         .limit(MAX_ROWS),
       supabaseAdmin
-        .from('supplier_rfqs')
-        .select('id, rfq_number, supplier_id, opportunity_id, reply_status, responded_at, updated_at')
-        .eq('company_id', companyId)
-        .order('updated_at', { ascending: false })
-        .limit(MAX_ROWS),
-      supabaseAdmin
         .from('follow_up_items')
         .select('id, subject, scheduled_for')
         .eq('company_id', companyId)
@@ -54,7 +47,6 @@ export async function GET(req: NextRequest) {
         .lte('scheduled_for', new Date().toISOString())
         .order('scheduled_for', { ascending: true })
         .limit(MAX_ROWS),
-      supabaseAdmin.from('suppliers').select('id, trading_name, legal_name'),
       supabaseAdmin
         .from('opportunities')
         .select(
@@ -68,23 +60,14 @@ export async function GET(req: NextRequest) {
 
     const conversations = convsRes.data || [];
     const quotes = quotesRes.data || [];
-    const rfqs = rfqsRes.data || [];
     const followUps = followRes.data || [];
-    const suppliers = suppliersRes.data || [];
     const opportunitiesAll = oppsAllRes.data || [];
 
-    if (convsRes.error || quotesRes.error || rfqsRes.error || followRes.error || suppliersRes.error || oppsAllRes.error) {
-      const failed = [convsRes, quotesRes, rfqsRes, followRes, suppliersRes, oppsAllRes].find((r) => r.error);
+    if (convsRes.error || quotesRes.error || followRes.error || oppsAllRes.error) {
+      const failed = [convsRes, quotesRes, followRes, oppsAllRes].find((r) => r.error);
       console.error('[queue:GET] Supabase error:', failed?.error?.message);
       return NextResponse.json({ error: failed?.error?.message }, { status: 500 });
     }
-
-    const supplierById = new Map(
-      (suppliers as Array<{ id: string; trading_name: string | null; legal_name: string | null }>).map((s) => [
-        s.id,
-        s.trading_name || s.legal_name || null,
-      ])
-    );
 
     // ── Phase B: enrichment batches ─────────────────────────────────────
     const convIds = conversations.map((c: { id: string }) => c.id);
@@ -94,9 +77,8 @@ export async function GET(req: NextRequest) {
     const approvedIds = quotes
       .filter((q: { status: string }) => q.status === 'APPROVED')
       .map((q: { id: string }) => q.id);
-    const rfqIds = rfqs.map((r: { id: string }) => r.id);
 
-    const [contactsRes, customersRes, oppsRes, lastMsgsRes, approvalsRes, lineItemsRes, supplierQuotesRes] =
+    const [contactsRes, customersRes, oppsRes, lastMsgsRes, approvalsRes, lineItemsRes] =
       await Promise.all([
         contactIds.length
           ? supabaseAdmin.from('contacts').select('id, full_name, email').in('id', contactIds)
@@ -126,12 +108,6 @@ export async function GET(req: NextRequest) {
               .select('quote_id, product_name, quantity, unit_price, total_price, match_status, evidence_type')
               .in('quote_id', approvedIds)
           : Promise.resolve({ data: [] as Array<LineItemInput & { quote_id: string }>, error: null }),
-        rfqIds.length
-          ? supabaseAdmin
-              .from('supplier_quotes')
-              .select('supplier_rfq_id, parse_status, parse_reason')
-              .in('supplier_rfq_id', rfqIds)
-          : Promise.resolve({ data: [] as Array<{ supplier_rfq_id: string; parse_status: string | null; parse_reason: string | null }>, error: null }),
       ]);
 
     const contactById = new Map(
@@ -155,13 +131,6 @@ export async function GET(req: NextRequest) {
       list.push(a);
       approvalByQuote.set(a.quote_id, list);
     }
-    const parseIssueByRfq = new Map<string, boolean>();
-    for (const sq of supplierQuotesRes.data || []) {
-      if (['ambiguous', 'conflict', 'unparsable'].includes(sq.parse_status || '')) {
-        parseIssueByRfq.set(sq.supplier_rfq_id, true);
-      }
-    }
-
     // Latest message per conversation (single batched query instead of N+1).
     const lastByConv = new Map<string, { role: string; created_at: string }>();
     for (const m of lastMsgsRes.data || []) {
@@ -286,16 +255,6 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    // ── RFQ inputs (with supplier name + parse-issue flag) ───────────────
-    const rfqInputs: RfqInput[] = rfqs.map((r: { id: string; rfq_number: string | null; supplier_id: string | null; reply_status: string | null; updated_at: string | null }) => ({
-      id: r.id,
-      supplier: (r.supplier_id ? supplierById.get(r.supplier_id) : null) || null,
-      quote_number: r.rfq_number || null,
-      reply_status: r.reply_status || 'awaiting',
-      parse_issue: !!parseIssueByRfq.get(r.id),
-      updated_at: r.updated_at || null,
-    }));
-
     // ── Due follow-up inputs ─────────────────────────────────────────────
     const followInputs: FollowUpInput[] = followUps.map((f: { id: string; subject: string | null; scheduled_for: string | null }) => ({
       id: f.id,
@@ -307,7 +266,6 @@ export async function GET(req: NextRequest) {
     const groups = deriveQueueGroups({
       conversations: convInputs,
       quotes: quoteInputs,
-      rfqs: rfqInputs,
       followUps: followInputs,
     });
 
