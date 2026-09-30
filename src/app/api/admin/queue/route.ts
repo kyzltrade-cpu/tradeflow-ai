@@ -9,6 +9,7 @@ import {
   type FollowUpInput,
 } from '@/lib/queue-status';
 import { evaluateSendGate, type LineItemInput, type ApprovalSnapshotInput } from '@/lib/quote-gate';
+import { deriveBigDeals, type OpportunityInput } from '@/lib/big-deals';
 
 const MAX_ROWS = 200;
 const INBOUND_ROLES = ['user', 'customer'];
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
     const companyId = auth.companyId;
 
     // ── Phase A: base rows ──────────────────────────────────────────────
-    const [convsRes, quotesRes, rfqsRes, followRes, suppliersRes] = await Promise.all([
+    const [convsRes, quotesRes, rfqsRes, followRes, suppliersRes, oppsAllRes] = await Promise.all([
       supabaseAdmin
         .from('conversations')
         .select('id, contact_name, contact_email, subject, status, folder, read_at, updated_at, created_at')
@@ -54,6 +55,15 @@ export async function GET(req: NextRequest) {
         .order('scheduled_for', { ascending: true })
         .limit(MAX_ROWS),
       supabaseAdmin.from('suppliers').select('id, trading_name, legal_name'),
+      supabaseAdmin
+        .from('opportunities')
+        .select(
+          'id, title, stage, priority, currency, estimated_order_value, next_action, next_action_due, last_activity_at, updated_at'
+        )
+        .eq('company_id', companyId)
+        .is('deleted_at', null)
+        .order('updated_at', { ascending: false })
+        .limit(MAX_ROWS),
     ]);
 
     const conversations = convsRes.data || [];
@@ -61,9 +71,10 @@ export async function GET(req: NextRequest) {
     const rfqs = rfqsRes.data || [];
     const followUps = followRes.data || [];
     const suppliers = suppliersRes.data || [];
+    const opportunitiesAll = oppsAllRes.data || [];
 
-    if (convsRes.error || quotesRes.error || rfqsRes.error || followRes.error || suppliersRes.error) {
-      const failed = [convsRes, quotesRes, rfqsRes, followRes, suppliersRes].find((r) => r.error);
+    if (convsRes.error || quotesRes.error || rfqsRes.error || followRes.error || suppliersRes.error || oppsAllRes.error) {
+      const failed = [convsRes, quotesRes, rfqsRes, followRes, suppliersRes, oppsAllRes].find((r) => r.error);
       console.error('[queue:GET] Supabase error:', failed?.error?.message);
       return NextResponse.json({ error: failed?.error?.message }, { status: 500 });
     }
@@ -300,6 +311,9 @@ export async function GET(req: NextRequest) {
       followUps: followInputs,
     });
 
+    // ── Big deals: the company's biggest open opportunities ─────────────
+    const bigDeals = deriveBigDeals((opportunitiesAll as OpportunityInput[]));
+
     const totals = groups.reduce<Record<string, number>>((acc, g) => {
       acc[g.key] = g.count;
       return acc;
@@ -308,6 +322,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({
       groups,
       totals,
+      bigDeals,
     });
   } catch (err) {
     if (err instanceof Response) return err;

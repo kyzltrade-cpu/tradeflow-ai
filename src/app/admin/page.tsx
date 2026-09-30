@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   RefreshCw, Reply, CheckCircle2, AlertTriangle, Factory, Clock, Send,
-  ArrowUpRight, Inbox, Mail,
+  ArrowUpRight, Inbox, Mail, Trophy, ChevronRight,
 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
@@ -17,6 +17,7 @@ import {
   type QueueItem,
   type PrimaryAction,
 } from '@/lib/queue-status';
+import type { BigDeal } from '@/lib/big-deals';
 
 function formatTimeAgo(dateStr: string | null): string {
   if (!dateStr) return '—';
@@ -72,6 +73,24 @@ const CHIP_SPECS: Partial<Record<QueueItem['kind'], ChipSpec>> = {
   followup: { label: { en: 'Follow-up due', zh: '跟進到期' }, bg: '#FEF3C7', fg: '#D97706' },
 };
 
+interface GroupMeta {
+  icon: typeof Reply;
+  color: string;
+  hint: { en: string; zh: string };
+}
+
+const GROUP_META: Record<QueueGroupKey, GroupMeta> = {
+  you_owe: { icon: AlertTriangle, color: '#DC2626', hint: { en: 'Replies & drafts on you', zh: '待你回覆與草稿' } },
+  needs_approval: { icon: CheckCircle2, color: '#2563EB', hint: { en: 'Quotes awaiting sign-off', zh: '待你審批的報價' } },
+  waiting_factory: { icon: Factory, color: '#7C3AED', hint: { en: 'RFQs out to suppliers', zh: '發送給供應商的詢價' } },
+  they_owe: { icon: Clock, color: '#6B7280', hint: { en: 'Customer replies & follow-ups due', zh: '等客戶回覆或跟進' } },
+};
+
+const PRIORITY_TONE: Record<string, { label: { en: string; zh: string }; color: string; bg: string }> = {
+  high: { label: { en: 'High priority', zh: '高優先' }, color: '#DC2626', bg: '#FEE2E2' },
+  urgent: { label: { en: 'Urgent', zh: '緊急' }, color: '#B91C1C', bg: '#FEF2F2' },
+};
+
 function RowSkeleton() {
   return (
     <div className="flex items-center gap-3 px-4 md:px-6 py-3 border-b animate-pulse" style={{ borderColor: 'var(--border)' }}>
@@ -102,6 +121,7 @@ export default function AdminQueuePage() {
   const { t } = useLang();
   const { companyId, loading: companyLoading } = useCompany();
   const [groups, setGroups] = useState<QueueGroup[]>(QUEUE_GROUPS.map((k) => ({ key: k, count: 0, items: [] })));
+  const [bigDeals, setBigDeals] = useState<BigDeal[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -121,11 +141,13 @@ export default function AdminQueuePage() {
         return g ?? { key: k, count: 0, items: [] };
       });
       setGroups(next);
+      setBigDeals(data.bigDeals || []);
     } catch (err) {
       if (opts?.silent) return;
       console.error('[queue] fetch error:', err);
       setError(t('Failed to load the queue. Please try again.', '載入工作隊列失敗，請重試。'));
       setGroups(QUEUE_GROUPS.map((k) => ({ key: k, count: 0, items: [] })));
+      setBigDeals([]);
     } finally {
       if (!opts?.silent) setLoading(false);
     }
@@ -216,18 +238,30 @@ export default function AdminQueuePage() {
             <RowSkeleton /><RowSkeleton />
           </>
         ) : (
-          groups.map((group) => {
+          <>
+            {bigDeals.length > 0 && <BigDealsBand deals={bigDeals} />}
+            {groups.map((group) => {
             const label = QUEUE_GROUP_LABELS[group.key];
+            const meta = GROUP_META[group.key];
+            const GroupIcon = meta.icon;
             return (
               <section key={group.key} className="border-b" style={{ borderColor: 'var(--border)' }}>
-                <div className="sticky top-0 z-10 flex items-center gap-2 px-4 md:px-6 py-2 text-[11px] font-semibold uppercase tracking-[0.05em]"
-                  style={{ color: 'var(--text-muted)', background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}
+                <div className="sticky top-0 z-10 flex items-center gap-2 px-4 md:px-6 py-2"
+                  style={{ background: `${meta.color}12`, borderBottom: '1px solid var(--border)' }}
                 >
-                  <span>{t(label.en, label.zh)}</span>
-                  <span className="tabular-nums text-[11px] rounded-full px-1.5 min-w-[22px] text-center"
-                    style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}
+                  <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.05em]"
+                    style={{ color: meta.color }}
+                  >
+                    <GroupIcon width="13" height="13" strokeWidth={2.5} />
+                    {t(label.en, label.zh)}
+                  </span>
+                  <span className="tabular-nums text-[11px] rounded-full px-1.5 min-w-[22px] text-center font-semibold"
+                    style={{ background: `${meta.color}22`, color: meta.color }}
                   >
                     {group.count > 99 ? '99+' : group.count}
+                  </span>
+                  <span className="hidden sm:block text-[10.5px] font-medium ml-1" style={{ color: 'var(--text-muted)' }}>
+                    {t(meta.hint.en, meta.hint.zh)}
                   </span>
                 </div>
 
@@ -309,7 +343,8 @@ export default function AdminQueuePage() {
                 )}
               </section>
             );
-          })
+          })}
+          </>
         )}
 
         {!loading && !error && totalItems === 0 && (
@@ -333,6 +368,70 @@ export default function AdminQueuePage() {
         )}
       </div>
     </div>
+  );
+}
+
+function BigDealsBand({ deals }: { deals: BigDeal[] }) {
+  const { t } = useLang();
+  return (
+    <section className="border-b" style={{ borderColor: '#F59E0B33' }}>
+      <div className="px-4 md:px-6 py-3" style={{ background: 'linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 100%)' }}>
+        <div className="flex items-center gap-2 mb-1">
+          <Trophy width="14" height="14" style={{ color: '#B45309' }} />
+          <h2 className="text-[13px] font-semibold tracking-[-0.01em]" style={{ color: '#78350F' }}>
+            {t('Big deals', '大宗交易')}
+          </h2>
+          <span className="tabular-nums text-[10.5px] rounded-full px-1.5 font-semibold" style={{ background: '#FEF3C7', color: '#B45309' }}>
+            {deals.length}
+          </span>
+          <span className="hidden sm:block text-[11px] font-medium ml-1" style={{ color: '#92610F' }}>
+            {t('Your highest-value opportunities in play', '在談中的高價值交易')}
+          </span>
+        </div>
+        <div className="mt-2 overflow-hidden rounded-[8px] border" style={{ borderColor: '#F59E0B40', background: 'rgba(255,255,255,0.75)' }}>
+          {deals.map((deal) => {
+            const tone = PRIORITY_TONE[deal.priority];
+            const value = deal.estimated_order_value != null
+              ? `${deal.currency || 'USD'} ${new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(deal.estimated_order_value)}`
+              : null;
+            return (
+              <Link
+                key={deal.id}
+                href={`/admin/opportunities/${deal.id}`}
+                className="flex items-center gap-2.5 md:gap-3 px-3 py-2.5 border-b last:border-b-0 transition-colors hover:bg-black/[0.03]"
+                style={{ borderColor: '#F59E0B22' }}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <p className="text-[13px] font-semibold truncate" style={{ color: 'var(--text)' }}>{deal.title}</p>
+                    {tone && (
+                      <span className="text-[9.5px] px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0"
+                        style={{ background: tone.bg, color: tone.color }}
+                      >
+                        {t(tone.label.en, tone.label.zh)}
+                      </span>
+                    )}
+                  </div>
+                  {deal.next_action && (
+                    <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                      {deal.next_action}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-2.5 md:gap-3 flex-shrink-0">
+                  {value && (
+                    <span className="text-[13px] font-bold tabular-nums whitespace-nowrap" style={{ color: '#B45309' }}>
+                      {value}
+                    </span>
+                  )}
+                  <ChevronRight width="14" height="14" className="opacity-50 flex-shrink-0" style={{ color: 'var(--text-muted)' }} />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+    </section>
   );
 }
 

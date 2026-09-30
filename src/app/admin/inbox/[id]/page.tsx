@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, Building2, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
+import { isBigDeal } from '@/lib/big-deals';
 
 const supabaseRealtime = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -54,6 +56,7 @@ interface OpportunityRec {
   id: string;
   title: string;
   stage: string;
+  priority?: string | null;
   estimated_order_value: number | null;
   currency: string | null;
   trading_model: string | null;
@@ -892,6 +895,43 @@ export default function InboxDetailPage() {
 
         {/* Right rail */}
         <div className="hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 flex-col border-l overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
+          {/* ── Pod: Big deal ──────────────────────────────────────── */}
+          {detail && (detail.opportunities || []).filter(isBigDeal).length > 0 && (
+            <div className="border-b p-4" style={{ borderColor: '#F59E0B40', background: 'linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 100%)' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Trophy width="14" height="14" style={{ color: '#B45309' }} />
+                <h3 className="text-[13px] font-semibold" style={{ color: '#78350F' }}>{t('Big deal', '大宗交易')}</h3>
+              </div>
+              {detail.opportunities.filter(isBigDeal).map((deal) => (
+                <Link
+                  key={deal.id}
+                  href={`/admin/opportunities/${deal.id}`}
+                  className="block rounded-[6px] border px-3 py-2.5 mb-2 last:mb-0 transition-colors hover:bg-black/[0.03]"
+                  style={{ borderColor: '#F59E0B40', background: 'rgba(255,255,255,0.75)' }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[12.5px] font-semibold truncate" style={{ color: 'var(--text)' }}>{deal.title || t('Untitled deal', '未命名交易')}</p>
+                    {deal.estimated_order_value != null && (
+                      <span className="text-[13px] font-bold tabular-nums whitespace-nowrap flex-shrink-0" style={{ color: '#B45309' }}>
+                        {fmtAmount(deal.estimated_order_value, deal.currency || 'USD')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1.5">
+                    {deal.priority && (deal.priority === 'high' || deal.priority === 'urgent') && (
+                      <span className="text-[9.5px] px-1.5 py-0.5 rounded-full font-semibold" style={{ background: '#FEE2E2', color: '#DC2626' }}>
+                        {deal.priority === 'urgent' ? t('Urgent', '緊急') : t('High priority', '高優先')}
+                      </span>
+                    )}
+                    <span className="text-[9.5px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide" style={{ background: '#FEF3C7', color: '#B45309' }}>
+                      {t('In play', '在談中')}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+
           {/* ── Pod: Customer ─────────────────────────────────── */}
           <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center gap-2 mb-3">

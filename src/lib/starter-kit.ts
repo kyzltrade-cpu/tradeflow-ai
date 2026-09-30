@@ -812,6 +812,133 @@ const SAMPLE_QUOTE = {
   ],
 };
 
+const SAMPLE_BIG_DEAL_NOTES = 'Sample big deal created with the starter kit. Safe to delete.';
+
+interface SampleBigDeal {
+  title: string;
+  stage: string;
+  priority: string;
+  currency: string;
+  estimated_order_value: number | null;
+  product_category: string;
+  country: string;
+  next_action: string;
+  ageMinutes: number;
+}
+
+const SAMPLE_BIG_DEALS: SampleBigDeal[] = [
+  {
+    title: 'Sample — Nova Retail Group: 120,000 insulated steel water bottles',
+    stage: 'NEGOTIATING',
+    priority: 'high',
+    currency: 'USD',
+    estimated_order_value: 248000,
+    product_category: 'Drinkware',
+    country: 'United States',
+    next_action: 'Prepare revised pricing against volume commitment',
+    ageMinutes: 4 * 24 * 60,
+  },
+  {
+    title: 'Sample — Mitsui Living: 60,000 recycled PET lanyards + totes',
+    stage: 'PENDING_APPROVAL',
+    priority: 'normal',
+    currency: 'USD',
+    estimated_order_value: 84300,
+    product_category: 'Eco Products',
+    country: 'Japan',
+    next_action: 'Review DHL freight packing proposal before client send',
+    ageMinutes: 2 * 24 * 60,
+  },
+  {
+    title: 'Sample — Le Cadeau SAS: private-label luxury gift-set rebrand',
+    stage: 'SENT',
+    priority: 'urgent',
+    currency: 'EUR',
+    estimated_order_value: 12900,
+    product_category: 'Gift Sets',
+    country: 'France',
+    next_action: 'Follow up on quote sent at client request',
+    ageMinutes: 26 * 60,
+  },
+];
+
+/** Insert the demo big-deal opportunities. Idempotent: skips when a row stamped
+ * with the sample marker already exists for the company, but self-heals the
+ * headline deal's inquiry link so re-runs keep the drill-down pod attached. */
+async function seedBigDealOpportunities(companyId: string): Promise<number> {
+  // Attach the headline deal to a demo thread that carries an inquiry, so the
+  // drill-down pod shows it; the rest stay standalone. This never mutates the
+  // conversation itself.
+  const { data: demoConv } = await supabaseAdmin
+    .from('conversations')
+    .select('id')
+    .eq('company_id', companyId)
+    .ilike('contact_email', '%oceancoltd.com')
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const { data: demoInquiry } = demoConv
+    ? await supabaseAdmin
+        .from('inquiries')
+        .select('id')
+        .eq('conversation_id', demoConv.id)
+        .limit(1)
+        .maybeSingle()
+    : { data: null };
+  const linkInquiryId = demoInquiry?.id ?? null;
+
+  const { data: existing } = await supabaseAdmin
+    .from('opportunities')
+    .select('id')
+    .eq('company_id', companyId)
+    .eq('notes', SAMPLE_BIG_DEAL_NOTES)
+    .limit(1);
+  if ((existing ?? []).length) {
+    const { data: headline } = await supabaseAdmin
+      .from('opportunities')
+      .select('id, inquiry_id')
+      .eq('company_id', companyId)
+      .eq('notes', SAMPLE_BIG_DEAL_NOTES)
+      .eq('title', SAMPLE_BIG_DEALS[0]!.title)
+      .maybeSingle();
+    if (headline?.id && headline.inquiry_id !== linkInquiryId && linkInquiryId) {
+      await supabaseAdmin
+        .from('opportunities')
+        .update({ inquiry_id: linkInquiryId })
+        .eq('id', headline.id);
+    }
+    return 0;
+  }
+
+  const rows = SAMPLE_BIG_DEALS.map((d, idx) => {
+    const createdAt = isoOffset(Date.now() - d.ageMinutes * 60 * 1000);
+    return {
+      company_id: companyId,
+      inquiry_id: idx === 0 ? linkInquiryId : null,
+      title: d.title,
+      stage: d.stage,
+      trading_model: 'principal',
+      product_category: d.product_category,
+      product_name: d.title,
+      estimated_order_value: d.estimated_order_value,
+      currency: d.currency,
+      expected_margin_pct: 28,
+      country: d.country,
+      priority: d.priority,
+      next_action: d.next_action,
+      last_activity_at: createdAt,
+      quote_status: d.stage === 'SENT' ? 'SENT' : 'DRAFT',
+      notes: SAMPLE_BIG_DEAL_NOTES,
+      created_at: createdAt,
+      updated_at: createdAt,
+    };
+  });
+
+  const { error } = await supabaseAdmin.from('opportunities').insert(rows);
+  if (error) throw new Error(`opportunities insert failed: ${error.message}`);
+  return rows.length;
+}
+
 function isoOffset(ms: number): string {
   return new Date(ms).toISOString();
 }
@@ -1415,6 +1542,10 @@ export async function seedStarterKit(companyId: string): Promise<StarterKitSumma
     if (contacts) summary.contacts = contacts;
     const linked = await runStep('quotes_link', summary.errors, () => linkQuotesToCustomers(companyId));
     if (linked) summary.quotesLinked = linked;
+    const bigDeals = await runStep('big_deals', summary.errors, () =>
+      seedBigDealOpportunities(companyId)
+    );
+    if (bigDeals) summary.opportunities = (summary.opportunities || 0) + bigDeals;
     summary.seeded = true;
     return summary;
   }
