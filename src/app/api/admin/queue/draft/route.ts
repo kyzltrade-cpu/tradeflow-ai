@@ -1,10 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
+import { buildTemplateDraft, type DraftContext } from '@/lib/queue-draft-template';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
 const NIM_MODEL = process.env.NIM_MODEL || 'meta/llama-3.1-8b-instruct';
+
+/**
+ * MOCK_AI=true forces the deterministic template and never calls the model.
+ * Off by default; regardless of the flag, a model failure or timeout still
+ * falls back to the template so the panel is never empty.
+ */
+const MOCK_AI = process.env.MOCK_AI === 'true';
 
 const DRAFT_TABLE = 'queue_drafts';
 const MAX_BODY = 8000;
@@ -30,20 +38,7 @@ function clip(value: string | null | undefined, max: number): string | null {
   return s.length > max ? `${s.slice(0, max)}…` : s;
 }
 
-type Context = {
-  kind: 'reply' | 'quote' | 'followup';
-  sender: string | null;
-  subject: string | null;
-  company: string | null;
-  industry: string | null;
-  country: string | null;
-  stage: string | null;
-  nextStep: string | null;
-  request: string | null;
-  total: string | null;
-  lines: string[];
-  missing: string[];
-};
+type Context = DraftContext;
 
 /** Mirrors the six facts the panel shows, so the prompt and the UI agree. */
 async function loadContext(companyId: string, itemKey: string): Promise<Context | null> {
@@ -329,7 +324,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from(DRAFT_TABLE)
-    .select('body, edited, model, updated_at')
+    .select('body, edited, source, model, updated_at')
     .eq('company_id', companyId)
     .eq('queue_item_key', itemKey)
     .maybeSingle();
@@ -339,7 +334,12 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     draft: data
-      ? { body: data.body as string, edited: data.edited as boolean, model: data.model as string | null }
+      ? {
+          body: data.body as string,
+          edited: data.edited as boolean,
+          source: (data.source as 'ai' | 'template' | 'human' | null) ?? 'ai',
+          model: data.model as string | null,
+        }
       : null,
     persisted: true,
   });
@@ -369,6 +369,7 @@ export async function POST(req: NextRequest) {
         queue_item_key: itemKey,
         item_kind: kind,
         body,
+        source: 'human',
         edited: true,
         updated_at: new Date().toISOString(),
       },
@@ -384,13 +385,18 @@ export async function POST(req: NextRequest) {
   if (!payload.regenerate) {
     const { data } = await supabaseAdmin
       .from(DRAFT_TABLE)
-      .select('body, model, edited')
+      .select('body, model, edited, source')
       .eq('company_id', companyId)
       .eq('queue_item_key', itemKey)
       .maybeSingle();
     if (data?.body) {
       return NextResponse.json({
-        draft: { body: data.body as string, edited: data.edited as boolean, model: data.model as string | null },
+        draft: {
+          body: data.body as string,
+          edited: data.edited as boolean,
+          source: (data.source as 'ai' | 'template' | 'human' | null) ?? 'ai',
+          model: data.model as string | null,
+        },
         persisted: true,
         reused: true,
       });
@@ -400,14 +406,30 @@ export async function POST(req: NextRequest) {
   const ctx = await loadContext(companyId, itemKey);
   if (!ctx) return NextResponse.json({ error: 'Item not found' }, { status: 404 });
 
-  let generated: { body: string; model: string };
-  try {
-    generated = await generateDraft(ctx);
-  } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'Draft generation failed' },
-      { status: 502 }
-    );
+  let body: string;
+  let source: 'ai' | 'template';
+  let model: string | null;
+  let warning: string | null = null;
+
+  if (MOCK_AI) {
+    body = buildTemplateDraft(ctx);
+    source = 'template';
+    model = null;
+  } else {
+    try {
+      const generated = await generateDraft(ctx);
+      body = generated.body;
+      source = 'ai';
+      model = generated.model;
+    } catch (err) {
+      // Never hand a reviewer an empty box: fall back to the deterministic
+      // draft and say so, rather than silently shipping a worse email.
+      console.error('[queue/draft] falling back to template:', err instanceof Error ? err.message : err);
+      body = buildTemplateDraft(ctx);
+      source = 'template';
+      model = null;
+      warning = err instanceof Error ? err.message : 'The AI did not respond';
+    }
   }
 
   const { error } = await supabaseAdmin.from(DRAFT_TABLE).upsert(
@@ -415,8 +437,9 @@ export async function POST(req: NextRequest) {
       company_id: companyId,
       queue_item_key: itemKey,
       item_kind: kind,
-      body: generated.body,
-      model: generated.model,
+      body,
+      source,
+      model,
       edited: false,
       updated_at: new Date().toISOString(),
     },
@@ -425,7 +448,8 @@ export async function POST(req: NextRequest) {
   const persisted = !isMissingTable(error);
 
   return NextResponse.json({
-    draft: { body: generated.body, edited: false, model: generated.model },
+    draft: { body, edited: false, source, model },
     persisted,
+    warning,
   });
 }

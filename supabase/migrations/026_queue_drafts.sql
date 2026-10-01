@@ -17,6 +17,9 @@ CREATE TABLE IF NOT EXISTS public.queue_drafts (
   queue_item_key TEXT NOT NULL,
   item_kind TEXT NOT NULL,
   body TEXT NOT NULL DEFAULT '',
+  -- 'ai' | 'template' | 'human'. A human edit is recorded as 'human' so the UI
+  -- never implies the model vetted the current text.
+  source TEXT NOT NULL DEFAULT 'ai',
   model TEXT,
   edited BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

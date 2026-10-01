@@ -202,7 +202,7 @@ function DraftEditor({ item }: { item: QueueItem }) {
   const [busy, setBusy] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [edited, setEdited] = useState(false);
+  const [source, setSource] = useState<'ai' | 'template' | 'human'>('ai');
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const localKey = `queue-draft:${rowKey}`;
 
@@ -221,7 +221,8 @@ function DraftEditor({ item }: { item: QueueItem }) {
           if (json.draft?.body) {
             if (!cancelled) {
               setBody(json.draft.body);
-              setEdited(!!json.draft.edited);
+              
+              if (json.draft.source) setSource(json.draft.source);
             }
             setBusy(false);
             return;
@@ -254,7 +255,8 @@ function DraftEditor({ item }: { item: QueueItem }) {
         if (cancelled) return;
         if (res.ok && json.draft?.body) {
           setBody(json.draft.body);
-          setEdited(!!json.draft.edited);
+          
+          if (json.draft.source) setSource(json.draft.source);
         } else {
           setError(json.error === 'NIM_API_KEY is not configured'
             ? t('AI drafting is not configured yet', '尚未設定 AI 草稿功能')
@@ -280,6 +282,7 @@ function DraftEditor({ item }: { item: QueueItem }) {
   const onChange = (next: string) => {
     setBody(next);
     setEdited(true);
+    setSource('human');
     try {
       window.localStorage.setItem(localKey, next);
     } catch {
@@ -316,6 +319,7 @@ function DraftEditor({ item }: { item: QueueItem }) {
       if (res.ok && json.draft?.body) {
         setBody(json.draft.body);
         setEdited(false);
+        if (json.draft.source) setSource(json.draft.source);
         try {
           window.localStorage.removeItem(localKey);
         } catch {
@@ -340,7 +344,13 @@ function DraftEditor({ item }: { item: QueueItem }) {
         <div className="flex items-center gap-2">
           {body != null && (
             <span className="text-[10.5px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
-              {saving ? t('Saving…', '儲存中…') : edited ? t('Edited', '已編輯') : t('AI draft', 'AI 草稿')}
+              {saving
+                ? t('Saving…', '儲存中…')
+                : source === 'template'
+                  ? t('Sample', '範本')
+                  : source === 'human'
+                    ? t('Edited', '已編輯')
+                    : t('AI draft', 'AI 草稿')}
             </span>
           )}
           <button
