@@ -371,6 +371,28 @@ function DraftEditor({ item }: { item: QueueItem }) {
     }
   };
 
+  // ── Can this deployment send at all? ───────────────────────────────────
+  // Resolved once per page rather than per row: it is a property of the
+  // deployment, not of the item. A Send button that always fails is worse than
+  // a disabled one that says why.
+  const [mailOk, setMailOk] = useState<{ configured: boolean; fix: string | null } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/admin/email-status')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!cancelled && j) setMailOk({ configured: Boolean(j.configured), fix: j.fix ?? null });
+      })
+      .catch(() => {
+        // Unknown is treated as "let them try" — a failed preflight should not
+        // block a send that would actually work.
+        if (!cancelled) setMailOk({ configured: true, fix: null });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // ── Send the exact text on screen ──────────────────────────────────────
   // Each row type already has a hardened send route (approval gate, pricing
   // gate, PDF attachment for quotes); the queue's job is to hand the reviewed
@@ -381,7 +403,13 @@ function DraftEditor({ item }: { item: QueueItem }) {
   const [sendError, setSendError] = useState<string | null>(null);
   const isQuote = item.id.startsWith('quote-');
   const recipient = item.detail?.recipientEmail ?? null;
-  const canSend = Boolean(recipient) && !isQuote && body.trim().length > 0;
+  const mailBlocked = mailOk !== null && !mailOk.configured;
+  const canSend = Boolean(recipient) && !isQuote && body.trim().length > 0 && !mailBlocked;
+  const blockedReason = !recipient
+    ? t('No contact email on this row', '此列沒有聯絡電郵')
+    : mailBlocked
+      ? mailOk?.fix || t('No sending address is configured.', '尚未設定發送地址。')
+      : null;
 
   const send = async () => {
     if (!canSend || sendState === 'sending') return;
@@ -523,6 +551,12 @@ function DraftEditor({ item }: { item: QueueItem }) {
           </button>
         )}
       </div>
+
+      {blockedReason && (
+        <p className="text-[11px] mt-1" style={{ color: '#B54708' }}>
+          {blockedReason}
+        </p>
+      )}
 
       {sendError && (
         <p className="text-[11px] mt-1" style={{ color: '#B54708' }}>

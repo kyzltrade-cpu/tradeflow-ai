@@ -43,7 +43,6 @@ const admin = createClient(
 );
 
 let tempItemId: string | null = null;
-let sequenceId: string | null = null;
 
 async function cleanup() {
   if (!tempItemId) return;
@@ -94,7 +93,6 @@ async function main() {
     .limit(1)
     .maybeSingle();
   if (seqErr || !seq) throw new Error(`no active sequence to borrow: ${seqErr?.message ?? 'none'}`);
-  sequenceId = seq.id;
 
   const { data: item, error: insErr } = await admin
     .from('follow_up_items')
