@@ -371,6 +371,59 @@ function DraftEditor({ item }: { item: QueueItem }) {
     }
   };
 
+  // ── Send the exact text on screen ──────────────────────────────────────
+  // Each row type already has a hardened send route (approval gate, pricing
+  // gate, PDF attachment for quotes); the queue's job is to hand the reviewed
+  // text to the right one. Quotes are deliberately excluded — a quote only
+  // goes out from its own page, where the approval gate and line items are
+  // visible, so this button must never become a way around that.
+  const [sendState, setSendState] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
+  const [sendError, setSendError] = useState<string | null>(null);
+  const isQuote = item.id.startsWith('quote-');
+  const recipient = item.detail?.recipientEmail ?? null;
+  const canSend = Boolean(recipient) && !isQuote && body.trim().length > 0;
+
+  const send = async () => {
+    if (!canSend || sendState === 'sending') return;
+    setSendState('sending');
+    setSendError(null);
+    try {
+      let res: Response;
+      if (item.id.startsWith('fu-')) {
+        const itemId = rowKey.slice('fu-'.length);
+        if (!item.sequenceId) throw new Error('This follow-up is not linked to a sequence.');
+        res = await fetch(`/api/admin/follow-ups/${item.sequenceId}/items/${itemId}/send`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ body, subject: item.subject ?? undefined }),
+        });
+      } else {
+        res = await fetch(`/api/admin/inbox/${rowKey.slice('conv-'.length)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: body, kind: 'reply' }),
+        });
+      }
+
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || t('Could not send', '無法發送'));
+
+      setSendState('sent');
+      setSource('human');
+      try {
+        window.localStorage.removeItem(localKey);
+      } catch {
+        // Non-fatal.
+      }
+      // The row has left the queue (no longer "you owe them"), so a refresh
+      // pulls the new state rather than leaving a ghost row behind.
+      setTimeout(() => window.location.reload(), 1200);
+    } catch (err) {
+      setSendState('error');
+      setSendError(err instanceof Error ? err.message : t('Could not send', '無法發送'));
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-1.5">
@@ -430,6 +483,50 @@ function DraftEditor({ item }: { item: QueueItem }) {
       {notice && (
         <p className="text-[11px] mt-1" style={{ color: '#B54708' }}>
           {notice}
+        </p>
+      )}
+
+      <div className="flex items-center justify-between gap-3 mt-2">
+        <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
+          {isQuote
+            ? t('Quotes send from the quote page, where the approval gate applies.', '報價於報價頁面發送，並經審批。')
+            : recipient
+              ? `${t('To', '收件人')}: ${recipient}`
+              : t('No contact email on this row', '此列沒有聯絡電郵')}
+        </p>
+
+        {isQuote ? (
+          <a
+            href={item.href}
+            onClick={(e) => e.stopPropagation()}
+            className="text-[11px] font-medium whitespace-nowrap hover:underline"
+            style={{ color: 'var(--accent)' }}
+          >
+            {t('Open quote to send', '開啟報價以發送')}
+          </a>
+        ) : (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              void send();
+            }}
+            disabled={!canSend || sendState === 'sending' || sendState === 'sent'}
+            className="text-[11px] font-medium whitespace-nowrap disabled:opacity-40"
+            style={{ color: 'var(--accent)' }}
+          >
+            {sendState === 'sending'
+              ? t('Sending…', '發送中…')
+              : sendState === 'sent'
+                ? t('Sent', '已發送')
+                : t('Send draft', '發送草稿')}
+          </button>
+        )}
+      </div>
+
+      {sendError && (
+        <p className="text-[11px] mt-1" style={{ color: '#B54708' }}>
+          {sendError}
         </p>
       )}
     </div>

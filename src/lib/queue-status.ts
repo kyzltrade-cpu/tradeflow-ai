@@ -51,6 +51,8 @@ export type QueueItemDetail = {
   industry?: string | null;
   country?: string | null;
   contactTitle?: string | null;
+  /** Where this row's email will actually land. Shown before sending. */
+  recipientEmail?: string | null;
   value?: number | null;
   currency?: string | null;
   marginPct?: number | null;
@@ -75,6 +77,8 @@ export type QueueItem = {
   quoteCurrency?: string | null;
   amount?: number | null;
   primaryAction: PrimaryAction;
+  /** Follow-up rows only: the parent sequence id, required by the send route. */
+  sequenceId?: string | null;
   href: string;
   time: string | null;
   meta?: Record<string, unknown>;
@@ -123,6 +127,8 @@ export type QuoteInput = {
 
 export type FollowUpInput = {
   id: string;
+  /** Parent sequence — the send route needs both this and the item id. */
+  sequenceId?: string | null;
   subject?: string | null;
   opportunity?: string | null;
   customer?: string | null;
@@ -252,6 +258,7 @@ export function deriveQueueGroups(input: QueueDataInput): QueueGroup[] {
     theyOwe.push({
       id: `fu-${f.id}`,
       kind: 'followup',
+      sequenceId: f.sequenceId ?? null,
       group: 'they_owe',
       title: `Send follow-up${f.opportunity ? ` on ${f.opportunity}` : ''}`,
       // A follow-up row with no sender renders as a bare "—" avatar, which reads

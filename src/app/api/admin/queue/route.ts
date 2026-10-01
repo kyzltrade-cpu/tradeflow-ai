@@ -24,6 +24,8 @@ type CustomerRow = {
   legal_name: string | null;
   industry: string | null;
   country: string | null;
+  /** Company-level address; the send route falls back to it. */
+  email?: string | null;
 };
 type OppContextRow = {
   id: string;
@@ -149,7 +151,7 @@ export async function GET(req: NextRequest) {
           ? supabaseAdmin.from('contacts').select('id, full_name, email, title').in('id', contactIds)
           : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; email: string | null; title: string | null }>, error: null }),
         custIds.length
-          ? supabaseAdmin.from('customers').select('id, trading_name, legal_name, industry, country').in('id', custIds)
+          ? supabaseAdmin.from('customers').select('id, trading_name, legal_name, industry, country, email').in('id', custIds)
           : Promise.resolve({ data: [] as Array<{ id: string; trading_name: string | null; legal_name: string | null; industry: string | null; country: string | null }>, error: null }),
         oppIds.length
           ? supabaseAdmin
@@ -466,6 +468,7 @@ export async function GET(req: NextRequest) {
           null;
         return {
           id: f.id,
+          sequenceId: f.sequence_id,
           subject: f.subject || null,
           opportunity: titleLead(opp?.title),
           customer: customerName,
@@ -604,6 +607,10 @@ export async function GET(req: NextRequest) {
           industry: customer?.industry ?? null,
           country: customer?.country ?? null,
           contactTitle: contact?.title ?? null,
+          // Same preference order as the send route: the person first, then
+          // the company address. If this is empty the send will be refused
+          // with an actionable message, so surface it here instead.
+          recipientEmail: contact?.email || customer?.email || null,
           value: opp?.estimated_order_value ?? null,
           currency: opp?.currency ?? null,
           nextAction: opp?.next_action ?? null,

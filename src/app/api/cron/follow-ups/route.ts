@@ -15,7 +15,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
-import { sendEmail } from '@/lib/email';
+import { deliverFollowUp } from '@/lib/follow-up-send';
 import { generateFollowUpMessage } from '@/lib/follow-up-engine';
 import type { FollowUpItem } from '@/types/trading';
 import type { FollowUpContext } from '@/lib/follow-up-engine';
@@ -162,51 +162,21 @@ export async function GET(req: NextRequest) {
         }
       }
 
-      // ── Resolve customer email ─────────────────────────────────
-      let customerEmail: string | null = null;
-      if (seq.opportunity_id) {
-        const { data: opp } = await supabaseAdmin
-          .from('opportunities')
-          .select('customer_id')
-          .eq('id', seq.opportunity_id)
-          .single();
-
-        if (opp?.customer_id) {
-          const { data: customer } = await supabaseAdmin
-            .from('customers')
-            .select('email')
-            .eq('id', opp.customer_id)
-            .single();
-          customerEmail = customer?.email || null;
-        }
-      }
-
       // ── Send via channel ───────────────────────────────────────
-      let sendResult: { success: boolean; error?: string } = { success: false, error: 'Unknown channel' };
-
-      if (channel === 'email' && customerEmail) {
-        const result = await sendEmail({
-          to: customerEmail,
-          subject,
-          html: `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #374151; font-size: 14px; line-height: 1.7; max-width: 600px; margin: 0 auto; padding: 24px;">${messageBody.replace(/\n/g, '<br>')}</div>`,
-          companyId: item.company_id,
-        });
-        sendResult = { success: result.success, error: result.error };
-      }
-
-      // ── Update item status ────────────────────────────────────
-      const newStatus = sendResult.success ? 'sent' : 'failed';
-      await supabaseAdmin
-        .from('follow_up_items')
-        .update({
-          status: newStatus,
-          message_body: messageBody,
-          subject,
-          sent_at: sendResult.success ? now : null,
-          error_message: sendResult.error || null,
-          updated_at: now,
-        })
-        .eq('id', item.id);
+      // Routed through the same helper the manual "Send draft" button uses, so
+      // the two paths cannot disagree about who the recipient is or, more
+      // importantly, about writing the terminal status. If the status write
+      // were skipped, this same follow-up would go out twice.
+      const sendResult: { success: boolean; error?: string; recipient?: string } =
+        channel !== 'email'
+          ? { success: false, error: `Unsupported channel: ${channel}` }
+          : await deliverFollowUp({
+              sequenceId: item.sequence_id,
+              itemId: item.id,
+              companyId: item.company_id,
+              subject,
+              body: messageBody,
+            });
 
       // ── Log audit ─────────────────────────────────────────────
       await supabaseAdmin.from('audit_events').insert({
@@ -221,7 +191,7 @@ export async function GET(req: NextRequest) {
           channel,
           step_number: item.step_number,
           subject,
-          recipient: customerEmail,
+          recipient: sendResult.recipient ?? null,
           email_id: null,
           error: sendResult.error || null,
         },
