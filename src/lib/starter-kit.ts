@@ -331,6 +331,7 @@ interface ContactSeed {
   customer_trading_name: string;
   full_name: string;
   email: string | null;
+  phone?: string | null;
   title: string;
   preferred_language: string;
 }
@@ -615,9 +616,9 @@ const DEMO_CONTACTS: ContactSeed[] = [
   { customer_trading_name: 'Shenzhen Retail Chain', full_name: 'Lin Jie', email: null, title: 'Purchasing Manager', preferred_language: 'zh' },
   { customer_trading_name: 'Smart Cup Brand', full_name: 'Wei Landt', email: null, title: 'Founder', preferred_language: 'zh' },
   { customer_trading_name: 'George Wong Trading', full_name: 'George Wong', email: null, title: 'Owner', preferred_language: 'zh' },
-  { customer_trading_name: 'Nova Retail Group', full_name: 'Rachel Kim', email: 'rachel.kim@novaretailgroup.example.com', title: 'Category Buyer', preferred_language: 'en' },
-  { customer_trading_name: 'Mitsui Living', full_name: 'Kenji Watanabe', email: 'kenji@mitsuiliving.example.jp', title: 'Sourcing Manager', preferred_language: 'ja' },
-  { customer_trading_name: 'Le Cadeau', full_name: 'Camille Dubois', email: 'camille@lecadeau.example.fr', title: 'Directrice Achats', preferred_language: 'fr' },
+  { customer_trading_name: 'Nova Retail Group', full_name: 'Rachel Kim', email: 'rachel.kim@novaretailgroup.example.com', phone: '+1 312 555 0148', title: 'Category Buyer', preferred_language: 'en' },
+  { customer_trading_name: 'Mitsui Living', full_name: 'Kenji Watanabe', email: 'kenji@mitsuiliving.example.jp', phone: '+81 3 5555 0217', title: 'Sourcing Manager', preferred_language: 'ja' },
+  { customer_trading_name: 'Le Cadeau', full_name: 'Camille Dubois', email: 'camille@lecadeau.example.fr', phone: '+33 1 55 55 01 92', title: 'Directrice Achats', preferred_language: 'fr' },
 ];
 
 interface ConversationSeed {
@@ -987,15 +988,33 @@ async function seedContacts(companyId: string): Promise<number> {
     customer_id: customerByTradingName.get(c.customer_trading_name) || null,
     full_name: c.full_name,
     email: c.email,
+    phone: c.phone ?? null,
     title: c.title,
     is_primary: true,
     preferred_language: c.preferred_language,
   }));
 
-  if (rows.length === 0) return 0;
-  const { error } = await supabaseAdmin.from('contacts').insert(rows);
-  if (error) throw new Error(`contacts insert failed: ${error.message}`);
-  return rows.length;
+  if (rows.length > 0) {
+    const { error } = await supabaseAdmin.from('contacts').insert(rows);
+    if (error) throw new Error(`contacts insert failed: ${error.message}`);
+  }
+
+  // Backfill phone on already-seeded contacts so the opportunity overview panel
+  // has a full contact card even for rows created before phones were seeded.
+  let backfilled = 0;
+  for (const c of DEMO_CONTACTS) {
+    if (!c.email || !c.phone) continue;
+    const { data: updated } = await supabaseAdmin
+      .from('contacts')
+      .update({ phone: c.phone })
+      .eq('company_id', companyId)
+      .eq('email', c.email)
+      .is('phone', null)
+      .select('id');
+    backfilled += updated?.length ?? 0;
+  }
+
+  return rows.length + backfilled;
 }
 
 async function linkQuotesToCustomers(companyId: string): Promise<number> {

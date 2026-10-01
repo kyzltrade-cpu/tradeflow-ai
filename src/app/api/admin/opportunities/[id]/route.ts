@@ -33,6 +33,7 @@ export async function GET(
       inquiryResult,
       extractedFieldsResult,
       customerResult,
+      contactResult,
       quotesResult,
       followUpResult,
       auditResult,
@@ -61,6 +62,15 @@ export async function GET(
             .from('customers')
             .select('*')
             .eq('id', opportunity.customer_id)
+            .single()
+        : Promise.resolve({ data: null }),
+
+      // Contact (the person behind the account: name / email / phone)
+      opportunity.contact_id
+        ? supabaseAdmin
+            .from('contacts')
+            .select('*')
+            .eq('id', opportunity.contact_id)
             .single()
         : Promise.resolve({ data: null }),
 
@@ -104,11 +114,43 @@ export async function GET(
       };
     }
 
+    // The `customers` table stores company-level fields (legal_name / trading_name),
+    // while the overview panel expects person-level fields. Merge the linked
+    // contact into the account so name / email / phone are populated.
+    const account = customerResult.data as
+      | {
+          id: string;
+          legal_name?: string | null;
+          trading_name?: string | null;
+          country?: string | null;
+          created_at?: string;
+        }
+      | null;
+    const contact = contactResult.data as
+      | {
+          full_name?: string | null;
+          email?: string | null;
+          phone?: string | null;
+        }
+      | null;
+
+    const customer = account
+      ? {
+          id: account.id,
+          name: contact?.full_name || account.trading_name || account.legal_name || '',
+          email: contact?.email || null,
+          phone: contact?.phone || null,
+          company: account.trading_name || account.legal_name || null,
+          country: account.country || null,
+          created_at: account.created_at,
+        }
+      : null;
+
     return NextResponse.json({
       opportunity,
       inquiry: inquiryResult.data,
       extracted_fields: extractedFieldsResult.data || [],
-      customer: customerResult.data,
+      customer,
       quotes: quotesResult.data || [],
       cost_build_up: costBuildUp,
       follow_ups: followUpResult.data || [],

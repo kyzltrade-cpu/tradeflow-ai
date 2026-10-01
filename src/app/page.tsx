@@ -631,7 +631,7 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="text-sm mt-4" style={{ color: '#555555' }}>
-                You review, adjust, approve. The quote goes out in your voice, with your margins intact.
+                Sailwise drafts every reply, quote and follow-up for your approval - nothing sends until you approve it.
               </p>
             </GlowCard>
             </Reveal>
@@ -690,13 +690,13 @@ export default function LandingPage() {
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
                 </Link>
                 <p className="text-center mt-3 text-[11px]" style={{ color: '#8A8A8A' }}>
-                  Card required · 14-day free trial · Cancel anytime
+                  14-day free trial · Card required · Cancel anytime
                 </p>
               </div>
             </div>
           </Reveal>
           <p className="text-xs mt-10" style={{ color: '#555555' }}>
-            14-day free trial · Card required · 50 AI drafts and 25 emails included during the trial · Cancel anytime.
+            50 AI drafts and 25 emails included during the trial.
           </p>
           <p className="text-xs mt-4 max-w-xl mx-auto" style={{ color: '#555555' }}>
             Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,000</span> one-time we connect your mailbox, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,504/month —{' '}

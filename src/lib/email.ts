@@ -434,7 +434,7 @@ export function getEmailStatus(): EmailStatus {
     gate = "RESEND_API_KEY is not set — outbound email is disabled.";
   } else if (!defaultFrom) {
     gate =
-      "EMAIL_FROM_ADDRESS is not set — sends have no verified sender, so they are refused unless a company connects its own mailbox.";
+      "No email account connected yet. Connect your Gmail or Outlook to send real email - until then nothing can send.";
   }
 
   return { configured, senderConfigured: defaultFrom !== null, defaultFrom, gate };
