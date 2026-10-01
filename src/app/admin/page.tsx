@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import {
   RefreshCw, Reply, CheckCircle2, AlertTriangle, Clock, Send,
@@ -172,24 +172,238 @@ function formatDueDate(raw: string | null | undefined): { en: string; zh: string
   return { en: `${iso}${overdue ? ' · overdue' : ''}`, zh: `${iso}${overdue ? ' · 已逾期' : ''}` };
 }
 
-function Fact({ label, value }: { label: { en: string; zh: string }; value: string }) {
+/** Renders a value, or a muted em-dash so every row shows the same field set. */
+function Fact({ label, value }: { label: { en: string; zh: string }; value: string | null | undefined }) {
   const { t } = useLang();
+  const known = !!value;
   return (
     <div className="min-w-0">
       <dt className="text-[10.5px] font-medium uppercase tracking-[0.04em]" style={{ color: 'var(--text-muted)' }}>
         {t(label.en, label.zh)}
       </dt>
-      <dd className="text-[12.5px] font-medium truncate" style={{ color: 'var(--text)' }} title={value}>
-        {value}
+      <dd
+        className={`text-[12.5px] font-medium truncate ${known ? '' : 'italic'}`}
+        style={{ color: known ? 'var(--text)' : 'var(--text-muted)' }}
+        title={known ? (value as string) : undefined}
+      >
+        {known ? value : '—'}
       </dd>
     </div>
   );
 }
 
+function DraftEditor({ item }: { item: QueueItem }) {
+  const { t } = useLang();
+  // item.id already carries its type prefix (quote-/conv-/fu-), which is also
+  // the queue_drafts key, so it is the canonical id for both fetch and cache.
+  const rowKey = item.id;
+
+  const [body, setBody] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [edited, setEdited] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const localKey = `queue-draft:${rowKey}`;
+
+  // Load the saved draft, or generate one. Re-opening a row reuses the stored
+  // draft, so this costs a model call only the first time.
+  useEffect(() => {
+    let cancelled = false;
+
+    const run = async () => {
+      setBusy(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/admin/queue/draft?itemId=${encodeURIComponent(rowKey)}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.draft?.body) {
+            if (!cancelled) {
+              setBody(json.draft.body);
+              setEdited(!!json.draft.edited);
+            }
+            setBusy(false);
+            return;
+          }
+        }
+      } catch {
+        // Fall through to generation / local copy.
+      }
+
+      // No server draft: fall back to a browser copy before spending a call.
+      try {
+        const cached = window.localStorage.getItem(localKey);
+        if (cached && !cancelled) {
+          setBody(cached);
+          setEdited(true);
+          setBusy(false);
+          return;
+        }
+      } catch {
+        // localStorage unavailable (private mode) — just generate.
+      }
+
+      try {
+        const res = await fetch('/api/admin/queue/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId: rowKey }),
+        });
+        const json = await res.json();
+        if (cancelled) return;
+        if (res.ok && json.draft?.body) {
+          setBody(json.draft.body);
+          setEdited(!!json.draft.edited);
+        } else {
+          setError(json.error === 'NIM_API_KEY is not configured'
+            ? t('AI drafting is not configured yet', '尚未設定 AI 草稿功能')
+            : t('Could not draft this email', '無法產生草稿'));
+        }
+      } catch {
+        if (!cancelled) setError(t('Could not draft this email', '無法產生草稿'));
+      } finally {
+        if (!cancelled) setBusy(false);
+      }
+    };
+
+    void run();
+    return () => {
+      cancelled = true;
+      if (timer.current) clearTimeout(timer.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowKey]);
+
+  // Debounced persist. The local write is immediate so a refresh mid-typing
+  // never loses the edit even when the server has no draft table.
+  const onChange = (next: string) => {
+    setBody(next);
+    setEdited(true);
+    try {
+      window.localStorage.setItem(localKey, next);
+    } catch {
+      // Non-fatal: the server copy is still attempted below.
+    }
+    if (timer.current) clearTimeout(timer.current);
+    setSaving(true);
+    timer.current = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/admin/queue/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId: rowKey, body: next }),
+        });
+        if (!res.ok) throw new Error('save failed');
+      } catch {
+        // Keep the local copy; the next edit retries.
+      } finally {
+        setSaving(false);
+      }
+    }, 800);
+  };
+
+  const regenerate = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await fetch('/api/admin/queue/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: rowKey, regenerate: true }),
+      });
+      const json = await res.json();
+      if (res.ok && json.draft?.body) {
+        setBody(json.draft.body);
+        setEdited(false);
+        try {
+          window.localStorage.removeItem(localKey);
+        } catch {
+          // Non-fatal.
+        }
+      } else {
+        setError(t('Could not draft this email', '無法產生草稿'));
+      }
+    } catch {
+      setError(t('Could not draft this email', '無法產生草稿'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2 mb-1.5">
+        <p className="text-[10.5px] font-medium uppercase tracking-[0.04em]" style={{ color: 'var(--text-muted)' }}>
+          {t('AI email draft', 'AI 郵件草稿')}
+        </p>
+        <div className="flex items-center gap-2">
+          {body != null && (
+            <span className="text-[10.5px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+              {saving ? t('Saving…', '儲存中…') : edited ? t('Edited', '已編輯') : t('AI draft', 'AI 草稿')}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              void regenerate();
+            }}
+            disabled={busy}
+            className="text-[11px] font-medium hover:underline disabled:opacity-50"
+            style={{ color: 'var(--accent)' }}
+          >
+            {t('Regenerate', '重新產生')}
+          </button>
+        </div>
+      </div>
+
+      {busy && body == null ? (
+        <div
+          className="rounded-lg px-3 py-2.5 text-[12px] animate-pulse"
+          style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+        >
+          {t('Drafting…', '產生草稿中…')}
+        </div>
+      ) : error && body == null ? (
+        <div
+          className="rounded-lg px-3 py-2.5 text-[12px]"
+          style={{ background: '#FEF3F2', border: '1px solid #FDA29B', color: '#B42318' }}
+        >
+          {error}
+        </div>
+      ) : (
+        <textarea
+          value={body ?? ''}
+          onChange={(e) => onChange(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+          rows={7}
+          spellCheck={false}
+          placeholder={t('No draft available', '沒有草稿')}
+          className="w-full rounded-lg px-3 py-2.5 text-[12.5px] leading-relaxed resize-y focus:outline-none"
+          style={{
+            background: 'var(--surface)',
+            border: `1px solid ${body ? 'var(--border)' : 'var(--error)'}`,
+            color: 'var(--text)',
+            fontFamily: 'inherit',
+          }}
+        />
+      )}
+      {error && body != null && (
+        <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /**
- * The approval context panel. Deliberately read-only and fully deterministic:
- * an approver needs the quoted lines, the totals and who the client is, not an
- * editor. No model is called to render it. The one-tap action stays on the row.
+ * The approval context panel. Every row gets the identical set of fields and
+ * the identical order, whether it is a reply, a quote or a follow-up — a
+ * reviewer should never have to learn a new layout per row type. Missing data
+ * renders as an em-dash rather than collapsing the field.
  */
 function DetailPanel({ item }: { item: QueueItem }) {
   const { t } = useLang();
@@ -200,137 +414,129 @@ function DetailPanel({ item }: { item: QueueItem }) {
   const total = formatMoney(d.value, d.currency);
   const due = formatDueDate(d.nextActionDue);
   const lines = d.lineItems ?? [];
-  const hasFacts = !!(stage || d.company || d.industry || d.country || d.contactTitle || total || d.marginPct != null);
-  const hasRequest = !!d.whatTheyWant;
-  if (!hasRequest && !hasFacts && lines.length === 0) return null;
 
   return (
-    <div
-      className="px-4 md:px-6 pb-4 -mt-1"
-      style={{ borderColor: 'var(--border)' }}
-    >
-      <div className="rounded-xl p-3 md:p-4 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
-        {/* Left: the request and the quoted lines */}
-        <div className="min-w-0 space-y-3">
-          {hasRequest && (
-            <div>
-              <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] mb-1" style={{ color: 'var(--text-muted)' }}>
-                {t('What they asked for', '客戶要求')}
-              </p>
-              <p className="text-[12.5px] leading-relaxed" style={{ color: 'var(--text)' }}>
-                {d.whatTheyWant}
-              </p>
-              {d.lastMessageAt && (
-                <p className="text-[11px] mt-1 tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                  {t('Latest message', '最新訊息')} {formatTimeAgo(d.lastMessageAt)}
-                </p>
-              )}
-            </div>
-          )}
+    <div className="px-4 md:px-6 pb-4 -mt-1" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="rounded-xl p-3 md:p-4 space-y-4"
+        style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+      >
+        <DraftEditor item={item} />
 
-          {d.missingInfo && d.missingInfo.length > 0 && (
-            <div className="rounded-lg px-2.5 py-2" style={{ background: '#FFFAEB' }}>
-              <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#B54708' }}>
-                {t('Specs still missing', '仍缺少規格')}
-              </p>
-              <p className="text-[11.5px] leading-relaxed" style={{ color: '#7A4A0B' }}>
-                {d.missingInfo.join(' · ')}
-              </p>
-            </div>
-          )}
+        {/* The five facts a reviewer always needs, in the same order every time. */}
+        <dl className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2.5">
+          <Fact label={{ en: 'Company', zh: '公司' }} value={d.company} />
+          <Fact label={{ en: 'Industry', zh: '行業' }} value={d.industry} />
+          <Fact label={{ en: 'Stage', zh: '階段' }} value={stage ? t(stage.en, stage.zh) : null} />
+          <Fact label={{ en: 'Country', zh: '地區' }} value={d.country} />
+          <Fact label={{ en: 'Next step', zh: '下一步' }} value={d.nextAction} />
+          <Fact label={{ en: 'Value', zh: '金額' }} value={total} />
+          <Fact label={{ en: 'Contact', zh: '聯絡人' }} value={d.contactTitle} />
+          <Fact label={{ en: 'Due', zh: '到期' }} value={due ? t(due.en, due.zh) : null} />
+          <Fact
+            label={{ en: 'Last message', zh: '最新訊息' }}
+            value={d.lastMessageAt ? formatTimeAgo(d.lastMessageAt) : null}
+          />
+        </dl>
 
-          {lines.length > 0 && (
-            <div>
-              <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] mb-1.5" style={{ color: 'var(--text-muted)' }}>
-                {t('Quoted items', '報價項目')}
-              </p>
-              <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
-                <table className="w-full text-[11.5px]">
-                  <thead>
-                    <tr style={{ background: 'var(--surface)' }}>
-                      <th className="text-left font-medium px-2.5 py-1.5" style={{ color: 'var(--text-muted)' }}>
-                        {t('Item', '項目')}
-                      </th>
-                      <th className="text-right font-medium px-2 py-1.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                        {t('Qty', '數量')}
-                      </th>
-                      <th className="text-right font-medium px-2 py-1.5 whitespace-nowrap hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>
-                        {t('Unit', '單價')}
-                      </th>
-                      <th className="text-right font-medium px-2.5 py-1.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
-                        {t('Amount', '金額')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lines.map((li, idx) => (
-                      <tr key={`${li.product}-${idx}`} style={{ borderTop: '1px solid var(--border)' }}>
-                        <td className="px-2.5 py-1.5 min-w-0">
-                          <div className="font-medium truncate" style={{ color: 'var(--text)' }}>{li.product}</div>
-                          {li.description && (
-                            <div className="truncate" style={{ color: 'var(--text-muted)' }}>{li.description}</div>
-                          )}
-                        </td>
-                        <td className="text-right px-2 py-1.5 tabular-nums whitespace-nowrap" style={{ color: 'var(--text)' }}>
-                          {li.quantity ?? '—'}{li.unit ? ` ${li.unit}` : ''}
-                        </td>
-                        <td className="text-right px-2 py-1.5 tabular-nums whitespace-nowrap hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>
-                          {formatMoney(li.unitPrice, d.currency) ?? '—'}
-                        </td>
-                        <td className="text-right px-2.5 py-1.5 tabular-nums whitespace-nowrap font-medium" style={{ color: 'var(--text)' }}>
-                          {formatMoney(li.total, d.currency) ?? '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot>
-                    <tr style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
-                      <td className="px-2.5 py-1.5 font-semibold" style={{ color: 'var(--text)' }} colSpan={3}>
-                        {t('Total', '合計')}
-                      </td>
-                      <td className="text-right px-2.5 py-1.5 tabular-nums font-semibold whitespace-nowrap" style={{ color: 'var(--text)' }}>
-                        {total ?? '—'}
-                      </td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
-              {d.marginPct != null && (
-                <p className="text-[11px] mt-1 tabular-nums" style={{ color: 'var(--text-muted)' }}>
-                  {t('Margin', '毛利')} {d.marginPct}%
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Right: who the client is and where the deal sits */}
-        <div className="min-w-0">
-          <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] mb-2" style={{ color: 'var(--text-muted)' }}>
-            {t('Client', '客戶')}
+        <div>
+          <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] mb-1" style={{ color: 'var(--text-muted)' }}>
+            {t('What they asked for', '客戶要求')}
           </p>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
-            {stage && <Fact label={{ en: 'Stage', zh: '階段' }} value={t(stage.en, stage.zh)} />}
-            {d.company && <Fact label={{ en: 'Company', zh: '公司' }} value={d.company} />}
-            {d.contactTitle && <Fact label={{ en: 'Contact', zh: '聯絡人' }} value={d.contactTitle} />}
-            {d.industry && <Fact label={{ en: 'Industry', zh: '行業' }} value={d.industry} />}
-            {d.country && <Fact label={{ en: 'Country', zh: '地區' }} value={d.country} />}
-            {total && <Fact label={{ en: 'Value', zh: '金額' }} value={total} />}
-            {d.nextAction && <Fact label={{ en: 'Next step', zh: '下一步' }} value={d.nextAction} />}
-            {due && <Fact label={{ en: 'Due', zh: '到期' }} value={t(due.en, due.zh)} />}
-          </dl>
-
-          <Link
-            href={item.href}
-            className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium hover:underline"
-            style={{ color: 'var(--accent)' }}
-          >
-            {item.kind === 'followup' || item.id.startsWith('quote-')
-              ? t('Open record', '開啟記錄')
-              : t('Open thread', '開啟對話')}
-            <ArrowUpRight width="12" height="12" />
-          </Link>
+          <p className="text-[12.5px] leading-relaxed" style={{ color: d.whatTheyWant ? 'var(--text)' : 'var(--text-muted)' }}>
+            {d.whatTheyWant || '—'}
+          </p>
         </div>
+
+        {d.missingInfo && d.missingInfo.length > 0 && (
+          <div className="rounded-lg px-2.5 py-2" style={{ background: '#FFFAEB' }}>
+            <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#B54708' }}>
+              {t('Specs still missing', '仍缺少規格')}
+            </p>
+            <p className="text-[11.5px] leading-relaxed" style={{ color: '#7A4A0B' }}>
+              {d.missingInfo.join(' · ')}
+            </p>
+          </div>
+        )}
+
+        <div>
+          <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] mb-1.5" style={{ color: 'var(--text-muted)' }}>
+            {t('Quoted items', '報價項目')}
+          </p>
+          {lines.length === 0 ? (
+            <p className="text-[12px] italic" style={{ color: 'var(--text-muted)' }}>
+              {t('No quote on this item', '此項目沒有報價')}
+            </p>
+          ) : (
+            <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+              <table className="w-full text-[11.5px]">
+                <thead>
+                  <tr style={{ background: 'var(--surface)' }}>
+                    <th className="text-left font-medium px-2.5 py-1.5" style={{ color: 'var(--text-muted)' }}>
+                      {t('Item', '項目')}
+                    </th>
+                    <th className="text-right font-medium px-2 py-1.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                      {t('Qty', '數量')}
+                    </th>
+                    <th className="text-right font-medium px-2 py-1.5 whitespace-nowrap hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>
+                      {t('Unit', '單價')}
+                    </th>
+                    <th className="text-right font-medium px-2.5 py-1.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                      {t('Amount', '金額')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {lines.map((li, idx) => (
+                    <tr key={`${li.product}-${idx}`} style={{ borderTop: '1px solid var(--border)' }}>
+                      <td className="px-2.5 py-1.5 min-w-0">
+                        <div className="font-medium truncate" style={{ color: 'var(--text)' }}>{li.product}</div>
+                        {li.description && (
+                          <div className="truncate" style={{ color: 'var(--text-muted)' }}>{li.description}</div>
+                        )}
+                      </td>
+                      <td className="text-right px-2 py-1.5 tabular-nums whitespace-nowrap" style={{ color: 'var(--text)' }}>
+                        {li.quantity ?? '—'}{li.unit ? ` ${li.unit}` : ''}
+                      </td>
+                      <td className="text-right px-2 py-1.5 tabular-nums whitespace-nowrap hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>
+                        {formatMoney(li.unitPrice, d.currency) ?? '—'}
+                      </td>
+                      <td className="text-right px-2.5 py-1.5 tabular-nums whitespace-nowrap font-medium" style={{ color: 'var(--text)' }}>
+                        {formatMoney(li.total, d.currency) ?? '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+                    <td className="px-2.5 py-1.5 font-semibold" style={{ color: 'var(--text)' }} colSpan={3}>
+                      {t('Total', '合計')}
+                    </td>
+                    <td className="text-right px-2.5 py-1.5 tabular-nums font-semibold whitespace-nowrap" style={{ color: 'var(--text)' }}>
+                      {total ?? '—'}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
+          {d.marginPct != null && (
+            <p className="text-[11px] mt-1 tabular-nums" style={{ color: 'var(--text-muted)' }}>
+              {t('Margin', '毛利')} {d.marginPct}%
+            </p>
+          )}
+        </div>
+
+        <Link
+          href={item.href}
+          className="inline-flex items-center gap-1 text-[12px] font-medium hover:underline"
+          style={{ color: 'var(--accent)' }}
+        >
+          {item.kind === 'reply'
+            ? t('Open thread', '開啟對話')
+            : t('Open record', '開啟記錄')}
+          <ArrowUpRight width="12" height="12" />
+        </Link>
       </div>
     </div>
   );
