@@ -6,12 +6,48 @@ import {
   type ConversationInput,
   type QuoteInput,
   type FollowUpInput,
+  type QueueItem,
+  type QueueItemDetail,
 } from '@/lib/queue-status';
 import { evaluateSendGate, type LineItemInput, type ApprovalSnapshotInput } from '@/lib/quote-gate';
 import { deriveBigDeals, type OpportunityInput } from '@/lib/big-deals';
 
 const MAX_ROWS = 200;
 const INBOUND_ROLES = ['user', 'customer'];
+
+type ContactRow = { id: string; full_name: string | null; email: string | null; title: string | null };
+/** Contacts fetched by email for conversations also carry the customer pointer. */
+type ConvContactRow = ContactRow & { customer_id: string | null };
+type CustomerRow = {
+  id: string;
+  trading_name: string | null;
+  legal_name: string | null;
+  industry: string | null;
+  country: string | null;
+};
+type OppContextRow = {
+  id: string;
+  title: string | null;
+  stage: string | null;
+  priority: string | null;
+  currency: string | null;
+  estimated_order_value: number | null;
+  next_action: string | null;
+  next_action_due: string | null;
+};
+/** Opportunity plus the identity pointers every queue row type resolves through. */
+type OppWide = OppContextRow & { contact_id: string | null; customer_id: string | null };
+type QuoteDetailRow = {
+  id: string;
+  status: string | null;
+  currency: string | null;
+  total_amount: number | null;
+  margin_pct: number | null;
+  contact_id: string | null;
+  customer_id: string | null;
+  opportunity_id: string | null;
+  valid_until: string | null;
+};
 
 // GET /api/admin/queue — the authenticated home. Gathers each company's
 // working state and derives the fixed Queue groups.
@@ -27,7 +63,7 @@ export async function GET(req: NextRequest) {
     const [convsRes, quotesRes, followRes, oppsAllRes] = await Promise.all([
       supabaseAdmin
         .from('conversations')
-        .select('id, contact_name, contact_email, subject, status, folder, read_at, updated_at, created_at')
+        .select('id, contact_name, contact_email, subject, status, folder, read_at, updated_at, created_at, opportunity_id, estimated_value, currency, product_summary, missing_info, next_action, next_action_due, detected_language')
         .eq('company_id', companyId)
         .order('updated_at', { ascending: false })
         .limit(MAX_ROWS),
@@ -50,7 +86,7 @@ export async function GET(req: NextRequest) {
       supabaseAdmin
         .from('opportunities')
         .select(
-          'id, title, stage, priority, currency, estimated_order_value, next_action, next_action_due, last_activity_at, updated_at'
+          'id, title, stage, priority, currency, estimated_order_value, next_action, next_action_due, contact_id, customer_id, last_activity_at, updated_at'
         )
         .eq('company_id', companyId)
         .is('deleted_at', null)
@@ -71,59 +107,130 @@ export async function GET(req: NextRequest) {
 
     // ── Phase B: enrichment batches ─────────────────────────────────────
     const convIds = conversations.map((c: { id: string }) => c.id);
-    const contactIds = [...new Set(quotes.map((q: { contact_id: string | null }) => q.contact_id).filter(Boolean))];
-    const custIds = [...new Set(quotes.map((q: { customer_id: string | null }) => q.customer_id).filter(Boolean))];
+    const oppContextById = new Map<string, OppWide>(
+      (opportunitiesAll as OppWide[]).map((o) => [o.id, o]),
+    );
+    const quoteOppIds = [
+      ...new Set(quotes.map((q: { opportunity_id: string | null }) => q.opportunity_id).filter(Boolean)),
+    ] as string[];
+    const contactIds = [
+      ...new Set([
+        ...quotes.map((q: { contact_id: string | null }) => q.contact_id),
+        ...quoteOppIds.map((id) => oppContextById.get(id)?.contact_id ?? null),
+        ...(opportunitiesAll as Array<{ contact_id: string | null }>).map((o) => o.contact_id),
+      ].filter(Boolean)),
+    ] as string[];
+    const custIds = [
+      ...new Set([
+        ...quotes.map((q: { customer_id: string | null }) => q.customer_id),
+        ...quoteOppIds.map((id) => oppContextById.get(id)?.customer_id ?? null),
+        ...(opportunitiesAll as Array<{ customer_id: string | null }>).map((o) => o.customer_id),
+      ].filter(Boolean)),
+    ] as string[];
     const oppIds = [...new Set(quotes.map((q: { opportunity_id: string | null }) => q.opportunity_id).filter(Boolean))];
     const approvedIds = quotes
       .filter((q: { status: string }) => q.status === 'APPROVED')
       .map((q: { id: string }) => q.id);
+    // Approval context is needed for every quote in the queue, not just the
+    // already-approved ones — a draft is precisely what a human is judging.
+    const quoteIdsForLines = [...new Set(quotes.map((q: { id: string }) => q.id))];
 
-    const [contactsRes, customersRes, oppsRes, lastMsgsRes, approvalsRes, lineItemsRes] =
+    const convEmails = [
+      ...new Set(
+        conversations
+          .map((c: { contact_email: string | null }) => (c.contact_email || '').trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    ];
+
+    const [contactsRes, customersRes, oppsRes, lastMsgsRes, approvalsRes, lineItemsRes, convContactsRes] =
       await Promise.all([
         contactIds.length
-          ? supabaseAdmin.from('contacts').select('id, full_name, email').in('id', contactIds)
-          : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; email: string | null }>, error: null }),
+          ? supabaseAdmin.from('contacts').select('id, full_name, email, title').in('id', contactIds)
+          : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; email: string | null; title: string | null }>, error: null }),
         custIds.length
-          ? supabaseAdmin.from('customers').select('id, trading_name, legal_name').in('id', custIds)
-          : Promise.resolve({ data: [] as Array<{ id: string; trading_name: string | null; legal_name: string | null }>, error: null }),
+          ? supabaseAdmin.from('customers').select('id, trading_name, legal_name, industry, country').in('id', custIds)
+          : Promise.resolve({ data: [] as Array<{ id: string; trading_name: string | null; legal_name: string | null; industry: string | null; country: string | null }>, error: null }),
         oppIds.length
-          ? supabaseAdmin.from('opportunities').select('id, title').in('id', oppIds)
-          : Promise.resolve({ data: [] as Array<{ id: string; title: string | null }>, error: null }),
+          ? supabaseAdmin
+              .from('opportunities')
+              .select('id, title, stage, priority, currency, estimated_order_value, next_action, next_action_due, contact_id, customer_id')
+              .in('id', oppIds)
+          : Promise.resolve({ data: [] as OppWide[], error: null }),
         convIds.length
           ? supabaseAdmin
               .from('messages')
-              .select('id, conversation_id, role, created_at')
+              .select('id, conversation_id, role, created_at, content, subject')
               .in('conversation_id', convIds)
               .order('created_at', { ascending: false })
-          : Promise.resolve({ data: [] as Array<{ conversation_id: string; role: string; created_at: string }>, error: null }),
+          : Promise.resolve({ data: [] as Array<{ conversation_id: string; role: string; created_at: string; content: string | null; subject: string | null }>, error: null }),
         approvedIds.length
           ? supabaseAdmin
               .from('quote_approvals')
               .select('quote_id, status, invalidated, quote_version')
               .in('quote_id', approvedIds)
           : Promise.resolve({ data: [] as Array<{ quote_id: string; status: string; invalidated: boolean | null; quote_version: number | null }>, error: null }),
-        approvedIds.length
+        quoteIdsForLines.length
           ? supabaseAdmin
               .from('quote_line_items')
-              .select('quote_id, product_name, quantity, unit_price, total_price, match_status, evidence_type')
-              .in('quote_id', approvedIds)
+              .select('quote_id, product_name, description, quantity, unit, unit_price, total_price, specs, notes, sort_order, cost_price, margin_pct, match_status, evidence_type')
+              .in('quote_id', quoteIdsForLines)
+              .order('sort_order', { ascending: true })
           : Promise.resolve({ data: [] as Array<LineItemInput & { quote_id: string }>, error: null }),
+        convEmails.length
+          ? supabaseAdmin
+              .from('contacts')
+              .select('id, full_name, email, title, customer_id')
+              .eq('company_id', companyId)
+              .in('email', convEmails)
+          : Promise.resolve({ data: [] as ConvContactRow[], error: null }),
       ]);
 
     const contactById = new Map(
-      ((contactsRes.data || []) as Array<{ id: string; full_name: string | null; email: string | null }>).map((c) => [c.id, c]),
+      ((contactsRes.data || []) as ContactRow[]).map((c) => [c.id, c]),
+    );
+    const contactByEmail = new Map(
+      ((convContactsRes.data || []) as ConvContactRow[]).map((c) => [
+        (c.email || '').trim().toLowerCase(),
+        c,
+      ]),
     );
     const custById = new Map(
-      ((customersRes.data || []) as Array<{ id: string; trading_name: string | null; legal_name: string | null }>).map((c) => [c.id, c]),
+      ((customersRes.data || []) as CustomerRow[]).map((c) => [c.id, c]),
     );
     const oppById = new Map(
-      ((oppsRes.data || []) as Array<{ id: string; title: string | null }>).map((o) => [o.id, o]),
+      ((oppsRes.data || []) as OppWide[]).map((o) => [o.id, o]),
     );
     const linesByQuote = new Map<string, LineItemInput[]>();
+    const lineDetailByQuote = new Map<
+      string,
+      Array<{
+        product_name: string | null;
+        description: string | null;
+        quantity: number | null;
+        unit: string | null;
+        unit_price: number | null;
+        total_price: number | null;
+        margin_pct: number | null;
+        match_status: string | null;
+      }>
+    >();
     for (const li of lineItemsRes.data || []) {
       const list = linesByQuote.get(li.quote_id) ?? [];
       list.push(li);
       linesByQuote.set(li.quote_id, list);
+      const detail = lineDetailByQuote.get(li.quote_id) ?? [];
+      detail.push({
+        product_name: li.product_name ?? null,
+        description: li.description ?? null,
+        quantity: li.quantity ?? null,
+        unit: li.unit ?? null,
+        unit_price: li.unit_price ?? null,
+        total_price: li.total_price ?? null,
+        margin_pct: li.margin_pct ?? null,
+        match_status: li.match_status ?? null,
+      });
+      lineDetailByQuote.set(li.quote_id, detail);
     }
     const approvalByQuote = new Map<string, Array<{ status: string; invalidated: boolean | null; quote_version: number | null }>>();
     for (const a of approvalsRes.data || []) {
@@ -132,11 +239,19 @@ export async function GET(req: NextRequest) {
       approvalByQuote.set(a.quote_id, list);
     }
     // Latest message per conversation (single batched query instead of N+1).
-    const lastByConv = new Map<string, { role: string; created_at: string }>();
+    const lastByConv = new Map<
+      string,
+      { role: string; created_at: string; content: string | null; subject: string | null }
+    >();
     for (const m of lastMsgsRes.data || []) {
       const existing = lastByConv.get(m.conversation_id);
       if (!existing || new Date(m.created_at) > new Date(existing.created_at)) {
-        lastByConv.set(m.conversation_id, { role: m.role, created_at: m.created_at });
+        lastByConv.set(m.conversation_id, {
+          role: m.role,
+          created_at: m.created_at,
+          content: m.content ?? null,
+          subject: m.subject ?? null,
+        });
       }
     }
 
@@ -365,16 +480,155 @@ export async function GET(req: NextRequest) {
       followUps: followInputs,
     });
 
+    // ── Approval context ─────────────────────────────────────────────────
+    // Everything a human needs to judge a row without leaving the queue or
+    // opening Excel: the quoted lines and their totals, who the client is,
+    // where the deal sits, and what the customer actually asked for. All
+    // deterministic reads — no model is called to render this panel.
+    const quoteById = new Map((quotes as QuoteDetailRow[]).map((q) => [q.id, q]));
+    const convById = new Map(
+      (
+        conversations as Array<{
+          id: string;
+          contact_email: string | null;
+          opportunity_id: string | null;
+          estimated_value: number | null;
+          currency: string | null;
+          product_summary: string | null;
+          missing_info: string[] | null;
+          next_action: string | null;
+          next_action_due: string | null;
+        }>
+      ).map((c) => [c.id, c]),
+    );
+    const fuById = new Map(
+      (followUps as Array<{ id: string; sequence_id: string | null; subject: string | null }>).map(
+        (f) => [f.id, f],
+      ),
+    );
+
+    const clip = (raw: string | null | undefined, max: number): string | null => {
+      if (!raw) return null;
+      const flat = raw.replace(/\s+/g, ' ').trim();
+      if (!flat) return null;
+      return flat.length > max ? `${flat.slice(0, max - 1)}\u2026` : flat;
+    };
+
+    const buildDetail = (item: QueueItem): QueueItemDetail | null => {
+      const oppOf = (oppId: string | null | undefined) =>
+        (oppId ? oppById.get(oppId) ?? null : null) ?? (oppId ? oppContextById.get(oppId) ?? null : null);
+
+      // Reply rows: resolve client facts through conversation → opportunity.
+      if (item.id.startsWith('conv-')) {
+        const convId = item.id.slice('conv-'.length);
+        const conv = convById.get(convId);
+        const opp = oppOf(conv?.opportunity_id);
+        const last = lastByConv.get(convId);
+        // Only the company-wide opportunity index carries the contact/customer
+        // pointers, so resolve identity from there.
+        const convOpp = conv?.opportunity_id ? oppContextById.get(conv.opportunity_id) : undefined;
+        const email = (conv?.contact_email || '').trim().toLowerCase();
+        const emailContact = email ? contactByEmail.get(email) : undefined;
+        const contact = emailContact ?? (convOpp?.contact_id ? contactById.get(convOpp.contact_id) : undefined);
+        const customerId = emailContact?.customer_id ?? convOpp?.customer_id ?? null;
+        const customer = customerId ? custById.get(customerId) : undefined;
+        return {
+          whatTheyWant:
+            clip(last?.content, 400) ??
+            clip(conv?.product_summary, 300) ??
+            clip(last?.subject, 200) ??
+            clip(item.subject, 200),
+          stage: opp?.stage ?? null,
+          priority: opp?.priority ?? null,
+          company: customer?.trading_name ?? customer?.legal_name ?? null,
+          industry: customer?.industry ?? null,
+          country: customer?.country ?? null,
+          contactTitle: contact?.title ?? null,
+          value: opp?.estimated_order_value ?? conv?.estimated_value ?? null,
+          currency: opp?.currency ?? conv?.currency ?? null,
+          missingInfo: conv?.missing_info ?? null,
+          nextAction: opp?.next_action ?? conv?.next_action ?? null,
+          nextActionDue: opp?.next_action_due ?? conv?.next_action_due ?? null,
+          lastMessageAt: last?.created_at ?? null,
+          lastMessageRole: last?.role ?? null,
+        };
+      }
+
+      if (item.id.startsWith('quote-')) {
+        const q = quoteById.get(item.id.slice('quote-'.length));
+        if (!q) return null;
+        const opp = oppOf(q.opportunity_id);
+        const contact = q.contact_id ? contactById.get(q.contact_id) : null;
+        const customer = q.customer_id ? custById.get(q.customer_id) : null;
+        return {
+          quoteStatus: q.status ?? null,
+          stage: opp?.stage ?? null,
+          priority: q.margin_pct != null ? null : opp?.priority ?? null,
+          company: customer?.trading_name ?? customer?.legal_name ?? null,
+          industry: customer?.industry ?? null,
+          country: customer?.country ?? null,
+          contactTitle: contact?.title ?? null,
+          value: q.total_amount ?? opp?.estimated_order_value ?? null,
+          currency: q.currency ?? opp?.currency ?? null,
+          marginPct: q.margin_pct ?? null,
+          missingInfo: null,
+          lineItems: (lineDetailByQuote.get(q.id) ?? []).map((li) => ({
+            product: li.product_name ?? '—',
+            description: li.description ?? null,
+            quantity: li.quantity ?? null,
+            unit: li.unit ?? null,
+            unitPrice: li.unit_price ?? null,
+            total: li.total_price ?? null,
+            marginPct: li.margin_pct ?? null,
+            matchStatus: li.match_status ?? null,
+          })),
+          nextAction: opp?.next_action ?? null,
+          nextActionDue: opp?.next_action_due ?? null,
+        };
+      }
+
+      if (item.id.startsWith('fu-')) {
+        const f = fuById.get(item.id.slice('fu-'.length));
+        const oppId = f?.sequence_id ? seqById.get(f.sequence_id) : undefined;
+        const opp = oppOf(oppId);
+        const fuOpp = oppId ? fuOppById.get(oppId) : undefined;
+        const contactId = opp?.contact_id ?? fuOpp?.contact_id ?? null;
+        const customerId = opp?.customer_id ?? fuOpp?.customer_id ?? null;
+        const contact = contactId ? contactById.get(contactId) ?? null : null;
+        const customer = customerId ? custById.get(customerId) ?? null : null;
+        return {
+          whatTheyWant: clip(f?.subject, 200) ?? clip(item.subject, 200),
+          stage: opp?.stage ?? null,
+          priority: opp?.priority ?? null,
+          company: customer?.trading_name ?? customer?.legal_name ?? null,
+          industry: customer?.industry ?? null,
+          country: customer?.country ?? null,
+          contactTitle: contact?.title ?? null,
+          value: opp?.estimated_order_value ?? null,
+          currency: opp?.currency ?? null,
+          nextAction: opp?.next_action ?? null,
+          nextActionDue: opp?.next_action_due ?? null,
+        };
+      }
+
+      return null;
+    };
+
+    const groupsWithDetail = groups.map((g) => ({
+      ...g,
+      items: g.items.map((item) => ({ ...item, detail: buildDetail(item) })),
+    }));
+
     // ── Big deals: the company's biggest open opportunities ─────────────
     const bigDeals = deriveBigDeals((opportunitiesAll as OpportunityInput[]));
 
-    const totals = groups.reduce<Record<string, number>>((acc, g) => {
+    const totals = groupsWithDetail.reduce<Record<string, number>>((acc, g) => {
       acc[g.key] = g.count;
       return acc;
     }, {} as Record<string, number>);
 
     return NextResponse.json({
-      groups,
+      groups: groupsWithDetail,
       totals,
       bigDeals,
     });

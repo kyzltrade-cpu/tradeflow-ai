@@ -23,6 +23,18 @@ export const QUEUE_GROUP_LABELS: Record<QueueGroupKey, { en: string; zh: string 
 
 export type PrimaryAction = 'reply' | 'approve' | 're-approve' | 'send-followup' | 'wait';
 
+/** One quoted line, as shown in the approval context panel. */
+export type QueueLineItem = {
+  product: string;
+  description?: string | null;
+  quantity?: number | null;
+  unit?: string | null;
+  unitPrice?: number | null;
+  total?: number | null;
+  marginPct?: number | null;
+  matchStatus?: string | null;
+};
+
 /**
  * Per-row context shown when a queue row is expanded. All fields are optional
  * and derived from linked opportunity / contact / customer / message rows —
@@ -41,6 +53,10 @@ export type QueueItemDetail = {
   contactTitle?: string | null;
   value?: number | null;
   currency?: string | null;
+  marginPct?: number | null;
+  /** Specs the AI flagged as still missing — read before approving a quote. */
+  missingInfo?: string[] | null;
+  lineItems?: QueueLineItem[];
   nextAction?: string | null;
   nextActionDue?: string | null;
   priority?: string | null;

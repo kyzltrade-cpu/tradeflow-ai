@@ -131,6 +131,211 @@ const PRIORITY_TONE: Record<string, { label: { en: string; zh: string }; color: 
   urgent: { label: { en: 'Urgent', zh: '緊急' }, color: '#B42318', bg: '#FEF3F2' },
 };
 
+// Opportunity stages are stored inconsistently cased across seeded and
+// production rows (NEW, rfq_sent, sourcing), so normalise before labelling.
+const STAGE_LABELS: Record<string, { en: string; zh: string }> = {
+  NEW: { en: 'New lead', zh: '新客戶' },
+  QUALIFIED: { en: 'Qualified', zh: '需求已確認' },
+  RFQ_SENT: { en: 'Quote sent', zh: '報價已發出' },
+  SOURCING: { en: 'Fetching specs', zh: '抓取規格中' },
+  PENDING_APPROVAL: { en: 'Pending approval', zh: '待審批' },
+  SENT: { en: 'Sent', zh: '已發出' },
+  NEGOTIATING: { en: 'Negotiating', zh: '議價中' },
+  WON: { en: 'Won', zh: '已成交' },
+  LOST: { en: 'Lost', zh: '已流失' },
+  EXPIRED: { en: 'Expired', zh: '已過期' },
+  NEGATIVE_FEEDBACK: { en: 'Negative feedback', zh: '負面回饋' },
+};
+
+function stageLabel(stage: string | null | undefined): { en: string; zh: string } | null {
+  if (!stage) return null;
+  const known = STAGE_LABELS[stage.toUpperCase()];
+  if (known) return known;
+  const flat = stage.replace(/_/g, ' ').toLowerCase();
+  return { en: flat, zh: flat };
+}
+
+function formatMoney(value: number | null | undefined, currency: string | null | undefined): string | null {
+  if (value == null) return null;
+  const n = Number(value);
+  if (!Number.isFinite(n)) return null;
+  const opts: Intl.NumberFormatOptions = { minimumFractionDigits: 0, maximumFractionDigits: 2 };
+  return `${currency || 'USD'} ${new Intl.NumberFormat('en-US', opts).format(n)}`;
+}
+
+function formatDueDate(raw: string | null | undefined): { en: string; zh: string } | null {
+  if (!raw) return null;
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return null;
+  const iso = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+  const overdue = d.getTime() < Date.now();
+  return { en: `${iso}${overdue ? ' · overdue' : ''}`, zh: `${iso}${overdue ? ' · 已逾期' : ''}` };
+}
+
+function Fact({ label, value }: { label: { en: string; zh: string }; value: string }) {
+  const { t } = useLang();
+  return (
+    <div className="min-w-0">
+      <dt className="text-[10.5px] font-medium uppercase tracking-[0.04em]" style={{ color: 'var(--text-muted)' }}>
+        {t(label.en, label.zh)}
+      </dt>
+      <dd className="text-[12.5px] font-medium truncate" style={{ color: 'var(--text)' }} title={value}>
+        {value}
+      </dd>
+    </div>
+  );
+}
+
+/**
+ * The approval context panel. Deliberately read-only and fully deterministic:
+ * an approver needs the quoted lines, the totals and who the client is, not an
+ * editor. No model is called to render it. The one-tap action stays on the row.
+ */
+function DetailPanel({ item }: { item: QueueItem }) {
+  const { t } = useLang();
+  const d = item.detail;
+  if (!d) return null;
+
+  const stage = stageLabel(d.stage);
+  const total = formatMoney(d.value, d.currency);
+  const due = formatDueDate(d.nextActionDue);
+  const lines = d.lineItems ?? [];
+  const hasFacts = !!(stage || d.company || d.industry || d.country || d.contactTitle || total || d.marginPct != null);
+  const hasRequest = !!d.whatTheyWant;
+  if (!hasRequest && !hasFacts && lines.length === 0) return null;
+
+  return (
+    <div
+      className="px-4 md:px-6 pb-4 -mt-1"
+      style={{ borderColor: 'var(--border)' }}
+    >
+      <div className="rounded-xl p-3 md:p-4 grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
+        {/* Left: the request and the quoted lines */}
+        <div className="min-w-0 space-y-3">
+          {hasRequest && (
+            <div>
+              <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] mb-1" style={{ color: 'var(--text-muted)' }}>
+                {t('What they asked for', '客戶要求')}
+              </p>
+              <p className="text-[12.5px] leading-relaxed" style={{ color: 'var(--text)' }}>
+                {d.whatTheyWant}
+              </p>
+              {d.lastMessageAt && (
+                <p className="text-[11px] mt-1 tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                  {t('Latest message', '最新訊息')} {formatTimeAgo(d.lastMessageAt)}
+                </p>
+              )}
+            </div>
+          )}
+
+          {d.missingInfo && d.missingInfo.length > 0 && (
+            <div className="rounded-lg px-2.5 py-2" style={{ background: '#FFFAEB' }}>
+              <p className="text-[11px] font-semibold mb-0.5" style={{ color: '#B54708' }}>
+                {t('Specs still missing', '仍缺少規格')}
+              </p>
+              <p className="text-[11.5px] leading-relaxed" style={{ color: '#7A4A0B' }}>
+                {d.missingInfo.join(' · ')}
+              </p>
+            </div>
+          )}
+
+          {lines.length > 0 && (
+            <div>
+              <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] mb-1.5" style={{ color: 'var(--text-muted)' }}>
+                {t('Quoted items', '報價項目')}
+              </p>
+              <div className="rounded-lg overflow-hidden" style={{ border: '1px solid var(--border)' }}>
+                <table className="w-full text-[11.5px]">
+                  <thead>
+                    <tr style={{ background: 'var(--surface)' }}>
+                      <th className="text-left font-medium px-2.5 py-1.5" style={{ color: 'var(--text-muted)' }}>
+                        {t('Item', '項目')}
+                      </th>
+                      <th className="text-right font-medium px-2 py-1.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                        {t('Qty', '數量')}
+                      </th>
+                      <th className="text-right font-medium px-2 py-1.5 whitespace-nowrap hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>
+                        {t('Unit', '單價')}
+                      </th>
+                      <th className="text-right font-medium px-2.5 py-1.5 whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
+                        {t('Amount', '金額')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {lines.map((li, idx) => (
+                      <tr key={`${li.product}-${idx}`} style={{ borderTop: '1px solid var(--border)' }}>
+                        <td className="px-2.5 py-1.5 min-w-0">
+                          <div className="font-medium truncate" style={{ color: 'var(--text)' }}>{li.product}</div>
+                          {li.description && (
+                            <div className="truncate" style={{ color: 'var(--text-muted)' }}>{li.description}</div>
+                          )}
+                        </td>
+                        <td className="text-right px-2 py-1.5 tabular-nums whitespace-nowrap" style={{ color: 'var(--text)' }}>
+                          {li.quantity ?? '—'}{li.unit ? ` ${li.unit}` : ''}
+                        </td>
+                        <td className="text-right px-2 py-1.5 tabular-nums whitespace-nowrap hidden sm:table-cell" style={{ color: 'var(--text-muted)' }}>
+                          {formatMoney(li.unitPrice, d.currency) ?? '—'}
+                        </td>
+                        <td className="text-right px-2.5 py-1.5 tabular-nums whitespace-nowrap font-medium" style={{ color: 'var(--text)' }}>
+                          {formatMoney(li.total, d.currency) ?? '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr style={{ borderTop: '1px solid var(--border)', background: 'var(--surface)' }}>
+                      <td className="px-2.5 py-1.5 font-semibold" style={{ color: 'var(--text)' }} colSpan={3}>
+                        {t('Total', '合計')}
+                      </td>
+                      <td className="text-right px-2.5 py-1.5 tabular-nums font-semibold whitespace-nowrap" style={{ color: 'var(--text)' }}>
+                        {total ?? '—'}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              {d.marginPct != null && (
+                <p className="text-[11px] mt-1 tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                  {t('Margin', '毛利')} {d.marginPct}%
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Right: who the client is and where the deal sits */}
+        <div className="min-w-0">
+          <p className="text-[10.5px] font-medium uppercase tracking-[0.04em] mb-2" style={{ color: 'var(--text-muted)' }}>
+            {t('Client', '客戶')}
+          </p>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+            {stage && <Fact label={{ en: 'Stage', zh: '階段' }} value={t(stage.en, stage.zh)} />}
+            {d.company && <Fact label={{ en: 'Company', zh: '公司' }} value={d.company} />}
+            {d.contactTitle && <Fact label={{ en: 'Contact', zh: '聯絡人' }} value={d.contactTitle} />}
+            {d.industry && <Fact label={{ en: 'Industry', zh: '行業' }} value={d.industry} />}
+            {d.country && <Fact label={{ en: 'Country', zh: '地區' }} value={d.country} />}
+            {total && <Fact label={{ en: 'Value', zh: '金額' }} value={total} />}
+            {d.nextAction && <Fact label={{ en: 'Next step', zh: '下一步' }} value={d.nextAction} />}
+            {due && <Fact label={{ en: 'Due', zh: '到期' }} value={t(due.en, due.zh)} />}
+          </dl>
+
+          <Link
+            href={item.href}
+            className="mt-3 inline-flex items-center gap-1 text-[12px] font-medium hover:underline"
+            style={{ color: 'var(--accent)' }}
+          >
+            {item.kind === 'followup' || item.id.startsWith('quote-')
+              ? t('Open record', '開啟記錄')
+              : t('Open thread', '開啟對話')}
+            <ArrowUpRight width="12" height="12" />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function RowSkeleton() {
   return (
     <div className="flex items-center gap-3 px-4 md:px-6 py-3 border-b animate-pulse" style={{ borderColor: 'var(--border)' }}>
@@ -163,6 +368,17 @@ export default function AdminQueuePage() {
   const [refreshing, setRefreshing] = useState(false);
   const [bigDealsOpen, setBigDealsOpen] = useState(true);
   const [filter, setFilter] = useState<FilterKey>('all');
+  // Expanded approval-context rows, keyed by `${kind}-${id}`.
+  const [openRows, setOpenRows] = useState<Set<string>>(() => new Set());
+
+  const toggleRow = useCallback((key: string) => {
+    setOpenRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
 
   const fetchQueue = useCallback(async (opts?: { silent?: boolean }) => {
     if (companyLoading || !companyId) return;
@@ -351,13 +567,28 @@ export default function AdminQueuePage() {
                     const action = ACTION_SPECS[item.primaryAction] || ACTION_SPECS.wait;
                     const amount = formatAmount(item);
                     const sender = item.sender || '—';
+                    const rowKey = `${item.kind}-${item.id}`;
+                    const open = openRows.has(rowKey);
                     return (
                       <div
-                        key={`${item.kind}-${item.id}`}
-                        className="group w-full border-b last:border-b-0 transition-colors hover:bg-black/[0.02]"
-                        style={{ borderColor: 'var(--border)' }}
+                        key={rowKey}
+                        className="w-full border-b last:border-b-0 transition-colors hover:bg-black/[0.02]"
+                        style={{ borderColor: 'var(--border)', background: open ? 'var(--surface)' : undefined }}
                       >
-                        <div className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(200px,240px)_1fr_auto_auto] items-center gap-2 md:gap-4 px-4 md:px-6 py-3">
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          aria-expanded={item.detail ? open : undefined}
+                          onClick={() => item.detail && toggleRow(rowKey)}
+                          onKeyDown={(e) => {
+                            if (!item.detail) return;
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              toggleRow(rowKey);
+                            }
+                          }}
+                          className={`grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(200px,240px)_1fr_auto_auto] items-center gap-2 md:gap-4 px-4 md:px-6 py-3 ${item.detail ? 'cursor-pointer' : ''}`}
+                        >
                           {/* Sender */}
                           <div className="flex items-center gap-2.5 min-w-0">
                             <div
@@ -409,10 +640,23 @@ export default function AdminQueuePage() {
                           </div>
 
                           {/* Primary action */}
-                          <div className="col-start-2 row-start-1 md:col-start-4 self-center">
+                          <div className="col-start-2 row-start-1 md:col-start-4 self-center flex items-center gap-1.5">
                             <PrimaryActionButton item={item} action={action} />
+                            {item.detail && (
+                              <ChevronDown
+                                width="15"
+                                height="15"
+                                aria-hidden="true"
+                                className="transition-transform flex-shrink-0"
+                                style={{
+                                  color: 'var(--text-muted)',
+                                  transform: open ? 'rotate(180deg)' : undefined,
+                                }}
+                              />
+                            )}
                           </div>
                         </div>
+                        {open && <DetailPanel item={item} />}
                       </div>
                     );
                   })
@@ -553,6 +797,7 @@ function PrimaryActionButton({ item, action }: { item: QueueItem; action: Action
   return (
     <Link
       href={item.href}
+      onClick={(e) => e.stopPropagation()}
       className="glass-press flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[12.5px] font-semibold text-white whitespace-nowrap transition-opacity hover:opacity-90"
       style={{ background: bg }}
     >
