@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { supabaseBrowser } from '@/lib/auth';
+import { authFetch } from '@/lib/auth-fetch';
 import { useLang } from '@/lib/lang';
 
 export default function LoginPage() {
@@ -31,15 +32,31 @@ export default function LoginPage() {
         const userId = session?.user?.id;
         if (userId) {
           try {
-            const res = await fetch(`/api/admin/company?user_id=${userId}`);
+            // authFetch attaches the bearer token and retries once after a token
+            // refresh. A bare fetch() 401s here, which used to read as "this user
+            // has no company" and bounced every existing customer to onboarding.
+            const res = await authFetch(`/api/admin/company?user_id=${userId}`);
+
+            // 404 means genuinely no company yet. Anything else (401/5xx) is a
+            // failed lookup, so let the admin shell resolve it instead of
+            // sending a signed-in customer through onboarding.
+            if (res.status === 404) {
+              router.push('/onboarding');
+              return;
+            }
+            if (!res.ok) {
+              router.push('/admin');
+              return;
+            }
+
             const data = await res.json();
-            if (data.id) {
+            if (data?.id) {
               router.push('/admin');
             } else {
               router.push('/onboarding');
             }
           } catch {
-            router.push('/onboarding');
+            router.push('/admin');
           }
         } else {
           router.push('/admin');
@@ -71,7 +88,7 @@ export default function LoginPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-1.5 group">
-            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-16 w-16 rounded-2xl object-cover transition-transform duration-200 group-hover:scale-105" />
+            <img src="/brand/sailwise-mark.png" alt="" aria-hidden="true" className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-105" />
             <span className="text-[24px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
               Sailwise
             </span>

@@ -33,7 +33,7 @@ interface BillingStatus {
 const BILLING_PLANS = [
   {
     id: 'starter',
-    name: 'Starter SDR',
+    name: 'Starter',
     price: 1880,
     annualPrice: 1504,
     features: [
@@ -566,7 +566,7 @@ function SettingsContent() {
             {subscriptionStatus === 'active' ? (
               <>
                 <p className="text-[15px] font-semibold mt-0.5">
-                  {billingStatus?.plan_label?.en ?? 'Starter SDR'} · HK$1,880/mo
+                  {billingStatus?.plan_label?.en ?? 'Starter'} · HK$1,880/mo
                 </p>
                 {subscriptionPeriodEnd && (
                   <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>

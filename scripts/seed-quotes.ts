@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
+import { resolveOpportunityIdentities } from '../src/lib/demo-identity';
 
 const ROOT = join(import.meta.dirname || __dirname, '..');
 const env: Record<string, string> = {};
@@ -21,6 +22,10 @@ const D = 24 * 3600_000;
 
 function iso(ms: number) { return new Date(ms).toISOString(); }
 function validUntil(ms: number) { return new Date(ms + 30 * D).toISOString().slice(0, 10); }
+// "Sep 28" — how a trader actually refers to a supplier quote date.
+function fmtDay(ms: number) {
+  return new Date(ms).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
 
 interface Line { name: string; desc?: string; qty: number; unit: string; price: number }
 interface QuoteSeed {
@@ -35,6 +40,9 @@ interface QuoteSeed {
   marginPct: number;
   by: number; // days ago
   customerNote: string;
+  /** Named counterparty + how the cost was evidenced, e.g. "Hing Kei Metal — Sep 28 email". */
+  supplier: string;
+  freight: string;
   items: Line[];
   approval: { status: string; comments: string | null; decided?: boolean };
   version?: { n: number; summary: string; daysAgo: number };
@@ -53,6 +61,8 @@ const QUOTES: QuoteSeed[] = [
     marginPct: 0.24,
     by: 3,
     customerNote: 'GOTS cotton totes, 1-colour print both sides',
+    supplier: 'Hing Kei Metal',
+    freight: 'COSCO — Yantian',
     items: [
       { name: 'Cotton tote bag 38×42cm', desc: 'Heavy 8 oz cotton canvas, 1-colour screen print both sides', qty: 10000, unit: 'pcs', price: 1.45 },
       { name: 'Print setup fee', desc: 'One-time screen + plate setup', qty: 1, unit: 'lot', price: 350 },
@@ -72,6 +82,8 @@ const QUOTES: QuoteSeed[] = [
     marginPct: 0.28,
     by: 8,
     customerNote: '500ml vacuum insulated, laser engraving front',
+    supplier: 'Everest Steel Products',
+    freight: 'Maersk',
     items: [
       { name: '500ml Double-Wall Vacuum Bottle', desc: '304 stainless, powder-coated, laser engraved logo', qty: 5000, unit: 'pcs', price: 2.8 },
     ],
@@ -90,6 +102,8 @@ const QUOTES: QuoteSeed[] = [
     marginPct: 0.22,
     by: 1,
     customerNote: 'Multi-colour woven lanyard + PVC snap buckle + carabiner',
+    supplier: 'Wing Tai Accessories',
+    freight: 'SF Express',
     items: [
       { name: 'Recycled PET woven lanyard', desc: '15mm multi-colour with PVC snap buckle', qty: 6000, unit: 'pcs', price: 0.55 },
       { name: 'Carabiner clip', desc: 'Metal carabiner, nickel finish', qty: 6000, unit: 'pcs', price: 0.28 },
@@ -109,6 +123,8 @@ const QUOTES: QuoteSeed[] = [
     marginPct: 0.26,
     by: 5,
     customerNote: 'Recycled bottle + notebook + cap in rigid box, brand wrapper',
+    supplier: 'Bright Future Gifts',
+    freight: 'DHL Global Forwarding',
     items: [
       { name: 'Executive gift set', desc: 'Bottle, notebook, cap + rigid box with brand wrap', qty: 700, unit: 'sets', price: 9.8 },
     ],
@@ -127,6 +143,8 @@ const QUOTES: QuoteSeed[] = [
     marginPct: 0.18,
     by: 12,
     customerNote: '4-colour split, 13×9×3″, adjustable strap',
+    supplier: 'Noble Textile Co.',
+    freight: 'COSCO — Yantian',
     items: [
       { name: 'Canvas messenger bag', desc: '16 oz canvas, front pocket, adjustable strap, staple-tab closure', qty: 2000, unit: 'pcs', price: 5.1 },
     ],
@@ -141,7 +159,14 @@ async function main() {
   const alreadySeeded = QUOTES.every((q) => have.includes(q.number));
 
   if (!alreadySeeded) {
-    // New opportunities for the seeded quotes
+    // New opportunities for the seeded quotes. Each is linked to the real
+    // contact/customer its title names, so the queue and thread can name the
+    // customer instead of showing a blank dash.
+    const identities = await resolveOpportunityIdentities(
+      supabase as any,
+      COMPANY_ID,
+      QUOTES.map((s) => s.oppTitle),
+    );
     const oppInserts = QUOTES.map((s) => ({
       id: randomUUID(),
       company_id: COMPANY_ID,
@@ -151,6 +176,8 @@ async function main() {
       currency: s.currency,
       priority: 'normal',
       next_action: s.status === 'DRAFT' ? 'Complete supplier pricing' : 'Send quotation',
+      contact_id: identities.get(s.oppTitle)?.contact_id ?? null,
+      customer_id: identities.get(s.oppTitle)?.customer_id ?? null,
       created_at: iso(NOW - s.by * D),
       updated_at: iso(NOW - s.by * D),
     }));
@@ -171,6 +198,9 @@ async function main() {
       const cost = Math.round((total - margin) * 100) / 100;
       const approved = s.status === 'APPROVED' || s.status === 'SENT';
       const decidedAt = s.approval.decided ? iso(created + 2 * D) : null;
+      // A cost you can trace: who quoted it, and when/how you got it.
+      const supplierEvidence = `${s.supplier} — ${fmtDay(created - D)} email`;
+      const freightEvidence = `${s.freight} — ${fmtDay(created - 2 * D)} email`;
 
       quoteInserts.push({
         id: qid,
@@ -231,30 +261,30 @@ async function main() {
           id: randomUUID(),
           quote_id: qid,
           company_id: COMPANY_ID,
-          component_name: 'Supplier cost (confirmed)',
+          component_name: 'Supplier cost',
           amount: Math.round(cost * 0.85),
           currency: s.currency,
           source: 'supplier',
           source_entity_type: 'supplier_quotes',
           source_entity_id: null,
-          effective_date: iso(created).slice(0, 10),
+          effective_date: iso(created - D).slice(0, 10),
           status: 'confirmed',
-          assumption_note: 'Confirmed supplier quote',
+          assumption_note: supplierEvidence,
           sort_order: 0,
         },
         {
           id: randomUUID(),
           quote_id: qid,
           company_id: COMPANY_ID,
-          component_name: 'Freight & handling (estimated)',
+          component_name: 'Freight & handling',
           amount: Math.round(cost * 0.15),
           currency: s.currency,
           source: 'manual',
           source_entity_type: null,
           source_entity_id: null,
-          effective_date: iso(created).slice(0, 10),
+          effective_date: iso(created - 2 * D).slice(0, 10),
           status: 'estimated',
-          assumption_note: 'Estimated till carrier quote',
+          assumption_note: freightEvidence,
           sort_order: 1,
         }
       );

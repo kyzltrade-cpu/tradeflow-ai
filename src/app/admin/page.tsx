@@ -290,9 +290,6 @@ export default function AdminQueuePage() {
                               <div className="font-semibold text-[13px] truncate" style={{ color: 'var(--text)' }}>
                                 {sender}
                               </div>
-                              <div className="text-[11px] truncate md:hidden" style={{ color: 'var(--text-muted)' }}>
-                                {amount || item.title}
-                              </div>
                             </div>
                           </div>
 
@@ -310,9 +307,14 @@ export default function AdminQueuePage() {
                                 {item.title || item.subject || '—'}
                               </p>
                             </div>
-                            <div className="flex items-center gap-2 md:hidden mt-0.5">
+                            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 md:hidden mt-1">
+                              {amount && (
+                                <span className="text-[11.5px] font-semibold tabular-nums whitespace-nowrap" style={{ color: 'var(--text)' }}>
+                                  {amount}
+                                </span>
+                              )}
                               <Chip chip={chip} />
-                              <span className="text-[11px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                              <span className="text-[11px] tabular-nums whitespace-nowrap" style={{ color: 'var(--text-muted)' }}>
                                 {formatTimeAgo(item.time)}
                               </span>
                             </div>
@@ -328,7 +330,7 @@ export default function AdminQueuePage() {
 
                           {/* Primary action */}
                           <div className="col-start-2 row-start-1 md:col-start-4 self-center">
-                            <PrimaryActionButton item={item} action={action} amount={amount} />
+                            <PrimaryActionButton item={item} action={action} />
                           </div>
                         </div>
                       </div>
@@ -441,7 +443,7 @@ function Chip({ chip }: { chip: ChipSpec }) {
   );
 }
 
-function PrimaryActionButton({ item, action, amount }: { item: QueueItem; action: ActionSpec; amount: string | null }) {
+function PrimaryActionButton({ item, action }: { item: QueueItem; action: ActionSpec }) {
   const { t } = useLang();
 
   if (action.tone === 'plain') {
@@ -463,8 +465,7 @@ function PrimaryActionButton({ item, action, amount }: { item: QueueItem; action
       style={{ background: bg }}
     >
       <Icon width="13" height="13" />
-      <span className="hidden sm:inline">{t(action.label.en, action.label.zh)}</span>
-      <span className="sm:hidden">{amount || t(action.label.en, action.label.zh)}</span>
+      <span>{t(action.label.en, action.label.zh)}</span>
       <ArrowUpRight width="12" height="12" className="opacity-70" />
     </Link>
   );

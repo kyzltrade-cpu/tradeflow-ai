@@ -1,4 +1,5 @@
 import { supabaseAdmin } from '@/lib/supabase';
+import { resolveOpportunityIdentities } from '@/lib/demo-identity';
 
 export const DEMO_COMPANY_ID = '99b52405-c9f2-4ac0-bf7e-69b10c3cfea5';
 
@@ -555,6 +556,42 @@ const DEMO_CUSTOMERS: CustomerSeed[] = [
     notes: 'HK buyer. Current stock of 500ml insulated bottles.',
     tags: ['retail', 'hk'],
   },
+  // The three sample big deals below name these accounts in their titles, so
+  // they need real customer rows — otherwise those opportunities can never
+  // resolve to an identity and the queue shows a blank dash.
+  {
+    legal_name: 'Nova Retail Group, Inc.',
+    trading_name: 'Nova Retail Group',
+    email_domain: 'novaretailgroup.example.com',
+    country: 'United States',
+    industry: 'Mass Retail',
+    currency: 'USD',
+    preferred_language: 'en',
+    notes: 'National retail chain. 120k-unit insulated drinkware programme under volume commitment.',
+    tags: ['retail', 'us', 'key-account'],
+  },
+  {
+    legal_name: 'Mitsui Living Co., Ltd.',
+    trading_name: 'Mitsui Living',
+    email_domain: 'mitsuiliving.example.jp',
+    country: 'Japan',
+    industry: 'Home & Lifestyle',
+    currency: 'JPY',
+    preferred_language: 'en',
+    notes: 'Japanese lifestyle retailer. Recycled PET lanyards and totes for gifting programmes.',
+    tags: ['retail', 'jp'],
+  },
+  {
+    legal_name: 'Le Cadeau SAS',
+    trading_name: 'Le Cadeau',
+    email_domain: 'lecadeau.example.fr',
+    country: 'France',
+    industry: 'Luxury Gifting',
+    currency: 'EUR',
+    preferred_language: 'fr',
+    notes: 'French luxury gifting house. Private-label gift-set rebrand programme.',
+    tags: ['luxury', 'fr'],
+  },
 ];
 
 const DEMO_CONTACTS: ContactSeed[] = [
@@ -578,6 +615,9 @@ const DEMO_CONTACTS: ContactSeed[] = [
   { customer_trading_name: 'Shenzhen Retail Chain', full_name: 'Lin Jie', email: null, title: 'Purchasing Manager', preferred_language: 'zh' },
   { customer_trading_name: 'Smart Cup Brand', full_name: 'Wei Landt', email: null, title: 'Founder', preferred_language: 'zh' },
   { customer_trading_name: 'George Wong Trading', full_name: 'George Wong', email: null, title: 'Owner', preferred_language: 'zh' },
+  { customer_trading_name: 'Nova Retail Group', full_name: 'Rachel Kim', email: 'rachel.kim@novaretailgroup.example.com', title: 'Category Buyer', preferred_language: 'en' },
+  { customer_trading_name: 'Mitsui Living', full_name: 'Kenji Watanabe', email: 'kenji@mitsuiliving.example.jp', title: 'Sourcing Manager', preferred_language: 'ja' },
+  { customer_trading_name: 'Le Cadeau', full_name: 'Camille Dubois', email: 'camille@lecadeau.example.fr', title: 'Directrice Achats', preferred_language: 'fr' },
 ];
 
 interface ConversationSeed {
@@ -746,10 +786,10 @@ async function seedBigDealOpportunities(companyId: string): Promise<number> {
 
   const { data: existing } = await supabaseAdmin
     .from('opportunities')
-    .select('id')
+    .select('id, title, contact_id, customer_id')
     .eq('company_id', companyId)
     .eq('notes', SAMPLE_BIG_DEAL_NOTES)
-    .limit(1);
+    .limit(20);
   if ((existing ?? []).length) {
     const { data: headline } = await supabaseAdmin
       .from('opportunities')
@@ -764,11 +804,24 @@ async function seedBigDealOpportunities(companyId: string): Promise<number> {
         .update({ inquiry_id: linkInquiryId })
         .eq('id', headline.id);
     }
+    await linkOpportunityIdentities(
+      companyId,
+      (existing as Array<{ id: string; title: string; contact_id: string | null; customer_id: string | null }>).filter(
+        (o) => !o.contact_id && !o.customer_id,
+      ),
+    );
     return 0;
   }
 
+  const identities = await resolveOpportunityIdentities(
+    supabaseAdmin as any,
+    companyId,
+    SAMPLE_BIG_DEALS.map((d) => d.title),
+  );
+
   const rows = SAMPLE_BIG_DEALS.map((d, idx) => {
     const createdAt = isoOffset(Date.now() - d.ageMinutes * 60 * 1000);
+    const identity = identities.get(d.title);
     return {
       company_id: companyId,
       inquiry_id: idx === 0 ? linkInquiryId : null,
@@ -785,6 +838,8 @@ async function seedBigDealOpportunities(companyId: string): Promise<number> {
       next_action: d.next_action,
       last_activity_at: createdAt,
       quote_status: d.stage === 'SENT' ? 'SENT' : 'DRAFT',
+      contact_id: identity?.contact_id ?? null,
+      customer_id: identity?.customer_id ?? null,
       notes: SAMPLE_BIG_DEAL_NOTES,
       created_at: createdAt,
       updated_at: createdAt,
@@ -794,6 +849,29 @@ async function seedBigDealOpportunities(companyId: string): Promise<number> {
   const { error } = await supabaseAdmin.from('opportunities').insert(rows);
   if (error) throw new Error(`opportunities insert failed: ${error.message}`);
   return rows.length;
+}
+
+/** Fill in contact_id/customer_id on opportunities that were seeded before the
+ *  identity link existed. Without it the queue shows a blank dash instead of a
+ *  customer name, which reads as broken data to anyone evaluating the demo. */
+async function linkOpportunityIdentities(
+  companyId: string,
+  rows: Array<{ id: string; title: string }>,
+): Promise<void> {
+  if (rows.length === 0) return;
+  const identities = await resolveOpportunityIdentities(
+    supabaseAdmin as any,
+    companyId,
+    rows.map((r) => r.title),
+  );
+  for (const row of rows) {
+    const identity = identities.get(row.title);
+    if (!identity?.contact_id && !identity?.customer_id) continue;
+    await supabaseAdmin
+      .from('opportunities')
+      .update({ contact_id: identity.contact_id, customer_id: identity.customer_id })
+      .eq('id', row.id);
+  }
 }
 
 function isoOffset(ms: number): string {

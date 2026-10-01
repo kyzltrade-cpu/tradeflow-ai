@@ -26,7 +26,7 @@ function getStripe() {
 const TIERS = {
   starter: {
     name: 'Sailwise Starter',
-    description: 'Email-first assistant · 1,000 AI conversations/mo',
+    description: 'Email-first assistant · Unlimited AI conversations',
     monthly: 188000,
     annual: 150400,
   },

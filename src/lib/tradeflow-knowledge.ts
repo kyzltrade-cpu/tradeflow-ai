@@ -49,7 +49,7 @@ CORE FEATURES:
 14. Free 14-day trial on all plans
 
 PRICING (HKD):
-- Starter: HK$1,880/mo, or HK$1,504/mo billed annually (20% off). 14-day free trial, card required, 50 AI responses included during the trial. Self-serve setup is free; optional one-time done-for-you setup for +HK$1,000 (we connect your email, upload products, configure the AI).
+- Starter: HK$1,880/mo, or HK$1,504/mo billed annually (20% off). 14-day free trial, card required, 50 AI drafts and 25 emails included during the trial. Unlimited AI conversations after the trial. Self-serve setup is free; optional one-time done-for-you setup for +HK$1,000 (we connect your email, upload products, configure the AI).
 - Growth: HK$2,480/mo, HK$1,984/mo annually. Multiple email inbox accounts, multi-user dashboard, analytics & reporting, priority support.
 - Enterprise: HK$4,880/mo, HK$3,904/mo annually. Automated quote generation, dedicated account manager, custom integrations.
 - If someone asks about a price or plan feature you don't see here, say "Let me check with the team" — don't guess.
@@ -105,7 +105,7 @@ DASHBOARD OVERVIEW:
 - Dashboard (/admin): KPIs, recent inquiries, open opportunities
 - Inquiries (/admin/inquiries): Extracted specs from customer emails + attachments; ask for missing details here
 - Opportunities (/admin/opportunities): Your deal pipeline, stage by stage
-- Follow-ups (/admin/follow-ups): Scheduled follow-up emails, on autopilot
+- Follow-ups (/admin/follow-ups): Scheduled follow-up drafts, each one waiting for human approval before send
 - Conversations (/admin/conversations): Full email threads, take over from the AI anytime
 - Products (/admin/products): Your catalog — the source of truth for AI quotes
 - Knowledge Base (/admin/knowledge): PDFs, Excel, docs the AI references

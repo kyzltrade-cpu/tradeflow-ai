@@ -5,6 +5,7 @@ import { createDefaultSequence } from '@/lib/follow-up-engine';
 import { generateQuoteHTML, generateQuotePDF } from '@/lib/quote-generator';
 import { sendEmail } from '@/lib/email';
 import { enforcePlanLimit, planLimitResponse } from '@/lib/billing/limits';
+import { isClearedToSend, NEEDS_APPROVAL_MESSAGE } from '@/lib/quote-approval';
 
 // POST /api/admin/quotes/[id]/send
 export async function POST(
@@ -49,6 +50,31 @@ export async function POST(
       return NextResponse.json(
         { error: `Cannot send quote in "${quote.status}" status. Quote must be APPROVED or DRAFT.` },
         { status: 400 }
+      );
+    }
+
+    // ── Approval gate: never send an unapproved quote ───────────────────
+    // Enforced here as well as in the UI so a crafted request cannot bypass it.
+    const { data: approvalRows } = await supabaseAdmin
+      .from('quote_approvals')
+      .select('status, invalidated')
+      .eq('quote_id', id)
+      .eq('company_id', companyId);
+
+    if (!isClearedToSend(quote.status, approvalRows)) {
+      await supabaseAdmin.from('audit_events').insert({
+        company_id: companyId,
+        event_type: 'send_blocked',
+        entity_type: 'quote',
+        entity_id: id,
+        actor_id: auth.user.id,
+        actor_email: auth.user.email,
+        metadata: { reason: 'needs_approval', quote_status: quote.status },
+      });
+
+      return NextResponse.json(
+        { error: NEEDS_APPROVAL_MESSAGE },
+        { status: 403 }
       );
     }
 

@@ -88,6 +88,74 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // ── Customer identity ───────────────────────────────────────────────
+    // Resolve the same way the quote detail does: the linked opportunity's
+    // contact → customer → opportunity title. A thread used to fall back to a
+    // generic "Customer"/"?" even when the quote and stage knew the name.
+    const oppRows = opportunities as Array<{
+      id: string;
+      contact_id: string | null;
+      customer_id: string | null;
+      title: string | null;
+    }>;
+    const oppContactIds = [...new Set(oppRows.map((o) => o.contact_id).filter(Boolean))] as string[];
+    const oppCustomerIds = [...new Set(oppRows.map((o) => o.customer_id).filter(Boolean))] as string[];
+    const fallbackContactId =
+      quotes.length > 0 ? ((quotes[0] as { contact_id?: string | null }).contact_id ?? null) : null;
+    const fallbackCustomerId =
+      quotes.length > 0 ? ((quotes[0] as { customer_id?: string | null }).customer_id ?? null) : null;
+    const contactIds = [...new Set([...oppContactIds, ...(fallbackContactId ? [fallbackContactId] : [])])];
+    const customerIds = [...new Set([...oppCustomerIds, ...(fallbackCustomerId ? [fallbackCustomerId] : [])])];
+
+    const [identityContacts, identityCustomers] = await Promise.all([
+      contactIds.length
+        ? supabaseAdmin.from('contacts').select('id, full_name, email').in('id', contactIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; email: string | null }>, error: null }),
+      customerIds.length
+        ? supabaseAdmin.from('customers').select('id, trading_name, legal_name').in('id', customerIds)
+        : Promise.resolve({ data: [] as Array<{ id: string; trading_name: string | null; legal_name: string | null }>, error: null }),
+    ]);
+
+    const contactById = new Map(
+      ((identityContacts.data || []) as Array<{ id: string; full_name: string | null; email: string | null }>).map((c) => [
+        c.id,
+        c,
+      ]),
+    );
+    const customerById = new Map(
+      ((identityCustomers.data || []) as Array<{ id: string; trading_name: string | null; legal_name: string | null }>).map((c) => [
+        c.id,
+        c,
+      ]),
+    );
+
+    const titleLead = (title: string | null | undefined): string | null => {
+      if (!title || !title.trim()) return null;
+      const cut = title.split(/\s*[-–—]\s*|—/)[0]?.trim();
+      return cut || title.trim();
+    };
+
+    const primaryOpp = oppRows[0] || null;
+    const identityContact =
+      (primaryOpp?.contact_id ? contactById.get(primaryOpp.contact_id) : null) ||
+      (fallbackContactId ? contactById.get(fallbackContactId) : null) ||
+      null;
+    const identityCustomer =
+      (primaryOpp?.customer_id ? customerById.get(primaryOpp.customer_id) : null) ||
+      (fallbackCustomerId ? customerById.get(fallbackCustomerId) : null) ||
+      null;
+
+    const contactName =
+      identityContact?.full_name ||
+      identityCustomer?.trading_name ||
+      identityCustomer?.legal_name ||
+      (conversation.contact_name as string | null) ||
+      titleLead(primaryOpp?.title) ||
+      null;
+    const contactEmail =
+      identityContact?.email || (conversation.contact_email as string | null) || null;
+    const customerName = identityCustomer?.trading_name || identityCustomer?.legal_name || null;
+
     return NextResponse.json({
       conversation,
       messages: messages || [],
@@ -95,6 +163,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       opportunities,
       quotes,
       approvals,
+      contact: {
+        name: contactName,
+        email: contactEmail,
+        customer_name: customerName,
+      },
     });
   } catch (err) {
     if (err instanceof Response) return err;

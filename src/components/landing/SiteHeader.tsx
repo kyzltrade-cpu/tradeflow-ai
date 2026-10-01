@@ -74,8 +74,13 @@ export default function SiteHeader() {
           className="max-w-7xl mx-auto px-5 sm:px-6 flex items-center justify-between transition-all duration-200"
           style={{ height: scrolled ? 64 : 76 }}
         >
-          <Link href="/" className="flex items-center gap-2 sm:gap-3 shrink-0 group">
-            <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-14 w-14 rounded object-cover transition-transform duration-200 group-hover:scale-105 translate-y-[2px] sm:translate-y-0" />
+          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 group">
+            <img
+              src="/brand/sailwise-mark.png"
+              alt=""
+              aria-hidden="true"
+              className="h-7 w-7 object-contain transition-transform duration-200 group-hover:scale-105"
+            />
             <span className="text-xl font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
               Sailwise
             </span>

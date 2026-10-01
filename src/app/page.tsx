@@ -68,9 +68,9 @@ const CORE_FEATURES = [
     code: 'FOLLOW-UP',
     span: 'lg:col-span-6',
     wide: true,
-    title: 'Smart follow-ups',
-    desc: 'Auto-scheduled follow-ups that stop the moment a customer replies. No embarrassing double-texts.',
-    detail: 'AI drafts messages in the customer\u2019s language. Human approves before send.',
+    title: 'Follow-up drafts on a cadence',
+    desc: 'A sequence drafts the next follow-up so a quiet deal never dies of neglect — and you pause it the moment the customer replies.',
+    detail: 'Drafted in the customer\u2019s language. Waits for your approval before it sends.',
   },
 ];
 
@@ -122,12 +122,12 @@ const OPS_TOKENS = [
 
 const PLANS = [
   {
-    name: 'Starter SDR',
+    name: 'Starter',
     price: 'HK$1,880',
     period: '/mo',
     features: [
       'Email inbox (Google / Microsoft)',
-      '1,000 AI conversations a month',
+      'Unlimited AI conversations',
       'Unlimited products & FAQ rules',
       'English, Mandarin, Cantonese, Spanish',
       'Human override & takeover anytime',
@@ -181,7 +181,7 @@ const FAQS = [
   },
   {
     q: 'How does the WhatsApp alert feature work?',
-    a: 'Connect your WhatsApp account to Sailwise. When an important email lands, you get an instant alert. You can review the extracted specs and draft a reply directly on WhatsApp. The bot sends it as a proper email from your mailbox — no need to jump between apps.',
+    a: 'Connect your WhatsApp number to Sailwise. When an inquiry needs your attention, you get an alert with the sender, product, and quantity. Tap through to Sailwise to review the extracted specs and approve the draft. Replies and quotes are always sent as a normal email from your own mailbox — nothing is sent from a WhatsApp number, so your customers get the answer where they expect it.',
   },
   {
     q: 'What makes an email "important"?',
@@ -241,7 +241,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto sm:mx-0 mb-10 leading-relaxed" style={{ color: '#4A4A4A', animationDelay: '330ms', textShadow: '0 1px 0 rgba(255,255,255,0.6)' }}>
-              Sailwise is the AI copilot for trading companies. It takes a customer inquiry, extracts every spec, checks for gaps, drafts a cited price from your products and margins, and follows up until the deal closes — in hours, not days.
+              Sailwise turns a customer inquiry into a priced, spec-backed quote draft — so you can review and send a quote in hours, not days. You approve every reply and every quote before it goes out.
             </p>
 
             <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4 mb-10" style={{ animationDelay: '450ms' }}>
@@ -373,7 +373,7 @@ export default function LandingPage() {
               Get alerts where you are
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: '#555555' }}>
-              Important emails land as WhatsApp alerts. Review specs, draft replies, and send them as emails — all from your phone.
+              Sailwise pushes an alert to WhatsApp when an inquiry needs you — so you know it landed, even away from your desk. Replies and quotes are sent from your mailbox, where your customers already expect them.
             </p>
           </Reveal>
 
@@ -386,7 +386,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <h3 className="font-bold mb-1">Instant notifications</h3>
-                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Important inquiries trigger WhatsApp alerts in real-time. Never miss a deal while you&apos;re away from your desk.</p>
+                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>An inquiry that needs your attention triggers a WhatsApp alert right away — never miss a deal while you&apos;re away from your desk.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -394,8 +394,8 @@ export default function LandingPage() {
                     <MessageSquare className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold mb-1">Review on mobile</h3>
-                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>See extracted specs, quantities, and requirements right in WhatsApp. No jumping between apps or logging into dashboards.</p>
+                    <h3 className="font-bold mb-1">The alert tells you what matters</h3>
+                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Sender, company, product, quantity, and value — enough to decide whether to deal with it now or after lunch.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -403,8 +403,8 @@ export default function LandingPage() {
                     <MessageSquare className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold mb-1">Draft replies on WhatsApp</h3>
-                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Respond with clarification questions or initial quotes. The bot formats and sends them as professional emails from your mailbox.</p>
+                    <h3 className="font-bold mb-1">Reply from your own mailbox</h3>
+                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Tap through to Sailwise, review the extracted specs and the drafted quote, approve, and send as a normal email from the address your customer already knows.</p>
                   </div>
                 </div>
                 <div className="flex gap-4">
@@ -413,7 +413,7 @@ export default function LandingPage() {
                   </div>
                   <div>
                     <h3 className="font-bold mb-1">Smart filtering</h3>
-                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Only "important" emails trigger alerts. Your system learns what matters — VIP customers, high-value inquiries, new leads.</p>
+                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Only inquiries worth interrupting you for trigger an alert — VIP customers, high-value orders, new leads. Set the rules yourself.</p>
                   </div>
                 </div>
               </div>
@@ -451,18 +451,20 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  {/* User Reply */}
-                  <div className="flex justify-end">
-                    <div className="max-w-xs px-4 py-3 rounded-2xl text-sm" style={{ background: '#DCF8C6', color: '#000' }}>
-                      We can do 8 week MOQ, logo from 5 pcs, sample ships tomorrow
+                  {/* Read-only notice — alerts only, replies happen in Sailwise */}
+                  <div className="flex justify-start">
+                    <div className="max-w-xs px-4 py-3 rounded-2xl text-sm" style={{ background: '#fff', color: '#000', border: '1px solid #D0C7BB' }}>
+                      <div className="text-xs leading-relaxed" style={{ color: '#666' }}>
+                        <p className="mb-2">Open Sailwise to review the extracted specs and approve the draft quote.</p>
+                        <span className="font-semibold" style={{ color: '#075e54' }}>Review and send &rarr;</span>
+                      </div>
+                      <div className="text-[11px] mt-2" style={{ color: '#999' }}>9:32 AM</div>
                     </div>
                   </div>
                 </div>
 
-                {/* Input */}
-                <div className="px-4 pb-3 flex items-center gap-2" style={{ borderTop: '1px solid #D0C7BB' }}>
-                  <input type="text" placeholder="Message" disabled className="flex-1 px-3 py-2 rounded-full text-xs" style={{ background: '#fff', color: '#999', border: 'none' }} />
-                  <span style={{ color: '#075e54' }}>🎤</span>
+                <div className="px-4 pb-3 pt-0 text-center text-[10px]" style={{ color: '#9A8F80' }}>
+                  Alerts only — replies are sent from your mailbox
                 </div>
               </div>
             </Reveal>
@@ -479,7 +481,7 @@ export default function LandingPage() {
             </div>
             <p className="btk-kicker mb-5">03 · The workflow</p>
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              From inquiry to quote in 4 steps
+              From inquiry to quote in 3 steps
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
               The whole sourcing pipeline, with you approving every message.
@@ -688,13 +690,13 @@ export default function LandingPage() {
                   <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
                 </Link>
                 <p className="text-center mt-3 text-[11px]" style={{ color: '#8A8A8A' }}>
-                  No credit card required · 14-day free trial · Cancel anytime
+                  Card required · 14-day free trial · Cancel anytime
                 </p>
               </div>
             </div>
           </Reveal>
           <p className="text-xs mt-10" style={{ color: '#555555' }}>
-            14-day free trial · Card required · 50 AI responses included · Cancel anytime.
+            14-day free trial · Card required · 50 AI drafts and 25 emails included during the trial · Cancel anytime.
           </p>
           <p className="text-xs mt-4 max-w-xl mx-auto" style={{ color: '#555555' }}>
             Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,000</span> one-time we connect your mailbox, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,504/month —{' '}
@@ -759,12 +761,12 @@ export default function LandingPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-4">
-              Get Started Free
+              Start Free Trial
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <Link href="/login" className="btn-ghost w-full sm:w-auto px-8 py-4">
+            <a href="mailto:tradeflow.hk@gmail.com?subject=Demo%20request" className="btn-ghost w-full sm:w-auto px-8 py-4">
               Book a Demo
-            </Link>
+            </a>
           </div>
         </Reveal>
       </section>
@@ -773,12 +775,12 @@ export default function LandingPage() {
       <footer className="py-14 px-6 border-t" style={{ borderColor: '#E5E5E5' }}>
         <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-1.5 mb-3">
-              <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-8 w-8 rounded object-cover" />
+            <div className="flex items-center gap-2 mb-3">
+              <img src="/brand/sailwise-mark.png" alt="" aria-hidden="true" className="h-6 w-6 object-contain" />
               <span className="text-sm font-semibold" style={{ color: '#0A0A0A' }}>Sailwise</span>
             </div>
             <p className="text-sm max-w-[280px]" style={{ color: '#555555' }}>
-              The AI copilot for HK and Shenzhen trading companies — inquiry to signed quote, on autopilot.
+              The AI copilot for HK and Shenzhen trading companies — from inquiry to sent quote, with you approving every message.
             </p>
             <p className="text-xs mt-6" style={{ color: '#9A9A9A' }}>© 2026 Sailwise. All rights reserved.</p>
           </div>

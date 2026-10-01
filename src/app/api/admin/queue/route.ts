@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         .limit(MAX_ROWS),
       supabaseAdmin
         .from('follow_up_items')
-        .select('id, subject, scheduled_for')
+        .select('id, subject, scheduled_for, sequence_id')
         .eq('company_id', companyId)
         .eq('status', 'scheduled')
         .lte('scheduled_for', new Date().toISOString())
@@ -255,13 +255,109 @@ export async function GET(req: NextRequest) {
       };
     });
 
+    // ── Phase C: follow-up identity ──────────────────────────────────────
+    // follow_up_items carry no customer reference at all — only a sequence.
+    // Walk sequence → opportunity → contact/customer so these rows stop
+    // rendering as a blank dash.
+    const seqIds = [
+      ...new Set(
+        followUps.map((f: { sequence_id: string | null }) => f.sequence_id).filter(Boolean),
+      ),
+    ] as string[];
+
+    const seqById = new Map<string, string>();
+    if (seqIds.length > 0) {
+      const { data: seqs } = await supabaseAdmin
+        .from('follow_up_sequences')
+        .select('id, opportunity_id')
+        .eq('company_id', companyId)
+        .in('id', seqIds);
+      for (const s of (seqs || []) as Array<{ id: string; opportunity_id: string | null }>) {
+        if (s.opportunity_id) seqById.set(s.id, s.opportunity_id);
+      }
+    }
+
+    const fuOppIds = [...new Set([...seqById.values()])];
+    const fuOppById = new Map<
+      string,
+      { id: string; title: string | null; contact_id: string | null; customer_id: string | null }
+    >();
+    if (fuOppIds.length > 0) {
+      const { data: fuOpps } = await supabaseAdmin
+        .from('opportunities')
+        .select('id, title, contact_id, customer_id')
+        .eq('company_id', companyId)
+        .in('id', fuOppIds)
+        .is('deleted_at', null);
+      for (const o of (fuOpps || []) as Array<{
+        id: string;
+        title: string | null;
+        contact_id: string | null;
+        customer_id: string | null;
+      }>) {
+        fuOppById.set(o.id, o);
+      }
+    }
+
+    const fuContactById = new Map<string, { id: string; full_name: string | null; email: string | null }>();
+    const fuCustomerById = new Map<
+      string,
+      { id: string; trading_name: string | null; legal_name: string | null }
+    >();
+    const fuContactIds = [
+      ...new Set([...fuOppById.values()].map((o) => o.contact_id).filter(Boolean)),
+    ] as string[];
+    const fuCustomerIds = [
+      ...new Set([...fuOppById.values()].map((o) => o.customer_id).filter(Boolean)),
+    ] as string[];
+    const [fuContactsRes, fuCustomersRes] = await Promise.all([
+      fuContactIds.length > 0
+        ? supabaseAdmin.from('contacts').select('id, full_name, email').in('id', fuContactIds)
+        : Promise.resolve({ data: [], error: null }),
+      fuCustomerIds.length > 0
+        ? supabaseAdmin
+            .from('customers')
+            .select('id, trading_name, legal_name')
+            .in('id', fuCustomerIds)
+        : Promise.resolve({ data: [], error: null }),
+    ]);
+    for (const c of (fuContactsRes.data || []) as Array<{
+      id: string;
+      full_name: string | null;
+      email: string | null;
+    }>) {
+      fuContactById.set(c.id, c);
+    }
+    for (const c of (fuCustomersRes.data || []) as Array<{
+      id: string;
+      trading_name: string | null;
+      legal_name: string | null;
+    }>) {
+      fuCustomerById.set(c.id, c);
+    }
+
     // ── Due follow-up inputs ─────────────────────────────────────────────
-    const followInputs: FollowUpInput[] = followUps.map((f: { id: string; subject: string | null; scheduled_for: string | null }) => ({
-      id: f.id,
-      subject: f.subject || null,
-      opportunity: null,
-      scheduledFor: f.scheduled_for || null,
-    }));
+    const followInputs: FollowUpInput[] = followUps.map(
+      (f: { id: string; subject: string | null; scheduled_for: string | null; sequence_id: string | null }) => {
+        const oppId = f.sequence_id ? seqById.get(f.sequence_id) : undefined;
+        const opp = oppId ? fuOppById.get(oppId) : null;
+        const contact = opp?.contact_id ? fuContactById.get(opp.contact_id) : null;
+        const customer = opp?.customer_id ? fuCustomerById.get(opp.customer_id) : null;
+        const customerName =
+          contact?.full_name ||
+          contact?.email ||
+          customer?.trading_name ||
+          customer?.legal_name ||
+          null;
+        return {
+          id: f.id,
+          subject: f.subject || null,
+          opportunity: titleLead(opp?.title),
+          customer: customerName,
+          scheduledFor: f.scheduled_for || null,
+        };
+      },
+    );
 
     const groups = deriveQueueGroups({
       conversations: convInputs,

@@ -722,7 +722,7 @@ export default function ConversationsPage() {
                   <button
                     onClick={handleSendMessage}
                     disabled={sending || !inputValue.trim()}
-                    className="text-[12px] md:text-[13px] font-medium px-4 md:px-5 rounded-[4px] text-white self-end disabled:opacity-50"
+                    className="text-[12px] md:text-[13px] font-medium px-4 md:px-5 py-2.5 md:py-0 min-h-[44px] md:min-h-0 rounded-[4px] text-white self-end disabled:opacity-50"
                     style={{ background: '#038153' }}
                   >
                     {sending ? t('Sending...', '發送中...') : t('Send', '發送')}

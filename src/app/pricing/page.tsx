@@ -9,12 +9,12 @@ import { supabaseBrowser } from '@/lib/auth';
 const PLANS = [
   {
     id: 'starter',
-    name: 'Starter SDR',
+    name: 'Starter',
     monthly: 1880,
     annual: 1504,
     features: [
       'Google & Microsoft email inbox (1 account)',
-      '1,000 AI conversations a month',
+      'Unlimited AI conversations',
       'Unlimited products & FAQ rules',
       'English, Mandarin, Cantonese, Spanish',
       'Human override & takeover anytime',

@@ -121,16 +121,32 @@ export async function POST(
       }
 
       // Create pending approval record
-      await supabaseAdmin.from('quote_approvals').insert({
-        quote_id: id,
-        company_id: companyId,
-        approver_id: auth.user.id,
-        status: 'pending',
-        comments: comments || null,
-      });
+      const { error: approvalError } = await supabaseAdmin
+        .from('quote_approvals')
+        .insert({
+          quote_id: id,
+          company_id: companyId,
+          approver_id: auth.user.id,
+          status: 'pending',
+          comments: comments || null,
+        });
+
+      if (approvalError) {
+        // Without the pending row the quote would sit in IN_REVIEW with nothing
+        // to approve, so fail loudly instead of leaving an orphan state.
+        console.error('[quotes/[id]/approve:POST] approval insert failed:', approvalError.message);
+        await supabaseAdmin
+          .from('quotes')
+          .update({ status: 'DRAFT', updated_at: now })
+          .eq('id', id);
+        return NextResponse.json(
+          { error: 'Could not record the approval request. Please try again.' },
+          { status: 500 }
+        );
+      }
 
       // Log audit event
-      await supabaseAdmin.from('audit_events').insert({
+      const { error: auditError } = await supabaseAdmin.from('audit_events').insert({
         company_id: companyId,
         event_type: 'approval_requested',
         entity_type: 'quote',
@@ -142,6 +158,9 @@ export async function POST(
           threshold: company?.approval_threshold,
         },
       });
+      if (auditError) {
+        console.error('[quotes/[id]/approve:POST] audit insert failed:', auditError.message);
+      }
 
       return NextResponse.json({
         quote: { ...quote, status: 'IN_REVIEW' },

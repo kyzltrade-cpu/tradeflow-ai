@@ -83,6 +83,7 @@ export type FollowUpInput = {
   id: string;
   subject?: string | null;
   opportunity?: string | null;
+  customer?: string | null;
   scheduledFor?: string | null;
 };
 
@@ -119,7 +120,10 @@ export function deriveQueueGroups(input: QueueDataInput): QueueGroup[] {
         id: `conv-${c.id}`,
         kind: 'reply',
         group: 'you_owe',
-        title: `${c.customer ?? 'Customer'} wrote in`,
+        // The row already shows the customer's name in the sender column, so a
+        // "<name> wrote in" title just repeated it — especially on mobile where
+        // both sat stacked. Use the subject; it is the useful information.
+        title: c.subject || 'Reply needed',
         sender: c.customer ?? null,
         subject: c.subject ?? null,
         primaryAction: 'reply',
@@ -208,9 +212,12 @@ export function deriveQueueGroups(input: QueueDataInput): QueueGroup[] {
       kind: 'followup',
       group: 'they_owe',
       title: `Send follow-up${f.opportunity ? ` on ${f.opportunity}` : ''}`,
+      // A follow-up row with no sender renders as a bare "—" avatar, which reads
+      // as broken data even though the customer is known via its sequence.
+      sender: f.customer ?? f.opportunity ?? null,
       subject: f.subject ?? null,
       primaryAction: 'send-followup',
-      href: `/admin/follow-ups`,
+      href: '/admin/follow-ups',
       time: f.scheduledFor ?? null,
     });
   }

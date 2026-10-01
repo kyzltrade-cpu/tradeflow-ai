@@ -50,6 +50,7 @@ interface ConversationWithRelations {
   opportunities: OpportunityRec[];
   quotes: QuoteRec[];
   approvals: ApprovalRec[];
+  contact?: { name: string | null; email: string | null; customer_name: string | null };
 }
 
 interface OpportunityRec {
@@ -458,7 +459,7 @@ export default function InboxDetailPage() {
       if (existingOpp) {
         opportunityId = existingOpp.id;
       } else {
-        const title = `${detail.contact_name || detail.contact_email || 'Customer'} — ${suggestion.request_summary || 'Quotation request'}`.slice(0, 200);
+        const title = `${detail.contact?.name || detail.contact_name || detail.contact_email || 'Customer'} — ${suggestion.request_summary || 'Quotation request'}`.slice(0, 200);
         const oppRes = await authFetch('/api/admin/opportunities', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -602,7 +603,17 @@ export default function InboxDetailPage() {
   const body = detail;
   const displayStatus = body?.status || 'ai';
   const badge = statusBadge(displayStatus);
-  const contactLabel = body?.contact_name || body?.contact_email || body?.contact_phone || t('Customer', '客戶');
+  // Prefer the server-resolved identity (opportunity → contact → customer) over
+  // the conversation's own fields, which are often empty for synced threads.
+  const contactName =
+    body?.contact?.name ||
+    body?.contact_name ||
+    body?.contact_email ||
+    body?.contact_phone ||
+    t('Customer', '客戶');
+  const contactEmailLine =
+    body?.contact?.email || body?.contact_email || body?.contact_phone || '';
+  const contactLabel = contactName;
 
   const citeIcon = (type: PriceSource['type']) => {
     if (type === 'margin') return <Percent width="11" height="11" style={{ color: '#D97706' }} />;
@@ -640,7 +651,7 @@ export default function InboxDetailPage() {
           <div className="min-w-0">
             <h1 className="truncate text-[15px] md:text-[16px] font-semibold tracking-[-0.3px]">{contactLabel}</h1>
             <p className="truncate text-[11px] md:text-[12px]" style={{ color: 'var(--text-muted)' }}>
-              {body?.contact_email || body?.contact_phone || ''}
+              {contactEmailLine}
             </p>
             {body?.subject && (
               <p className="truncate text-[12px] md:text-[13px] font-medium" style={{ color: 'var(--text)' }}>
@@ -851,7 +862,7 @@ export default function InboxDetailPage() {
                   <button
                     onClick={handleSendMessage}
                     disabled={sending || !inputValue.trim()}
-                    className="text-[12px] md:text-[13px] font-medium px-4 md:px-5 rounded-[4px] text-white self-end disabled:opacity-50"
+                    className="text-[12px] md:text-[13px] font-medium px-4 md:px-5 py-2.5 md:py-0 min-h-[44px] md:min-h-0 rounded-[4px] text-white self-end disabled:opacity-50"
                     style={{ background: '#038153' }}
                   >
                     {sending ? t('Sending...', '發送中...') : t('Send', '傳送')}
@@ -932,11 +943,16 @@ export default function InboxDetailPage() {
                     className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-white text-[13px] font-semibold"
                     style={{ background: '#6366F1' }}
                   >
-                    {(body.contact_name || body.contact_email || body.contact_phone || '?').slice(0, 1).toUpperCase()}
+                    {contactName.slice(0, 1).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium truncate">{body.contact_name || body.contact_email || body.contact_phone || t('Customer', '客戶')}</p>
-                    {body.contact_email && <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{body.contact_email}</p>}
+                    <p className="text-[13px] font-medium truncate">{contactName}</p>
+                    {contactEmailLine && <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{contactEmailLine}</p>}
+                    {body.contact?.customer_name && (
+                      <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>
+                        {body.contact.customer_name}
+                      </p>
+                    )}
                     {body.contact_phone && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact_phone}</p>}
                   </div>
                 </div>
@@ -1294,14 +1310,45 @@ export default function InboxDetailPage() {
               <User width="14" height="14" style={{ color: 'var(--accent)' }} />
               <h3 className="text-[13px] font-semibold">{t('Customer', '客戶')}</h3>
             </div>
-            <p className="text-[13px] font-medium">{body.contact_name || body.contact_email || t('Customer', '客戶')}</p>
-            {body.contact_email && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact_email}</p>}
+            <p className="text-[13px] font-medium">{contactName}</p>
+            {contactEmailLine && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{contactEmailLine}</p>}
+            {body.contact?.customer_name && (
+              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact.customer_name}</p>
+            )}
           </div>
         )}
         <div>
           <div className="flex items-center gap-2 mb-2">
             <Sparkles width="14" height="14" style={{ color: 'var(--accent)' }} />
             <h3 className="text-[13px] font-semibold">{t('Suggested quote', '建議報價')}</h3>
+          </div>
+          {/* Same actions as the desktop rail — without them this panel is a
+              dead end on mobile ("press Price" with no Price button). */}
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={handleClarify}
+              className="flex-1 text-[12px] font-medium px-3 py-2.5 rounded-[4px] border"
+              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+            >
+              {t('Clarify', '澄清')}
+            </button>
+            <button
+              onClick={() => fetchSuggestion()}
+              className="flex-1 text-[12px] font-medium px-3 py-2.5 rounded-[4px] border flex items-center justify-center gap-1"
+              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
+              disabled={loadingSuggest}
+            >
+              <RefreshCw width="12" height="12" className={loadingSuggest ? 'animate-spin' : ''} />
+              {t('Price', '定價')}
+            </button>
+            <button
+              onClick={handleQuote}
+              disabled={!suggestion || suggestion.lines.filter((l) => l.unit_price > 0).length === 0}
+              className="flex-1 text-[12px] font-medium px-3 py-2.5 rounded-[4px] text-white disabled:opacity-40"
+              style={{ background: 'var(--accent)' }}
+            >
+              {t('Create draft', '建立草稿')}
+            </button>
           </div>
           {loadingSuggest ? (
             <SkeletonBlock lines={4} />

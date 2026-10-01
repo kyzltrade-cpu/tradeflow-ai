@@ -4,7 +4,7 @@ import { getPlanLimits, getCapsForPlan, type PlanId } from '@/lib/billing/limits
 
 const PLAN_LABELS: Record<PlanId, { en: string; zh: string }> = {
   trial: { en: 'Free trial', zh: '免費試用' },
-  starter: { en: 'Starter SDR', zh: 'Starter SDR' },
+  starter: { en: 'Starter', zh: 'Starter' },
   growth: { en: 'Growth Trading Desk', zh: 'Growth Trading Desk' },
   enterprise: { en: 'Enterprise', zh: 'Enterprise' },
 };

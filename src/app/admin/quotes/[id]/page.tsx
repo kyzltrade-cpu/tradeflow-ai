@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { useLang } from '@/lib/lang'
 import { useCompany } from '@/lib/company'
 import { authFetch } from '@/lib/auth-fetch'
+import { isClearedToSend } from '@/lib/quote-approval'
 
 type LineItem = {
   id: string
@@ -21,6 +22,8 @@ type CostComponent = {
   name: string
   amount: number
   source: string
+  /** Human-readable provenance, e.g. "Hing Kei Metal — Sep 28 email". */
+  assumption_note?: string | null
   status: 'confirmed' | 'estimated'
 }
 
@@ -30,6 +33,7 @@ type Approval = {
   comments: string
   created_at: string
   user_name: string
+  invalidated?: boolean | null
 }
 
 type QuoteVersion = {
@@ -133,7 +137,7 @@ export default function QuoteDetailPage() {
       const res = await authFetch(`/api/admin/quotes/${quoteId}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'request_approval', company_id: companyId }),
+        body: JSON.stringify({ action: 'request', company_id: companyId }),
       })
       if (!res.ok) throw new Error('Failed to request approval')
       await fetchQuote()
@@ -187,7 +191,10 @@ export default function QuoteDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ company_id: companyId }),
       })
-      if (!res.ok) throw new Error('Failed to send quote')
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}))
+        throw new Error(json.error || 'Failed to send quote')
+      }
       await fetchQuote()
     } catch (err: any) {
       alert(err.message || 'Failed to send quote')
@@ -267,6 +274,7 @@ export default function QuoteDetailPage() {
             component_name: c.name,
             amount: Number(c.amount) || 0,
             source: c.source,
+            assumption_note: c.assumption_note ?? null,
             status: c.status,
           })),
         }),
@@ -292,11 +300,14 @@ export default function QuoteDetailPage() {
     editing && editSubtotal > 0 ? ((editSubtotal - editCostTotal) / editSubtotal) * 100 : null
 
   // Never let a wrong price go out: block Send while any line is zero-quantity or
-  // unpriced, the total is unset, or the margin is 0%/missing. Mirrors the
-  // server-side gate in the send route.
+  // unpriced, the total is unset, the margin is 0%/missing, or the quote has not
+  // been approved. Mirrors the server-side gates in the send route.
   const sendBlocked = useMemo(() => {
     if (!quote) return []
     const reasons: string[] = []
+    if (!isClearedToSend(quote.status, approvals)) {
+      reasons.push(t('Needs approval first', '尚未審批'))
+    }
     if (!quote.total_amount || quote.total_amount <= 0) {
       reasons.push(t('Quote total is not set', '報價總額未設定'))
     }
@@ -309,7 +320,14 @@ export default function QuoteDetailPage() {
       else if (Number(li.unit_price) <= 0) reasons.push(`${t('Unpriced line', '未定價的項目')}: "${nm}"`)
     }
     return reasons
-  }, [quote, lineItems, t])
+  }, [quote, lineItems, approvals, t])
+
+  // Short tooltip for the disabled Send button — states the single most useful
+  // next action instead of leaving the button as a dead control.
+  const sendBlockedTooltip = useMemo(() => {
+    if (sendBlocked.length === 0) return ''
+    return sendBlocked.join(' · ')
+  }, [sendBlocked])
 
   const marginValid = quote ? quote.margin_percent != null && quote.margin_percent > 0 : false
   const marginLow = !!quote && quote.margin_percent != null && quote.margin_percent > 0 && quote.margin_percent < 10
@@ -453,6 +471,7 @@ export default function QuoteDetailPage() {
                 <button
                   onClick={handleSend}
                   disabled={actionLoading || sendBlocked.length > 0}
+                  title={sendBlockedTooltip}
                   style={{
                     fontSize: '13px',
                     padding: '6px 16px',
@@ -510,6 +529,7 @@ export default function QuoteDetailPage() {
               <button
                 onClick={handleSend}
                 disabled={actionLoading || sendBlocked.length > 0}
+                title={sendBlockedTooltip}
                 style={{
                   fontSize: '13px',
                   padding: '6px 16px',
@@ -763,12 +783,13 @@ export default function QuoteDetailPage() {
                         {editing ? (
                           <input
                             type="text"
-                            value={comp.source}
-                            onChange={(e) => updateEditCost(idx, { source: e.target.value })}
-                            style={editInputStyle}
+                            placeholder={t('Supplier + date + channel', '供應商 + 日期 + 渠道')}
+                            value={comp.assumption_note ?? ''}
+                            onChange={(e) => updateEditCost(idx, { assumption_note: e.target.value })}
+                            style={{ ...editInputStyle, minWidth: '220px' }}
                           />
                         ) : (
-                          comp.source
+                          (comp.assumption_note || comp.source)
                         )}
                       </td>
                       <td style={{ padding: '8px 12px', textAlign: 'center' }}>
