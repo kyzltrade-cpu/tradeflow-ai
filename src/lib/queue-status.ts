@@ -23,6 +23,31 @@ export const QUEUE_GROUP_LABELS: Record<QueueGroupKey, { en: string; zh: string 
 
 export type PrimaryAction = 'reply' | 'approve' | 're-approve' | 'send-followup' | 'wait';
 
+/**
+ * Per-row context shown when a queue row is expanded. All fields are optional
+ * and derived from linked opportunity / contact / customer / message rows —
+ * the API attaches this; the pure derivation leaves it undefined.
+ */
+export type QueueItemDetail = {
+  /** Opportunity stage key (uppercase set: NEW, QUALIFIED, SOURCING, …). */
+  stage?: string | null;
+  /** Quote status when the row is a quote (DRAFT, IN_REVIEW, SENT, …). */
+  quoteStatus?: string | null;
+  /** Their request in their own words — latest inbound message excerpt. */
+  whatTheyWant?: string | null;
+  company?: string | null;
+  industry?: string | null;
+  country?: string | null;
+  contactTitle?: string | null;
+  value?: number | null;
+  currency?: string | null;
+  nextAction?: string | null;
+  nextActionDue?: string | null;
+  priority?: string | null;
+  lastMessageAt?: string | null;
+  lastMessageRole?: string | null;
+};
+
 export type QueueItem = {
   id: string;
   kind: 'reply' | 'draft_ready' | 'approval' | 'reapproval' | 'awaiting_customer' | 'followup';
@@ -37,6 +62,7 @@ export type QueueItem = {
   href: string;
   time: string | null;
   meta?: Record<string, unknown>;
+  detail?: QueueItemDetail | null;
 };
 
 export type QueueGroup = {

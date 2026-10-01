@@ -76,7 +76,7 @@ interface GroupMeta {
   hint: { en: string; zh: string };
 }
 
-type DisplayKey = 'approvals' | 'replies' | 'they_owe';
+type DisplayKey = 'you_owe' | 'they_owe';
 
 interface DisplaySection {
   key: DisplayKey;
@@ -84,55 +84,44 @@ interface DisplaySection {
 }
 
 const SECTION_META: Record<DisplayKey, GroupMeta> = {
-  approvals: {
+  you_owe: {
     icon: CheckCircle2,
     color: '#18181B',
-    label: { en: 'Needs approval', zh: '待審批' },
-    hint: { en: 'Draft quotes & replies awaiting sign-off', zh: '待你審批的草稿與報價' },
-  },
-  replies: {
-    icon: Reply,
-    color: '#52525B',
-    label: { en: 'Replies waiting on you', zh: '待你回覆' },
-    hint: { en: 'Customers waiting on your reply', zh: '客戶正在等你回覆' },
+    label: { en: 'You owe them', zh: '你欠對方' },
+    hint: {
+      en: 'Replies to send & drafts to approve — oldest first',
+      zh: '待回覆與待審批草稿 — 最舊的排在最前',
+    },
   },
   they_owe: {
     icon: Clock,
     color: '#71717A',
-    label: { en: 'They owe you', zh: '等對方回覆' },
-    hint: { en: 'Customer replies & follow-ups due', zh: '等客戶回覆或跟進' },
+    label: { en: 'They owe you', zh: '對方欠你' },
+    hint: { en: 'Sent and waiting on the customer', zh: '已寄出，等客戶回覆' },
   },
 };
 
 const FILTER_SPECS: Array<{ key: 'all' | DisplayKey; label: { en: string; zh: string } }> = [
   { key: 'all', label: { en: 'All', zh: '全部' } },
-  { key: 'approvals', label: { en: 'Approvals', zh: '待審批' } },
-  { key: 'replies', label: { en: 'Replies', zh: '待回覆' } },
+  { key: 'you_owe', label: { en: 'You owe them', zh: '你欠對方' } },
+  { key: 'they_owe', label: { en: 'They owe you', zh: '對方欠你' } },
 ];
 
 type FilterKey = (typeof FILTER_SPECS)[number]['key'];
 
-// Presentation-only regroup of the fixed API groups into the sections the page
-// shows. The wire contract in queue-status.ts is unchanged.
+// Presentation-only regroup of the fixed API groups into "who owes who". The
+// wire contract in queue-status.ts is unchanged.
 function buildSections(groups: QueueGroup[]): DisplaySection[] {
   const itemsOf = (key: QueueGroupKey) => groups.find((g) => g.key === key)?.items ?? [];
-  const youOwe = itemsOf('you_owe');
 
-  // Approvals lead — money is going out. IN_REVIEW + re-approvals from the API,
-  // plus DRAFT quotes the API parks in you_owe (all share the Approve action).
-  const approvals = [
-    ...itemsOf('needs_approval'),
-    ...youOwe.filter((i) => i.primaryAction === 'approve' || i.primaryAction === 're-approve'),
-  ].sort((a, b) => (b.time ?? '').localeCompare(a.time ?? ''));
-
-  // Oldest first: the longest-waiting customer climbs to the top.
-  const replies = youOwe
-    .filter((i) => i.primaryAction === 'reply')
-    .sort((a, b) => (a.time ?? '9999').localeCompare(b.time ?? '9999'));
+  // Everything needing action from me: inbound messages to reply to plus
+  // AI-prepared drafts awaiting approval. Oldest first so nothing goes stale.
+  const youOwe = [...itemsOf('needs_approval'), ...itemsOf('you_owe')].sort(
+    (a, b) => (a.time ?? '9999').localeCompare(b.time ?? '9999'),
+  );
 
   return [
-    { key: 'approvals', items: approvals },
-    { key: 'replies', items: replies },
+    { key: 'you_owe', items: youOwe },
     { key: 'they_owe', items: itemsOf('they_owe') },
   ];
 }
@@ -157,10 +146,8 @@ function RowSkeleton() {
 
 function sectionEmptyHint(key: DisplayKey): { en: string; zh: string } {
   switch (key) {
-    case 'approvals':
-      return { en: 'Nothing pending your approval.', zh: '沒有待審批項目。' };
-    case 'replies':
-      return { en: 'No open items waiting on you.', zh: '沒有需要你處理的項目。' };
+    case 'you_owe':
+      return { en: 'Nothing waiting on you.', zh: '沒有需要你處理的項目。' };
     case 'they_owe':
       return { en: 'Nothing waiting on customers.', zh: '沒有等客戶的項目。' };
   }
