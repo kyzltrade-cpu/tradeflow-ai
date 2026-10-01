@@ -1,0 +1,11 @@
+{
+  "workflow": "interactive",
+  "next_task": "01-01-whatsapp-agent-data-model",
+  "phases": {
+    "01-whatsapp-agent": {
+      "name": "WhatsApp Agent MVP",
+      "status": "in_progress",
+      "active_task": "01-01-whatsapp-agent-data-model"
+    }
+  }
+}
