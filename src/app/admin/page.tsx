@@ -4,14 +4,13 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import {
   RefreshCw, Reply, CheckCircle2, AlertTriangle, Clock, Send,
-  ArrowUpRight, Inbox, Mail, Trophy, ChevronRight,
+  ArrowUpRight, Inbox, Mail, Trophy, ChevronRight, ChevronDown,
 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { authFetch } from '@/lib/auth-fetch';
 import {
   QUEUE_GROUPS,
-  QUEUE_GROUP_LABELS,
   type QueueGroupKey,
   type QueueGroup,
   type QueueItem,
@@ -73,14 +72,70 @@ const CHIP_SPECS: Partial<Record<QueueItem['kind'], ChipSpec>> = {
 interface GroupMeta {
   icon: typeof Reply;
   color: string;
+  label: { en: string; zh: string };
   hint: { en: string; zh: string };
 }
 
-const GROUP_META: Record<QueueGroupKey, GroupMeta> = {
-  you_owe: { icon: AlertTriangle, color: '#DC2626', hint: { en: 'Replies & drafts on you', zh: '待你回覆與草稿' } },
-  needs_approval: { icon: CheckCircle2, color: '#2563EB', hint: { en: 'Quotes awaiting sign-off', zh: '待你審批的報價' } },
-  they_owe: { icon: Clock, color: '#6B7280', hint: { en: 'Customer replies & follow-ups due', zh: '等客戶回覆或跟進' } },
+type DisplayKey = 'approvals' | 'replies' | 'they_owe';
+
+interface DisplaySection {
+  key: DisplayKey;
+  items: QueueItem[];
+}
+
+const SECTION_META: Record<DisplayKey, GroupMeta> = {
+  approvals: {
+    icon: CheckCircle2,
+    color: '#2563EB',
+    label: { en: 'Needs approval', zh: '待審批' },
+    hint: { en: 'Draft quotes & replies awaiting sign-off', zh: '待你審批的草稿與報價' },
+  },
+  replies: {
+    icon: Reply,
+    color: '#DC2626',
+    label: { en: 'Replies waiting on you', zh: '待你回覆' },
+    hint: { en: 'Customers waiting on your reply', zh: '客戶正在等你回覆' },
+  },
+  they_owe: {
+    icon: Clock,
+    color: '#6B7280',
+    label: { en: 'They owe you', zh: '等對方回覆' },
+    hint: { en: 'Customer replies & follow-ups due', zh: '等客戶回覆或跟進' },
+  },
 };
+
+const FILTER_SPECS: Array<{ key: 'all' | DisplayKey; label: { en: string; zh: string } }> = [
+  { key: 'all', label: { en: 'All', zh: '全部' } },
+  { key: 'approvals', label: { en: 'Approvals', zh: '待審批' } },
+  { key: 'replies', label: { en: 'Replies', zh: '待回覆' } },
+];
+
+type FilterKey = (typeof FILTER_SPECS)[number]['key'];
+
+// Presentation-only regroup of the fixed API groups into the sections the page
+// shows. The wire contract in queue-status.ts is unchanged.
+function buildSections(groups: QueueGroup[]): DisplaySection[] {
+  const itemsOf = (key: QueueGroupKey) => groups.find((g) => g.key === key)?.items ?? [];
+  const youOwe = itemsOf('you_owe');
+
+  // Approvals lead — money is going out. IN_REVIEW + re-approvals from the API,
+  // plus DRAFT quotes the API parks in you_owe (all share the Approve action).
+  const approvals = [
+    ...itemsOf('needs_approval'),
+    ...youOwe.filter((i) => i.primaryAction === 'approve' || i.primaryAction === 're-approve'),
+  ].sort((a, b) => (b.time ?? '').localeCompare(a.time ?? ''));
+
+  // Oldest first: the longest-waiting customer climbs to the top.
+  const replies = youOwe
+    .filter((i) => i.primaryAction === 'reply')
+    .sort((a, b) => (a.time ?? '9999').localeCompare(b.time ?? '9999'));
+
+  return [
+    { key: 'approvals', items: approvals },
+    { key: 'replies', items: replies },
+    { key: 'they_owe', items: itemsOf('they_owe') },
+  ];
+}
 
 const PRIORITY_TONE: Record<string, { label: { en: string; zh: string }; color: string; bg: string }> = {
   high: { label: { en: 'High priority', zh: '高優先' }, color: '#DC2626', bg: '#FEE2E2' },
@@ -100,12 +155,12 @@ function RowSkeleton() {
   );
 }
 
-function emptyHint(group: QueueGroupKey): { en: string; zh: string } {
-  switch (group) {
-    case 'you_owe':
-      return { en: 'No open items waiting on you.', zh: '沒有需要你處理的項目。' };
-    case 'needs_approval':
+function sectionEmptyHint(key: DisplayKey): { en: string; zh: string } {
+  switch (key) {
+    case 'approvals':
       return { en: 'Nothing pending your approval.', zh: '沒有待審批項目。' };
+    case 'replies':
+      return { en: 'No open items waiting on you.', zh: '沒有需要你處理的項目。' };
     case 'they_owe':
       return { en: 'Nothing waiting on customers.', zh: '沒有等客戶的項目。' };
   }
@@ -119,6 +174,8 @@ export default function AdminQueuePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [bigDealsOpen, setBigDealsOpen] = useState(true);
+  const [filter, setFilter] = useState<FilterKey>('all');
 
   const fetchQueue = useCallback(async (opts?: { silent?: boolean }) => {
     if (companyLoading || !companyId) return;
@@ -166,6 +223,10 @@ export default function AdminQueuePage() {
   }, [companyId, companyLoading, fetchQueue]);
 
   const totalItems = groups.reduce((n, g) => n + g.count, 0);
+  const sections = buildSections(groups);
+  const visibleSections = filter === 'all' ? sections : sections.filter((s) => s.key === filter);
+  const countFor = (key: FilterKey): number =>
+    key === 'all' ? totalItems : sections.find((s) => s.key === key)?.items.length ?? 0;
 
   const refresh = async () => {
     setRefreshing(true);
@@ -211,6 +272,37 @@ export default function AdminQueuePage() {
         </div>
       </div>
 
+      {/* Filter row */}
+      <div
+        className="flex items-center gap-1.5 border-b px-4 py-2 flex-shrink-0 md:px-6"
+        style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
+      >
+        {FILTER_SPECS.map((f) => {
+          const active = filter === f.key;
+          const n = countFor(f.key);
+          return (
+            <button
+              key={f.key}
+              type="button"
+              onClick={() => setFilter(f.key)}
+              aria-pressed={active}
+              className="flex items-center gap-1.5 rounded-full px-3 py-1 text-[12px] font-medium transition-colors"
+              style={active
+                ? { background: 'var(--accent)', color: '#fff' }
+                : { background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
+            >
+              {t(f.label.en, f.label.zh)}
+              <span
+                className="tabular-nums text-[10.5px] font-semibold rounded-full px-1.5 min-w-[18px] text-center"
+                style={active ? { background: 'rgba(255,255,255,0.22)' } : { background: 'var(--bg)' }}
+              >
+                {n > 99 ? '99+' : n}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Group sections */}
       <div className="flex-1 overflow-y-auto min-h-0">
         {error && (
@@ -233,13 +325,14 @@ export default function AdminQueuePage() {
           </>
         ) : (
           <>
-            {bigDeals.length > 0 && <BigDealsBand deals={bigDeals} />}
-            {groups.map((group) => {
-            const label = QUEUE_GROUP_LABELS[group.key];
-            const meta = GROUP_META[group.key];
+            {filter === 'all' && bigDeals.length > 0 && (
+              <BigDealsBand deals={bigDeals} open={bigDealsOpen} onToggle={() => setBigDealsOpen((v) => !v)} />
+            )}
+            {visibleSections.map((section) => {
+            const meta = SECTION_META[section.key];
             const GroupIcon = meta.icon;
             return (
-              <section key={group.key} className="border-b" style={{ borderColor: 'var(--border)' }}>
+              <section key={section.key} className="border-b" style={{ borderColor: 'var(--border)' }}>
                 <div className="sticky top-0 z-10 flex items-center gap-2 px-4 md:px-6 py-2"
                   style={{ background: `${meta.color}12`, borderBottom: '1px solid var(--border)' }}
                 >
@@ -247,26 +340,26 @@ export default function AdminQueuePage() {
                     style={{ color: meta.color }}
                   >
                     <GroupIcon width="13" height="13" strokeWidth={2.5} />
-                    {t(label.en, label.zh)}
+                    {t(meta.label.en, meta.label.zh)}
                   </span>
                   <span className="tabular-nums text-[11px] rounded-full px-1.5 min-w-[22px] text-center font-semibold"
                     style={{ background: `${meta.color}22`, color: meta.color }}
                   >
-                    {group.count > 99 ? '99+' : group.count}
+                    {section.items.length > 99 ? '99+' : section.items.length}
                   </span>
                   <span className="hidden sm:block text-[10.5px] font-medium ml-1" style={{ color: 'var(--text-muted)' }}>
                     {t(meta.hint.en, meta.hint.zh)}
                   </span>
                 </div>
 
-                {group.items.length === 0 ? (
+                {section.items.length === 0 ? (
                   <div className="px-4 md:px-6 py-6 text-center">
                     <p className="text-[12.5px]" style={{ color: 'var(--text-muted)' }}>
-                      {t(emptyHint(group.key).en, emptyHint(group.key).zh)}
+                      {t(sectionEmptyHint(section.key).en, sectionEmptyHint(section.key).zh)}
                     </p>
                   </div>
                 ) : (
-                  group.items.map((item) => {
+                  section.items.map((item) => {
                     const chip = CHIP_SPECS[item.kind] || CHIP_SPECS.reply!;
                     const action = ACTION_SPECS[item.primaryAction] || ACTION_SPECS.wait;
                     const amount = formatAmount(item);
@@ -367,12 +460,17 @@ export default function AdminQueuePage() {
   );
 }
 
-function BigDealsBand({ deals }: { deals: BigDeal[] }) {
+function BigDealsBand({ deals, open, onToggle }: { deals: BigDeal[]; open: boolean; onToggle: () => void }) {
   const { t } = useLang();
   return (
     <section className="border-b" style={{ borderColor: '#F59E0B33' }}>
       <div className="px-4 md:px-6 py-3" style={{ background: 'linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 100%)' }}>
-        <div className="flex items-center gap-2 mb-1">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          className="w-full flex items-center gap-2 text-left"
+        >
           <Trophy width="14" height="14" style={{ color: '#B45309' }} />
           <h2 className="text-[13px] font-semibold tracking-[-0.01em]" style={{ color: '#78350F' }}>
             {t('Big deals', '大宗交易')}
@@ -383,7 +481,13 @@ function BigDealsBand({ deals }: { deals: BigDeal[] }) {
           <span className="hidden sm:block text-[11px] font-medium ml-1" style={{ color: '#92610F' }}>
             {t('Your highest-value opportunities in play', '在談中的高價值交易')}
           </span>
-        </div>
+          <ChevronDown
+            width="14" height="14"
+            className="ml-auto flex-shrink-0 transition-transform"
+            style={{ color: '#B45309', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+          />
+        </button>
+        {open && (
         <div className="mt-2 overflow-hidden rounded-[8px] border" style={{ borderColor: '#F59E0B40', background: 'rgba(255,255,255,0.75)' }}>
           {deals.map((deal) => {
             const tone = PRIORITY_TONE[deal.priority];
@@ -426,6 +530,7 @@ function BigDealsBand({ deals }: { deals: BigDeal[] }) {
             );
           })}
         </div>
+        )}
       </div>
     </section>
   );
