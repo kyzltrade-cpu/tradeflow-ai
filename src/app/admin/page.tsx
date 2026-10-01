@@ -61,12 +61,12 @@ interface ChipSpec {
 }
 
 const CHIP_SPECS: Partial<Record<QueueItem['kind'], ChipSpec>> = {
-  reply: { label: { en: 'Waiting on you', zh: '待你回覆' }, bg: '#FEF3C7', fg: '#D97706' },
-  draft_ready: { label: { en: 'Draft ready', zh: '草稿就緒' }, bg: '#EFF6FF', fg: '#2563EB' },
-  approval: { label: { en: 'Needs approval', zh: '待審批' }, bg: '#EFF6FF', fg: '#2563EB' },
-  reapproval: { label: { en: 'Needs re-approval', zh: '需重新審批' }, bg: '#FEE2E2', fg: '#DC2626' },
-  awaiting_customer: { label: { en: 'Waiting on customer', zh: '等客戶回覆' }, bg: '#F3F4F6', fg: '#6B7280' },
-  followup: { label: { en: 'Follow-up due', zh: '跟進到期' }, bg: '#FEF3C7', fg: '#D97706' },
+  reply: { label: { en: 'Waiting on you', zh: '待你回覆' }, bg: '#F4F4F5', fg: '#3F3F46' },
+  draft_ready: { label: { en: 'Draft ready', zh: '草稿就緒' }, bg: '#F4F4F5', fg: '#18181B' },
+  approval: { label: { en: 'Needs approval', zh: '待審批' }, bg: '#F4F4F5', fg: '#18181B' },
+  reapproval: { label: { en: 'Needs re-approval', zh: '需重新審批' }, bg: '#FEF3F2', fg: '#B42318' },
+  awaiting_customer: { label: { en: 'Waiting on customer', zh: '等客戶回覆' }, bg: '#F4F4F5', fg: '#71717A' },
+  followup: { label: { en: 'Follow-up due', zh: '跟進到期' }, bg: '#FFFAEB', fg: '#B54708' },
 };
 
 interface GroupMeta {
@@ -86,19 +86,19 @@ interface DisplaySection {
 const SECTION_META: Record<DisplayKey, GroupMeta> = {
   approvals: {
     icon: CheckCircle2,
-    color: '#2563EB',
+    color: '#18181B',
     label: { en: 'Needs approval', zh: '待審批' },
     hint: { en: 'Draft quotes & replies awaiting sign-off', zh: '待你審批的草稿與報價' },
   },
   replies: {
     icon: Reply,
-    color: '#DC2626',
+    color: '#52525B',
     label: { en: 'Replies waiting on you', zh: '待你回覆' },
     hint: { en: 'Customers waiting on your reply', zh: '客戶正在等你回覆' },
   },
   they_owe: {
     icon: Clock,
-    color: '#6B7280',
+    color: '#71717A',
     label: { en: 'They owe you', zh: '等對方回覆' },
     hint: { en: 'Customer replies & follow-ups due', zh: '等客戶回覆或跟進' },
   },
@@ -138,8 +138,8 @@ function buildSections(groups: QueueGroup[]): DisplaySection[] {
 }
 
 const PRIORITY_TONE: Record<string, { label: { en: string; zh: string }; color: string; bg: string }> = {
-  high: { label: { en: 'High priority', zh: '高優先' }, color: '#DC2626', bg: '#FEE2E2' },
-  urgent: { label: { en: 'Urgent', zh: '緊急' }, color: '#B91C1C', bg: '#FEF2F2' },
+  high: { label: { en: 'High priority', zh: '高優先' }, color: '#B54708', bg: '#FFFAEB' },
+  urgent: { label: { en: 'Urgent', zh: '緊急' }, color: '#B42318', bg: '#FEF3F2' },
 };
 
 function RowSkeleton() {
@@ -463,32 +463,32 @@ export default function AdminQueuePage() {
 function BigDealsBand({ deals, open, onToggle }: { deals: BigDeal[]; open: boolean; onToggle: () => void }) {
   const { t } = useLang();
   return (
-    <section className="border-b" style={{ borderColor: '#F59E0B33' }}>
-      <div className="px-4 md:px-6 py-3" style={{ background: 'linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 100%)' }}>
+    <section className="border-b" style={{ borderColor: 'var(--border)' }}>
+      <div className="px-4 md:px-6 py-3" style={{ background: 'var(--surface)' }}>
         <button
           type="button"
           onClick={onToggle}
           aria-expanded={open}
           className="w-full flex items-center gap-2 text-left"
         >
-          <Trophy width="14" height="14" style={{ color: '#B45309' }} />
-          <h2 className="text-[13px] font-semibold tracking-[-0.01em]" style={{ color: '#78350F' }}>
+          <Trophy width="14" height="14" style={{ color: 'var(--text-muted)' }} />
+          <h2 className="text-[13px] font-semibold tracking-[-0.01em]" style={{ color: 'var(--text)' }}>
             {t('Big deals', '大宗交易')}
           </h2>
-          <span className="tabular-nums text-[10.5px] rounded-full px-1.5 font-semibold" style={{ background: '#FEF3C7', color: '#B45309' }}>
+          <span className="tabular-nums text-[10.5px] rounded-full px-1.5 font-semibold" style={{ background: 'var(--accent-light)', color: 'var(--text-muted)' }}>
             {deals.length}
           </span>
-          <span className="hidden sm:block text-[11px] font-medium ml-1" style={{ color: '#92610F' }}>
+          <span className="hidden sm:block text-[11px] font-medium ml-1" style={{ color: 'var(--text-muted)' }}>
             {t('Your highest-value opportunities in play', '在談中的高價值交易')}
           </span>
           <ChevronDown
             width="14" height="14"
             className="ml-auto flex-shrink-0 transition-transform"
-            style={{ color: '#B45309', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+            style={{ color: 'var(--text-muted)', transform: open ? 'rotate(0deg)' : 'rotate(-90deg)' }}
           />
         </button>
         {open && (
-        <div className="mt-2 overflow-hidden rounded-[8px] border" style={{ borderColor: '#F59E0B40', background: 'rgba(255,255,255,0.75)' }}>
+        <div className="mt-2 overflow-hidden rounded-[8px] border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
           {deals.map((deal) => {
             const tone = PRIORITY_TONE[deal.priority];
             const value = deal.estimated_order_value != null
@@ -499,7 +499,7 @@ function BigDealsBand({ deals, open, onToggle }: { deals: BigDeal[]; open: boole
                 key={deal.id}
                 href={`/admin/opportunities/${deal.id}`}
                 className="flex items-center gap-2.5 md:gap-3 px-3 py-2.5 border-b last:border-b-0 transition-colors hover:bg-black/[0.03]"
-                style={{ borderColor: '#F59E0B22' }}
+                style={{ borderColor: 'var(--border)' }}
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 min-w-0">
@@ -520,7 +520,7 @@ function BigDealsBand({ deals, open, onToggle }: { deals: BigDeal[]; open: boole
                 </div>
                 <div className="flex items-center gap-2.5 md:gap-3 flex-shrink-0">
                   {value && (
-                    <span className="text-[13px] font-bold tabular-nums whitespace-nowrap" style={{ color: '#B45309' }}>
+                    <span className="text-[13px] font-bold tabular-nums whitespace-nowrap" style={{ color: 'var(--text)' }}>
                       {value}
                     </span>
                   )}
@@ -560,7 +560,7 @@ function PrimaryActionButton({ item, action }: { item: QueueItem; action: Action
     );
   }
 
-  const bg = action.tone === 'accent' ? 'var(--accent)' : '#DC2626';
+  const bg = action.tone === 'accent' ? 'var(--accent)' : 'var(--error)';
   const Icon = action.icon;
 
   return (
