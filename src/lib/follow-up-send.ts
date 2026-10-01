@@ -159,7 +159,12 @@ export async function deliverFollowUp(params: {
     companyId,
   });
 
-  await supabaseAdmin
+  // `error_message` is deliberately absent. follow_up_items has no such
+  // column, and PostgREST rejects the entire update when one is named — which
+  // silently left every send stuck on 'scheduled', so the 02:00 cron mailed
+  // the same follow-up again every day. The failure reason is recorded in
+  // audit_events by the caller instead. Verified against the live schema.
+  const { error: updateError } = await supabaseAdmin
     .from('follow_up_items')
     .update({
       status: result.success ? 'sent' : 'failed',
@@ -168,11 +173,22 @@ export async function deliverFollowUp(params: {
       message_body: body,
       subject,
       sent_at: result.success ? now : null,
-      error_message: result.success ? null : result.error || 'send_failed',
       updated_at: now,
     })
     .eq('id', itemId)
     .eq('company_id', companyId);
+
+  // If the status write itself fails the email has already gone out but the
+  // row still reads 'scheduled', so the next cron run would send it again.
+  // Surface that loudly instead of returning a cheerful success.
+  if (updateError) {
+    console.error('[follow-up-send] status write failed after delivering:', updateError.message);
+    return {
+      success: false,
+      error: `The email was sent but the follow-up could not be marked as sent (${updateError.message}). It may be sent again — check the follow-up list before retrying.`,
+      recipient: recipient.email,
+    };
+  }
 
   if (!result.success) {
     return {

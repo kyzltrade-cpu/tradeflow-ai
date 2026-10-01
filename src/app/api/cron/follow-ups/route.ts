@@ -212,7 +212,6 @@ export async function GET(req: NextRequest) {
         .from('follow_up_items')
         .update({
           status: 'failed',
-          error_message: itemErr instanceof Error ? itemErr.message : 'Unknown error',
           updated_at: now,
         })
         .eq('id', item.id);

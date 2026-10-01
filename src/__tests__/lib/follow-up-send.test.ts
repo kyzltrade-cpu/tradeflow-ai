@@ -16,6 +16,9 @@ type Row = Record<string, unknown>
 
 const tables: Record<string, Row[]> = {}
 const updateCalls: Array<{ table: string; patch: Row; filter: Row }> = []
+/** When set, every status write reports this error, as PostgREST would. */
+// eslint-disable-next-line no-var
+var mockFailUpdate: { message: string } | null = null
 
 jest.mock('@/lib/supabase', () => ({
   supabaseAdmin: {
@@ -50,7 +53,8 @@ jest.mock('@/lib/supabase', () => ({
         }
         uchain.then = (resolve: (v: unknown) => unknown) => {
           updateCalls.push(base)
-          return Promise.resolve({ data: null, error: null }).then(resolve)
+          const err = mockFailUpdate
+          return Promise.resolve({ data: null, error: err }).then(resolve)
         }
         return uchain
       }
@@ -74,6 +78,7 @@ beforeEach(() => {
   sendEmailMock.mockReset()
   sendEmailMock.mockResolvedValue({ success: true })
   updateSpy.mockClear()
+  mockFailUpdate = null
 })
 
 // Build the rows the happy path needs.
@@ -225,7 +230,49 @@ describe('deliverFollowUp', () => {
     expect(write!.patch.sent_at).toEqual(expect.any(String))
     expect(write!.patch.message_body).toBe('Hi Amy — the exact text the human approved.')
     expect(write!.patch.subject).toBe('Following up')
-    expect(write!.patch.error_message).toBeNull()
+  })
+
+  it('never names a column follow_up_items does not have', async () => {
+    // Regressed in production: writing `error_message` (no such column) made
+    // PostgREST reject the whole update, leaving the row 'scheduled' so cron
+    // re-sent it. The status write must only name columns that exist.
+    seedFullChain()
+    await deliverFollowUp({
+      sequenceId: 'seq-1',
+      itemId: 'item-1',
+      companyId: 'co-1',
+      subject: 'x',
+      body: 'y',
+    })
+    const real = new Set([
+      'status',
+      'message_body',
+      'subject',
+      'sent_at',
+      'updated_at',
+    ])
+    const write = updateCalls.find((c) => c.table === 'follow_up_items')!;
+    for (const col of Object.keys(write.patch)) {
+      expect(real.has(col)).toBe(true);
+    }
+  })
+
+  it('warns when the email went out but the status write failed', async () => {
+    seedFullChain();
+    mockFailUpdate = { message: 'permission denied' };
+
+    const r = await deliverFollowUp({
+      sequenceId: 'seq-1',
+      itemId: 'item-1',
+      companyId: 'co-1',
+      subject: 'x',
+      body: 'y',
+    });
+
+    // Delivered, but we must not report a clean success: the row is still
+    // 'scheduled' and the next cron run would send it a second time.
+    expect(r.success).toBe(false);
+    expect(r.error).toMatch(/marked as sent/i);
   })
 
   it('marks the item failed and leaves it retryable when the mail is refused', async () => {
@@ -245,6 +292,5 @@ describe('deliverFollowUp', () => {
     expect(write!.patch.status).toBe('failed')
     // No sent_at: a failed item must not look like it was delivered.
     expect(write!.patch.sent_at).toBeNull()
-    expect(write!.patch.error_message).toBe('domain not verified')
   })
 })
