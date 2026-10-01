@@ -7,6 +7,7 @@ import {
   ArrowUpRight, Inbox, Mail, Trophy, ChevronRight, ChevronDown,
 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
+import { buildTemplateDraft, type DraftContext } from '@/lib/queue-draft-template';
 import { useCompany } from '@/lib/company';
 import { authFetch } from '@/lib/auth-fetch';
 import {
@@ -192,57 +193,96 @@ function Fact({ label, value }: { label: { en: string; zh: string }; value: stri
   );
 }
 
+/**
+ * Builds the template context client-side from what the queue already returns,
+ * so a draft is on screen the instant a row opens — no network, no model wait.
+ * The AI draft then replaces it in the background if one is available.
+ */
+function contextFromItem(item: QueueItem): DraftContext {
+  const d = item.detail;
+  const kind: DraftContext['kind'] = item.id.startsWith('quote-')
+    ? 'quote'
+    : item.id.startsWith('fu-')
+      ? 'followup'
+      : 'reply';
+  const currency = d?.currency ?? item.quoteCurrency ?? null;
+
+  return {
+    kind,
+    sender: item.sender ?? null,
+    subject: item.subject ?? null,
+    company: d?.company ?? null,
+    industry: d?.industry ?? null,
+    country: d?.country ?? null,
+    stage: d?.stage ?? null,
+    nextStep: d?.nextAction ?? null,
+    request: d?.whatTheyWant ?? null,
+    total: formatMoney(d?.value, currency),
+    lines: (d?.lineItems ?? []).map(
+      (li) => `- ${li.product} x${li.quantity ?? '?'}${li.unit ? ` ${li.unit}` : ''} = ${formatMoney(li.total, currency) ?? '—'}`
+    ),
+    missing: d?.missingInfo ?? [],
+  };
+}
+
 function DraftEditor({ item }: { item: QueueItem }) {
   const { t } = useLang();
   // item.id already carries its type prefix (quote-/conv-/fu-), which is also
   // the queue_drafts key, so it is the canonical id for both fetch and cache.
   const rowKey = item.id;
-
-  const [body, setBody] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [source, setSource] = useState<'ai' | 'template' | 'human'>('ai');
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const localKey = `queue-draft:${rowKey}`;
 
-  // Load the saved draft, or generate one. Re-opening a row reuses the stored
-  // draft, so this costs a model call only the first time.
+  // Seed with the template synchronously: the box is never empty, and the row
+  // never appears broken while a 30s model call is in flight.
+  const [body, setBody] = useState<string>(() => buildTemplateDraft(contextFromItem(item)));
+  const [source, setSource] = useState<'ai' | 'template' | 'human' | 'drafting'>('drafting');
+  const [saving, setSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Set the moment a human types, so a late-arriving AI draft can never
+  // overwrite their words.
+  const dirty = useRef(false);
+
+  const persist = (next: string) => {
+    fetch('/api/admin/queue/draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemId: rowKey, body: next }),
+    }).catch(() => {
+      // The local copy below is the safety net; the server is best-effort.
+    });
+  };
+
+  // Upgrade the seeded template to a real AI draft, without blocking the row.
   useEffect(() => {
     let cancelled = false;
 
     const run = async () => {
-      setBusy(true);
-      setError(null);
+      // A human edit from a previous session wins over anything we generate.
+      try {
+        const cached = window.localStorage.getItem(localKey);
+        if (cached && !cancelled) {
+          dirty.current = true;
+          setBody(cached);
+          setSource('human');
+          return;
+        }
+      } catch {
+        // localStorage unavailable (private mode) — continue.
+      }
+
       try {
         const res = await fetch(`/api/admin/queue/draft?itemId=${encodeURIComponent(rowKey)}`);
         if (res.ok) {
           const json = await res.json();
-          if (json.draft?.body) {
-            if (!cancelled) {
-              setBody(json.draft.body);
-              
-              if (json.draft.source) setSource(json.draft.source);
-            }
-            setBusy(false);
+          if (json.draft?.body && !dirty.current && !cancelled) {
+            setBody(json.draft.body);
+            setSource(json.draft.source ?? 'ai');
             return;
           }
         }
       } catch {
-        // Fall through to generation / local copy.
-      }
-
-      // No server draft: fall back to a browser copy before spending a call.
-      try {
-        const cached = window.localStorage.getItem(localKey);
-        if (cached && !cancelled) {
-          setBody(cached);
-          setEdited(true);
-          setBusy(false);
-          return;
-        }
-      } catch {
-        // localStorage unavailable (private mode) — just generate.
+        // Fall through to generating.
       }
 
       try {
@@ -254,18 +294,20 @@ function DraftEditor({ item }: { item: QueueItem }) {
         const json = await res.json();
         if (cancelled) return;
         if (res.ok && json.draft?.body) {
+          if (dirty.current) return;
           setBody(json.draft.body);
-          
-          if (json.draft.source) setSource(json.draft.source);
+          setSource(json.draft.source ?? 'ai');
+          if (json.draft.source === 'template') {
+            setNotice(t('The AI is slow right now — this is a sample draft. Press Regenerate to retry.', 'AI 目前較慢，這是範本草稿。按「重新產生」重試。'));
+          }
         } else {
-          setError(json.error === 'NIM_API_KEY is not configured'
-            ? t('AI drafting is not configured yet', '尚未設定 AI 草稿功能')
-            : t('Could not draft this email', '無法產生草稿'));
+          setSource('template');
+          setNotice(json.error || t('Could not reach the AI. This is a sample draft.', '無法連線至 AI。這是範本草稿。'));
         }
       } catch {
-        if (!cancelled) setError(t('Could not draft this email', '無法產生草稿'));
-      } finally {
-        if (!cancelled) setBusy(false);
+        if (cancelled) return;
+        setSource('template');
+        setNotice(t('Could not reach the AI. This is a sample draft.', '無法連線至 AI。這是範本草稿。'));
       }
     };
 
@@ -280,9 +322,10 @@ function DraftEditor({ item }: { item: QueueItem }) {
   // Debounced persist. The local write is immediate so a refresh mid-typing
   // never loses the edit even when the server has no draft table.
   const onChange = (next: string) => {
+    dirty.current = true;
     setBody(next);
-    setEdited(true);
     setSource('human');
+    setNotice(null);
     try {
       window.localStorage.setItem(localKey, next);
     } catch {
@@ -290,25 +333,17 @@ function DraftEditor({ item }: { item: QueueItem }) {
     }
     if (timer.current) clearTimeout(timer.current);
     setSaving(true);
-    timer.current = setTimeout(async () => {
-      try {
-        const res = await fetch('/api/admin/queue/draft', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itemId: rowKey, body: next }),
-        });
-        if (!res.ok) throw new Error('save failed');
-      } catch {
-        // Keep the local copy; the next edit retries.
-      } finally {
-        setSaving(false);
-      }
+    timer.current = setTimeout(() => {
+      persist(next);
+      setSaving(false);
     }, 800);
   };
 
   const regenerate = async () => {
-    setBusy(true);
-    setError(null);
+    setNotice(null);
+    setSource('drafting');
+    // Keep the current text on screen while the model works.
+    const previous = body;
     try {
       const res = await fetch('/api/admin/queue/draft', {
         method: 'POST',
@@ -317,21 +352,22 @@ function DraftEditor({ item }: { item: QueueItem }) {
       });
       const json = await res.json();
       if (res.ok && json.draft?.body) {
+        dirty.current = false;
         setBody(json.draft.body);
-        setEdited(false);
-        if (json.draft.source) setSource(json.draft.source);
+        setSource(json.draft.source ?? 'ai');
         try {
           window.localStorage.removeItem(localKey);
         } catch {
           // Non-fatal.
         }
       } else {
-        setError(t('Could not draft this email', '無法產生草稿'));
+        setSource('human');
+        setNotice(json.error || t('Could not draft this email', '無法產生草稿'));
       }
     } catch {
-      setError(t('Could not draft this email', '無法產生草稿'));
-    } finally {
-      setBusy(false);
+      setSource('human');
+      setBody(previous);
+      setNotice(t('Could not reach the AI. Check your connection and try again.', '無法連線至 AI，請檢查網絡後再試。'));
     }
   };
 
@@ -339,18 +375,31 @@ function DraftEditor({ item }: { item: QueueItem }) {
     <div>
       <div className="flex items-center justify-between gap-2 mb-1.5">
         <p className="text-[10.5px] font-medium uppercase tracking-[0.04em]" style={{ color: 'var(--text-muted)' }}>
-          {t('AI email draft', 'AI 郵件草稿')}
+          {t('Email draft', '郵件草稿')}
         </p>
         <div className="flex items-center gap-2">
-          {body != null && (
+          {saving ? (
             <span className="text-[10.5px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
-              {saving
-                ? t('Saving…', '儲存中…')
-                : source === 'template'
-                  ? t('Sample', '範本')
+              {t('Saving…', '儲存中…')}
+            </span>
+          ) : (
+            <span
+              className="text-[10.5px] font-medium px-1.5 py-0.5 rounded"
+              style={
+                source === 'ai'
+                  ? { color: '#027A48', background: '#ECFDF3' }
                   : source === 'human'
-                    ? t('Edited', '已編輯')
-                    : t('AI draft', 'AI 草稿')}
+                    ? { color: 'var(--text-muted)', background: 'var(--surface)' }
+                    : { color: '#B54708', background: '#FFFAEB' }
+              }
+            >
+              {source === 'ai'
+                ? t('AI draft', 'AI 草稿')
+                : source === 'human'
+                  ? t('Edited', '已編輯')
+                  : source === 'drafting'
+                    ? t('Writing…', '撰寫中…')
+                    : t('Sample', '範本')}
             </span>
           )}
           <button
@@ -359,50 +408,28 @@ function DraftEditor({ item }: { item: QueueItem }) {
               e.stopPropagation();
               void regenerate();
             }}
-            disabled={busy}
-            className="text-[11px] font-medium hover:underline disabled:opacity-50"
+            className="text-[11px] font-medium hover:underline"
             style={{ color: 'var(--accent)' }}
           >
-            {t('Regenerate', '重新產生')}
+            {source === 'template' ? t('Retry AI', '重試 AI') : t('Regenerate', '重新產生')}
           </button>
         </div>
       </div>
 
-      {busy && body == null ? (
-        <div
-          className="rounded-lg px-3 py-2.5 text-[12px] animate-pulse"
-          style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
-        >
-          {t('Drafting…', '產生草稿中…')}
-        </div>
-      ) : error && body == null ? (
-        <div
-          className="rounded-lg px-3 py-2.5 text-[12px]"
-          style={{ background: '#FEF3F2', border: '1px solid #FDA29B', color: '#B42318' }}
-        >
-          {error}
-        </div>
-      ) : (
-        <textarea
-          value={body ?? ''}
-          onChange={(e) => onChange(e.target.value)}
-          onClick={(e) => e.stopPropagation()}
-          onKeyDown={(e) => e.stopPropagation()}
-          rows={7}
-          spellCheck={false}
-          placeholder={t('No draft available', '沒有草稿')}
-          className="w-full rounded-lg px-3 py-2.5 text-[12.5px] leading-relaxed resize-y focus:outline-none"
-          style={{
-            background: 'var(--surface)',
-            border: `1px solid ${body ? 'var(--border)' : 'var(--error)'}`,
-            color: 'var(--text)',
-            fontFamily: 'inherit',
-          }}
-        />
-      )}
-      {error && body != null && (
-        <p className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
-          {error}
+      <textarea
+        value={body}
+        onChange={(e) => onChange(e.target.value)}
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        rows={8}
+        spellCheck={false}
+        className="w-full rounded-lg px-3 py-2.5 text-[12.5px] leading-relaxed resize-y focus:outline-none"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text)', fontFamily: 'inherit' }}
+      />
+
+      {notice && (
+        <p className="text-[11px] mt-1" style={{ color: '#B54708' }}>
+          {notice}
         </p>
       )}
     </div>
