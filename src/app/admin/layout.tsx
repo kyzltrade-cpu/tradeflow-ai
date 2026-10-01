@@ -236,7 +236,7 @@ function Sidebar({
       <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={onClose} />
 
       <aside
-        className="sidebar fixed left-0 top-0 z-50 flex h-full flex-col border-r lg:static lg:z-auto"
+        className="sidebar sidebar-dark fixed left-0 top-0 z-50 flex h-full flex-col border-r lg:static lg:z-auto"
         style={{
           width: 232,
           background: 'var(--surface)',
@@ -548,7 +548,7 @@ function AdminShell({ children }: { children: ReactNode }) {
       <div className="hidden lg:block">
         {collapsed ? (
           <aside
-            className="sidebar flex h-full w-[60px] flex-col items-center border-r py-3"
+            className="sidebar sidebar-dark flex h-full w-[60px] flex-col items-center border-r py-3"
             style={{ background: 'var(--surface)', borderColor: 'var(--border)' }}
           >
             <Link
@@ -625,13 +625,11 @@ function AdminShell({ children }: { children: ReactNode }) {
           <div
             className={
               isEmailSurface
-                ? 'flex h-full min-h-0 flex-col'
+                ? 'h-full min-h-0'
                 : 'mx-auto max-w-[1280px]'
             }
           >
-            <div className={isEmailSurface ? 'min-h-0 flex-1' : ''}>{children}</div>
-            {/* Clearance so the Business AI launcher never covers the last row. */}
-            {isEmailSurface && <div className="h-[72px] shrink-0" aria-hidden />}
+            {children}
           </div>
         </main>
       </div>
