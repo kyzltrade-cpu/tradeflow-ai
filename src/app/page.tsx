@@ -203,34 +203,42 @@ export default function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="pt-28 pb-14 px-6 relative overflow-hidden">
-        {/* Hero background banner — top band only, anchored left, not behind the demo */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-[540px] md:h-[600px]"
-          style={{
-            backgroundImage: 'url(/hero/hero-banner.jpg)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'right 62% bottom 75%',
-          }}
-        />
+        {/* Hero background banner — top band only, anchored left, not behind the demo.
+            Width-capped and centred: on ultrawide viewports a full-bleed band stretched
+            a 1916px image across 3400+px, flattening and blurring it behind the wash. */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
+          <div
+            className="w-full max-w-[1920px] h-[540px] md:h-[600px] 2xl:h-[740px]"
+            style={{
+              backgroundImage: 'url(/hero/hero-banner.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'right 62% bottom 75%',
+            }}
+          />
+        </div>
         {/* Light wash for headline legibility; fades to white before the demo dashboard */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 h-[540px] md:h-[600px]"
-          style={{
-            background:
-              'linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.85) 100%)',
-          }}
-        />
-        <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 w-[940px] h-[640px]" style={{ marginLeft: -470, background: 'radial-gradient(50% 50% at 50% 28%, rgba(0,0,0,0.045), rgba(0,0,0,0) 70%)' }} />
-        <div className="max-w-5xl mx-auto sm:ml-6 md:sm:ml-10 relative">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
+          <div
+            className="w-full max-w-[1920px] h-[540px] md:h-[600px] 2xl:h-[740px]"
+            style={{
+              background:
+                'linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.85) 100%)',
+            }}
+          />
+        </div>
+        <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[940px] h-[640px] 2xl:w-[1500px] 2xl:h-[820px]" style={{ background: 'radial-gradient(50% 50% at 50% 28%, rgba(0,0,0,0.045), rgba(0,0,0,0) 70%)' }} />
+        {/* Centred to the same measure as the sections below. This was `max-w-5xl
+            mx-auto sm:ml-6 md:sm:ml-10`, where the margin override beat `mx-auto`
+            and pinned the hero to the left edge — a ~575px drift from the centred
+            nav on a 2560px display. */}
+        <div className="max-w-6xl mx-auto relative">
           <div className="sm:max-w-2xl text-center sm:text-left">
             <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: 'rgba(255,255,255,0.85)', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms', backdropFilter: 'blur(6px)' }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#000' }}></span>
               Built for HK &amp; SZ trading companies
             </div>
 
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
+            <h1 className="text-5xl md:text-7xl 2xl:text-8xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
               <span className="btk-anim-rise block" style={{ animationDelay: '90ms' }}>
                 From inquiry to quote.
               </span>
@@ -289,7 +297,7 @@ export default function LandingPage() {
               01
             </div>
             <p className="btk-kicker mb-5">01 · The pipeline</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Everything you need. Nothing you don&apos;t.
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
@@ -325,7 +333,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── You stay in control ── */}
-      <section className="py-24 px-6" style={{ background: '#FAFAFA' }}>
+      <section className="py-24 px-6 xl:py-28 2xl:py-32" style={{ background: '#FAFAFA' }}>
         <div className="max-w-6xl mx-auto">
           <Reveal className="relative text-center mb-14">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
@@ -362,14 +370,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── WhatsApp Mobile Alerts ── */}
-      <section className="py-24 px-6" style={{ background: '#FAFAFA' }}>
+      <section className="py-24 px-6 xl:py-28 2xl:py-32" style={{ background: '#FAFAFA' }}>
         <div className="max-w-5xl mx-auto">
           <Reveal className="relative text-center mb-16">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               02
             </div>
             <p className="btk-kicker mb-5">02 · Mobile-first alerts</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Get alerts where you are
             </h2>
             <p className="text-lg max-w-2xl mx-auto" style={{ color: '#555555' }}>
@@ -480,7 +488,7 @@ export default function LandingPage() {
               03
             </div>
             <p className="btk-kicker mb-5">03 · The workflow</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               From inquiry to quote in 3 steps
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
@@ -531,7 +539,7 @@ export default function LandingPage() {
               04
             </div>
             <p className="btk-kicker mb-5">04 · Product demo</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               See it in action
             </h2>
             <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
@@ -648,7 +656,7 @@ export default function LandingPage() {
               05
             </div>
             <p className="btk-kicker mb-5">05 · Pricing</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Simple, transparent pricing
             </h2>
             <p className="text-lg mb-16" style={{ color: '#555555' }}>
@@ -712,14 +720,14 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-24 px-6" style={{ background: '#FAFAFA' }}>
+      <section className="py-24 px-6 xl:py-28 2xl:py-32" style={{ background: '#FAFAFA' }}>
         <div className="max-w-3xl mx-auto">
           <Reveal className="relative text-center mb-16">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               06
             </div>
             <p className="btk-kicker mb-5">06 · FAQ</p>
-            <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
               Questions, answered
             </h2>
             <p className="text-lg" style={{ color: '#555555' }}>
@@ -747,7 +755,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="py-24 px-6 relative overflow-hidden">
+      <section className="py-24 px-6 xl:py-28 2xl:py-32 relative overflow-hidden">
         <div aria-hidden="true" className="btk-drift pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-bold leading-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#F4F4F4', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
           Sailwise
         </div>
@@ -772,7 +780,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-14 px-6 border-t" style={{ borderColor: '#E5E5E5' }}>
+      <footer className="py-14 px-6 xl:py-16 border-t" style={{ borderColor: '#E5E5E5' }}>
         <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2 mb-3">
