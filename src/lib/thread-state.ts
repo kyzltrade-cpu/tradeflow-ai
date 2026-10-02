@@ -18,6 +18,7 @@ export type ThreadFilter =
   | 'needs_specs'
   | 'waiting_on_buyer'
   | 'ready_to_quote'
+  | 'follow_ups'
   | 'needs_you'
   | 'owed_replies'
   | 'all';
@@ -36,6 +37,9 @@ const CLOSED_STATUSES = new Set(['closed', 'archived', 'resolved']);
 
 /** How many unanswered outbound nudges before we stop and call it cold. */
 export const COLD_AFTER_CHASES = 2;
+
+/** Days of buyer silence before a waiting thread graduates to Follow-ups. */
+export const FOLLOW_UP_AFTER_DAYS = 3;
 
 export interface ThreadMessage {
   id?: string | null;
@@ -79,6 +83,7 @@ export interface ThreadDerivation {
   waitingOnBuyer: boolean;
   needsSpecs: boolean;
   readyToQuote: boolean;
+  followUpDue: boolean;
   cold: boolean;
   paused: boolean;
   chaseCount: number;
@@ -225,6 +230,19 @@ export function deriveThread(input: DeriveThreadInput): ThreadDerivation {
   const anchorMs = toTime(silentAnchor);
   const silentDays = anchorMs === null ? 0 : Math.max(0, Math.floor((nowMs - anchorMs) / MS_PER_DAY));
 
+  const waitingOnBuyer = !closed && !cold && !lastMessageInbound && lastOutboundIdx >= 0;
+
+  // A thread graduates out of the inbox into Follow-ups once the buyer has
+  // gone quiet for FOLLOW_UP_AFTER_DAYS. Cold threads (chased twice with no
+  // answer) belong there too — they are the deepest end of the same silence.
+  // Threads whose specs are already complete belong to Opportunities instead,
+  // so they are never "follow-up due" here; the situated buckets stay
+  // mutually exclusive (needs specs / follow-ups / opportunities).
+  const followUpDue =
+    !closed &&
+    state !== 'ready_to_quote' &&
+    (cold || (waitingOnBuyer && silentDays >= FOLLOW_UP_AFTER_DAYS));
+
   return {
     state,
     label: LABELS[state],
@@ -232,9 +250,10 @@ export function deriveThread(input: DeriveThreadInput): ThreadDerivation {
     missingCount: missing.length,
     owedReply: !closed && lastMessageInbound,
     needsYou: !!input.hasPendingDraft,
-    waitingOnBuyer: !closed && !cold && !lastMessageInbound && lastOutboundIdx >= 0,
+    waitingOnBuyer,
     needsSpecs: !closed && !cold && missing.length > 0,
     readyToQuote: state === 'ready_to_quote',
+    followUpDue,
     cold,
     paused,
     chaseCount,
@@ -253,6 +272,8 @@ export function matchesFilter(d: ThreadDerivation, filter: ThreadFilter): boolea
       return d.waitingOnBuyer;
     case 'ready_to_quote':
       return d.readyToQuote;
+    case 'follow_ups':
+      return d.followUpDue;
     case 'needs_you':
       return d.needsYou;
     case 'owed_replies':

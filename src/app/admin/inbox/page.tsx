@@ -21,6 +21,7 @@ interface ThreadView {
   waitingOnBuyer: boolean;
   needsSpecs: boolean;
   readyToQuote: boolean;
+  followUpDue: boolean;
   cold: boolean;
   paused: boolean;
   chaseCount: number;
@@ -72,6 +73,7 @@ interface InboxCounts {
   needs_specs: number;
   waiting_on_buyer: number;
   ready_to_quote: number;
+  follow_ups: number;
   needs_you: number;
   owed_replies: number;
   unread: number;
@@ -81,10 +83,10 @@ interface InboxCounts {
 }
 
 type Folder = 'inbox' | 'archive' | 'trash';
-type Filter = 'all' | 'needs_specs' | 'waiting_on_buyer' | 'ready_to_quote' | 'needs_you' | 'owed_replies';
+type Filter = 'all' | 'needs_specs' | 'waiting_on_buyer' | 'ready_to_quote' | 'follow_ups' | 'needs_you' | 'owed_replies';
 
 const EMPTY_COUNTS: InboxCounts = {
-  all: 0, needs_specs: 0, waiting_on_buyer: 0, ready_to_quote: 0,
+  all: 0, needs_specs: 0, waiting_on_buyer: 0, ready_to_quote: 0, follow_ups: 0,
   needs_you: 0, owed_replies: 0, unread: 0, needs_reply: 0, waiting: 0, total: 0,
 };
 
@@ -270,11 +272,13 @@ export default function AdminInboxPage() {
     { key: 'trash', en: 'Trash', zh: '垃圾桶', icon: Trash2 },
   ];
 
+  /* Needs specs is the in-progress lens: threads still mid-collection, so the
+     firm can see who is being worked. Waiting-on-buyer threads live in
+     Follow-ups once the buyer goes quiet; ready-to-quote threads live in
+     Opportunities. The inbox keeps only what still needs a human. */
   const filterTabs: Array<{ key: Filter; en: string; zh: string; n?: number; badge?: boolean }> = [
     { key: 'all', en: 'All', zh: '全部', n: counts.all },
     { key: 'needs_specs', en: 'Needs specs', zh: '待補規格', n: counts.needs_specs },
-    { key: 'waiting_on_buyer', en: 'Waiting on buyer', zh: '等買家回覆', n: counts.waiting_on_buyer },
-    { key: 'ready_to_quote', en: 'Ready to quote', zh: '可報價', n: counts.ready_to_quote },
     { key: 'owed_replies', en: 'Owed replies', zh: '待我們回覆', n: counts.owed_replies },
     { key: 'needs_you', en: 'Needs you', zh: '需要你確認', n: counts.needs_you, badge: true },
   ];

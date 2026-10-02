@@ -15,6 +15,7 @@ const THREAD_FILTERS: ThreadFilter[] = [
   'needs_specs',
   'waiting_on_buyer',
   'ready_to_quote',
+  'follow_ups',
   'needs_you',
   'owed_replies',
   'all',
@@ -320,6 +321,7 @@ export async function GET(req: NextRequest) {
             waitingOnBuyer: d.waitingOnBuyer,
             needsSpecs: d.needsSpecs,
             readyToQuote: d.readyToQuote,
+            followUpDue: d.followUpDue,
             cold: d.cold,
             paused: d.paused,
             chaseCount: d.chaseCount,
@@ -331,25 +333,40 @@ export async function GET(req: NextRequest) {
       })
       .filter((i) => i.matchesQuery);
 
+    // The inbox is work-in-progress only. Threads that finished collecting
+    // specs (Opportunities) and threads the buyer has gone quiet on
+    // (Follow-ups) leave the inbox for their own surfaces. `filter=follow_ups`
+    // and `filter=ready_to_quote` ask for those other buckets directly.
+    const inboxItems = items.filter((i) => !i.d.followUpDue && !i.d.readyToQuote);
+    const readyItems = items.filter((i) => i.d.readyToQuote && !i.d.followUpDue);
+    const followUpItems = items.filter((i) => i.d.followUpDue);
+
     const counts = {
-      all: items.length,
-      needs_specs: items.filter((i) => i.d.needsSpecs).length,
-      waiting_on_buyer: items.filter((i) => i.d.waitingOnBuyer).length,
-      ready_to_quote: items.filter((i) => i.d.readyToQuote).length,
-      needs_you: items.filter((i) => i.d.needsYou).length,
-      owed_replies: items.filter((i) => i.d.owedReply).length,
+      all: inboxItems.length,
+      // Scoped to inboxItems so the badge matches the `needs_specs` lens
+      // (in-progress threads), which excludes follow-ups and ready-to-quote.
+      needs_specs: inboxItems.filter((i) => i.d.needsSpecs).length,
+      waiting_on_buyer: items.filter((i) => i.d.waitingOnBuyer && !i.d.followUpDue).length,
+      ready_to_quote: readyItems.length,
+      follow_ups: followUpItems.length,
+      needs_you: inboxItems.filter((i) => i.d.needsYou).length,
+      owed_replies: inboxItems.filter((i) => i.d.owedReply).length,
       unread: items.filter((i) => i.row.unread).length,
-      needs_reply: items.filter((i) => i.d.owedReply).length,
+      needs_reply: inboxItems.filter((i) => i.d.owedReply).length,
       waiting: items.filter((i) => i.d.waitingOnBuyer).length,
       total: items.length,
     };
 
-    const filtered = items
-      .filter((i) => matchesFilter(i.d, state))
-      .sort(
-        (a, b) =>
-          new Date(b.row.updated_at as string).getTime() - new Date(a.row.updated_at as string).getTime()
-      );
+    const filtered = (
+      state === 'follow_ups'
+        ? followUpItems
+        : state === 'ready_to_quote'
+          ? readyItems
+          : inboxItems.filter((i) => matchesFilter(i.d, state))
+    ).sort(
+      (a, b) =>
+        new Date(b.row.updated_at as string).getTime() - new Date(a.row.updated_at as string).getTime()
+    );
 
     const total = filtered.length;
     const start = (page - 1) * pageSize;

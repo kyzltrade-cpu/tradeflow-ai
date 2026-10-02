@@ -33,12 +33,13 @@ interface InboxCounts {
   needs_specs: number;
   waiting_on_buyer: number;
   ready_to_quote: number;
+  follow_ups: number;
   needs_you: number;
   owed_replies: number;
 }
 
 const EMPTY_COUNTS: InboxCounts = {
-  total: 0, needs_specs: 0, waiting_on_buyer: 0, ready_to_quote: 0, needs_you: 0, owed_replies: 0,
+  total: 0, needs_specs: 0, waiting_on_buyer: 0, ready_to_quote: 0, follow_ups: 0, needs_you: 0, owed_replies: 0,
 };
 
 /* Inbox folder icons */
@@ -46,9 +47,7 @@ const ICON_MAIL = 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-
 const ICON_SPARKLES = 'M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z';
 const ICON_CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
 const ICON_INBOX = 'M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.929 8.298a2.25 2.25 0 00-2.156-1.548h-2.986a2.25 2.25 0 01-2.157 1.54H11.37a2.25 2.25 0 01-2.157-1.54H6.227a2.25 2.25 0 00-2.156 1.548L1.6 13.177a5.25 5.25 0 00-.1.661z';
-/* MVP focus: the inbox is home; its filters are lenses on the same synced
-   mail, not separate pages. These areas are intentionally hidden. */
-const HIDDEN_NAV_HREFS = new Set(['/admin/opportunities', '/admin/templates']);
+const HIDDEN_NAV_HREFS = new Set(['/admin/templates']);
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -65,18 +64,7 @@ const NAV_GROUPS: NavGroup[] = [
         en: 'Needs specs',
         zh: '待補規格',
         icon: ICON_MAIL,
-      },
-      {
-        href: '/admin/inbox?filter=waiting_on_buyer',
-        en: 'Waiting on buyer',
-        zh: '等買家回覆',
-        icon: ICON_CLOCK,
-      },
-      {
-        href: '/admin/inbox?filter=ready_to_quote',
-        en: 'Ready to quote',
-        zh: '可報價',
-        icon: ICON_SPARKLES,
+        countKey: 'needs_specs',
       },
       {
         href: '/admin/inbox?filter=owed_replies',
@@ -91,6 +79,25 @@ const NAV_GROUPS: NavGroup[] = [
         icon: ICON_SPARKLES,
         countKey: 'needs_you',
         badgeTone: 'accent',
+      },
+    ],
+  },
+  {
+    label: { en: 'Pipeline', zh: '管道' },
+    items: [
+      {
+        href: '/admin/opportunities',
+        en: 'Opportunities',
+        zh: '商機',
+        icon: ICON_SPARKLES,
+        countKey: 'ready_to_quote',
+      },
+      {
+        href: '/admin/follow-ups',
+        en: 'Follow-ups',
+        zh: '跟進',
+        icon: ICON_CLOCK,
+        countKey: 'follow_ups',
       },
     ],
   },
@@ -380,6 +387,7 @@ function AdminShell({ children }: { children: ReactNode }) {
         next.needs_specs = counts.needs_specs ?? 0;
         next.waiting_on_buyer = counts.waiting_on_buyer ?? 0;
         next.ready_to_quote = counts.ready_to_quote ?? 0;
+        next.follow_ups = counts.follow_ups ?? 0;
         next.needs_you = counts.needs_you ?? 0;
         next.owed_replies = counts.owed_replies ?? 0;
       }

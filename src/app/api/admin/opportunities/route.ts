@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
+import { normalizeMissing } from '@/lib/thread-state';
 
 // GET /api/admin/opportunities
 export async function GET(req: NextRequest) {
@@ -19,12 +20,58 @@ export async function GET(req: NextRequest) {
     const search = url.searchParams.get('search');
     const min_value = url.searchParams.get('min_value');
     const max_value = url.searchParams.get('max_value');
+    const ready = url.searchParams.get('ready') === '1' || url.searchParams.get('ready') === 'true';
+
+    // Specs live on the conversation, not the opportunity. When `ready=1` we
+    // only return opportunities whose linked conversation is no longer missing
+    // spec fields — this is the destination for threads the extractor has
+    // finished with. Opportunities with no linked conversation (created by
+    // hand) are treated as ready.
+    let readyIds: string[] | null = null;
+    if (ready) {
+      const { data: convs } = await supabaseAdmin
+        .from('conversations')
+        .select('opportunity_id, missing_info')
+        .eq('company_id', companyId)
+        .not('opportunity_id', 'is', null);
+
+      const incomplete = new Set<string>();
+      for (const c of convs || []) {
+        const oppId = c.opportunity_id as string | null;
+        if (oppId && normalizeMissing(c.missing_info).length > 0) incomplete.add(oppId);
+      }
+
+      if (incomplete.size > 0) {
+        const { data: allOpps } = await supabaseAdmin
+          .from('opportunities')
+          .select('id')
+          .eq('company_id', companyId)
+          .is('deleted_at', null);
+        const readyList: string[] = ((allOpps || []) as Array<{ id: string }>)
+          .map((o) => o.id)
+          .filter((id) => !incomplete.has(id));
+        readyIds = readyList;
+        if (readyList.length === 0) {
+          return NextResponse.json({
+            opportunities: [],
+            total: 0,
+            page,
+            page_size: pageSize,
+            has_next_page: false,
+          });
+        }
+      }
+    }
 
     let query = supabaseAdmin
       .from('opportunities')
       .select('*', { count: 'exact' })
       .eq('company_id', companyId)
       .is('deleted_at', null);
+
+    if (readyIds) {
+      query = query.in('id', readyIds);
+    }
 
     if (stage) {
       const stages = stage.split(',');

@@ -139,6 +139,67 @@ describe('deriveThread', () => {
   });
 });
 
+describe('followUpDue', () => {
+  it('is not due while the buyer is still fresh (under 3 days)', () => {
+    const d = deriveThread({
+      now,
+      conversation: { status: 'active', missing_info: ['Quantity'] },
+      messages: [inbound('2026-10-08T00:00:00Z'), outbound('2026-10-09T00:00:00Z')],
+    });
+    expect(d.waitingOnBuyer).toBe(true);
+    expect(d.silentDays).toBe(2);
+    expect(d.followUpDue).toBe(false);
+    expect(matchesFilter(d, 'follow_ups')).toBe(false);
+  });
+
+  it('becomes due once a chased buyer is silent for 3+ days', () => {
+    const d = deriveThread({
+      now,
+      conversation: { status: 'active', missing_info: ['Quantity'] },
+      messages: [inbound('2026-10-05T00:00:00Z'), outbound('2026-10-06T00:00:00Z')],
+    });
+    expect(d.state).toBe('waiting_on_buyer');
+    expect(d.silentDays).toBe(5);
+    expect(d.followUpDue).toBe(true);
+    expect(matchesFilter(d, 'follow_ups')).toBe(true);
+  });
+
+  it('is due for a cold thread', () => {
+    const d = deriveThread({
+      now,
+      conversation: { status: 'active', missing_info: ['Quantity'] },
+      messages: [
+        inbound('2026-10-05T00:00:00Z'),
+        outbound('2026-10-06T00:00:00Z'),
+        outbound('2026-10-08T00:00:00Z'),
+      ],
+    });
+    expect(d.cold).toBe(true);
+    expect(d.followUpDue).toBe(true);
+  });
+
+  it('is not due when the buyer owes a reply (we are not waiting on them)', () => {
+    const d = deriveThread({
+      now,
+      conversation: { status: 'active', missing_info: ['Quantity'] },
+      messages: [inbound('2026-10-08T00:00:00Z')],
+    });
+    expect(d.owedReply).toBe(true);
+    expect(d.waitingOnBuyer).toBe(false);
+    expect(d.followUpDue).toBe(false);
+  });
+
+  it('is not due once specs are complete', () => {
+    const d = deriveThread({
+      now,
+      conversation: { status: 'active', missing_info: [] },
+      messages: [inbound('2026-10-05T00:00:00Z'), outbound('2026-10-06T00:00:00Z')],
+    });
+    expect(d.readyToQuote).toBe(true);
+    expect(d.followUpDue).toBe(false);
+  });
+});
+
 describe('matchesFilter', () => {
   const base = deriveThread({
     now,
