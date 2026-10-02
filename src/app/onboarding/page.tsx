@@ -277,7 +277,7 @@ export default function OnboardingPage() {
               </button>
               <p className="text-[13px] text-center mt-4" style={{ color: 'var(--text-muted)' }}>
                 {t('Already have an account?', '已有帳戶？')}{' '}
-                <Link href="/admin" style={{ color: 'var(--accent)' }}>{t('Go to dashboard', '前往控制台')}</Link>
+                <Link href="/admin/inbox" style={{ color: 'var(--accent)' }}>{t('Go to inbox', '前往收件匣')}</Link>
               </p>
             </div>
           )}
@@ -555,11 +555,11 @@ export default function OnboardingPage() {
                   </Link>
                 )}
                 <Link
-                  href="/admin"
+                  href="/admin/inbox"
                   className="block w-full text-center text-[14px] font-medium py-3 rounded-[4px] text-white"
                   style={{ background: 'var(--accent)' }}
                 >
-                  {t('Go to Dashboard', '前往控制台')}
+                  {t('Go to Inbox', '前往收件匣')}
                 </Link>
               </div>
 

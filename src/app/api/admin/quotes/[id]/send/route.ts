@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
-import { createDefaultSequence } from '@/lib/follow-up-engine';
 import { generateQuoteHTML, generateQuotePDF } from '@/lib/quote-generator';
 import { sendEmail } from '@/lib/email';
 import { enforcePlanLimit, planLimitResponse } from '@/lib/billing/limits';
@@ -293,22 +292,6 @@ export async function POST(
       return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    // ── Create follow-up sequence automatically ──────────────────────
-    let followUpSequence = null;
-    if (quote.opportunity_id) {
-      try {
-        followUpSequence = await createDefaultSequence({
-          companyId,
-          opportunityId: quote.opportunity_id,
-          quoteId: id,
-          channel: 'email',
-          createdBy: auth.user.id,
-        });
-      } catch (fuErr) {
-        console.error('[quotes/[id]/send:POST] Follow-up creation failed:', fuErr);
-      }
-    }
-
     // ── Update opportunity stage ─────────────────────────────────────
     if (quote.opportunity_id) {
       await supabaseAdmin
@@ -337,7 +320,6 @@ export async function POST(
         email_sent: true,
         email_id: emailResult.id || null,
         email_from: emailResult.from || null,
-        follow_up_created: !!followUpSequence,
       },
     });
 
@@ -349,9 +331,6 @@ export async function POST(
         id: emailResult.id || null,
         error: emailResult.error || null,
       },
-      follow_up_sequence: followUpSequence
-        ? { id: followUpSequence.id, items_count: followUpSequence.items?.length || 0 }
-        : null,
     });
   } catch (err) {
     if (err instanceof Response) return err;

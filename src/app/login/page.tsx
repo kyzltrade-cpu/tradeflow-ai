@@ -45,21 +45,21 @@ export default function LoginPage() {
               return;
             }
             if (!res.ok) {
-              router.push('/admin');
+              router.push('/admin/inbox');
               return;
             }
 
             const data = await res.json();
             if (data?.id) {
-              router.push('/admin');
+              router.push('/admin/inbox');
             } else {
               router.push('/onboarding');
             }
           } catch {
-            router.push('/admin');
+            router.push('/admin/inbox');
           }
         } else {
-          router.push('/admin');
+          router.push('/admin/inbox');
         }
       }
     } catch {

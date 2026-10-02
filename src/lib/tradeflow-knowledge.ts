@@ -101,12 +101,9 @@ FIRST-TIME SETUP:
 5. Set up FAQ rules at /admin/faq (optional)
 6. Sailwise starts reading the inbox and turning emails into inquiries
 
-DASHBOARD OVERVIEW:
-- Dashboard (/admin): KPIs, recent inquiries, open opportunities
-- Inquiries (/admin/inquiries): Extracted specs from customer emails + attachments; ask for missing details here
-- Opportunities (/admin/opportunities): Your deal pipeline, stage by stage
-- Follow-ups (/admin/follow-ups): Scheduled follow-up drafts, each one waiting for human approval before send
-- Conversations (/admin/conversations): Full email threads, take over from the AI anytime
+INBOX OVERVIEW:
+- Inbox (/admin/inbox): Home. Every buyer inquiry arrives here automatically as an opportunity, with specs extracted and missing specs chased for you.
+- The filters are lenses on the same inbox, not separate pages: Needs specs, Waiting on buyer, Ready to quote, Owed replies, and Needs you (the sends that contain numbers/terms and wait for your one-tap approval).
 - Products (/admin/products): Your catalog — the source of truth for AI quotes
 - Knowledge Base (/admin/knowledge): PDFs, Excel, docs the AI references
 - FAQ Rules (/admin/faq): Keyword-triggered responses with priorities

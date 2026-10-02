@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { processAttachment, type AttachmentInput } from '@/lib/attachment-processor';
 import { stripHtml } from '@/lib/email';
 import { DEMO_COMPANY_ID } from '@/lib/inquiry-context';
+import { runInquiryIntake } from '@/lib/inquiry-intake';
 import { createHash } from 'node:crypto';
 
 /**
@@ -479,20 +480,29 @@ export async function POST(req: NextRequest) {
 
     await ingestAttachments(companyId, inquiry.id, emailId, email.attachments);
 
-    // Queue extraction job asynchronously via workflow_jobs
+    // Zero-tap intake: extract, create the opportunity, flag missing specs,
+    // draft the chase and — when the send policy allows — send it. This can
+    // take a few seconds (AI extraction), so it runs after the inquiry and
+    // thread are already durable. A failure here never loses the mail.
+    let intake: Awaited<ReturnType<typeof runInquiryIntake>> | null = null;
     try {
-      await supabaseAdmin.from('workflow_jobs').insert({
-        company_id: companyId,
-        job_type: 'inquiry_extraction',
-        entity_type: 'inquiry',
-        entity_id: inquiry.id,
-        status: 'pending',
-        payload: JSON.stringify({ inquiry_id: inquiry.id }),
-        idempotency_key: `extraction-${inquiry.id}`,
-      });
+      intake = await runInquiryIntake({ companyId, inquiryId: inquiry.id });
     } catch (err) {
-      console.error('[webhook] failed to queue extraction job:', err);
-      // Non-critical — inquiry is created, extraction can be triggered manually
+      console.error('[webhook] intake failed:', err);
+      // Durable fallback: leave a job marker so extraction can be retried.
+      try {
+        await supabaseAdmin.from('workflow_jobs').insert({
+          company_id: companyId,
+          job_type: 'inquiry_extraction',
+          entity_type: 'inquiry',
+          entity_id: inquiry.id,
+          status: 'pending',
+          payload: JSON.stringify({ inquiry_id: inquiry.id }),
+          idempotency_key: `extraction-${inquiry.id}`,
+        });
+      } catch (queueErr) {
+        console.error('[webhook] failed to queue fallback extraction job:', queueErr);
+      }
     }
 
     return NextResponse.json({
@@ -501,6 +511,14 @@ export async function POST(req: NextRequest) {
       conversation_id: thread?.conversationId ?? null,
       message_id: thread?.messageId ?? null,
       new_thread: thread?.created ?? false,
+      intake: intake
+        ? {
+            missing: intake.missing,
+            opportunity_id: intake.opportunityId,
+            chase: intake.chase,
+            steps: intake.steps,
+          }
+        : null,
     });
   } catch (err) {
     console.error('[webhook] unexpected error:', err);

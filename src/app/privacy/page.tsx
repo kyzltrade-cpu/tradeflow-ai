@@ -18,8 +18,8 @@ export default function PrivacyPage() {
           </div>
           <div className="flex items-center gap-3">
             <LangToggle />
-            <Link href="/admin" className="text-[14px] hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
-              {t('Dashboard', '控制台')}
+            <Link href="/admin/inbox" className="text-[14px] hover:opacity-70" style={{ color: 'var(--text-muted)' }}>
+              {t('Inbox', '收件匣')}
             </Link>
           </div>
         </div>

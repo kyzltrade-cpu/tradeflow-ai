@@ -29,94 +29,68 @@ interface NavGroup {
 }
 
 interface InboxCounts {
-  needs_reply: number;
-  waiting: number;
-  bookmarked: number;
-  human: number;
-  ai: number;
   total: number;
-  queue_you: number;
-  queue_approve: number;
+  needs_specs: number;
+  waiting_on_buyer: number;
+  ready_to_quote: number;
+  needs_you: number;
+  owed_replies: number;
 }
 
-const EMPTY_COUNTS: InboxCounts = { needs_reply: 0, waiting: 0, bookmarked: 0, human: 0, ai: 0, total: 0, queue_you: 0, queue_approve: 0 };
+const EMPTY_COUNTS: InboxCounts = {
+  total: 0, needs_specs: 0, waiting_on_buyer: 0, ready_to_quote: 0, needs_you: 0, owed_replies: 0,
+};
 
 /* Inbox folder icons */
 const ICON_MAIL = 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75';
 const ICON_SPARKLES = 'M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z';
 const ICON_CLOCK = 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z';
 const ICON_INBOX = 'M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.929 8.298a2.25 2.25 0 00-2.156-1.548h-2.986a2.25 2.25 0 01-2.157 1.54H11.37a2.25 2.25 0 01-2.157-1.54H6.227a2.25 2.25 0 00-2.156 1.548L1.6 13.177a5.25 5.25 0 00-.1.661z';
-const ICON_QUEUE = 'M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.008v.008H3.75V6.75zm0 5.25h.008v.008H3.75V12zm0 5.25h.008v.008H3.75v-.008z';
-
-/* MVP focus: inbox -> draft -> human approves -> send. These areas are
-   intentionally hidden until the quote flow is the centerpiece. */
+/* MVP focus: the inbox is home; its filters are lenses on the same synced
+   mail, not separate pages. These areas are intentionally hidden. */
 const HIDDEN_NAV_HREFS = new Set(['/admin/opportunities', '/admin/templates']);
 
 const NAV_GROUPS: NavGroup[] = [
-  {
-    label: { en: 'Queue', zh: '工作隊列' },
-    items: [
-      {
-        href: '/admin',
-        en: 'Queue',
-        zh: '工作隊列',
-        icon: ICON_QUEUE,
-        countKey: 'queue_you',
-        badgeTone: 'accent',
-      },
-    ],
-  },
   {
     label: { en: 'Inbox', zh: '收件匣' },
     items: [
       {
         href: '/admin/inbox',
-        en: 'All mail',
-        zh: '全部郵件',
+        en: 'Inbox',
+        zh: '收件匣',
         icon: ICON_INBOX,
-        countKey: 'total',
-        badgeTone: 'muted',
       },
       {
-        href: '/admin/inbox?view=waiting',
-        en: 'Waiting on them',
-        zh: '等客戶',
-        icon: ICON_CLOCK,
-        countKey: 'waiting',
-        badgeTone: 'muted',
-      },
-      {
-        href: '/admin/inbox?view=needs_reply',
-        en: 'Waiting on you',
-        zh: '待回覆',
+        href: '/admin/inbox?filter=needs_specs',
+        en: 'Needs specs',
+        zh: '待補規格',
         icon: ICON_MAIL,
-        countKey: 'needs_reply',
-        badgeTone: 'accent',
       },
       {
-        href: '/admin/inbox?view=ai',
-        en: 'AI handled',
-        zh: 'AI 已處理',
-        icon: ICON_SPARKLES,
-        countKey: 'ai',
-        badgeTone: 'muted',
-      },
-    ],
-  },
-  {
-    label: { en: 'Pipeline', zh: '流程' },
-    items: [
-      {
-        href: '/admin/opportunities',
-        en: 'Opportunities',
-        zh: '商機',
-        icon: 'M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z',
-      },
-      {
-        href: '/admin/follow-ups',
-        en: 'Follow-ups',
-        zh: '跟進',
+        href: '/admin/inbox?filter=waiting_on_buyer',
+        en: 'Waiting on buyer',
+        zh: '等買家回覆',
         icon: ICON_CLOCK,
+      },
+      {
+        href: '/admin/inbox?filter=ready_to_quote',
+        en: 'Ready to quote',
+        zh: '可報價',
+        icon: ICON_SPARKLES,
+      },
+      {
+        href: '/admin/inbox?filter=owed_replies',
+        en: 'Owed replies',
+        zh: '待我們回覆',
+        icon: ICON_MAIL,
+      },
+      {
+        href: '/admin/inbox?filter=needs_you',
+        en: 'Needs you',
+        zh: '需要你確認',
+        icon: ICON_SPARKLES,
+        countKey: 'needs_you',
+        badgeTone: 'accent',
       },
     ],
   },
@@ -158,18 +132,18 @@ function SidebarItem({
   const searchParams = useSearchParams();
   const { t } = useLang();
 
-  const { baseHref, view } = useMemo(() => {
+  const { baseHref, filter } = useMemo(() => {
     const [b, q] = item.href.split('?');
-    return { baseHref: b, view: q ? new URLSearchParams(q).get('view') : null };
+    return { baseHref: b, filter: q ? new URLSearchParams(q).get('filter') : null };
   }, [item.href]);
 
-  // Inbox folder items (with ?view=) become active when the current view matches.
-  // View-less items get active when on their own page or a child reading pane
-  // (All mail at /admin/inbox stays active inside the /admin/inbox/{id} pane).
+  // Inbox filter items (with ?filter=) become active when the current filter
+  // matches. The bare Inbox item is active on its own page or a child reading
+  // pane (/admin/inbox/{id}) when no filter is set.
   const isChildOfBase = baseHref === '/admin/inbox' && pathname.startsWith('/admin/inbox/');
-  const active = view
-    ? pathname === baseHref && searchParams.get('view') === view
-    : (pathname === baseHref || isChildOfBase) && !searchParams.get('view');
+  const active = filter
+    ? pathname === baseHref && searchParams.get('filter') === filter
+    : (pathname === baseHref || isChildOfBase) && !searchParams.get('filter');
 
   const count = item.countKey ? counts[item.countKey] ?? 0 : 0;
   const showCount = typeof item.countKey === 'string' && count > 0;
@@ -391,33 +365,23 @@ function AdminShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [counts, setCounts] = useState<InboxCounts>(EMPTY_COUNTS);
 
-  // Email surfaces (inbox list + reading pane) render full-bleed like a mail
-  // client; the rest of the admin app (including the Queue home) keeps the
-  // padded dashboard container.
+  // The inbox (list + reading pane) renders full-bleed like a mail client;
+  // the rest of the admin app keeps the padded dashboard container.
   const isEmailSurface = pathname.startsWith('/admin/inbox');
 
   const refreshCounts = useCallback(async () => {
     try {
-      const [inboxRes, queueRes] = await Promise.all([
-        authFetch('/api/admin/inbox?filter=all'),
-        authFetch('/api/admin/queue'),
-      ]);
+      const inboxRes = await authFetch('/api/admin/inbox?filter=all');
       const inboxJson = inboxRes.ok ? ((await inboxRes.json()) as { counts?: InboxCounts }) : null;
-      const queueJson = queueRes.ok ? ((await queueRes.json()) as { totals?: Record<string, number> }) : null;
       const counts = inboxJson?.counts;
-      const totals = queueJson?.totals;
       const next: Partial<InboxCounts> = {};
       if (counts && typeof counts === 'object') {
-        next.needs_reply = counts.needs_reply ?? 0;
-        next.waiting = counts.waiting ?? 0;
-        next.bookmarked = counts.bookmarked ?? 0;
-        next.human = counts.human ?? 0;
-        next.ai = counts.ai ?? 0;
         next.total = counts.total ?? 0;
-      }
-      if (totals && typeof totals === 'object') {
-        next.queue_you = totals.you_owe ?? 0;
-        next.queue_approve = totals.needs_approval ?? 0;
+        next.needs_specs = counts.needs_specs ?? 0;
+        next.waiting_on_buyer = counts.waiting_on_buyer ?? 0;
+        next.ready_to_quote = counts.ready_to_quote ?? 0;
+        next.needs_you = counts.needs_you ?? 0;
+        next.owed_replies = counts.owed_replies ?? 0;
       }
       setCounts((prev) => ({ ...prev, ...next }));
     } catch {
@@ -576,13 +540,13 @@ function AdminShell({ children }: { children: ReactNode }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="m9.75 9 6 6m0 0-6 6m6-6H3.75" />
               </svg>
             </button>
-            {counts.queue_you > 0 && (
+            {counts.needs_you > 0 && (
               <span
                 className="mt-2 flex h-5 w-5 items-center justify-center rounded-full text-[11px] font-semibold leading-none"
                 style={{ background: 'var(--sb-avatar-bg)', color: 'var(--sb-avatar-text)' }}
-                title={`${counts.queue_you} need action`}
+                title={`${counts.needs_you} need action`}
               >
-                {counts.queue_you > 99 ? '99+' : counts.queue_you}
+                {counts.needs_you > 99 ? '99+' : counts.needs_you}
               </span>
             )}
           </aside>

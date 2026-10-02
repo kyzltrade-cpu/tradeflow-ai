@@ -3,13 +3,38 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
-  Mail, Search, Clock, RefreshCw, Star, Plus, Archive, Trash2, Inbox,
+  Mail, Search, RefreshCw, Star, Plus, Archive, Trash2, Inbox,
   Inbox as InboxIcon, Check, Send, Sparkles, ChevronDown, ChevronUp, X,
+  Pause, Play,
 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
+
+interface ThreadView {
+  state: 'needs_specs' | 'waiting_on_buyer' | 'ready_to_quote' | 'cold' | 'closed';
+  label: string;
+  missingCount: number;
+  owedReply: boolean;
+  needsYou: boolean;
+  waitingOnBuyer: boolean;
+  needsSpecs: boolean;
+  readyToQuote: boolean;
+  cold: boolean;
+  paused: boolean;
+  chaseCount: number;
+  silentDays: number;
+}
+
+interface PendingDraft {
+  id: string;
+  subject: string | null;
+  body: string | null;
+  to_address: string | null;
+  draft_status: string | null;
+  created_at: string | null;
+}
 
 interface InboxRow {
   id: string;
@@ -31,28 +56,44 @@ interface InboxRow {
   needs_reply: boolean;
   waiting_on_customer: boolean;
   unread: boolean;
+  product_summary: string | null;
+  estimated_value: number | null;
+  currency: string | null;
+  missing_info: string[];
+  opportunity_id: string | null;
+  next_action: string | null;
+  next_action_due: string | null;
+  thread: ThreadView;
+  pending_draft: PendingDraft | null;
 }
 
 interface InboxCounts {
-  inbox: number;
+  all: number;
+  needs_specs: number;
+  waiting_on_buyer: number;
+  ready_to_quote: number;
+  needs_you: number;
+  owed_replies: number;
   unread: number;
   needs_reply: number;
   waiting: number;
-  bookmarked: number;
-  flagged: number;
-  human: number;
-  ai: number;
-  archive: number;
-  trash: number;
   total: number;
 }
 
 type Folder = 'inbox' | 'archive' | 'trash';
-type View = 'all' | 'needs_reply' | 'waiting' | 'bookmarked' | 'flagged' | 'human' | 'ai';
+type Filter = 'all' | 'needs_specs' | 'waiting_on_buyer' | 'ready_to_quote' | 'needs_you' | 'owed_replies';
 
 const EMPTY_COUNTS: InboxCounts = {
-  inbox: 0, unread: 0, needs_reply: 0, waiting: 0, bookmarked: 0,
-  flagged: 0, human: 0, ai: 0, archive: 0, trash: 0, total: 0,
+  all: 0, needs_specs: 0, waiting_on_buyer: 0, ready_to_quote: 0,
+  needs_you: 0, owed_replies: 0, unread: 0, needs_reply: 0, waiting: 0, total: 0,
+};
+
+const STATE_CHIP: Record<string, { bg: string; fg: string }> = {
+  needs_specs: { bg: '#FEF3C7', fg: '#B45309' },
+  waiting_on_buyer: { bg: '#EEF2F7', fg: '#4B5563' },
+  ready_to_quote: { bg: '#E8F5F1', fg: '#038153' },
+  cold: { bg: '#F3F4F6', fg: '#6B7280' },
+  closed: { bg: '#F3F4F6', fg: '#9CA3AF' },
 };
 
 function formatTimeAgo(dateStr: string): string {
@@ -99,11 +140,11 @@ export default function AdminInboxPage() {
 
   const folderParam = searchParams.get('folder');
   const folder: Folder = folderParam === 'archive' ? 'archive' : folderParam === 'trash' ? 'trash' : 'inbox';
-  const viewParam = searchParams.get('view');
-  const view: View =
-    viewParam === 'needs_reply' || viewParam === 'waiting' || viewParam === 'bookmarked' ||
-    viewParam === 'flagged' || viewParam === 'human' || viewParam === 'ai'
-      ? viewParam
+  const filterParam = searchParams.get('filter');
+  const filter: Filter =
+    filterParam === 'needs_specs' || filterParam === 'waiting_on_buyer' ||
+    filterParam === 'ready_to_quote' || filterParam === 'needs_you' || filterParam === 'owed_replies'
+      ? filterParam
       : 'all';
   const qParam = searchParams.get('q') || '';
 
@@ -113,17 +154,17 @@ export default function AdminInboxPage() {
       if (search === qParam) return;
       const params = new URLSearchParams();
       if (folder !== 'inbox') params.set('folder', folder);
-      if (view !== 'all') params.set('view', view);
+      if (filter !== 'all') params.set('filter', filter);
       if (search) params.set('q', search);
       router.replace(params.toString() ? `/admin/inbox?${params.toString()}` : '/admin/inbox');
     }, 350);
     return () => clearTimeout(id);
-  }, [search, qParam, searchParams, router, folder, view]);
+  }, [search, qParam, searchParams, router, folder, filter]);
 
-  const selectNav = (f: Folder, v: View) => {
+  const selectNav = (f: Folder, v: Filter) => {
     const params = new URLSearchParams();
     if (f !== 'inbox') params.set('folder', f);
-    if (v !== 'all') params.set('view', v);
+    if (v !== 'all') params.set('filter', v);
     if (qParam) params.set('q', qParam);
     router.replace(params.toString() ? `/admin/inbox?${params.toString()}` : '/admin/inbox', { scroll: false });
   };
@@ -137,7 +178,7 @@ export default function AdminInboxPage() {
       }
       const params = new URLSearchParams();
       if (folder !== 'inbox') params.set('folder', folder);
-      if (view !== 'all') params.set('filter', view);
+      if (filter !== 'all') params.set('filter', filter);
       if (qParam) params.set('q', qParam);
       const res = await authFetch(`/api/admin/inbox?${params.toString()}`);
       if (!res.ok) throw new Error('Failed to load inbox');
@@ -152,7 +193,7 @@ export default function AdminInboxPage() {
     } finally {
       if (!opts?.silent) setLoading(false);
     }
-  }, [companyId, companyLoading, folder, view, qParam, t]);
+  }, [companyId, companyLoading, folder, filter, qParam, t]);
 
   useEffect(() => {
     fetchInbox();
@@ -229,14 +270,70 @@ export default function AdminInboxPage() {
     { key: 'trash', en: 'Trash', zh: '垃圾桶', icon: Trash2 },
   ];
 
-  const viewTabs: Array<{ key: View; en: string; zh: string; n?: number }> = [
-    { key: 'all', en: 'All', zh: '全部', n: counts.inbox },
-    { key: 'needs_reply', en: 'Waiting on you', zh: '需要你回覆', n: counts.needs_reply },
-    { key: 'waiting', en: 'Waiting on them', zh: '等客戶回覆', n: counts.waiting },
-    { key: 'flagged', en: 'Starred', zh: '已加星號', n: counts.flagged },
-    { key: 'human', en: 'Human', zh: '人手', n: counts.human },
-    { key: 'ai', en: 'AI', zh: 'AI', n: counts.ai },
+  const filterTabs: Array<{ key: Filter; en: string; zh: string; n?: number; badge?: boolean }> = [
+    { key: 'all', en: 'All', zh: '全部', n: counts.all },
+    { key: 'needs_specs', en: 'Needs specs', zh: '待補規格', n: counts.needs_specs },
+    { key: 'waiting_on_buyer', en: 'Waiting on buyer', zh: '等買家回覆', n: counts.waiting_on_buyer },
+    { key: 'ready_to_quote', en: 'Ready to quote', zh: '可報價', n: counts.ready_to_quote },
+    { key: 'owed_replies', en: 'Owed replies', zh: '待我們回覆', n: counts.owed_replies },
+    { key: 'needs_you', en: 'Needs you', zh: '需要你確認', n: counts.needs_you, badge: true },
   ];
+
+  const approveDraft = async (row: InboxRow) => {
+    if (!row.pending_draft) return;
+    try {
+      const res = await authFetch(`/api/admin/outbound/${row.pending_draft.id}/send`, { method: 'POST' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok && res.status !== 202) throw new Error(data.error || 'Send failed');
+      if (res.status === 202 || data.pending) {
+        showToast(t('Saved — connect a sender to deliver this', '已儲存 — 設定寄件後即可送出'), 'error');
+      } else {
+        showToast(t('Approved and sent', '已批准並送出'), 'success');
+      }
+      fetchInbox({ silent: true });
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Send failed', 'error');
+    }
+  };
+
+  const discardDraft = async (row: InboxRow) => {
+    if (!row.pending_draft) return;
+    try {
+      const res = await authFetch(`/api/admin/outbound/${row.pending_draft.id}/discard`, { method: 'POST' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || 'Discard failed');
+      }
+      showToast(t('Draft discarded', '草稿已丟棄'), 'success');
+      fetchInbox({ silent: true });
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Discard failed', 'error');
+    }
+  };
+
+  const togglePause = async (row: InboxRow) => {
+    const paused = !!row.thread?.paused;
+    try {
+      const res = await authFetch(`/api/admin/inbox/${row.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ status: paused ? 'active' : 'ai_paused' }),
+      });
+      if (!res.ok) throw new Error('Failed to update');
+      setRows((r) =>
+        r.map((x) =>
+          x.id === row.id
+            ? { ...x, status: paused ? 'active' : 'ai_paused', thread: { ...x.thread, paused: !paused } }
+            : x
+        )
+      );
+      showToast(
+        paused ? t('Chasing resumed', '已恢復追蹤') : t('Chasing paused', '已暫停追蹤'),
+        'success'
+      );
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to update', 'error');
+    }
+  };
 
   const allSelected = visibleRows().length > 0 && selected.size === visibleRows().length;
 
@@ -283,7 +380,7 @@ export default function AdminInboxPage() {
             return (
               <button
                 key={f.key}
-                onClick={() => selectNav(f.key, view)}
+                onClick={() => selectNav(f.key, filter)}
                 className="flex items-center gap-1.5 whitespace-nowrap rounded-[8px] px-2.5 py-1 text-[12.5px] transition-colors"
                 style={{
                   background: active ? 'var(--surface)' : 'transparent',
@@ -370,23 +467,33 @@ export default function AdminInboxPage() {
         </div>
       )}
 
-      {/* View tabs (second row) */}
+      {/* Status filters — lenses on the one inbox, not separate pages. */}
       <div
-        className="hidden md:flex items-center gap-1 border-b px-5 flex-shrink-0 overflow-x-auto"
+        className="flex items-center gap-1 border-b px-3 md:px-5 flex-shrink-0 overflow-x-auto"
         style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}
       >
-        {viewTabs.map((f) => {
-          const active = view === f.key;
+        {filterTabs.map((f) => {
+          const active = filter === f.key;
+          const showBadge = f.badge && (f.n ?? 0) > 0;
           return (
             <button
               key={f.key}
               onClick={() => selectNav(folder, f.key)}
-              className="relative whitespace-nowrap px-2.5 py-2 text-[12.5px] transition-colors"
+              className="relative whitespace-nowrap px-2.5 py-2 text-[12.5px] transition-colors flex items-center gap-1.5"
               style={{ color: active ? 'var(--text)' : 'var(--text-muted)', fontWeight: active ? 600 : 500 }}
             >
               {t(f.en, f.zh)}
-              {f.n !== undefined && f.n > 0 && (
-                <span className="ml-1 tabular-nums text-[11px]">{f.n > 99 ? '99+' : f.n}</span>
+              {showBadge ? (
+                <span
+                  className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10.5px] font-semibold tabular-nums text-white"
+                  style={{ background: 'var(--accent)' }}
+                >
+                  {(f.n ?? 0) > 99 ? '99+' : f.n}
+                </span>
+              ) : (
+                f.n !== undefined && f.n > 0 && (
+                  <span className="tabular-nums text-[11px]">{f.n > 99 ? '99+' : f.n}</span>
+                )
               )}
               {active && (
                 <span
@@ -412,7 +519,7 @@ export default function AdminInboxPage() {
           {allSelected && <Check className="w-3 h-3 text-white" />}
         </div>
         <span>{t('Sender', '寄件人')}</span>
-        <span>{t('Subject', '主旨')}</span>
+        <span>{t('Thread', '對話')}</span>
         <span className="text-right">{t('Date', '日期')}</span>
       </div>
 
@@ -449,18 +556,21 @@ export default function AdminInboxPage() {
           </div>
         ) : (
           visibleRows().map((r) => {
-            const isHuman = r.status === 'human';
-            const paused = r.status === 'ai_paused';
             const unread = r.unread;
             const flagged = r.flagged;
             const isSelected = selected.has(r.id);
+            const th = r.thread;
+            const chip = STATE_CHIP[th.state] || STATE_CHIP.waiting_on_buyer;
+            const missing = r.missing_info || [];
+            const paused = th.paused;
+            const open = () => router.push(`/admin/inbox/${r.id}`);
             return (
               <div
                 key={r.id}
                 className="group w-full text-left border-b transition-colors hover:bg-black/[0.02]"
                 style={{ borderColor: 'var(--border)', background: unread && !isSelected ? '#FFFFFF' : undefined }}
               >
-                <div className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(24px,32px)_minmax(200px,260px)_1fr_160px] items-center gap-1.5 md:gap-3 px-2.5 md:px-4 py-2.5 md:py-3">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[minmax(24px,32px)_minmax(170px,220px)_1fr_120px] items-start md:items-center gap-1.5 md:gap-3 px-2.5 md:px-4 py-2.5 md:py-3">
                   {/* Checkbox */}
                   <div className="hidden md:flex items-center">
                     <div
@@ -473,10 +583,10 @@ export default function AdminInboxPage() {
                   </div>
 
                   {/* Sender */}
-                  <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={() => router.push(`/admin/inbox/${r.id}`)}>
+                  <div className="flex items-center gap-2 min-w-0 cursor-pointer" onClick={open}>
                     <div
                       className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-medium text-white flex-shrink-0"
-                      style={{ background: isHuman ? '#038153' : 'var(--accent)' }}
+                      style={{ background: 'var(--accent)' }}
                     >
                       {contactLabel(r).charAt(0)}
                     </div>
@@ -489,49 +599,107 @@ export default function AdminInboxPage() {
                         {unread && <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: 'var(--accent)' }} />}
                       </div>
                       {contactSub(r) && (
-                        <div className="text-[11px] truncate md:hidden" style={{ color: 'var(--text-muted)' }}>
+                        <div className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>
                           {contactSub(r)}
                         </div>
                       )}
                     </div>
                   </div>
 
-                  {/* Subject + snippet */}
-                  <div className="min-w-0 cursor-pointer" onClick={() => router.push(`/admin/inbox/${r.id}`)}>
-                    <p
-                      className="text-[12px] md:text-[13px] truncate"
-                      style={{
-                        color: unread ? 'var(--text)' : 'var(--text-muted)',
-                        fontWeight: unread ? 600 : 400,
-                      }}
-                    >
-                      {r.subject || (r.last_message?.content || '—')}
-                    </p>
-                    <p className="text-[11px] truncate hidden md:block" style={{ color: 'var(--text-muted)' }}>
-                      {r.subject ? (r.last_message?.content || '') : ' '}
-                    </p>
-                    <div className="flex items-center gap-1.5 mt-0.5 md:hidden">
-                      {r.needs_reply && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#FEF3C7', color: '#D97706' }}>
-                          <Clock className="inline-block mr-0.5" width="10" height="10" style={{ stroke: '#D97706' }} />
-                          {t('Waiting on you', '需要你回覆')}
+                  {/* Thread: what it is, what's missing, what needs a tap */}
+                  <div className="min-w-0 cursor-pointer" onClick={open}>
+                    <div className="flex items-center gap-2 min-w-0">
+                      <p
+                        className="text-[12px] md:text-[13px] truncate"
+                        style={{
+                          color: unread ? 'var(--text)' : 'var(--text-muted)',
+                          fontWeight: unread ? 600 : 400,
+                        }}
+                      >
+                        {r.product_summary || r.subject || (r.last_message?.content || '—')}
+                      </p>
+                      <span
+                        className="text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0"
+                        style={{ background: chip.bg, color: chip.fg }}
+                      >
+                        {th.label}
+                      </span>
+                      {th.needsYou && (
+                        <span
+                          className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0 text-white"
+                          style={{ background: 'var(--accent)' }}
+                        >
+                          {t('Needs you', '需要你')}
                         </span>
                       )}
-                      {r.external_search_enabled && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#E8F5F1', color: '#038153' }}>
-                          {t('Ext. search', '外部搜尋')}
-                        </span>
-                      )}
-                      {paused && (
-                        <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#FEF3C7', color: '#D97706' }}>
-                          AI PAUSED
+                      {paused && th.state !== 'closed' && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded font-medium flex-shrink-0" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                          {t('Chase paused', '追蹤已暫停')}
                         </span>
                       )}
                     </div>
+
+                    {missing.length > 0 && (
+                      <div className="flex items-center gap-1 mt-1 flex-wrap">
+                        <span className="text-[10.5px] font-medium" style={{ color: 'var(--text-muted)' }}>
+                          {t('Missing', '待補')}:
+                        </span>
+                        {missing.slice(0, 4).map((m, i) => (
+                          <span
+                            key={`${r.id}-m-${i}`}
+                            className="text-[10px] px-1.5 py-0.5 rounded"
+                            style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+                          >
+                            {m}
+                          </span>
+                        ))}
+                        {missing.length > 4 && (
+                          <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>+{missing.length - 4}</span>
+                        )}
+                      </div>
+                    )}
+
+                    {r.pending_draft && (
+                      <div className="mt-1.5 flex items-center gap-1.5 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                        <span className="text-[10.5px] truncate max-w-[200px]" style={{ color: 'var(--text-muted)' }}>
+                          {t('Draft ready', '草稿待批')}
+                          {r.pending_draft.subject ? `: ${r.pending_draft.subject}` : ''}
+                        </span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); approveDraft(r); }}
+                          className="glass-press flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white"
+                          style={{ background: 'var(--accent)' }}
+                        >
+                          <Check width="11" height="11" /> {t('Approve & send', '批准並送出')}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); open(); }}
+                          className="rounded-full px-2 py-1 text-[11px] font-medium"
+                          style={{ border: '1px solid var(--border)', color: 'var(--text)' }}
+                        >
+                          {t('Edit', '編輯')}
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); discardDraft(r); }}
+                          className="rounded-full px-2 py-1 text-[11px] font-medium"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          {t('Discard', '丟棄')}
+                        </button>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Date + star */}
+                  {/* Date, star, pause */}
                   <div className="flex items-center justify-end gap-1">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); togglePause(r); }}
+                      className="hidden md:flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-black/[0.05] opacity-0 group-hover:opacity-100"
+                      title={paused ? t('Resume chasing', '恢復追蹤') : t('Pause chasing', '暫停追蹤')}
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {paused ? <Play width="13" height="13" /> : <Pause width="13" height="13" />}
+                    </button>
                     <button
                       onClick={(e) => { e.stopPropagation(); toggleStar(r); }}
                       className="flex h-7 w-7 items-center justify-center rounded-full transition-colors hover:bg-black/[0.05] opacity-0 group-hover:opacity-100"
