@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fetch company goals and knowledge base from DB
+    // Fetch company rules and knowledge base from DB
     let companyContext = '';
     try {
       // Get company_id from request header or body
@@ -67,8 +67,8 @@ export async function POST(req: NextRequest) {
           .single();
 
         if (company) {
-          // Fetch goals
-          const { data: goals } = await supabaseAdmin
+          // Fetch AI rules (persisted in company_goals)
+          const { data: rules } = await supabaseAdmin
             .from('company_goals')
             .select('title, description, enabled')
             .eq('company_id', company.id)
@@ -86,8 +86,8 @@ export async function POST(req: NextRequest) {
             .select('name, sku, description, price, moq, lead_time, category')
             .eq('company_id', company.id);
 
-          const goalText = goals?.length
-            ? `\n\n## Business Goals\n${goals.map((g: { title: string; description: string; greeting?: string; flow_steps?: Array<{ trigger: string; response: string }>; handoff_message?: string }) => {
+          const ruleText = rules?.length
+            ? `\n\n## Business Rules\n${rules.map((g: { title: string; description: string; greeting?: string; flow_steps?: Array<{ trigger: string; response: string }>; handoff_message?: string }) => {
                 let block = `### ${g.title}\n${g.description || ''}`;
                 if (g.greeting) block += `\nOpening message: "${g.greeting}"`;
                 if (g.flow_steps?.length) {
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
             ? `\n\n## Company Knowledge Base\n${kbDocs.map((d: { name: string; content: string }) => `### ${d.name}\n${d.content.slice(0, 3000)}`).join('\n\n')}`
             : '';
 
-          companyContext = goalText + productText + kbText;
+          companyContext = ruleText + productText + kbText;
         }
       }
     } catch (err) {

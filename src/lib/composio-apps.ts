@@ -34,6 +34,7 @@ export const COMPOSIO_APPS: ReadonlyArray<{ slug: string; name: string; category
   { slug: 'googlesuper', name: 'Google Sheets', category: 'Google' },
   { slug: 'googlecalendar', name: 'Google Calendar', category: 'Google' },
   { slug: 'outlook', name: 'Outlook', category: 'Email' },
+  { slug: 'excel', name: 'Excel', category: 'Microsoft' },
   { slug: 'one_drive', name: 'OneDrive', category: 'Microsoft' },
   { slug: 'sharepoint_graph', name: 'SharePoint', category: 'Microsoft' },
   { slug: 'notion', name: 'Notion', category: 'Productivity' },
