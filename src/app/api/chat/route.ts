@@ -90,11 +90,16 @@ export async function POST(req: NextRequest) {
           for (const g of (rules ?? []) as Array<{ title: string | null; description: string | null }>) {
             const key = g.title || 'General';
             const list = groupedRules.get(key) ?? [];
-            if (g.description) list.push(g.description);
+            if (g.description) {
+              for (const rawLine of g.description.split('\n')) {
+                const item = rawLine.trim().replace(/^[-•]\s*/, '');
+                if (item) list.push(item);
+              }
+            }
             groupedRules.set(key, list);
           }
           const ruleText = groupedRules.size
-            ? `\n\n## Business Rules\nFollow these rules in every reply. They take priority over your general style.\n${Array.from(groupedRules.entries())
+            ? `\n\n## Business Instructions\nFollow these instructions in every reply. They take priority over your general style.\n${Array.from(groupedRules.entries())
                 .map(([title, items]) => `### ${title}\n${items.map((item) => `- ${item}`).join('\n')}`)
                 .join('\n\n')}`
             : '';
