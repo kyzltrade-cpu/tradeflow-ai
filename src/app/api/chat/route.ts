@@ -86,16 +86,17 @@ export async function POST(req: NextRequest) {
             .select('name, sku, description, price, moq, lead_time, category')
             .eq('company_id', company.id);
 
-          const ruleText = rules?.length
-            ? `\n\n## Business Rules\n${rules.map((g: { title: string; description: string; greeting?: string; flow_steps?: Array<{ trigger: string; response: string }>; handoff_message?: string }) => {
-                let block = `### ${g.title}\n${g.description || ''}`;
-                if (g.greeting) block += `\nOpening message: "${g.greeting}"`;
-                if (g.flow_steps?.length) {
-                  block += `\nConversation flow:\n${g.flow_steps.map((s, i) => `  ${i + 1}. If customer says something about "${s.trigger}" → respond: "${s.response}"`).join('\n')}`;
-                }
-                if (g.handoff_message) block += `\nWhen handing off to human, notify internally: "${g.handoff_message}"`;
-                return block;
-              }).join('\n\n')}`
+          const groupedRules = new Map<string, string[]>();
+          for (const g of (rules ?? []) as Array<{ title: string | null; description: string | null }>) {
+            const key = g.title || 'General';
+            const list = groupedRules.get(key) ?? [];
+            if (g.description) list.push(g.description);
+            groupedRules.set(key, list);
+          }
+          const ruleText = groupedRules.size
+            ? `\n\n## Business Rules\nFollow these rules in every reply. They take priority over your general style.\n${Array.from(groupedRules.entries())
+                .map(([title, items]) => `### ${title}\n${items.map((item) => `- ${item}`).join('\n')}`)
+                .join('\n\n')}`
             : '';
 
           const productText = products?.length

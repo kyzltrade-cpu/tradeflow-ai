@@ -38,11 +38,15 @@ export type BigDeal = {
   last_activity_at: string | null;
 };
 
-export function isBigDeal(opp: Partial<OpportunityInput> | null | undefined): boolean {
+export function isBigDeal(
+  opp: Partial<OpportunityInput> | null | undefined,
+  minValue: number = BIG_DEAL_MIN_VALUE
+): boolean {
   if (!opp) return false;
   if (opp.stage && BIG_DEAL_CLOSED_STAGES.includes(opp.stage)) return false;
+  const threshold = Number.isFinite(minValue) && minValue > 0 ? minValue : BIG_DEAL_MIN_VALUE;
   const value = Number(opp.estimated_order_value);
-  const byValue = Number.isFinite(value) && value >= BIG_DEAL_MIN_VALUE;
+  const byValue = Number.isFinite(value) && value >= threshold;
   const byPriority = !!opp.priority && (BIG_DEAL_PRIORITIES as readonly string[]).includes(opp.priority);
   return byValue || byPriority;
 }

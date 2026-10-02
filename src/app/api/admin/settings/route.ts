@@ -93,7 +93,16 @@ export async function POST(req: NextRequest) {
       settingsPayload.chat_widget_enabled = chat_widget_enabled;
     }
     if (pricing !== undefined) {
-      settingsPayload.pricing = pricing;
+      // Merge over existing pricing so sibling keys (e.g. notifications) survive.
+      const { data: existing } = await supabaseAdmin
+        .from('company_settings')
+        .select('pricing')
+        .eq('company_id', companyId)
+        .maybeSingle();
+      settingsPayload.pricing = {
+        ...((existing?.pricing as Record<string, unknown> | null) ?? {}),
+        ...(pricing as Record<string, unknown>),
+      };
     }
 
     const { error: settingsError } = await supabaseAdmin

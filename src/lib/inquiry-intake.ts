@@ -26,7 +26,7 @@ import {
 import { buildChaseDraft } from '@/lib/chase-draft';
 import { classifyOutbound } from '@/lib/send-policy';
 import { sendOutbound, createDraft } from '@/lib/outbound';
-import { pingBigDeal } from '@/lib/whatsapp';
+import { notifyOwner } from '@/lib/whatsapp';
 import { BIG_DEAL_MIN_VALUE } from '@/lib/big-deals';
 import type { ProductRequirementTemplate, TradingRequest } from '@/types/trading';
 
@@ -451,9 +451,10 @@ export async function runInquiryIntake(params: {
       steps.push('conversation updated');
     }
 
-    // Big-deal ping — best effort, never blocks.
+    // WhatsApp alert — best effort, never blocks. Trigger + threshold are
+    // configured by the company (Knowledge → WhatsApp alerts).
     try {
-      const ping = await pingBigDeal({
+      const ping = await notifyOwner({
         companyId,
         conversationId: conversation?.id as string | undefined,
         title: extraction.productName || (inquiry.subject as string) || 'New enquiry',
@@ -461,8 +462,9 @@ export async function runInquiryIntake(params: {
         currency,
         priority: opportunityValue(extraction) != null && opportunityValue(extraction)! >= BIG_DEAL_MIN_VALUE ? 'high' : 'normal',
         stage: 'NEW',
+        text: `${inquiry.subject ?? ''} ${inquiry.original_message ?? ''}`.trim() || null,
       });
-      steps.push(`whatsapp: ${ping.ok ? 'sent' : ping.skipped || ping.error || 'skipped'}`);
+      steps.push(`whatsapp: ${ping.ok ? 'sent' : ping.skipped || ping.error || 'skipped'}${ping.reasons?.length ? ` (${ping.reasons.join(', ')})` : ''}`);
     } catch (err) {
       console.error('[intake] whatsapp ping failed:', err);
     }
