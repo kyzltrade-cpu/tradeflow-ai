@@ -43,7 +43,7 @@ const PROOF: { title: Bi; body: Bi }[] = [
 ];
 
 const FACTS: { value: Bi; label: Bi }[] = [
-  { value: ['3', '3'], label: ['Languages handled', '支援語言'] },
+  { value: ['4', '4'], label: ['Languages handled', '支援語言'] },
   { value: ['4', '4'], label: ['Attachment formats parsed', '可解析附件格式'] },
   { value: ['3 days', '3 天'], label: ['Follow-up cadence', '跟進節奏'] },
   { value: ['Every send', '每次發送'], label: ['Waits for your approval', '都待您批准'] },
@@ -151,7 +151,7 @@ const PLANS = [
       ['WhatsApp alerts when a thread needs you', '對話需要您時發出 WhatsApp 提示'],
       ['Unlimited AI conversations', '無限 AI 對話'],
       ['Unlimited products & FAQ rules', '無限產品與 FAQ 規則'],
-      ['English, Mandarin, Cantonese, Spanish', '英文、普通話、廣東話、西班牙文'],
+      ['English, Traditional & Simplified Chinese, Spanish', '英文、繁體及簡體中文、西班牙文'],
       ['Human takeover anytime', '隨時由真人接手'],
     ] as Bi[],
   },
@@ -168,8 +168,8 @@ const FAQS: { q: Bi; a: Bi }[] = [
   {
     q: ['Can it handle Chinese and mixed-language messages?', '能處理中文及混合語言的訊息嗎？'],
     a: [
-      'It reads and replies in English, Simplified and Traditional Chinese, and mixed-language threads — common across HK and Shenzhen trade.',
-      '它能閱讀並以英文、簡體及繁體中文回覆，也能處理混合語言的對話——這在香港與深圳貿易中十分常見。',
+      'It reads and replies in English, Traditional and Simplified Chinese, Spanish, and mixed-language threads — common across HK and Shenzhen trade.',
+      '它能閱讀並以英文、繁體及簡體中文、西班牙文回覆，也能處理混合語言的對話——這在香港與深圳貿易中十分常見。',
     ],
   },
   {
@@ -250,14 +250,14 @@ export default function LandingPage() {
           <div className="mx-auto max-w-3xl text-center">
             <p className="eyebrow">{t('For HK & Shenzhen trading companies', '專為香港及深圳貿易公司而設')}</p>
             <h1 className="display mt-6 text-[clamp(2.5rem,6.4vw,4.5rem)]">
-              {t('Every inquiry answered.', '每一封詢盤，都能回覆。')}
+              {t('Chase the specs.', '規格，追到齊。')}
               <br />
-              <em>{t('In seconds, not hours.', '以秒計，不以小時計。')}</em>
+              <em>{t('Clear the reply debt.', '回覆債，清零。')}</em>
             </h1>
             <p className="mx-auto mt-7 max-w-xl text-balance text-[1.0625rem] leading-[1.75] text-[var(--ink-2)]">
               {t(
-                'Sailwise turns a buyer’s email into a tracked deal — every spec extracted with its source, gaps flagged, and a priced quote drafted from your own product list and margin rules. You approve every word before it sends.',
-                'Sailwise 把買家的電郵變成可追蹤的交易——每個規格連同出處被擷取、缺漏被標示，並依您自己的產品清單與利潤規則草擬報價。每個字都由您批准後才送出。'
+                'Sailwise reads every buyer email, pulls out the specs, chases what is still missing, and drafts the reply you owe — so no inquiry sits unanswered. You approve every word before it sends.',
+                'Sailwise 讀遍每封買家來信，擷取規格、追齊缺漏，並草擬您該回的那一封——讓每封詢盤都不再懸而未決。每個字都由您批准後才送出。'
               )}
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -270,7 +270,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className="mt-5 text-[13px] text-[var(--ink-3)]">
-              {t('14-day free trial · No contracts · Cancel anytime', '14 天免費試用 · 無合約 · 隨時取消')}
+              {t('14-day free trial · Card required · Cancel anytime', '14 天免費試用 · 需綁定信用卡 · 隨時取消')}
             </p>
           </div>
 

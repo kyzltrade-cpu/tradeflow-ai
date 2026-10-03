@@ -34,7 +34,7 @@ function Logo() {
 }
 
 function Sidebar() {
-  const items = ['Dashboard', 'Inbox', 'Opportunities', 'Follow-ups', 'Products', 'Settings'];
+  const items = ['Inbox', 'Opportunities', 'Follow-ups', 'Products', 'Knowledge', 'Settings'];
   return (
     <div
       className="hidden w-[170px] shrink-0 flex-col p-3.5 @min-[700px]:flex"
@@ -51,9 +51,9 @@ function Sidebar() {
           key={item}
           className="mb-0.5 rounded-md px-2 py-1.5 text-[11.5px]"
           style={{
-            background: i === 1 ? TEAL_SOFT : 'transparent',
-            color: i === 1 ? TEAL : MUTED,
-            fontWeight: i === 1 ? 600 : 500,
+            background: i === 0 ? TEAL_SOFT : 'transparent',
+            color: i === 0 ? TEAL : MUTED,
+            fontWeight: i === 0 ? 600 : 500,
           }}
         >
           {item}
@@ -342,7 +342,7 @@ export function QuoteMock() {
             Quote draft · Q-2091
           </div>
           <div className="text-[14px] font-semibold" style={{ color: INK }}>
-            Apex Retail · Sarah Chen
+            Pacific Trading · Sarah Chen
           </div>
         </div>
         <span className="rounded-full px-2.5 py-1 text-[10.5px] font-semibold" style={{ background: PEACH_SOFT, color: TERRA }}>
