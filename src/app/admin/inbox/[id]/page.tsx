@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy, Building2, MapPin } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
@@ -30,6 +30,8 @@ interface Message {
 }
 
 interface BuyerHistory {
+  company: string | null;
+  country: string | null;
   past_threads: number;
   past_order_total: number | null;
   past_order_currency: string | null;
@@ -786,40 +788,63 @@ export default function InboxDetailPage() {
   };
   const fmtDate = (v?: string | null) => (v ? new Date(v).toLocaleDateString() : null);
 
-  const renderSpecsCard = () => (
-    <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
-      <div className="flex items-center gap-2 mb-3">
-        <FileText width="14" height="14" style={{ color: 'var(--accent)' }} />
-        <h3 className="text-[13px] font-semibold">{t('Specs', '規格')}</h3>
-      </div>
-      {specsLoading ? (
-        <SkeletonBlock lines={5} />
-      ) : (
-        <div className="space-y-1.5">
-          {specRows.map((r) => (
-            <div key={r.key} className="flex items-start gap-2">
-              <span className="w-[104px] shrink-0 text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                {r.label}
-              </span>
-              <span
-                className="flex-1 min-w-0 text-[11.5px] flex items-start gap-1"
-                style={{ color: r.value ? 'var(--text)' : 'var(--error)' }}
-              >
-                {r.value ? (
-                  <>
-                    <CheckCircle width="11" height="11" className="mt-[2px] shrink-0" style={{ color: '#038153' }} />
-                    <span className="min-w-0">{r.value}</span>
-                  </>
-                ) : (
-                  <span style={{ opacity: 0.75 }}>{t('missing', '未提供')}</span>
-                )}
-              </span>
-            </div>
-          ))}
+  const renderSpecsCard = () => {
+    const rfqState = specsLoading
+      ? { label: t('Extracting…', '提取中…'), color: '#D97706', bg: '#FEF3C7', done: false }
+      : specItems.length > 0
+        ? { label: t('Extracted', '已提取'), color: '#038153', bg: '#E8F5F1', done: true }
+        : { label: t('No RFQ', '無詢價'), color: 'var(--text-muted)', bg: 'var(--bg)', done: false };
+    return (
+      <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <FileText width="14" height="14" style={{ color: 'var(--accent)' }} />
+          <h3 className="text-[13px] font-semibold">{t('Specs', '規格')}</h3>
         </div>
-      )}
-    </div>
-  );
+        {specsLoading ? (
+          <SkeletonBlock lines={5} />
+        ) : (
+          <div className="space-y-1.5">
+            {specRows.map((r) => (
+              <div key={r.key} className="flex items-start gap-2">
+                <span className="w-[104px] shrink-0 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                  {r.label}
+                </span>
+                <span
+                  className="flex-1 min-w-0 text-[11.5px] flex items-start gap-1"
+                  style={{ color: r.value ? 'var(--text)' : 'var(--error)' }}
+                >
+                  {r.value ? (
+                    <>
+                      <CheckCircle width="11" height="11" className="mt-[2px] shrink-0" style={{ color: '#038153' }} />
+                      <span className="min-w-0">{r.value}</span>
+                    </>
+                  ) : (
+                    <span style={{ opacity: 0.75 }}>{t('missing', '未提供')}</span>
+                  )}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex items-center gap-2 mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+          <span
+            className="text-[10px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide"
+            style={{ background: rfqState.bg, color: rfqState.color }}
+          >
+            RFQ
+          </span>
+          <span className="text-[11px] font-medium inline-flex items-center gap-1" style={{ color: rfqState.color }}>
+            {rfqState.done ? (
+              <CheckCircle width="11" height="11" className="shrink-0" />
+            ) : (
+              <span className="h-1.5 w-1.5 rounded-full inline-block" style={{ background: rfqState.color }} />
+            )}
+            {rfqState.label}
+          </span>
+        </div>
+      </div>
+    );
+  };
 
   const renderBuyerCard = () => (
     <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
@@ -849,8 +874,19 @@ export default function InboxDetailPage() {
               {contactEmailLine && (
                 <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{contactEmailLine}</p>
               )}
-              {body.contact?.customer_name && (
-                <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{body.contact.customer_name}</p>
+              {(buyer?.company || body.contact?.customer_name || buyer?.country) && (
+                <p className="text-[12px] truncate flex items-center gap-1 mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  <Building2 width="11" height="11" className="shrink-0" />
+                  <span className="truncate min-w-0">
+                    {buyer?.company || body.contact?.customer_name || t('Unknown company', '未知公司')}
+                  </span>
+                  {buyer?.country && (
+                    <>
+                      <MapPin width="11" height="11" className="shrink-0 ml-1" />
+                      <span className="truncate">{buyer.country}</span>
+                    </>
+                  )}
+                </p>
               )}
             </div>
           </div>
