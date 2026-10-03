@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, RefreshCw, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy, Building2, MapPin, Factory } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, RefreshCw, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
@@ -845,58 +845,74 @@ export default function InboxDetailPage() {
       </div>
       {body ? (
         <>
-          <div className="flex items-start gap-2.5">
+          <div className="flex items-center gap-3">
             <div
-              className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-white text-[13px] font-semibold"
+              className="h-10 w-10 shrink-0 rounded-full flex items-center justify-center text-white text-[14px] font-semibold"
               style={{ background: '#6366F1' }}
             >
               {contactName.slice(0, 1).toUpperCase()}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-[13px] font-medium truncate">{contactName}</p>
+              <p className="text-[13.5px] font-semibold truncate">{contactName}</p>
               {contactEmailLine && (
-                <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{contactEmailLine}</p>
-              )}
-              {(buyer?.company || body.contact?.customer_name) && (
-                <p className="text-[12px] truncate flex items-center gap-1 mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  <Building2 width="11" height="11" className="shrink-0" />
-                  <span className="truncate min-w-0">
-                    {buyer?.company || body.contact?.customer_name || t('Unknown company', '未知公司')}
-                  </span>
-                </p>
-              )}
-              {(buyer?.industry || buyer?.country) && (
-                <p className="text-[12px] truncate flex items-center gap-1 mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                  {buyer?.industry && (
-                    <>
-                      <Factory width="11" height="11" className="shrink-0" />
-                      <span className="truncate">{buyer.industry}</span>
-                    </>
-                  )}
-                  {buyer?.industry && buyer?.country && <span className="text-[10px]">·</span>}
-                  {buyer?.country && (
-                    <>
-                      <MapPin width="11" height="11" className="shrink-0" />
-                      <span className="truncate">{buyer.country}</span>
-                    </>
-                  )}
-                </p>
+                <p className="text-[12px] truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>{contactEmailLine}</p>
               )}
             </div>
           </div>
+
+          <dl
+            className="mt-3 rounded-[6px] overflow-hidden"
+            style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}
+          >
+            {(buyer?.company || body.contact?.customer_name) && (
+              <div className="flex items-baseline justify-between gap-3 px-2.5 py-1.5 border-b" style={{ borderColor: 'var(--border)' }}>
+                <dt className="text-[10px] uppercase tracking-wide shrink-0" style={{ color: 'var(--text-muted)' }}>
+                  {t('Company', '公司')}
+                </dt>
+                <dd className="text-[12px] font-medium text-right truncate">
+                  {buyer?.company || body.contact?.customer_name}
+                </dd>
+              </div>
+            )}
+            {buyer?.industry && (
+              <div className="flex items-baseline justify-between gap-3 px-2.5 py-1.5 border-b" style={{ borderColor: 'var(--border)' }}>
+                <dt className="text-[10px] uppercase tracking-wide shrink-0" style={{ color: 'var(--text-muted)' }}>
+                  {t('Industry', '行業')}
+                </dt>
+                <dd className="text-[12px] font-medium text-right truncate">{buyer.industry}</dd>
+              </div>
+            )}
+            {buyer?.country && (
+              <div className="flex items-baseline justify-between gap-3 px-2.5 py-1.5 border-b" style={{ borderColor: 'var(--border)' }}>
+                <dt className="text-[10px] uppercase tracking-wide shrink-0" style={{ color: 'var(--text-muted)' }}>
+                  {t('Country', '國家')}
+                </dt>
+                <dd className="text-[12px] font-medium text-right truncate">{buyer.country}</dd>
+              </div>
+            )}
+            <div className="flex items-baseline justify-between gap-3 px-2.5 py-1.5">
+              <dt className="text-[10px] uppercase tracking-wide shrink-0" style={{ color: 'var(--text-muted)' }}>
+                {t('Payment', '付款')}
+              </dt>
+              <dd className="text-[12px] font-medium text-right truncate">
+                {buyer?.payment_terms || t('Not on file', '未記錄')}
+              </dd>
+            </div>
+          </dl>
+
           {buyer && (
             <div className="grid grid-cols-2 gap-2 mt-3">
-              <div>
+              <div className="rounded-[6px] px-2.5 py-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                 <p className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
                   {t('Past threads', '過往對話')}
                 </p>
-                <p className="text-[12.5px] font-semibold">{buyer.past_threads}</p>
+                <p className="text-[15px] font-semibold mt-0.5 leading-none">{buyer.past_threads}</p>
               </div>
-              <div>
+              <div className="rounded-[6px] px-2.5 py-2" style={{ background: 'var(--bg)', border: '1px solid var(--border)' }}>
                 <p className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
                   {t('Past orders', '過往訂單')}
                 </p>
-                <p className="text-[12.5px] font-semibold">
+                <p className="text-[15px] font-semibold mt-0.5 leading-none">
                   {buyer.past_order_total != null
                     ? fmtAmount(buyer.past_order_total, buyer.past_order_currency || 'USD')
                     : buyer.past_threads > 0
@@ -906,12 +922,7 @@ export default function InboxDetailPage() {
               </div>
             </div>
           )}
-          <div className="flex items-start gap-1.5 mt-3">
-            <Clock width="11" height="11" className="mt-[2px] shrink-0" style={{ color: 'var(--text-muted)' }} />
-            <p className="text-[11px]" style={{ color: 'var(--text)' }}>
-              {t('Payment', '付款')}: {buyer?.payment_terms || t('no terms on file', '尚無付款條件')}
-            </p>
-          </div>
+
           <div className="flex flex-wrap gap-1.5 mt-3">
             <span
               className="text-[10px] px-1.5 py-0.5 rounded font-medium"
