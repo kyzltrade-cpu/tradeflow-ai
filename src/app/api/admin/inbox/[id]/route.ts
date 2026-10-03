@@ -113,9 +113,15 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         ? supabaseAdmin.from('contacts').select('id, full_name, email').in('id', contactIds)
         : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; email: string | null }>, error: null }),
       customerIds.length
-        ? supabaseAdmin.from('customers').select('id, trading_name, legal_name, country').in('id', customerIds)
+        ? supabaseAdmin.from('customers').select('id, trading_name, legal_name, country, industry').in('id', customerIds)
         : Promise.resolve({
-            data: [] as Array<{ id: string; trading_name: string | null; legal_name: string | null; country: string | null }>,
+            data: [] as Array<{
+              id: string;
+              trading_name: string | null;
+              legal_name: string | null;
+              country: string | null;
+              industry: string | null;
+            }>,
             error: null,
           }),
     ]);
@@ -133,6 +139,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
           trading_name: string | null;
           legal_name: string | null;
           country: string | null;
+          industry: string | null;
         }>
       ).map((c) => [c.id, c] as const),
     );
@@ -164,6 +171,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       identityContact?.email || (conversation.contact_email as string | null) || null;
     const customerName = identityCustomer?.trading_name || identityCustomer?.legal_name || null;
     const customerCountry = identityCustomer?.country || null;
+    const customerIndustry = identityCustomer?.industry || null;
 
     // ── Buyer history ───────────────────────────────────────────────────
     // Is this a returning buyer? How much have they ordered? How do they pay?
@@ -285,6 +293,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       buyer: {
         company: customerName,
         country: customerCountry,
+        industry: customerIndustry,
         past_threads: pastThreads,
         past_order_total: pastOrderTotal,
         past_order_currency: pastOrderCurrency,

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, Percent, RefreshCw, AlertTriangle, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy, Building2, MapPin } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, RefreshCw, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy, Building2, MapPin, Factory } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
@@ -32,6 +32,7 @@ interface Message {
 interface BuyerHistory {
   company: string | null;
   country: string | null;
+  industry: string | null;
   past_threads: number;
   past_order_total: number | null;
   past_order_currency: string | null;
@@ -255,8 +256,6 @@ export default function InboxDetailPage() {
   const [sending, setSending] = useState(false);
   const [togglingSearch, setTogglingSearch] = useState(false);
   const [detectLang, setDetectLang] = useState<string | null>(null);
-  const [expandedCites, setExpandedCites] = useState<Set<string>>(new Set());
-  const [quoteOpen, setQuoteOpen] = useState(false);
   const [approvingChase, setApprovingChase] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const realtimeChannelRef = useRef<ReturnType<typeof supabaseRealtime.channel> | null>(null);
@@ -712,22 +711,6 @@ export default function InboxDetailPage() {
     body?.contact?.email || body?.contact_email || body?.contact_phone || '';
   const contactLabel = contactName;
 
-  const citeIcon = (type: PriceSource['type']) => {
-    if (type === 'margin') return <Percent width="11" height="11" style={{ color: '#D97706' }} />;
-    if (type === 'fx') return <Globe width="11" height="11" style={{ color: '#0EA5E9' }} />;
-    return <FileText width="11" height="11" style={{ color: 'var(--accent)' }} />;
-  };
-  const citeColor = (type: PriceSource['type']) =>
-    type === 'margin' ? '#D97706' : type === 'fx' ? '#0EA5E9' : 'var(--accent)';
-
-  const toggleCites = (lineId: string) => {
-    setExpandedCites((prev) => {
-      const next = new Set(prev);
-      if (next.has(lineId)) next.delete(lineId); else next.add(lineId);
-      return next;
-    });
-  };
-
   // ── SPECS / BUYER / STATUS derivations (render-only) ────────────────
   const specItems = (((suggestion?.extraction?.items as ExtractedItem[] | undefined) || [])).filter(Boolean);
   const specText = specItems
@@ -874,15 +857,26 @@ export default function InboxDetailPage() {
               {contactEmailLine && (
                 <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{contactEmailLine}</p>
               )}
-              {(buyer?.company || body.contact?.customer_name || buyer?.country) && (
+              {(buyer?.company || body.contact?.customer_name) && (
                 <p className="text-[12px] truncate flex items-center gap-1 mt-0.5" style={{ color: 'var(--text-muted)' }}>
                   <Building2 width="11" height="11" className="shrink-0" />
                   <span className="truncate min-w-0">
                     {buyer?.company || body.contact?.customer_name || t('Unknown company', '未知公司')}
                   </span>
+                </p>
+              )}
+              {(buyer?.industry || buyer?.country) && (
+                <p className="text-[12px] truncate flex items-center gap-1 mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  {buyer?.industry && (
+                    <>
+                      <Factory width="11" height="11" className="shrink-0" />
+                      <span className="truncate">{buyer.industry}</span>
+                    </>
+                  )}
+                  {buyer?.industry && buyer?.country && <span className="text-[10px]">·</span>}
                   {buyer?.country && (
                     <>
-                      <MapPin width="11" height="11" className="shrink-0 ml-1" />
+                      <MapPin width="11" height="11" className="shrink-0" />
                       <span className="truncate">{buyer.country}</span>
                     </>
                   )}
@@ -1405,194 +1399,6 @@ export default function InboxDetailPage() {
               ))}
             </div>
           )}
-
-          {/* ── Pod: Quote (FX + target + citations) ───────────── */}
-          <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
-            <button
-              type="button"
-              onClick={() => setQuoteOpen((o) => !o)}
-              className="flex items-center gap-2 w-full text-left mb-2"
-            >
-              <Sparkles width="14" height="14" style={{ color: 'var(--accent)' }} />
-              <h3 className="text-[13px] font-semibold">{t('Quote', '報價')}</h3>
-              {suggestion && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-                  {suggestion.extraction?.source === 'heuristic' ? t('Heuristic', '規則提取') : 'AI'}
-                </span>
-              )}
-              <span className="ml-auto text-[12px] leading-none" style={{ color: 'var(--text-muted)' }}>
-                {quoteOpen ? '▾' : '▸'}
-              </span>
-            </button>
-            {quoteOpen && (
-              <>
-            {loadingSuggest ? (
-              <SkeletonBlock lines={3} />
-            ) : suggestion && suggestion.request_summary ? (
-              <p className="text-[12px] leading-relaxed mb-3" style={{ color: 'var(--text)' }}>
-                {suggestion.request_summary}
-              </p>
-            ) : (
-              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('Press "Price" to draft a quote from this thread', '按「定價」從此對話產生報價草稿')}
-              </p>
-            )}
-
-            {suggestion?.fx && (
-              <div className="flex items-center gap-1.5 text-[11px] mb-1.5" style={{ color: '#0EA5E9' }}>
-                <Globe width="11" height="11" />
-                {t('FX', '匯率')}: 1 → {suggestion.fx.rate.toFixed(4)} · {suggestion.fx.pair}
-                {suggestion.fx.live && (
-                  <span className="text-[9px] px-1 py-0.5 rounded-full font-semibold uppercase tracking-wide" style={{ background: '#E8F5F1', color: '#038153' }}>
-                    {t('Live', '即時')}
-                  </span>
-                )}
-              </div>
-            )}
-            {suggestion && suggestion.margin_rules.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {suggestion.margin_rules.map((r) => (
-                  <span key={r.name} className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: '#FEF3C7', color: '#D97706' }}>
-                    {r.name} +{r.margin_pct}%
-                  </span>
-                ))}
-              </div>
-            )}
-
-            {suggestion && suggestion.lines.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {suggestion.lines.map((l, i) => (
-                  <span key={l.id} className="text-[10px] px-2 py-1 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text)' }}>
-                    #{i + 1}{l.quantity ? ` ${l.quantity.toLocaleString()} ${l.unit || 'pcs'}` : ''} · {l.product.slice(0, 42)}
-                  </span>
-                ))}
-              </div>
-            )}
-
-            <div className="flex gap-2 mb-3">
-              <button
-                onClick={handleClarify}
-                className="flex-1 text-[12px] font-medium px-3 py-2 rounded-[4px] border"
-                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-              >
-                {t('Clarify', '澄清')}
-              </button>
-              <button
-                onClick={() => fetchSuggestion()}
-                className="flex-1 text-[12px] font-medium px-3 py-2 rounded-[4px] border flex items-center justify-center gap-1"
-                style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-                disabled={loadingSuggest}
-              >
-                <RefreshCw width="12" height="12" className={loadingSuggest ? 'animate-spin' : ''} />
-                {t('Price', '定價')}
-              </button>
-              <button
-                onClick={handleQuote}
-                disabled={!suggestion || suggestion.lines.filter((l) => l.unit_price > 0).length === 0}
-                className="flex-1 text-[12px] font-medium px-3 py-2 rounded-[4px] text-white disabled:opacity-40"
-                style={{ background: 'var(--accent)' }}
-              >
-                {t('Create draft', '建立草稿')}
-              </button>
-            </div>
-
-            {loadingSuggest ? (
-              <SkeletonBlock lines={5} />
-            ) : !suggestion || suggestion.lines.length === 0 ? (
-              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                {t('No price suggested yet — press "Price"', '尚未建議價格——請按「定價」')}
-              </p>
-            ) : (
-              <>
-                <div className="space-y-2.5">
-                  {suggestion.lines.map((l) => {
-                    const expanded = expandedCites.has(l.id);
-                    return (
-                      <div key={l.id} className="rounded-[4px] border p-2.5" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-[12px] font-medium leading-snug">
-                              {l.quantity ? `${l.quantity.toLocaleString()} ${l.unit || 'pcs'}` : '—'} · {l.product}
-                            </p>
-                            <p className="text-[11px] mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
-                              {l.matched_product_name || (l.requires_manual_pricing ? t('No matching product', '未匹配到產品') : '')}
-                            </p>
-                            {l.target_price && (
-                              <p className="text-[10px] mt-0.5 font-medium" style={{ color: '#0EA5E9' }}>
-                                {t('Customer target', '客戶目標價')}: {l.target_price}
-                              </p>
-                            )}
-                          </div>
-                          <div className="text-right flex-shrink-0">
-                            {l.requires_manual_pricing || l.unit_price <= 0 ? (
-                              <p className="text-[14px] font-semibold" style={{ color: 'var(--text-muted)' }}>—</p>
-                            ) : (
-                              <>
-                                <p className="text-[14px] font-semibold">{fmtAmount(l.unit_price, suggestion.currency || 'USD')}</p>
-                                <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                                  / {l.unit || 'pc'} · {fmtAmount(l.total, suggestion.currency || 'USD')}
-                                </p>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {l.sources.slice(0, expanded ? l.sources.length : 2).map((s, si) => (
-                            <span key={si} className="text-[10px] px-1.5 py-0.5 rounded flex items-center gap-1" style={{ background: 'var(--surface)', border: `1px solid ${citeColor(s.type)}`, color: citeColor(s.type) }}>
-                              {citeIcon(s.type)}
-                              {s.label} · {s.ref} · {s.detail}
-                            </span>
-                          ))}
-                        </div>
-                        {l.sources.length > 2 && (
-                          <button onClick={() => toggleCites(l.id)} className="text-[10px] mt-1.5 font-medium" style={{ color: 'var(--text-muted)' }}>
-                            {expanded ? t('Show less', '收合') : t(`Show ${l.sources.length - 2} more sources`, `顯示其餘 ${l.sources.length - 2} 個來源`)}
-                          </button>
-                        )}
-                        {l.target_price && l.unit_price > 0 && (
-                          <p className="text-[10px] mt-1.5 font-medium" style={{ color: '#0EA5E9' }}>
-                            {l.unit_price > parseFloat(String(l.target_price).replace(/[^0-9.]/g, '') || '0') && parseFloat(String(l.target_price).replace(/[^0-9.]/g, '') || '0') > 0
-                              ? t('Above customer target — consider adjusting', '高於客戶目標價——建議調整')
-                              : t('Within customer target range', '在客戶目標價範圍內')}
-                          </p>
-                        )}
-                        {l.requires_manual_pricing && (
-                          <p className="text-[10px] mt-1.5 font-medium flex items-center gap-1" style={{ color: 'var(--error)' }}>
-                            <AlertTriangle width="10" height="10" />
-                            {t('Needs your review — not auto-priced', '需人手審閱——不會自動定價')}
-                          </p>
-                        )}
-                        {l.tiers_pending_review && !l.requires_manual_pricing && (
-                          <p className="text-[10px] mt-1.5 font-medium flex items-center gap-1" style={{ color: '#D97706' }}>
-                            <Clock width="10" height="10" />
-                            {t('Tier pricing pending your review', '階梯價待你審閱')}
-                          </p>
-                        )}
-                        {l.at_cost && !l.requires_manual_pricing && !l.tiers_pending_review && (
-                          <p className="text-[10px] mt-1.5 font-medium" style={{ color: '#D97706' }}>
-                            {t('Billed at cost', '按成本價計')}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="flex items-center justify-between mt-3 pt-3 border-t" style={{ borderColor: 'var(--border)' }}>
-                  <span className="text-[12px] font-semibold">{t('Subtotal', '小計')}</span>
-                  <span className="text-[15px] font-semibold">
-                    {suggestion.subtotal > 0 ? fmtAmount(suggestion.subtotal, suggestion.currency || 'USD') : '—'}
-                  </span>
-                </div>
-                {suggestion.sources_summary && suggestion.sources_summary.length > 0 && (
-                  <p className="text-[11px] mt-3 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                    {suggestion.sources_summary.join(' ')}
-                  </p>
-                )}
-              </>
-            )}
-              </>
-            )}
-          </div>
 
           {/* ── Pod: Stage (only once an opportunity exists) ────── */}
           {detail?.opportunities && detail.opportunities.length > 0 && (
