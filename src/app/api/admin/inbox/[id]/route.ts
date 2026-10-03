@@ -108,7 +108,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const contactIds = [...new Set([...oppContactIds, ...(fallbackContactId ? [fallbackContactId] : [])])];
     const customerIds = [...new Set([...oppCustomerIds, ...(fallbackCustomerId ? [fallbackCustomerId] : [])])];
 
-    const [identityContacts, identityCustomers] = await Promise.all([
+    // The sender email is the most reliable link to the buyer record: a brand
+    // new thread may have no opportunity/quote yet, so fall back to matching
+    // the contact (and its customer) by email.
+    const conversationEmail = ((conversation.contact_email as string | null) || '').trim() || null;
+
+    const [identityContacts, identityCustomers, emailContactRes] = await Promise.all([
       contactIds.length
         ? supabaseAdmin.from('contacts').select('id, full_name, email').in('id', contactIds)
         : Promise.resolve({ data: [] as Array<{ id: string; full_name: string | null; email: string | null }>, error: null }),
@@ -124,7 +129,31 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
             }>,
             error: null,
           }),
+      conversationEmail
+        ? supabaseAdmin
+            .from('contacts')
+            .select('id, full_name, email, customer_id')
+            .eq('company_id', auth.companyId)
+            .ilike('email', conversationEmail)
+            .limit(5)
+        : Promise.resolve({
+            data: [] as Array<{
+              id: string;
+              full_name: string | null;
+              email: string | null;
+              customer_id: string | null;
+            }>,
+            error: null,
+          }),
     ]);
+
+    const emailContacts = (emailContactRes.data || []) as Array<{
+      id: string;
+      full_name: string | null;
+      email: string | null;
+      customer_id: string | null;
+    }>;
+    const emailContact = emailContacts[0] || null;
 
     const contactById = new Map(
       ((identityContacts.data || []) as Array<{ id: string; full_name: string | null; email: string | null }>).map((c) => [
@@ -132,6 +161,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         c,
       ]),
     );
+    for (const c of emailContacts) {
+      if (!contactById.has(c.id)) contactById.set(c.id, { id: c.id, full_name: c.full_name, email: c.email });
+    }
     const customerById = new Map(
       (
         (identityCustomers.data || []) as Array<{
@@ -143,6 +175,26 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         }>
       ).map((c) => [c.id, c] as const),
     );
+    const missingCustomerIds = [
+      ...new Set(
+        emailContacts.map((c) => c.customer_id).filter((v): v is string => !!v && !customerById.has(v)),
+      ),
+    ];
+    if (missingCustomerIds.length) {
+      const { data: extraCustomers } = await supabaseAdmin
+        .from('customers')
+        .select('id, trading_name, legal_name, country, industry')
+        .in('id', missingCustomerIds);
+      for (const c of (extraCustomers || []) as Array<{
+        id: string;
+        trading_name: string | null;
+        legal_name: string | null;
+        country: string | null;
+        industry: string | null;
+      }>) {
+        customerById.set(c.id, c);
+      }
+    }
 
     const titleLead = (title: string | null | undefined): string | null => {
       if (!title || !title.trim()) return null;
@@ -154,10 +206,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const identityContact =
       (primaryOpp?.contact_id ? contactById.get(primaryOpp.contact_id) : null) ||
       (fallbackContactId ? contactById.get(fallbackContactId) : null) ||
+      (emailContact ? contactById.get(emailContact.id) : null) ||
       null;
     const identityCustomer =
       (primaryOpp?.customer_id ? customerById.get(primaryOpp.customer_id) : null) ||
       (fallbackCustomerId ? customerById.get(fallbackCustomerId) : null) ||
+      (emailContact?.customer_id ? customerById.get(emailContact.customer_id) : null) ||
       null;
 
     const contactName =
@@ -188,22 +242,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       pastThreads = count ?? 0;
     }
 
-    // The thread may not surface any opportunity/quote yet, so widen the buyer
-    // scope by matching the sender email against the contacts table. This is
-    // what makes history show for a returning buyer on a brand-new thread.
+    // Widen the buyer-history scope with the email-matched contact/customer so
+    // history shows for a returning buyer even on a brand-new thread.
     const allContactIds = [...contactIds];
     const allCustomerIds = [...customerIds];
-    if (contactEmail) {
-      const { data: byEmail } = await supabaseAdmin
-        .from('contacts')
-        .select('id, customer_id')
-        .eq('company_id', auth.companyId)
-        .ilike('email', contactEmail)
-        .limit(5);
-      for (const c of (byEmail || []) as Array<{ id: string; customer_id: string | null }>) {
-        if (c.id && !allContactIds.includes(c.id)) allContactIds.push(c.id);
-        if (c.customer_id && !allCustomerIds.includes(c.customer_id)) allCustomerIds.push(c.customer_id);
-      }
+    for (const c of emailContacts) {
+      if (c.id && !allContactIds.includes(c.id)) allContactIds.push(c.id);
+      if (c.customer_id && !allCustomerIds.includes(c.customer_id)) allCustomerIds.push(c.customer_id);
     }
 
     const scope = allCustomerIds.length
