@@ -231,14 +231,14 @@ export default function LandingPage() {
             mx-auto sm:ml-6 md:sm:ml-10`, where the margin override beat `mx-auto`
             and pinned the hero to the left edge — a ~575px drift from the centred
             nav on a 2560px display. */}
-        <div className="max-w-6xl mx-auto relative">
+        <div className="max-w-6xl 2xl:max-w-7xl 3xl:max-w-[90rem] mx-auto relative">
           <div className="sm:max-w-2xl text-center sm:text-left">
             <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: 'rgba(255,255,255,0.85)', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms', backdropFilter: 'blur(6px)' }}>
               <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#000' }}></span>
               Built for HK &amp; SZ trading companies
             </div>
 
-            <h1 className="text-5xl md:text-7xl 2xl:text-8xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
+            <h1 className="text-5xl md:text-7xl 2xl:text-8xl 3xl:text-9xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
               <span className="btk-anim-rise block" style={{ animationDelay: '90ms' }}>
                 From inquiry to quote.
               </span>
@@ -290,8 +290,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── Features: the pipeline ── */}
-      <section id="features" className="py-24 px-6">
-        <div className="max-w-6xl mx-auto">
+      <section id="features" className="py-24 2xl:py-32 3xl:py-40 px-6">
+        <div className="max-w-6xl 2xl:max-w-7xl 3xl:max-w-[90rem] mx-auto">
           <Reveal className="relative text-center mb-16">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               01
@@ -304,7 +304,7 @@ export default function LandingPage() {
               Built for the way traders actually work — citation-backed, human-approved.
             </p>
           </Reveal>
-          <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-6 2xl:gap-8">
             {CORE_FEATURES.map((f, i) => {
               const Icon = f.icon;
               return (
@@ -333,8 +333,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── You stay in control ── */}
-      <section className="py-24 px-6 xl:py-28 2xl:py-32" style={{ background: '#FAFAFA' }}>
-        <div className="max-w-6xl mx-auto">
+      <section className="py-24 px-6 xl:py-28 2xl:py-32 3xl:py-40" style={{ background: '#FAFAFA' }}>
+        <div className="max-w-6xl 2xl:max-w-7xl 3xl:max-w-[90rem] mx-auto">
           <Reveal className="relative text-center mb-14">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               02
@@ -370,8 +370,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── WhatsApp Mobile Alerts ── */}
-      <section className="py-24 px-6 xl:py-28 2xl:py-32" style={{ background: '#FAFAFA' }}>
-        <div className="max-w-5xl mx-auto">
+      <section className="py-24 px-6 xl:py-28 2xl:py-32 3xl:py-40" style={{ background: '#FAFAFA' }}>
+        <div className="max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl mx-auto">
           <Reveal className="relative text-center mb-16">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               02
@@ -385,7 +385,7 @@ export default function LandingPage() {
             </p>
           </Reveal>
 
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-12 2xl:gap-16 items-center">
             <Reveal delay={120}>
               <div className="space-y-6">
                 <div className="flex gap-4">
@@ -481,8 +481,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── How It Works ── */}
-      <section id="how-it-works" className="py-24 px-6">
-        <div className="max-w-3xl mx-auto">
+      <section id="how-it-works" className="py-24 2xl:py-32 3xl:py-40 px-6">
+        <div className="max-w-3xl 2xl:max-w-4xl mx-auto">
           <Reveal className="relative text-center mb-16">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               03
@@ -532,8 +532,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── See It In Action ── */}
-      <section id="see-it-in-action" className="py-24 px-6" style={{ background: '#FAFAFA' }}>
-        <div className="max-w-5xl mx-auto">
+      <section id="see-it-in-action" className="py-24 2xl:py-32 3xl:py-40 px-6" style={{ background: '#FAFAFA' }}>
+        <div className="max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl mx-auto">
           <Reveal className="relative text-center mb-16">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               04
@@ -648,9 +648,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="py-24 px-6 relative overflow-hidden">
+      <section id="pricing" className="py-24 2xl:py-32 3xl:py-40 px-6 relative overflow-hidden">
         <div aria-hidden="true" className="btk-breathe pointer-events-none absolute -top-48 left-1/2 w-[820px] h-[460px] rounded-full" style={{ marginLeft: -410, background: 'radial-gradient(closest-side, rgba(0,0,0,0.06), rgba(0,0,0,0) 70%)' }} />
-        <div className="max-w-4xl mx-auto text-center relative">
+        <div className="max-w-4xl 2xl:max-w-5xl mx-auto text-center relative">
           <Reveal className="relative text-center">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               05
@@ -720,8 +720,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-24 px-6 xl:py-28 2xl:py-32" style={{ background: '#FAFAFA' }}>
-        <div className="max-w-3xl mx-auto">
+      <section className="py-24 px-6 xl:py-28 2xl:py-32 3xl:py-40" style={{ background: '#FAFAFA' }}>
+        <div className="max-w-3xl 2xl:max-w-4xl mx-auto">
           <Reveal className="relative text-center mb-16">
             <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
               06
@@ -755,7 +755,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="py-24 px-6 xl:py-28 2xl:py-32 relative overflow-hidden">
+      <section className="py-24 px-6 xl:py-28 2xl:py-32 3xl:py-40 relative overflow-hidden">
         <div aria-hidden="true" className="btk-drift pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-bold leading-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#F4F4F4', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
           Sailwise
         </div>
@@ -780,8 +780,8 @@ export default function LandingPage() {
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-14 px-6 xl:py-16 border-t" style={{ borderColor: '#E5E5E5' }}>
-        <div className="max-w-6xl mx-auto grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
+      <footer className="py-14 px-6 xl:py-16 3xl:py-20 border-t" style={{ borderColor: '#E5E5E5' }}>
+        <div className="max-w-6xl 2xl:max-w-7xl 3xl:max-w-[90rem] mx-auto grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
           <div>
             <div className="flex items-center gap-2 mb-3">
               <img src="/brand/sailwise-mark.png" alt="" aria-hidden="true" className="h-6 w-6 object-contain" />

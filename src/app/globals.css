@@ -50,6 +50,12 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Extra breakpoint for large / ultrawide displays so the landing page keeps
+   filling the viewport instead of collapsing to a narrow centred column. */
+@theme {
+  --breakpoint-3xl: 1800px;
+}
+
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

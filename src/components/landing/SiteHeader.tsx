@@ -71,7 +71,7 @@ export default function SiteHeader() {
         }}
       >
         <div
-          className="max-w-7xl mx-auto px-5 sm:px-6 flex items-center justify-between transition-all duration-200"
+          className="max-w-7xl 3xl:max-w-[90rem] mx-auto px-5 sm:px-6 flex items-center justify-between transition-all duration-200"
           style={{ height: scrolled ? 64 : 76 }}
         >
           <Link href="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 group">
