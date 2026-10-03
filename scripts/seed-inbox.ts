@@ -33,6 +33,7 @@ interface SeedConv {
   estimated_value?: number;
   currency?: string;
   next_action?: string;
+  missing?: string[];
 }
 
 const SEEDS: SeedConv[] = [
@@ -52,6 +53,7 @@ const SEEDS: SeedConv[] = [
     estimated_value: 18500,
     currency: 'USD',
     next_action: 'Send quote for cotton totes',
+    missing: ['Confirmed artwork', 'Delivery date'],
   },
   {
     by: 3 * H,
@@ -69,6 +71,7 @@ const SEEDS: SeedConv[] = [
     estimated_value: 22400,
     currency: 'USD',
     next_action: 'Confirm bottle capacity and engraving cost',
+    missing: ['Engraving area size', 'Delivery date'],
   },
   {
     by: 45 * 60_000,
@@ -98,6 +101,7 @@ const SEEDS: SeedConv[] = [
     estimated_value: 12800,
     currency: 'USD',
     next_action: 'Clarify woven PP vs non-woven; translate to zh for reply',
+    missing: ['Bag material (woven PP vs non-woven)', 'Shipping method'],
   },
   {
     by: 5 * H,
@@ -112,6 +116,7 @@ const SEEDS: SeedConv[] = [
     estimated_value: 15200,
     currency: 'USD',
     next_action: 'Draft notebook quote and sample photo',
+    missing: ['Delivery date', 'Confirmed logo artwork'],
   },
   {
     by: 4 * D,
@@ -138,6 +143,7 @@ const SEEDS: SeedConv[] = [
     estimated_value: 7200,
     currency: 'EUR',
     next_action: 'Request spec sheet; confirm widths',
+    missing: ['Spec sheet', 'Lanyard width'],
   },
   {
     by: 6 * D,
@@ -166,6 +172,7 @@ const SEEDS: SeedConv[] = [
     estimated_value: 8900,
     currency: 'EUR',
     next_action: 'Send fabric compliance certificate',
+    missing: ['Fabric compliance certificate', 'Delivery date'],
   },
   {
     by: 8 * D,
@@ -193,6 +200,7 @@ const SEEDS: SeedConv[] = [
     estimated_value: 15800,
     currency: 'USD',
     next_action: 'Quote 2,000 and 5,000 tiers',
+    missing: ['Colour split', 'Delivery port'],
   },
   {
     by: 10 * D,
@@ -205,6 +213,7 @@ const SEEDS: SeedConv[] = [
     estimated_value: 3850,
     currency: 'EUR',
     next_action: 'Confirm bracelet sizes and imprint',
+    missing: ['Bracelet sizes', 'Delivery date'],
   },
 ];
 
@@ -237,6 +246,7 @@ async function main() {
       estimated_value: seed.estimated_value ?? null,
       currency: seed.currency ?? 'USD',
       next_action: seed.next_action ?? null,
+      missing_info: seed.missing ?? [],
       external_search_enabled: seed.lang === 'zh' || true,
       created_at: lastAt,
       updated_at: lastAt,

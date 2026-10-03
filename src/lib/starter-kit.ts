@@ -632,6 +632,7 @@ interface ConversationSeed {
   next_action: string;
   status: string;
   hours_ago: number;
+  missing_info: string[];
   thread: Array<{ role: 'customer' | 'assistant'; text: string }>;
 }
 
@@ -647,6 +648,7 @@ const CONVERSATIONS: ConversationSeed[] = [
     next_action: 'Send quotation for 5,000 bottles + 3,000 totes',
     status: 'active',
     hours_ago: 2,
+    missing_info: ['Target delivery date', 'Certification reports'],
     thread: [
       {
         role: 'customer',
@@ -665,6 +667,7 @@ const CONVERSATIONS: ConversationSeed[] = [
     next_action: 'Confirm cap closure type and umbrella print',
     status: 'active',
     hours_ago: 5,
+    missing_info: ['Cap closure type', 'Umbrella logo placement'],
     thread: [
       {
         role: 'customer',
@@ -1137,7 +1140,7 @@ async function seedConversations(
 
   const { data: existing } = await supabaseAdmin
     .from('conversations')
-    .select(hasColumns ? 'id, contact_email, subject, folder' : 'id, contact_email')
+    .select(hasColumns ? 'id, contact_email, subject, folder, missing_info' : 'id, contact_email')
     .eq('company_id', companyId);
   const idByEmail = new Map(
     ((existing ?? []) as Array<{
@@ -1145,8 +1148,11 @@ async function seedConversations(
       contact_email: string | null;
       subject: string | null;
       folder: string | null;
+      missing_info: unknown;
     }>).map((c) => [c.contact_email, c])
   );
+  const missingIsEmpty = (v: unknown): boolean =>
+    v == null || (Array.isArray(v) ? v.length === 0 : typeof v === 'string' ? v.trim() === '' : false);
 
   let conversations = 0;
   let messages = 0;
@@ -1176,6 +1182,12 @@ async function seedConversations(
           .update({
             subject: existingRow.subject ?? seed.subject,
             folder: existingRow.folder ?? 'inbox',
+            // A thread with no recorded missing info derives as ready_to_quote
+            // and drops out of the default inbox. Backfill it so the seeded
+            // mailbox stays a work-in-progress instead of looking empty.
+            ...(missingIsEmpty(existingRow.missing_info)
+              ? { missing_info: seed.missing_info }
+              : {}),
           })
           .eq('id', existingRow.id);
       }
@@ -1213,7 +1225,7 @@ async function seedConversations(
       estimated_value: seed.estimated_value,
       currency: seed.currency,
       next_action: seed.next_action,
-      missing_info: [],
+      missing_info: seed.missing_info,
       external_search_enabled: false,
       created_at: lastAt,
       updated_at: lastAt,
