@@ -88,7 +88,7 @@ export default function LoginPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-1.5 group">
-            <img src="/brand/sailwise-mark.png" alt="" aria-hidden="true" className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-105" />
+            <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105" />
             <span className="text-[24px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
               Sailwise
             </span>

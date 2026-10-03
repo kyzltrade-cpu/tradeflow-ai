@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useLang, LangToggle } from '@/lib/lang';
 
 const LINKS = [
-  { href: '#product', label: 'Product' },
-  { href: '#pricing', label: 'Pricing' },
-  { href: '#faq', label: 'FAQ' },
+  { href: '#product', label: ['Product', '產品'] },
+  { href: '#pricing', label: ['Pricing', '價格'] },
+  { href: '#faq', label: ['FAQ', '常見問題'] },
 ];
 
 export default function SiteHeader() {
+  const { t } = useLang();
   const [scrolled, setScrolled] = useState(false);
   const [active, setActive] = useState<string>('');
 
@@ -59,10 +61,10 @@ export default function SiteHeader() {
       >
         <Link href="/" className="group flex shrink-0 items-center gap-2.5">
           <img
-            src="/brand/sailwise-mark.png"
+            src="/brand/sailwise-logo.png"
             alt=""
             aria-hidden="true"
-            className="h-[26px] w-[26px] object-contain transition-transform duration-300 group-hover:scale-105"
+            className="h-[28px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
           />
           <span className="display text-[1.3rem]">Sailwise</span>
         </Link>
@@ -76,21 +78,24 @@ export default function SiteHeader() {
               className={`btk-nav-link text-[14px] whitespace-nowrap ${active === l.href ? 'is-active' : ''}`}
               style={{ color: active === l.href ? 'var(--ink)' : 'var(--ink-2)' }}
             >
-              {l.label}
+              {t(l.label[0], l.label[1])}
             </a>
           ))}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+          <div className="hidden sm:block">
+            <LangToggle />
+          </div>
           <Link
             href="/login"
             className="rounded-lg px-3 py-2 text-[14px] transition-colors hover:text-[var(--ink)]"
             style={{ color: 'var(--ink-2)' }}
           >
-            Log in
+            {t('Log in', '登入')}
           </Link>
           <Link href="/signup" className="btn-primary px-4 py-2 text-[14px]">
-            Start free
+            {t('Start free', '免費試用')}
           </Link>
         </div>
       </div>

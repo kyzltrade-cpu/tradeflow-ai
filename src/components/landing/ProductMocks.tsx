@@ -25,10 +25,10 @@ const CARD = {
 function Logo() {
   return (
     <img
-      src="/brand/sailwise-mark.png"
+      src="/brand/sailwise-logo.png"
       alt=""
       aria-hidden="true"
-      className="h-6 w-6 shrink-0 object-contain"
+      className="h-5 w-auto shrink-0 object-contain"
     />
   );
 }
@@ -401,40 +401,24 @@ export function QuoteMock() {
 
 function PhoneStatusBar() {
   return (
-    <div
-      className="flex shrink-0 items-center justify-between px-5 pt-3 pb-1.5"
-      style={{ background: '#075E54' }}
-    >
-      <span className="text-[11px] font-semibold text-white">9:32</span>
-      <div className="flex items-center gap-[6px]">
-        <span className="flex items-end gap-[2px]">
-          {[4, 6, 8, 10].map((h) => (
-            <span
-              key={h}
-              className="w-[2.5px] rounded-[1px]"
-              style={{ height: h, background: 'rgba(255,255,255,0.9)' }}
-            />
-          ))}
-        </span>
-        <span className="text-[10px] font-semibold text-white/90">5G</span>
-        <span
-          className="flex h-[11px] w-[22px] items-center rounded-[3px] p-[1.5px]"
-          style={{ border: '1px solid rgba(255,255,255,0.6)' }}
-        >
-          <span className="h-full w-[72%] rounded-[2px]" style={{ background: 'rgba(255,255,255,0.9)' }} />
+    <div className="relative z-20 flex shrink-0 items-center justify-between px-7 pt-[15px] pb-1">
+      <span className="text-[12.5px] font-semibold tracking-[-0.01em] text-white">9:41</span>
+      <div className="flex items-center gap-[5px]">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="none" aria-hidden="true">
+          <rect x="0.5" y="7.4" width="2.8" height="3.2" rx="0.6" fill="#fff" />
+          <rect x="4.6" y="5.4" width="2.8" height="5.2" rx="0.6" fill="#fff" />
+          <rect x="8.7" y="3" width="2.8" height="7.6" rx="0.6" fill="#fff" />
+          <rect x="12.8" y="0.6" width="2.8" height="10" rx="0.6" fill="#fff" />
+        </svg>
+        <svg width="16" height="11" viewBox="0 0 16 11" fill="none" aria-hidden="true">
+          <path d="M8 2.3c1.85 0 3.6.68 4.9 1.93l1.25-1.36A9.36 9.36 0 0 0 8 .1 9.36 9.36 0 0 0 1.85 2.87L3.1 4.23A6.98 6.98 0 0 1 8 2.3Z" fill="#fff" />
+          <path d="M8 5.3c.98 0 1.9.37 2.78 1.02l1.24-1.36A6.05 6.05 0 0 0 8 3.35 6.05 6.05 0 0 0 3.98 4.96l1.24 1.36A4.7 4.7 0 0 1 8 5.3Z" fill="#fff" />
+          <circle cx="8" cy="9.2" r="1.5" fill="#fff" />
+        </svg>
+        <span className="flex h-[12px] w-[25px] items-center rounded-[4px] p-[1.5px]" style={{ border: '1px solid rgba(255,255,255,0.55)' }}>
+          <span className="h-full w-[76%] rounded-[2px] bg-white" />
         </span>
       </div>
-    </div>
-  );
-}
-
-function AlertRow({ k, v, muted }: { k: string; v: string; muted?: boolean }) {
-  return (
-    <div className="flex gap-2 text-[12px] leading-snug">
-      <span className="w-[58px] shrink-0" style={{ color: muted ? '#9AA1AC' : '#8A8279' }}>
-        {k}
-      </span>
-      <span style={{ color: muted ? '#6B7280' : '#1B1917' }}>{v}</span>
     </div>
   );
 }
@@ -442,118 +426,183 @@ function AlertRow({ k, v, muted }: { k: string; v: string; muted?: boolean }) {
 function DayChip({ children }: { children: string }) {
   return (
     <div
-      className="mx-auto rounded-full px-2.5 py-1 text-[9.5px] font-semibold tracking-[0.08em]"
-      style={{ background: 'rgba(0,0,0,0.07)', color: '#5B6B66' }}
+      className="mx-auto rounded-[7px] px-2.5 py-1 text-[10.5px] font-medium tracking-[0.04em]"
+      style={{ background: '#FFFFFF', color: '#54656F', boxShadow: '0 1px 0.5px rgba(11,20,26,0.13)' }}
     >
       {children}
     </div>
   );
 }
 
+function Ticks({ read }: { read?: boolean }) {
+  return (
+    <svg width="16" height="11" viewBox="0 0 16 11" fill="none" aria-hidden="true" className="inline-block">
+      <path d="M1 5.6 3.4 8 8 2.2" stroke={read ? '#53BDEB' : '#8696A0'} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M6.4 5.6 8.8 8 15 1" stroke={read ? '#53BDEB' : '#8696A0'} strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function WhatsAppMock() {
   return (
-    <div className="mx-auto w-full max-w-[330px]">
-      {/* Device */}
+    <div className="mx-auto w-full max-w-[302px]">
+      {/* Titanium frame */}
       <div
-        className="rounded-[46px] p-[10px]"
+        className="relative rounded-[3.1rem] p-[11px]"
         style={{
-          background: 'linear-gradient(155deg,#33383E 0%,#15181B 45%,#0B0D0F 100%)',
+          background:
+            'linear-gradient(150deg,#60666d 0%,#2c3035 26%,#14171a 60%,#3c4147 100%)',
           boxShadow:
-            'inset 0 2px 0 rgba(255,255,255,0.07), 0 44px 80px -44px rgba(27,25,23,0.6)',
+            'inset 0 1px 0 rgba(255,255,255,0.22), inset 0 -1px 0 rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.5), 0 60px 100px -55px rgba(20,25,23,0.85)',
         }}
       >
-        <div
-          className="flex h-[556px] flex-col overflow-hidden rounded-[37px]"
-          style={{ background: '#ECE5DD' }}
-        >
-          <PhoneStatusBar />
+        {/* Side buttons */}
+        <span className="absolute -left-[3px] top-[112px] h-7 w-[3px] rounded-l-[2px]" style={{ background: '#3a3f45' }} />
+        <span className="absolute -left-[3px] top-[164px] h-12 w-[3px] rounded-l-[2px]" style={{ background: '#3a3f45' }} />
+        <span className="absolute -right-[3px] top-[150px] h-16 w-[3px] rounded-r-[2px]" style={{ background: '#3a3f45' }} />
 
-          {/* Chat header */}
-          <div
-            className="flex shrink-0 items-center gap-3 px-4 pb-3"
-            style={{ background: '#075E54' }}
-          >
-            <span
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
-              style={{ background: 'rgba(255,255,255,0.22)' }}
-            >
-              <img
-                src="/brand/sailwise-mark-dashboard.png"
-                alt=""
-                aria-hidden="true"
-                className="h-5 w-5 object-contain"
-              />
-            </span>
-            <div className="min-w-0 leading-tight">
-              <div className="text-[13.5px] font-semibold text-white">Sailwise alerts</div>
-              <div className="text-[10.5px]" style={{ color: '#B7E4D8' }}>
-                notifications to you
+        {/* Screen */}
+        <div
+          className="relative flex flex-col overflow-hidden rounded-[2.55rem]"
+          style={{ aspectRatio: '9 / 19.5', background: '#0B141A' }}
+        >
+          {/* Dynamic Island */}
+          <div className="absolute left-1/2 top-[9px] z-30 h-[27px] w-[94px] -translate-x-1/2 rounded-full bg-black" />
+
+          {/* WhatsApp chrome: status bar + chat header */}
+          <div className="relative shrink-0" style={{ background: '#008069' }}>
+            <PhoneStatusBar />
+            <div className="flex items-center gap-3 px-3.5 pb-2.5 pt-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+                <path d="M15 5l-7 7 7 7" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white">
+                <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-5 w-auto object-contain" />
+              </span>
+              <div className="min-w-0 flex-1 leading-tight">
+                <div className="truncate text-[14px] font-medium text-white">Sailwise alerts</div>
+                <div className="flex items-center gap-1 text-[11px]" style={{ color: '#B7E4D8' }}>
+                  <span className="inline-block h-[6px] w-[6px] rounded-full" style={{ background: '#7AE2C4' }} />
+                  online
+                </div>
               </div>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+                <path d="M15 10l5-3v10l-5-3" stroke="#fff" strokeWidth="1.7" strokeLinejoin="round" />
+                <rect x="3" y="6" width="12" height="12" rx="2.5" stroke="#fff" strokeWidth="1.7" />
+              </svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="shrink-0">
+                <path d="M6.6 10.8a15 15 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z" fill="#fff" />
+              </svg>
             </div>
           </div>
 
-          {/* Alert feed */}
-          <div className="flex flex-1 flex-col gap-3.5 px-3.5 py-4">
+          {/* Chat body */}
+          <div className="relative flex flex-1 flex-col gap-2 overflow-hidden px-3 py-3" style={{ background: '#EFEAE2' }}>
             <DayChip>TODAY</DayChip>
 
-            <div
-              className="rounded-xl rounded-tl-[3px] bg-white p-3.5"
-              style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.10)' }}
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#C96A44' }} />
-                <span
-                  className="text-[10px] font-bold tracking-[0.12em] uppercase"
-                  style={{ color: '#C96A44' }}
-                >
-                  Needs you
-                </span>
-              </div>
-              <div className="mt-2.5 space-y-1.5">
-                <AlertRow k="From" v="Sarah Chen · Pacific Trading" />
-                <AlertRow k="Product" v="500ml vacuum bottle · 304" />
-                <AlertRow k="Quantity" v="10,000 pcs" />
-                <AlertRow k="Status" v="Specs ready — awaiting review" />
-              </div>
+            {/* Incoming alert bubble */}
+            <div className="flex justify-start">
               <div
-                className="mt-3 rounded-lg py-2 text-center text-[11.5px] font-semibold text-white"
-                style={{ background: '#075E54' }}
+                className="relative max-w-[83%] rounded-[8px] rounded-tl-[2px] bg-white px-2.5 py-2 text-[12.5px] leading-snug"
+                style={{ color: '#111B21', boxShadow: '0 1px 0.5px rgba(11,20,26,0.13)' }}
               >
-                Review the draft
-              </div>
-              <div className="mt-1.5 text-right text-[9px]" style={{ color: '#9AA1AC' }}>
-                9:32 AM
-              </div>
-            </div>
-
-            <DayChip>YESTERDAY</DayChip>
-
-            <div
-              className="rounded-xl rounded-tl-[3px] p-3"
-              style={{ background: 'rgba(255,255,255,0.68)', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}
-            >
-              <div className="flex items-center gap-1.5">
-                <span className="h-1.5 w-1.5 rounded-full" style={{ background: '#8A8279' }} />
-                <span
-                  className="text-[10px] font-bold tracking-[0.12em] uppercase"
-                  style={{ color: '#8A8279' }}
-                >
-                  Sent
-                </span>
-              </div>
-              <div className="mt-2 space-y-1.5">
-                <AlertRow k="From" v="Ah Wei · Kowloon Trading" muted />
-                <AlertRow k="Quote" v="USD 53,525 · approved" muted />
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <span className="h-[7px] w-[7px] rounded-full" style={{ background: '#C96A44' }} />
+                  <span className="text-[10px] font-bold tracking-[0.12em] uppercase" style={{ color: '#C96A44' }}>
+                    Needs you
+                  </span>
+                </div>
+                <div className="font-semibold">Sarah Chen · Pacific Trading</div>
+                <div>500ml vacuum bottle · 304</div>
+                <div>10,000 pcs · specs ready to price</div>
+                <div className="mt-1.5 border-t pt-1.5 text-[12px] font-medium" style={{ borderColor: '#E9EDEF', color: '#008069' }}>
+                  Review the draft ›
+                </div>
+                <div className="mt-1 text-right text-[10.5px]" style={{ color: '#667781' }}>
+                  9:41 AM
+                </div>
               </div>
             </div>
 
-            <p
-              className="mt-auto pt-2 text-center text-[9.5px] leading-snug"
-              style={{ color: '#6B7A75' }}
-            >
-              Alerts only — replies send from your mailbox
-            </p>
+            {/* Outgoing reply bubble (owner) */}
+            <div className="flex justify-end">
+              <div
+                className="relative max-w-[80%] rounded-[8px] rounded-tr-[2px] px-2.5 py-2 text-[12.5px] leading-snug"
+                style={{ background: '#D9FDD3', color: '#111B21', boxShadow: '0 1px 0.5px rgba(11,20,26,0.13)' }}
+              >
+                <div>Approved — sending the quote from my mailbox.</div>
+                <div className="mt-1 flex items-center justify-end gap-1 text-[10.5px]" style={{ color: '#667781' }}>
+                  9:42 AM
+                  <Ticks read />
+                </div>
+              </div>
+            </div>
+
+            {/* Chinese-language alert */}
+            <div className="flex justify-start">
+              <div
+                className="relative max-w-[83%] rounded-[8px] rounded-tl-[2px] bg-white px-2.5 py-2 text-[12.5px] leading-snug"
+                style={{ color: '#111B21', boxShadow: '0 1px 0.5px rgba(11,20,26,0.13)' }}
+              >
+                <div className="mb-1.5 flex items-center gap-1.5">
+                  <span className="h-[7px] w-[7px] rounded-full" style={{ background: '#14342B' }} />
+                  <span className="text-[10px] font-bold tracking-[0.12em] uppercase" style={{ color: '#14342B' }}>
+                    已寄出
+                  </span>
+                </div>
+                <div className="font-semibold">Ah Wei · 九龍貿易</div>
+                <div>報價單 Q-2091 · USD 53,525</div>
+                <div className="mt-1 text-right text-[10.5px]" style={{ color: '#667781' }}>
+                  9:41 AM
+                </div>
+              </div>
+            </div>
+
+            {/* Encryption note */}
+            <div className="mt-auto">
+              <div
+                className="mx-auto max-w-[85%] rounded-[7px] px-2.5 py-1.5 text-center text-[10.5px] leading-snug"
+                style={{ background: '#FFE8A3', color: '#54656F' }}
+              >
+                Messages and calls are end-to-end encrypted.
+              </div>
+              <p className="mt-3 text-center text-[10px] leading-snug" style={{ color: '#667781' }}>
+                Alerts only — replies send from your own mailbox
+              </p>
+            </div>
           </div>
+
+          {/* Input bar */}
+          <div className="flex shrink-0 items-center gap-2 px-2.5 py-2" style={{ background: '#F0F2F5' }}>
+            <div className="flex flex-1 items-center gap-2 rounded-full bg-white px-3 py-1.5" style={{ border: '1px solid #E9EDEF' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: '#8696A0' }}>
+                <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
+                <circle cx="9" cy="10" r="1.1" fill="currentColor" />
+                <circle cx="15" cy="10" r="1.1" fill="currentColor" />
+                <path d="M8.4 14.2c.9 1.1 2.2 1.7 3.6 1.7s2.7-.6 3.6-1.7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+              </svg>
+              <span className="flex-1 text-[12.5px]" style={{ color: '#8696A0' }}>
+                Message
+              </span>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: '#8696A0' }}>
+                <path d="M8 12.5 15.5 5a3 3 0 0 1 4.2 4.2l-9.9 9.9a5 5 0 0 1-7-7l9.4-9.4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ color: '#8696A0' }}>
+                <rect x="3" y="6.5" width="18" height="13" rx="3" stroke="currentColor" strokeWidth="1.6" />
+                <circle cx="12" cy="13" r="3.4" stroke="currentColor" strokeWidth="1.6" />
+                <path d="M8.5 6.5 10 4h4l1.5 2.5" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full" style={{ background: '#00A884' }}>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="9" y="3" width="6" height="11" rx="3" fill="#fff" />
+                <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+              </svg>
+            </span>
+          </div>
+
+          {/* Home indicator */}
+          <div className="pointer-events-none absolute bottom-[7px] left-1/2 z-30 h-[5px] w-[116px] -translate-x-1/2 rounded-full bg-black/30" />
         </div>
       </div>
     </div>

@@ -47,7 +47,7 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
         <div className="w-full max-w-[400px] text-center">
           <Link href="/" className="inline-flex items-center gap-1.5 group">
-            <img src="/brand/sailwise-mark.png" alt="" aria-hidden="true" className="h-7 w-7 object-contain transition-transform duration-200 group-hover:scale-105" />
+            <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-105" />
             <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>Sailwise</span>
           </Link>
           <div className="mt-8 p-6 border rounded-lg" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
@@ -92,7 +92,7 @@ export default function SignupPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-1.5 group">
-            <img src="/brand/sailwise-mark.png" alt="" aria-hidden="true" className="h-7 w-7 object-contain transition-transform duration-200 group-hover:scale-105" />
+            <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-105" />
             <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
               Sailwise
             </span>
