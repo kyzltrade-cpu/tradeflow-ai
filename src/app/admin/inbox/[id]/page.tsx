@@ -1324,11 +1324,11 @@ export default function InboxDetailPage() {
 
         {/* Right rail */}
         <div className="hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 flex-col border-l overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
-          {/* ── Pod: Specs ─────────────────────────────────────── */}
-          {renderSpecsCard()}
-
           {/* ── Pod: Buyer ─────────────────────────────────────── */}
           {renderBuyerCard()}
+
+          {/* ── Pod: Specs ─────────────────────────────────────── */}
+          {renderSpecsCard()}
 
           {/* ── Pod: Status ────────────────────────────────────── */}
           {renderStatusCard()}
