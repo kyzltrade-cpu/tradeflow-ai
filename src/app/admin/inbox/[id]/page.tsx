@@ -29,6 +29,51 @@ interface Message {
   attachments?: Array<Record<string, unknown>> | null;
 }
 
+interface BuyerHistory {
+  past_threads: number;
+  past_order_total: number | null;
+  past_order_currency: string | null;
+  payment_terms: string | null;
+}
+
+interface ThreadView {
+  state: 'needs_specs' | 'waiting_on_buyer' | 'ready_to_quote' | 'cold' | 'closed';
+  label: string;
+  missing: string[];
+  missingCount: number;
+  owedReply: boolean;
+  needsYou: boolean;
+  waitingOnBuyer: boolean;
+  needsSpecs: boolean;
+  readyToQuote: boolean;
+  followUpDue: boolean;
+  cold: boolean;
+  paused: boolean;
+  chaseCount: number;
+  lastInboundAt: string | null;
+  lastOutboundAt: string | null;
+  lastActivityAt: string | null;
+  silentDays: number;
+  nextActionDue: string | null;
+}
+
+interface PendingDraft {
+  id: string;
+  subject: string | null;
+  body: string | null;
+  to_address: string | null;
+  draft_status: string | null;
+  created_at: string | null;
+}
+
+interface ExtractedItem {
+  product?: string;
+  quantity?: number;
+  unit?: string;
+  specs?: string | null;
+  target_price?: string | null;
+}
+
 interface ConversationWithRelations {
   id: string;
   contact_name: string | null;
@@ -51,6 +96,9 @@ interface ConversationWithRelations {
   quotes: QuoteRec[];
   approvals: ApprovalRec[];
   contact?: { name: string | null; email: string | null; customer_name: string | null };
+  buyer?: BuyerHistory | null;
+  thread?: ThreadView | null;
+  pending_draft?: PendingDraft | null;
 }
 
 interface OpportunityRec {
@@ -206,6 +254,8 @@ export default function InboxDetailPage() {
   const [togglingSearch, setTogglingSearch] = useState(false);
   const [detectLang, setDetectLang] = useState<string | null>(null);
   const [expandedCites, setExpandedCites] = useState<Set<string>>(new Set());
+  const [quoteOpen, setQuoteOpen] = useState(false);
+  const [approvingChase, setApprovingChase] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const realtimeChannelRef = useRef<ReturnType<typeof supabaseRealtime.channel> | null>(null);
 
@@ -248,11 +298,11 @@ export default function InboxDetailPage() {
     }
   }, [id, companyId]);
 
-  const fetchSuggestion = useCallback(async (silent = false) => {
+  const fetchSuggestion = useCallback(async (silent = false, preview = false) => {
     if (companyLoading || !companyId || !id) return;
     try {
       if (!silent) setLoadingSuggest(true);
-      const res = await authFetch(`/api/admin/inbox/${id}/suggest`);
+      const res = await authFetch(`/api/admin/inbox/${id}/suggest${preview ? '?preview=1' : ''}`);
       if (!res.ok) {
         if (res.status === 402) {
           const data = await res.json().catch(() => null);
@@ -282,6 +332,15 @@ export default function InboxDetailPage() {
   useEffect(() => {
     fetchDetail();
   }, [fetchDetail]);
+
+  // Load the parsed spec extraction up front (preview = no auto-draft side effect).
+  useEffect(() => {
+    if (companyLoading || !companyId || !id) return;
+    const timer = setTimeout(() => {
+      void fetchSuggestion(true, true);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [companyLoading, companyId, id, fetchSuggestion]);
 
   // Realtime messages
   useEffect(() => {
@@ -555,6 +614,29 @@ export default function InboxDetailPage() {
     }
   };
 
+  const approveChase = async (draftId: string) => {
+    if (!draftId || approvingChase) return;
+    setApprovingChase(true);
+    try {
+      const res = await authFetch(`/api/admin/outbound/${draftId}/send`, { method: 'POST' });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) throw new Error(data?.error || 'Send failed');
+      if (data?.pending) {
+        showToast(
+          t('Outbound email not configured — draft kept for later', '尚未設定外寄郵件——草稿已保留'),
+          'error'
+        );
+      } else {
+        showToast(t('Chase sent', '已發送追蹤訊息'), 'success');
+      }
+      await refreshDetail();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : t('Failed to send chase', '發送追蹤訊息失敗'), 'error');
+    } finally {
+      setApprovingChase(false);
+    }
+  };
+
   const advanceStage = async (oppId: string) => {
     const opp = detail?.opportunities.find((o) => o.id === oppId);
     if (!opp) return;
@@ -642,6 +724,298 @@ export default function InboxDetailPage() {
       if (next.has(lineId)) next.delete(lineId); else next.add(lineId);
       return next;
     });
+  };
+
+  // ── SPECS / BUYER / STATUS derivations (render-only) ────────────────
+  const specItems = (((suggestion?.extraction?.items as ExtractedItem[] | undefined) || [])).filter(Boolean);
+  const specText = specItems
+    .map((i) => `${i.product || ''} ${i.specs || ''} ${i.target_price || ''}`)
+    .join(' ');
+  const uniqueVals = (vals: Array<string | null | undefined>) =>
+    [...new Set(vals.map((v) => (v || '').trim()).filter(Boolean))];
+  const incotermMatch = specText.match(/\b(FOB|CIF|CFR|EXW|FCA|CPT|CIP|DAP|DPU|DDP)\b[^.]{0,24}/i);
+  const timelineMatch = specText.match(/(?:lead time|delivery|timeline|within \d+ days?|\d+[- ]?day lead|by (?:the )?(?:end of )?\w+)[^.]{0,32}/i);
+  const specRows: Array<{ key: string; label: string; value: string | null }> = [
+    {
+      key: 'quantity',
+      label: t('Quantity', '數量'),
+      value:
+        uniqueVals(
+          specItems.map((i) =>
+            typeof i.quantity === 'number' && i.quantity > 0
+              ? `${i.quantity.toLocaleString()} ${i.unit || 'pcs'}`
+              : null
+          )
+        ).join(', ') || null,
+    },
+    { key: 'product', label: t('Product', '產品'), value: uniqueVals(specItems.map((i) => i.product)).join(' · ') || null },
+    { key: 'material', label: t('Material / size', '材質／尺寸'), value: uniqueVals(specItems.map((i) => i.specs)).join(' · ') || null },
+    {
+      key: 'logo',
+      label: t('Logo / printing', '商標／印刷'),
+      value:
+        uniqueVals(
+          specItems
+            .filter((i) => /print|logo|laser|engrav|embroid|screen|custom|label|decor/i.test(`${i.product || ''} ${i.specs || ''}`))
+            .map((i) => i.product)
+        ).join(' · ') || null,
+    },
+    { key: 'incoterm', label: t('Incoterm', '貿易條件'), value: incotermMatch ? incotermMatch[0].trim() : null },
+    { key: 'target', label: t('Target price', '目標價'), value: uniqueVals(specItems.map((i) => i.target_price)).join(', ') || null },
+    { key: 'timeline', label: t('Timeline', '交期'), value: timelineMatch ? timelineMatch[0].trim() : null },
+  ];
+  const specsLoading = loadingSuggest && !suggestion;
+
+  const buyer = body?.buyer || null;
+  const buyerNew = !!buyer && buyer.past_threads === 0 && buyer.past_order_total == null && !buyer.payment_terms;
+  const thread = body?.thread || null;
+  const chaseDraft = body?.pending_draft || null;
+  const threadStateStyle = (state?: string) => {
+    switch (state) {
+      case 'needs_specs':
+        return { color: '#D97706', bg: '#FEF3C7' };
+      case 'waiting_on_buyer':
+        return { color: '#2563EB', bg: '#EFF6FF' };
+      case 'ready_to_quote':
+        return { color: '#038153', bg: '#E8F5F1' };
+      case 'cold':
+        return { color: 'var(--error)', bg: 'var(--error-bg, #FBE9EA)' };
+      default:
+        return { color: 'var(--text-muted)', bg: 'var(--bg)' };
+    }
+  };
+  const fmtDate = (v?: string | null) => (v ? new Date(v).toLocaleDateString() : null);
+
+  const renderSpecsCard = () => (
+    <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex items-center gap-2 mb-3">
+        <FileText width="14" height="14" style={{ color: 'var(--accent)' }} />
+        <h3 className="text-[13px] font-semibold">{t('Specs', '規格')}</h3>
+      </div>
+      {specsLoading ? (
+        <SkeletonBlock lines={5} />
+      ) : (
+        <div className="space-y-1.5">
+          {specRows.map((r) => (
+            <div key={r.key} className="flex items-start gap-2">
+              <span className="w-[104px] shrink-0 text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                {r.label}
+              </span>
+              <span
+                className="flex-1 min-w-0 text-[11.5px] flex items-start gap-1"
+                style={{ color: r.value ? 'var(--text)' : 'var(--error)' }}
+              >
+                {r.value ? (
+                  <>
+                    <CheckCircle width="11" height="11" className="mt-[2px] shrink-0" style={{ color: '#038153' }} />
+                    <span className="min-w-0">{r.value}</span>
+                  </>
+                ) : (
+                  <span style={{ opacity: 0.75 }}>{t('missing', '未提供')}</span>
+                )}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderBuyerCard = () => (
+    <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
+      <div className="flex items-center gap-2 mb-3">
+        <User width="14" height="14" style={{ color: 'var(--accent)' }} />
+        <h3 className="text-[13px] font-semibold">{t('Buyer', '買家')}</h3>
+        {buyerNew && (
+          <span
+            className="text-[10px] px-1.5 py-0.5 rounded font-medium ml-auto"
+            style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+          >
+            {t('New buyer', '新買家')}
+          </span>
+        )}
+      </div>
+      {body ? (
+        <>
+          <div className="flex items-start gap-2.5">
+            <div
+              className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-white text-[13px] font-semibold"
+              style={{ background: '#6366F1' }}
+            >
+              {contactName.slice(0, 1).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-medium truncate">{contactName}</p>
+              {contactEmailLine && (
+                <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{contactEmailLine}</p>
+              )}
+              {body.contact?.customer_name && (
+                <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{body.contact.customer_name}</p>
+              )}
+            </div>
+          </div>
+          {buyer && (
+            <div className="grid grid-cols-2 gap-2 mt-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                  {t('Past threads', '過往對話')}
+                </p>
+                <p className="text-[12.5px] font-semibold">{buyer.past_threads}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
+                  {t('Past orders', '過往訂單')}
+                </p>
+                <p className="text-[12.5px] font-semibold">
+                  {buyer.past_order_total != null
+                    ? fmtAmount(buyer.past_order_total, buyer.past_order_currency || 'USD')
+                    : buyer.past_threads > 0
+                      ? t('—', '—')
+                      : t('None yet', '暫無')}
+                </p>
+              </div>
+            </div>
+          )}
+          <div className="flex items-start gap-1.5 mt-3">
+            <Clock width="11" height="11" className="mt-[2px] shrink-0" style={{ color: 'var(--text-muted)' }} />
+            <p className="text-[11px]" style={{ color: 'var(--text)' }}>
+              {t('Payment', '付款')}: {buyer?.payment_terms || t('no terms on file', '尚無付款條件')}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-1.5 mt-3">
+            <span
+              className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+              style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+            >
+              {body.channel || 'email'}
+            </span>
+            {detectLang && (
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+              >
+                {detectLang === 'zh' ? '中文' : 'EN'}
+              </span>
+            )}
+            {body.created_at && (
+              <span
+                className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}
+              >
+                {new Date(body.created_at).toLocaleDateString()}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={toggleExternalSearch}
+            disabled={togglingSearch}
+            className="flex items-center gap-1.5 text-[11px] font-medium px-2 py-1.5 rounded-[4px] border mt-3 w-full"
+            style={{
+              borderColor: body.external_search_enabled ? '#038153' : 'var(--border)',
+              background: body.external_search_enabled ? '#E8F5F1' : 'transparent',
+              color: body.external_search_enabled ? '#038153' : 'var(--text-muted)',
+            }}
+          >
+            <Globe width="12" height="12" />
+            {t('External search', '外部搜尋')}:{' '}
+            {body.external_search_enabled
+              ? t('ON — AI can web-search for this customer', '開啟——AI 可為此客戶作網絡搜尋')
+              : t('OFF', '關閉')}
+          </button>
+        </>
+      ) : (
+        <SkeletonBlock lines={4} />
+      )}
+    </div>
+  );
+
+  const renderStatusCard = () => {
+    const ss = threadStateStyle(thread?.state);
+    return (
+      <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
+        <div className="flex items-center gap-2 mb-3">
+          <Clock width="14" height="14" style={{ color: 'var(--accent)' }} />
+          <h3 className="text-[13px] font-semibold">{t('Status', '狀態')}</h3>
+          {thread && (
+            <span
+              className="text-[10px] px-1.5 py-0.5 rounded font-medium ml-auto"
+              style={{ background: ss.bg, color: ss.color }}
+            >
+              {thread.label}
+            </span>
+          )}
+        </div>
+        {!body ? (
+          <SkeletonBlock lines={4} />
+        ) : thread ? (
+          <div className="space-y-2.5">
+            <p className="text-[12px]">
+              {thread.owedReply || thread.needsYou
+                ? t('Waiting on us', '等待我們回覆')
+                : thread.waitingOnBuyer
+                  ? t('Waiting on buyer', '等待買家回覆')
+                  : thread.readyToQuote
+                    ? t('Ready to quote', '可報價')
+                    : thread.label}
+            </p>
+            {thread.missing.length > 0 && (
+              <div>
+                <p className="text-[10px] uppercase tracking-wide mb-1" style={{ color: 'var(--text-muted)' }}>
+                  {t('Outstanding', '待補')}
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {thread.missing.map((m, i) => (
+                    <span
+                      key={i}
+                      className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+                      style={{ background: '#FEF3C7', color: '#D97706' }}
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-[11px]">
+              <span style={{ color: 'var(--text-muted)' }}>{t('Quiet for', '靜默')}</span>
+              <span className="font-medium">
+                {thread.silentDays === 0 ? t('today', '今天') : t(`${thread.silentDays}d`, `${thread.silentDays} 天`)}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[11px]">
+              <span style={{ color: 'var(--text-muted)' }}>{t('Chases sent', '已追蹤')}</span>
+              <span className="font-medium">{thread.chaseCount}</span>
+            </div>
+            {thread.lastOutboundAt && (
+              <div className="flex items-center justify-between text-[11px]">
+                <span style={{ color: 'var(--text-muted)' }}>{t('Last chased', '上次追蹤')}</span>
+                <span className="font-medium">{fmtDate(thread.lastOutboundAt)}</span>
+              </div>
+            )}
+            {thread.nextActionDue && (
+              <div className="flex items-center justify-between text-[11px]">
+                <span style={{ color: 'var(--text-muted)' }}>{t('Next chase', '下次追蹤')}</span>
+                <span className="font-medium">{fmtDate(thread.nextActionDue)}</span>
+              </div>
+            )}
+            {chaseDraft && (
+              <button
+                onClick={() => approveChase(chaseDraft.id)}
+                disabled={approvingChase}
+                className="w-full text-[12px] font-semibold px-3 py-2 rounded-[4px] text-white disabled:opacity-50 mt-1"
+                style={{ background: 'var(--accent)' }}
+              >
+                {approvingChase ? t('Sending…', '傳送中…') : t('Approve chase', '核准追蹤')}
+              </button>
+            )}
+          </div>
+        ) : (
+          <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+            {t('No status available', '暫無狀態')}
+          </p>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -950,6 +1324,15 @@ export default function InboxDetailPage() {
 
         {/* Right rail */}
         <div className="hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 flex-col border-l overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
+          {/* ── Pod: Specs ─────────────────────────────────────── */}
+          {renderSpecsCard()}
+
+          {/* ── Pod: Buyer ─────────────────────────────────────── */}
+          {renderBuyerCard()}
+
+          {/* ── Pod: Status ────────────────────────────────────── */}
+          {renderStatusCard()}
+
           {/* ── Pod: Big deal ──────────────────────────────────────── */}
           {detail && (detail.opportunities || []).filter(isBigDeal).length > 0 && (
             <div className="border-b p-4" style={{ borderColor: '#F59E0B40', background: 'linear-gradient(90deg, #FFFBEB 0%, #FEF3C7 100%)' }}>
@@ -987,77 +1370,26 @@ export default function InboxDetailPage() {
             </div>
           )}
 
-          {/* ── Pod: Customer ─────────────────────────────────── */}
-          <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center gap-2 mb-3">
-              <User width="14" height="14" style={{ color: 'var(--accent)' }} />
-              <h3 className="text-[13px] font-semibold">{t('Customer', '客戶')}</h3>
-            </div>
-            {body ? (
-              <>
-                <div className="flex items-start gap-2.5">
-                  <div
-                    className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-white text-[13px] font-semibold"
-                    style={{ background: '#6366F1' }}
-                  >
-                    {contactName.slice(0, 1).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium truncate">{contactName}</p>
-                    {contactEmailLine && <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>{contactEmailLine}</p>}
-                    {body.contact?.customer_name && (
-                      <p className="text-[12px] truncate" style={{ color: 'var(--text-muted)' }}>
-                        {body.contact.customer_name}
-                      </p>
-                    )}
-                    {body.contact_phone && <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>{body.contact_phone}</p>}
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                    {body.channel || 'email'}
-                  </span>
-                  {detectLang && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                      {detectLang === 'zh' ? '中文' : 'EN'}
-                    </span>
-                  )}
-                  {body.created_at && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--bg)', border: '1px solid var(--border)', color: 'var(--text-muted)' }}>
-                      {new Date(body.created_at).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={toggleExternalSearch}
-                  disabled={togglingSearch}
-                  className="flex items-center gap-1.5 text-[11px] font-medium px-2 py-1.5 rounded-[4px] border mt-3 w-full"
-                  style={{
-                    borderColor: body.external_search_enabled ? '#038153' : 'var(--border)',
-                    background: body.external_search_enabled ? '#E8F5F1' : 'transparent',
-                    color: body.external_search_enabled ? '#038153' : 'var(--text-muted)',
-                  }}
-                >
-                  <Globe width="12" height="12" />
-                  {t('External search', '外部搜尋')}: {body.external_search_enabled ? t('ON — AI can web-search for this customer', '開啟——AI 可為此客戶作網絡搜尋') : t('OFF', '關閉')}
-                </button>
-              </>
-            ) : (
-              <SkeletonBlock lines={4} />
-            )}
-          </div>
-
           {/* ── Pod: Quote (FX + target + citations) ───────────── */}
           <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
-            <div className="flex items-center gap-2 mb-2">
+            <button
+              type="button"
+              onClick={() => setQuoteOpen((o) => !o)}
+              className="flex items-center gap-2 w-full text-left mb-2"
+            >
               <Sparkles width="14" height="14" style={{ color: 'var(--accent)' }} />
               <h3 className="text-[13px] font-semibold">{t('Quote', '報價')}</h3>
               {suggestion && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium ml-auto" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
+                <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
                   {suggestion.extraction?.source === 'heuristic' ? t('Heuristic', '規則提取') : 'AI'}
                 </span>
               )}
-            </div>
+              <span className="ml-auto text-[12px] leading-none" style={{ color: 'var(--text-muted)' }}>
+                {quoteOpen ? '▾' : '▸'}
+              </span>
+            </button>
+            {quoteOpen && (
+              <>
             {loadingSuggest ? (
               <SkeletonBlock lines={3} />
             ) : suggestion && suggestion.request_summary ? (
@@ -1220,6 +1552,8 @@ export default function InboxDetailPage() {
                     {suggestion.sources_summary.join(' ')}
                   </p>
                 )}
+              </>
+            )}
               </>
             )}
           </div>

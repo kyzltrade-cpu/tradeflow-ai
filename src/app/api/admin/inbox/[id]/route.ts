@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 import { sendEmail } from '@/lib/email';
+import { deriveThread, type ThreadMessage } from '@/lib/thread-state';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -156,6 +157,111 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       identityContact?.email || (conversation.contact_email as string | null) || null;
     const customerName = identityCustomer?.trading_name || identityCustomer?.legal_name || null;
 
+    // ── Buyer history ───────────────────────────────────────────────────
+    // Is this a returning buyer? How much have they ordered? How do they pay?
+    // Everything is best-effort: a missing table/column just yields nulls and
+    // the card degrades to "new buyer".
+    let pastThreads = 0;
+    if (contactEmail) {
+      const { count } = await supabaseAdmin
+        .from('conversations')
+        .select('id', { count: 'exact', head: true })
+        .eq('company_id', auth.companyId)
+        .eq('contact_email', contactEmail)
+        .neq('id', id);
+      pastThreads = count ?? 0;
+    }
+
+    // The thread may not surface any opportunity/quote yet, so widen the buyer
+    // scope by matching the sender email against the contacts table. This is
+    // what makes history show for a returning buyer on a brand-new thread.
+    const allContactIds = [...contactIds];
+    const allCustomerIds = [...customerIds];
+    if (contactEmail) {
+      const { data: byEmail } = await supabaseAdmin
+        .from('contacts')
+        .select('id, customer_id')
+        .eq('company_id', auth.companyId)
+        .ilike('email', contactEmail)
+        .limit(5);
+      for (const c of (byEmail || []) as Array<{ id: string; customer_id: string | null }>) {
+        if (c.id && !allContactIds.includes(c.id)) allContactIds.push(c.id);
+        if (c.customer_id && !allCustomerIds.includes(c.customer_id)) allCustomerIds.push(c.customer_id);
+      }
+    }
+
+    const scope = allCustomerIds.length
+      ? { column: 'customer_id', ids: allCustomerIds }
+      : allContactIds.length
+        ? { column: 'contact_id', ids: allContactIds }
+        : null;
+
+    let pastOrderTotal: number | null = null;
+    let pastOrderCurrency: string | null = null;
+    let paymentTerms: string | null = null;
+    if (scope) {
+      const [wonRes, quoteRes] = await Promise.all([
+        supabaseAdmin
+          .from('opportunities')
+          .select('estimated_order_value, currency')
+          .eq('company_id', auth.companyId)
+          .eq('stage', 'WON')
+          .is('deleted_at', null)
+          .in(scope.column, scope.ids),
+        supabaseAdmin
+          .from('quotes')
+          .select('payment_terms, currency, created_at')
+          .eq('company_id', auth.companyId)
+          .in(scope.column, scope.ids)
+          .order('created_at', { ascending: false })
+          .limit(25),
+      ]);
+      const won = (wonRes.data || []) as Array<{
+        estimated_order_value: number | null;
+        currency: string | null;
+      }>;
+      if (won.length) {
+        pastOrderTotal = won.reduce((sum, o) => sum + (Number(o.estimated_order_value) || 0), 0);
+        pastOrderCurrency = won.find((o) => o.currency)?.currency ?? null;
+      }
+      const quoteRows = (quoteRes.data || []) as Array<{
+        payment_terms: string | null;
+        currency: string | null;
+      }>;
+      paymentTerms =
+        quoteRows
+          .map((q) => q.payment_terms)
+          .find((v): v is string => !!v && v.trim().length > 0) ?? null;
+      if (!pastOrderCurrency) {
+        pastOrderCurrency = quoteRows.find((q) => q.currency)?.currency ?? null;
+      }
+    }
+
+    // ── Reply-debt state + the open chase draft (if any) ────────────────
+    const { data: openDrafts } = await supabaseAdmin
+      .from('outbound_messages')
+      .select('id, conversation_id, draft_status, subject, body, to_address, created_at')
+      .eq('company_id', auth.companyId)
+      .eq('conversation_id', id)
+      .in('draft_status', ['draft', 'pending_approval'])
+      .order('created_at', { ascending: false })
+      .limit(1);
+    const pendingDraft = (openDrafts?.[0] as Record<string, unknown> | undefined) ?? null;
+
+    const derivation = deriveThread({
+      conversation: {
+        status: conversation.status as string | null,
+        missing_info: conversation.missing_info,
+        opportunity_id: conversation.opportunity_id as string | null,
+        next_action_due: conversation.next_action_due as string | null,
+        last_message_at: conversation.last_message_at as string | null,
+        created_at: conversation.created_at as string | null,
+      },
+      messages: (messages || []) as ThreadMessage[],
+      hasPendingDraft: !!pendingDraft,
+      opportunity: (opportunities as Array<{ stage?: string | null }>)[0] ?? null,
+    });
+
     return NextResponse.json({
       conversation,
       messages: messages || [],
@@ -168,6 +274,17 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         email: contactEmail,
         customer_name: customerName,
       },
+      buyer: {
+        past_threads: pastThreads,
+        past_order_total: pastOrderTotal,
+        past_order_currency: pastOrderCurrency,
+        payment_terms: paymentTerms,
+      },
+      thread: {
+        ...derivation,
+        nextActionDue: (conversation.next_action_due as string | null) ?? null,
+      },
+      pending_draft: pendingDraft,
     });
   } catch (err) {
     if (err instanceof Response) return err;

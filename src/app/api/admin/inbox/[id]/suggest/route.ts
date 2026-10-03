@@ -557,18 +557,24 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       `FX ${config.fx_rate.toFixed(4)} · ${config.fx_pair}${liveFx.live ? ' · live' : ''}`,
     ];
 
-    const draft = await ensureAutoDraft({
-      companyId: auth.companyId,
-      conversationId: id,
-      conversation,
-      requestSummary: extraction.request_summary,
-      currency,
-      lines,
-      subtotal,
-      sourcesSummary,
-      actorId: auth.user.id,
-      actorEmail: auth.user.email,
-    });
+    // `?preview=1` runs the extraction + pricing so callers can render the
+    // parsed specs without the side effect of auto-creating an opportunity and
+    // draft quote. The explicit "Price" action omits it.
+    const preview = req.nextUrl.searchParams.get('preview') === '1';
+    const draft = preview
+      ? null
+      : await ensureAutoDraft({
+          companyId: auth.companyId,
+          conversationId: id,
+          conversation,
+          requestSummary: extraction.request_summary,
+          currency,
+          lines,
+          subtotal,
+          sourcesSummary,
+          actorId: auth.user.id,
+          actorEmail: auth.user.email,
+        });
 
     return NextResponse.json({
       conversation,

@@ -761,6 +761,19 @@ const SAMPLE_BIG_DEALS: SampleBigDeal[] = [
     next_action: 'Follow up on quote sent at client request',
     ageMinutes: 26 * 60,
   },
+  // A closed-won reorder for a returning buyer. WON is excluded from the Big
+  // deal pod, but it feeds the thread rail's "past orders" figure.
+  {
+    title: 'Sample — Maria Chen, Ocean & Co: reorder of 8,000 vacuum bottles',
+    stage: 'WON',
+    priority: 'normal',
+    currency: 'USD',
+    estimated_order_value: 18600,
+    product_category: 'Drinkware',
+    country: 'United States',
+    next_action: 'Reorder shipped — upsell insulated tumblers next cycle',
+    ageMinutes: 45 * 24 * 60,
+  },
 ];
 
 /** Insert the demo big-deal opportunities. Idempotent: skips when a row stamped
