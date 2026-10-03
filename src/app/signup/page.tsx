@@ -47,8 +47,8 @@ export default function SignupPage() {
       <div className="min-h-screen flex items-center justify-center px-6" style={{ background: 'var(--bg)' }}>
         <div className="w-full max-w-[400px] text-center">
           <Link href="/" className="inline-flex items-center gap-1.5 group">
-            <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-105" />
-            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>Sailwise</span>
+            <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105" />
+            <span className="text-[24px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>Sailwise</span>
           </Link>
           <div className="mt-8 p-6 border rounded-lg" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
             <div className="w-12 h-12 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ background: 'var(--accent-light)' }}>
@@ -92,8 +92,8 @@ export default function SignupPage() {
 
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-1.5 group">
-            <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-7 w-auto object-contain transition-transform duration-200 group-hover:scale-105" />
-            <span className="text-[20px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
+            <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105" />
+            <span className="text-[24px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
               Sailwise
             </span>
           </Link>
