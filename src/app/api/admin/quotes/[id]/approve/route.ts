@@ -57,9 +57,12 @@ export async function POST(
         );
       }
 
+      // Fail safe: with no usable threshold configured EVERY quote needs a
+      // human. Previously an unset or zero threshold made this expression
+      // falsy and silently auto-approved the quote.
+      const threshold = Number(company?.approval_threshold ?? 0);
       const needsApproval =
-        company?.approval_threshold &&
-        quote.total_amount >= company.approval_threshold;
+        !Number.isFinite(threshold) || threshold <= 0 || quote.total_amount >= threshold;
 
       if (!needsApproval) {
         // Below threshold — auto-approve

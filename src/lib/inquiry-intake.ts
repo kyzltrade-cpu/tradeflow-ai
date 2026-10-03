@@ -487,7 +487,9 @@ export async function runInquiryIntake(params: {
         .select('follow_up_auto_send')
         .eq('id', companyId)
         .maybeSingle();
-      const autoEnabled = company?.follow_up_auto_send !== false;
+      // Fail safe: only an explicit true enables unattended chasing. A missing or
+        // NULL column previously read as "enabled".
+        const autoEnabled = company?.follow_up_auto_send === true;
       const paused = conversation.status === 'ai_paused' || conversation.status === 'human';
 
       if (verdict.policy === 'auto' && autoEnabled && !paused && recipient) {

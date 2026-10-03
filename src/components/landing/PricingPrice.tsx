@@ -15,23 +15,21 @@ export default function PricingPrice({ monthly, annual, period = '/mo' }: Pricin
   const price = mode === 'monthly' ? monthly : annual;
 
   return (
-    <div className="mt-1 mb-6">
-      <div className="flex items-baseline gap-2">
+    <div className="mt-2 mb-7">
+      <div className="flex items-baseline gap-2.5">
         <span
           key={mode}
-          className="btk-anim-fade-down inline-block text-4xl font-bold tracking-tight tabular-nums"
-          style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+          className="btk-anim-fade-down display inline-block text-[2.75rem] leading-none tabular-nums"
         >
           {price}
         </span>
-        <span className="text-sm" style={{ color: '#555555' }}>
-          {period}
-        </span>
+        <span className="text-[14px] text-[var(--ink-3)]">{period}</span>
       </div>
-      <div className="mt-5 flex items-center gap-3">
+
+      <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
         <div
-          className="inline-flex items-center rounded-full p-1"
-          style={{ background: '#FAFAFA', border: '1px solid #E0E0E0' }}
+          className="inline-flex items-center gap-0.5 rounded-lg p-0.5"
+          style={{ border: '1px solid var(--hairline)' }}
         >
           {(['monthly', 'annual'] as const).map((m) => (
             <button
@@ -39,16 +37,20 @@ export default function PricingPrice({ monthly, annual, period = '/mo' }: Pricin
               type="button"
               onClick={() => setMode(m)}
               aria-pressed={mode === m}
-              className="rounded-full px-3.5 py-1 text-[11px] font-semibold transition-colors duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black/20"
-              style={mode === m ? { background: '#000', color: '#fff' } : { color: '#555' }}
+              className="cursor-pointer rounded-[6px] px-3.5 py-1.5 text-[12px] font-medium transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-[var(--pine)]/30 focus-visible:outline-none"
+              style={
+                mode === m
+                  ? { background: 'var(--ink)', color: '#faf7f2' }
+                  : { color: 'var(--ink-2)' }
+              }
             >
               {m === 'monthly' ? 'Monthly' : 'Annual'}
             </button>
           ))}
         </div>
         <span
-          className="hidden sm:inline text-[12px] font-medium tabular-nums transition-colors duration-300"
-          style={{ color: mode === 'annual' ? 'var(--accent)' : '#9A9A9A' }}
+          className="text-[12.5px] tabular-nums transition-colors duration-200"
+          style={{ color: mode === 'annual' ? 'var(--pine)' : 'var(--ink-3)' }}
         >
           {mode === 'monthly' ? t('Save 20% with annual', '年繳可慳 20%') : 'HK$3,792 saved / yr'}
         </span>

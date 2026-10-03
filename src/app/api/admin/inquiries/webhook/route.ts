@@ -377,15 +377,23 @@ export async function POST(req: NextRequest) {
     // any caller) must send it in x-sailwise-webhook-secret; without it the
     // endpoint stays open for local testing but says so loudly.
     const expectedSecret = process.env.INQUIRY_WEBHOOK_SECRET;
-    if (expectedSecret) {
+    if (!expectedSecret) {
+      // Fail closed in production: an open inbound endpoint lets anyone forge
+      // inquiries into any tenant by spoofing the recipient address.
+      if (process.env.NODE_ENV === 'production') {
+        console.error(
+          '[webhook] INQUIRY_WEBHOOK_SECRET is not set — refusing inbound email in production'
+        );
+        return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 });
+      }
+      console.warn(
+        '[webhook] INQUIRY_WEBHOOK_SECRET not set — inbound email endpoint is unauthenticated (development only)'
+      );
+    } else {
       const provided = req.headers.get('x-sailwise-webhook-secret');
       if (provided !== expectedSecret) {
         return NextResponse.json({ error: 'Invalid webhook secret' }, { status: 401 });
       }
-    } else {
-      console.warn(
-        '[webhook] INQUIRY_WEBHOOK_SECRET not set — inbound email endpoint is unauthenticated'
-      );
     }
 
     const body = (await req.json().catch(() => null)) as Record<string, unknown> | null;

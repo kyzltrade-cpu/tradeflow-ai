@@ -4,25 +4,17 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
 const LINKS = [
-  { href: '#features', label: 'Features' },
-  { href: '#how-it-works', label: 'How It Works' },
-  { href: '#see-it-in-action', label: 'Live Demo' },
+  { href: '#product', label: 'Product' },
   { href: '#pricing', label: 'Pricing' },
+  { href: '#faq', label: 'FAQ' },
 ];
 
 export default function SiteHeader() {
   const [scrolled, setScrolled] = useState(false);
-  const [progress, setProgress] = useState(0);
   const [active, setActive] = useState<string>('');
 
   useEffect(() => {
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolled(y > 8);
-      const doc = document.documentElement;
-      const max = doc.scrollHeight - window.innerHeight;
-      setProgress(max > 0 ? Math.min(100, (y / max) * 100) : 0);
-    };
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -54,69 +46,54 @@ export default function SiteHeader() {
   };
 
   return (
-    <>
+    <nav
+      className="fixed top-0 z-50 w-full border-b backdrop-blur-md transition-all duration-300"
+      style={{
+        background: scrolled ? 'rgba(250,247,242,0.88)' : 'rgba(250,247,242,0.55)',
+        borderColor: scrolled ? 'var(--hairline)' : 'transparent',
+      }}
+    >
       <div
-        className="btk-scroll-progress"
-        style={{
-          background: `linear-gradient(90deg, #000 ${progress}%, transparent ${progress}%)`,
-        }}
-        aria-hidden="true"
-      />
-      <nav
-        className="fixed top-0 w-full z-50 backdrop-blur-md border-b transition-all duration-200"
-        style={{
-          background: scrolled ? 'rgba(255,255,255,0.92)' : 'rgba(255,255,255,0.85)',
-          borderColor: scrolled ? '#E7E7E7' : '#EDEDED',
-          boxShadow: scrolled ? '0 8px 24px -20px rgba(17,17,17,0.25)' : 'none',
-        }}
+        className="mx-auto flex max-w-7xl items-center justify-between px-5 transition-all duration-300 sm:px-6 3xl:max-w-[90rem]"
+        style={{ height: scrolled ? 66 : 80 }}
       >
-        <div
-          className="max-w-7xl 3xl:max-w-[90rem] mx-auto px-5 sm:px-6 flex items-center justify-between transition-all duration-200"
-          style={{ height: scrolled ? 64 : 76 }}
-        >
-          <Link href="/" className="flex items-center gap-2 sm:gap-2.5 shrink-0 group">
-            <img
-              src="/brand/sailwise-mark.png"
-              alt=""
-              aria-hidden="true"
-              className="h-7 w-7 object-contain transition-transform duration-200 group-hover:scale-105"
-            />
-            <span className="text-xl font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>
-              Sailwise
-            </span>
-          </Link>
+        <Link href="/" className="group flex shrink-0 items-center gap-2.5">
+          <img
+            src="/brand/sailwise-mark.png"
+            alt=""
+            aria-hidden="true"
+            className="h-[26px] w-[26px] object-contain transition-transform duration-300 group-hover:scale-105"
+          />
+          <span className="display text-[1.3rem]">Sailwise</span>
+        </Link>
 
-          <div className="hidden md:flex flex-1 items-center justify-center gap-8 text-sm font-medium px-6">
-            {LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                onClick={(e) => scrollTo(e, l.href)}
-                className={`btk-nav-link whitespace-nowrap ${active === l.href ? 'is-active' : ''}`}
-                style={{ color: active === l.href ? '#000' : '#555555' }}
-              >
-                {l.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="shrink-0 flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className="text-sm font-medium px-3 py-2.5 rounded-lg transition-colors hover:bg-black/[0.04]"
-              style={{ color: '#555555' }}
+        <div className="hidden flex-1 items-center justify-center gap-9 px-6 md:flex">
+          {LINKS.map((l) => (
+            <a
+              key={l.href}
+              href={l.href}
+              onClick={(e) => scrollTo(e, l.href)}
+              className={`btk-nav-link text-[14px] whitespace-nowrap ${active === l.href ? 'is-active' : ''}`}
+              style={{ color: active === l.href ? 'var(--ink)' : 'var(--ink-2)' }}
             >
-              Log in
-            </Link>
-            <Link
-              href="/signup"
-              className="text-sm font-semibold px-4 py-2.5 sm:px-5 sm:py-2.5 rounded-lg btn-primary"
-            >
-              Start Free
-            </Link>
-          </div>
+              {l.label}
+            </a>
+          ))}
         </div>
-      </nav>
-    </>
+
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+          <Link
+            href="/login"
+            className="rounded-lg px-3 py-2 text-[14px] transition-colors hover:text-[var(--ink)]"
+            style={{ color: 'var(--ink-2)' }}
+          >
+            Log in
+          </Link>
+          <Link href="/signup" className="btn-primary px-4 py-2 text-[14px]">
+            Start free
+          </Link>
+        </div>
+      </div>
+    </nav>
   );
 }

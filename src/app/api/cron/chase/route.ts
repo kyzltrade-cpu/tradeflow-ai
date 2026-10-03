@@ -127,7 +127,8 @@ export async function GET(req: NextRequest) {
 
   const autoByCompany = new Map<string, boolean>();
   for (const c of (companiesRes.data ?? []) as Array<{ id: string; follow_up_auto_send: boolean | null }>) {
-    autoByCompany.set(c.id, c.follow_up_auto_send !== false);
+    // Fail safe: opt-in only. NULL/missing previously meant "auto-send on".
+        autoByCompany.set(c.id, c.follow_up_auto_send === true);
   }
 
   let sent = 0;

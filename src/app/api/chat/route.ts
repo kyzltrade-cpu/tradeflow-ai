@@ -4,6 +4,7 @@ import { detectLanguage, buildLanguageInstruction } from '@/lib/language-detect'
 import { supabaseAdmin } from '@/lib/supabase';
 import { webSearch, needsWebSearch } from '@/lib/web-search';
 import { DEMO_COMPANY_ID, buildInquiryContext } from '@/lib/inquiry-context';
+import { requireAuth } from '@/lib/api-auth';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
@@ -12,6 +13,24 @@ const NIM_MODEL = process.env.NIM_MODEL || 'meta/llama-3.2-11b-vision-instruct';
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
+}
+
+/**
+ * Resolve which tenant a chat request is allowed to read.
+ *
+ * Only a verified Supabase session (Authorization header or auth cookie) may
+ * name a tenant. Anonymous callers get the seeded demo company, or nothing.
+ * This endpoint previously trusted a caller-supplied `x-company-id`, which let
+ * anyone read any company's knowledge base, catalog and live inquiry data.
+ */
+async function resolveChatCompanyId(req: NextRequest, demoMode: unknown): Promise<string | null> {
+  try {
+    const auth = await requireAuth(req, { requireCompany: false });
+    if (auth.companyId) return auth.companyId;
+  } catch {
+    // Not signed in — fall through to the public demo tenant.
+  }
+  return demoMode ? DEMO_COMPANY_ID : null;
 }
 
 const CORS_HEADERS: Record<string, string> = {
@@ -53,11 +72,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Which tenant this request may read (verified session, else the demo tenant).
+    const companyId = await resolveChatCompanyId(req, demoMode);
+
     // Fetch company rules and knowledge base from DB
     let companyContext = '';
     try {
-      // Get company_id from request header or body
-      const companyId = req.headers.get('x-company-id');
       
       if (companyId) {
         const { data: company } = await supabaseAdmin
@@ -130,9 +150,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Load the live business snapshot (inquiries, deals, quotes, follow-ups) so
-    // users can ask about individual clients. Uses the demo company for the
-    // public landing chat; the authenticated admin chat sends its own company.
-    const companyId = req.headers.get('x-company-id') || (demoMode ? DEMO_COMPANY_ID : null);
+    // users can ask about individual clients.
     let inquiryContext = '';
     if (companyId) {
       try {

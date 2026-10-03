@@ -92,7 +92,10 @@ export async function POST(req: NextRequest) {
     const authResult = await requireAuthOrCreate(req);
     if (authResult instanceof Response) return authResult;
     const body = await req.json().catch(() => ({}));
-    const { company_id, name, industry, user_id } = body;
+    const { company_id, name, industry } = body;
+    // Never trust a body-supplied user id. It previously let any authenticated
+    // caller attach an arbitrary account to a company and grant it `admin`.
+    const user_id = authResult.user.id;
 
     // The demo login is always an existing seeded company. Bounce it back to
     // its pinned company instead of letting onboarding create a scratch
@@ -101,14 +104,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ id: DEMO_COMPANY_ID });
     }
 
-    // If company_id provided, just return it
+    // Only echo back a company the authenticated user already belongs to;
+    // otherwise this was an unauthenticated existence oracle over company ids.
     if (company_id) {
-      const { data } = await supabaseAdmin
-        .from('companies')
-        .select('id')
-        .eq('id', company_id)
-        .single();
-      if (data) return NextResponse.json({ id: data.id });
+      const { data: membership } = await supabaseAdmin
+        .from('users')
+        .select('company_id')
+        .eq('id', user_id)
+        .maybeSingle();
+      if (membership?.company_id && membership.company_id === company_id) {
+        const { data } = await supabaseAdmin
+          .from('companies')
+          .select('id')
+          .eq('id', company_id)
+          .single();
+        if (data) return NextResponse.json({ id: data.id });
+      }
     }
 
     const companyName = name || 'HK Trading Co.';

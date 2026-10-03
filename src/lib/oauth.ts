@@ -67,8 +67,18 @@ export function buildAuthorizeUrl(provider: OAuthProvider, redirectUri: string, 
   return `${c.authorizeUrl}?${params.toString()}`;
 }
 
+const INSECURE_STATE_DEFAULT = 'changeme-insecure-state-secret';
+
 function stateSecret(): string {
-  return process.env.OAUTH_STATE_SECRET || process.env.SUPABASE_SECRET_KEY || 'changeme-insecure-state-secret';
+  const secret = process.env.OAUTH_STATE_SECRET || process.env.SUPABASE_SECRET_KEY;
+  // Fail closed. A guessable state secret lets anyone forge OAuth callbacks,
+  // and it is also the token-encryption key.
+  if (!secret || secret === INSECURE_STATE_DEFAULT || secret.length < 32) {
+    throw new Error(
+      'OAUTH_STATE_SECRET is missing or too weak. Refusing to sign OAuth state / encrypt provider tokens.'
+    );
+  }
+  return secret;
 }
 
 function encryptionKey(): Buffer {

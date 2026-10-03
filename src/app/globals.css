@@ -496,6 +496,182 @@ section[id] { scroll-margin-top: 84px; }
   background: #C9C9C9;
 }
 
+/* ── Landing: warm editorial system ───────────────────────────────────────
+   Scoped under `.landing` so the dashboard, admin and auth surfaces keep their
+   existing primitives. A warm paper canvas, ink type, a pine primary and a
+   terracotta accent; a Fraunces display face set against a neutral grotesk. */
+.landing {
+  --paper: #faf7f2;
+  --paper-2: #f3eee6;
+  --paper-3: #ece5da;
+  --ink: #1b1917;
+  --ink-2: #46423d;
+  --ink-3: #7a736a;
+  --hairline: #e6dfd4;
+  --hairline-2: #d8cfc0;
+  --pine: #14342b;
+  --pine-deep: #0e251e;
+  --pine-wash: #e8efea;
+  --terra: #b4552d;
+  --terra-wash: #f7ede6;
+  /* Re-point the shared accent so focus rings and accent-tinted controls on
+     the landing pick up the brand pine without touching other pages. */
+  --accent: #14342b;
+  --accent-hover: #0e251e;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+/* ── Display type ──────────────────────────────────────────────────────── */
+.display {
+  font-family: var(--font-display), Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  font-optical-sizing: auto;
+  letter-spacing: -0.018em;
+  line-height: 1.04;
+}
+.display em {
+  font-style: italic;
+  color: var(--pine);
+}
+
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Hairline rule that runs out from a short label */
+.rule-label {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.rule-label::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--hairline);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────── */
+.landing .btn-primary {
+  border-radius: 9px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  background-image: none;
+  background: var(--ink);
+  box-shadow: 0 1px 2px rgba(27, 25, 23, 0.22);
+}
+.landing .btn-primary:hover {
+  transform: translateY(-1px);
+  filter: none;
+  background: #2b2724;
+  box-shadow: 0 10px 24px -12px rgba(27, 25, 23, 0.55);
+}
+.landing .btn-primary:active {
+  transform: translateY(0);
+  filter: none;
+  box-shadow: 0 1px 2px rgba(27, 25, 23, 0.3);
+}
+
+.landing .btn-ghost {
+  border-radius: 9px;
+  font-weight: 500;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  border: 1px solid var(--hairline-2);
+  background: transparent;
+  box-shadow: none;
+}
+.landing .btn-ghost:hover {
+  background: #ffffff;
+  border-color: var(--ink-3);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -14px rgba(27, 25, 23, 0.4);
+}
+
+/* ── Surfaces ──────────────────────────────────────────────────────────── */
+.ecard {
+  background: #ffffff;
+  border: 1px solid var(--hairline);
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(27, 25, 23, 0.03), 0 20px 44px -36px rgba(27, 25, 23, 0.35);
+}
+
+.band-dark {
+  background: var(--pine-deep);
+  color: #f4f1ec;
+}
+.band-dark .display,
+.band-dark .display em {
+  color: #f7f4ef;
+}
+.band-dark .eyebrow {
+  color: rgba(244, 241, 236, 0.55);
+}
+
+/* Soft warm wash behind the hero */
+.hero-wash {
+  background:
+    radial-gradient(58% 46% at 50% 0%, rgba(180, 85, 45, 0.07), transparent 72%),
+    radial-gradient(42% 38% at 88% 14%, rgba(20, 52, 43, 0.06), transparent 72%);
+}
+
+/* ── Nav ───────────────────────────────────────────────────────────────── */
+.landing .btk-nav-link::after {
+  background: var(--pine);
+}
+
+/* ── Editorial numbered rows (How it works) ────────────────────────────── */
+.step-row {
+  display: grid;
+  gap: 8px 32px;
+  grid-template-columns: 1fr;
+  padding: 32px 0;
+  border-top: 1px solid var(--hairline);
+}
+@media (min-width: 768px) {
+  .step-row {
+    grid-template-columns: 64px 240px 1fr;
+    align-items: baseline;
+    gap: 32px;
+    padding: 40px 0;
+  }
+}
+.step-row:last-child {
+  border-bottom: 1px solid var(--hairline);
+}
+.step-num {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+
+/* ── FAQ ───────────────────────────────────────────────────────────────── */
+.faq-item {
+  border-top: 1px solid var(--hairline);
+}
+.faq-item:last-child {
+  border-bottom: 1px solid var(--hairline);
+}
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+.footer-link {
+  color: var(--ink-2);
+  transition: color 160ms var(--ease-out);
+}
+.footer-link:hover {
+  color: var(--ink);
+}
+
 /* Landing: breathing radial backdrops (hero + pricing ambient glows) */
 @keyframes btk-breathe {
   0%, 100% { transform: scale(1); opacity: 0.8; }

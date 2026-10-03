@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
+import { assertPublicHttpUrl } from '@/lib/url-guard';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,12 +17,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    // Validate URL
+    // Validate the URL — rejects non-http(s) schemes and any host that resolves
+    // to a private, loopback, link-local or cloud-metadata address.
     let parsedUrl: URL;
     try {
-      parsedUrl = new URL(url.startsWith('http') ? url : `https://${url}`);
-    } catch {
-      return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
+      parsedUrl = await assertPublicHttpUrl(url);
+    } catch (guardError) {
+      return NextResponse.json(
+        { error: guardError instanceof Error ? guardError.message : 'Invalid URL' },
+        { status: 400 }
+      );
     }
 
     // Fetch the website
@@ -31,6 +36,8 @@ export async function POST(req: NextRequest) {
         'Accept': 'text/html,application/xhtml+xml',
       },
       signal: AbortSignal.timeout(15000),
+      // Do not follow redirects: a public host can 302 straight to an internal one.
+      redirect: 'error',
     });
 
     if (!response.ok) {

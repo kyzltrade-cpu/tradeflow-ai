@@ -1,124 +1,101 @@
 import Link from 'next/link';
-import {
-  Inbox,
-  MessageSquare,
-  ScanSearch,
-  MessageCircleQuestion,
-  Quote,
-  Timer,
-  ShieldCheck,
-  Layers,
-  Languages,
-  LayoutDashboard,
-  ArrowRight,
-} from 'lucide-react';
-import Reveal from '@/components/landing/Reveal';
-import HeroDemo from '@/components/landing/HeroDemo';
+import type { ReactNode } from 'react';
+import { ArrowRight, Check } from 'lucide-react';
 import SiteHeader from '@/components/landing/SiteHeader';
-import GlowCard from '@/components/landing/GlowCard';
-import MouseGlow from '@/components/landing/MouseGlow';
 import PricingPrice from '@/components/landing/PricingPrice';
+import {
+  HeroProduct,
+  InboxMock,
+  HandoffMock,
+  QuoteMock,
+  WhatsAppMock,
+} from '@/components/landing/ProductMocks';
 
-/* ── The pipeline: the core loop the product runs ───────────────────────── */
+/* ── Content ─────────────────────────────────────────────────────────────── */
 
-const CORE_FEATURES = [
+const PROOF = [
   {
-    icon: Inbox,
-    code: 'INBOX',
-    span: 'lg:col-span-4',
-    wide: true,
-    title: 'Email-first inbox',
-    desc: 'An inquiry lands in the mailbox you already use — Google or Microsoft — and Sailwise drives it through the whole pipeline from there.',
-    detail: 'No new software for your team or customers to learn. Supports English, Chinese, and mixed-language threads.',
+    title: 'Every field shows its work',
+    body: 'Each extracted spec carries a confidence, a status and the source it came from — never a black-box summary you have to trust.',
   },
   {
-    icon: ScanSearch,
-    code: 'SPECS',
-    span: 'lg:col-span-2',
-    title: 'Specs, extracted',
-    desc: 'Every spec, quantity, and requirement is pulled out and pinned to where it came from — so nothing is guessed.',
-    detail: 'Quantities, materials, certifications, lead times. Each extracted spec cites the line it came from.',
+    title: 'Approved, not auto-sent',
+    body: 'Replies and quotes stay drafts until you say go. Nothing leaves your mailbox without you.',
   },
   {
-    icon: MessageCircleQuestion,
-    code: 'GAPS',
-    span: 'lg:col-span-2',
-    title: 'Gaps get clarified',
-    desc: 'AI flags what\u2019s missing and drafts a clarification question in the customer\u2019s language. You approve before it\u2019s sent.',
-    detail: 'Never quote on assumptions — target price, Incoterm, and destination are caught before you commit.',
-  },
-  {
-    icon: ShieldCheck,
-    code: 'TRACE',
-    span: 'lg:col-span-2',
-    title: 'Every number traceable',
-    desc: 'Each line cites where it came from — your products, your margin rules, the FX rate.',
-    detail: 'A full paper trail for every spec, price, and approval. Nothing is guessed.',
-  },
-  {
-    icon: Quote,
-    code: 'QUOTE',
-    span: 'lg:col-span-2',
-    title: 'Quotes with a source',
-    desc: 'Every number on your quote comes from your product price, your margin rule, and the FX rate — all traceable.',
-    detail: 'No guesswork. Every line traces back to your product price, a margin rule, and the FX rate.',
-  },
-  {
-    icon: Timer,
-    code: 'FOLLOW-UP',
-    span: 'lg:col-span-6',
-    wide: true,
-    title: 'Follow-up drafts on a cadence',
-    desc: 'A sequence drafts the next follow-up so a quiet deal never dies of neglect — and you pause it the moment the customer replies.',
-    detail: 'Drafted in the customer\u2019s language. Waits for your approval before it sends.',
+    title: 'Your prices, your margins',
+    body: 'Quote lines are calculated from your product list and margin rules — not invented by a language model.',
   },
 ];
 
-/* ── The control layer: how you stay in charge ──────────────────────────── */
-
-const CONTROL_FEATURES = [
-  {
-    icon: ShieldCheck,
-    code: 'APPROVAL',
-    title: 'Approve everything',
-    desc: 'Every reply and every quote is a draft until you say go.',
-  },
-  {
-    icon: Layers,
-    code: 'KNOWLEDGE',
-    title: 'Products & knowledge base',
-    desc: 'Your products, margins, FAQ rules, and certifications power every draft.',
-  },
-  {
-    icon: Languages,
-    code: 'LANGUAGE',
-    title: 'English · 中文 · Español',
-    desc: 'Answers in the customer\u2019s language, including HK and mainland channels.',
-  },
-  {
-    icon: LayoutDashboard,
-    code: 'OVERVIEW',
-    title: 'Live overview',
-    desc: 'One live view of inquiries, pipeline, and where each deal stands.',
-  },
+const FACTS = [
+  { value: '3', label: 'Languages handled' },
+  { value: '4', label: 'Attachment formats parsed' },
+  { value: '3 days', label: 'Follow-up cadence' },
+  { value: 'Every send', label: 'Waits for your approval' },
 ];
 
-/* ── How it works ───────────────────────────────────────────────────────── */
+const QUEUE = [
+  {
+    label: 'Needs specs',
+    tone: '#8A8279',
+    title: 'Waiting on the buyer',
+    body: 'The inquiry is missing something you need before it can be priced. Sailwise drafts the one question to ask, in their language.',
+  },
+  {
+    label: 'Owed replies',
+    tone: '#B4552D',
+    title: 'Waiting on you',
+    body: 'The customer asked something and is still waiting. These are the threads quietly costing you the deal.',
+  },
+  {
+    label: 'Needs you',
+    tone: '#14342B',
+    title: 'Ready for sign-off',
+    body: 'A reply or a quote has been drafted and is sitting in your approval queue, one tap from going out.',
+  },
+];
 
 const STEPS = [
-  { num: '01', code: 'INBOUND', channels: 'EMAIL', title: 'Inquiry comes in', desc: 'From your connected mailbox. Every spec, quantity, and requirement is pulled out and pinned to the line it came from.', gate: 'GATE 01 — APPROVE THE EXTRACTION' },
-  { num: '02', code: 'CLARIFY', channels: 'CUSTOMER LANGUAGE', title: 'Gaps get clarified', desc: 'AI flags what\'s missing and drafts one question in the customer\'s language. You approve, we ask.', gate: 'GATE 02 — APPROVE THE QUESTION' },
-  { num: '03', code: 'QUOTE', channels: 'PRICE · MARGIN · FX', title: 'Quote is drafted', desc: 'Quote drafted from your product prices, margin rules, and the FX rate — every number traced. You approve, one click sends.', gate: 'GATE 03 — YOUR SIGN-OFF' },
+  {
+    code: 'INBOUND',
+    title: 'The inquiry arrives',
+    body: 'A buyer’s email lands in the mailbox you already use — no new app for your team or your customers to learn.',
+  },
+  {
+    code: 'EXTRACT',
+    title: 'Specs, extracted',
+    body: 'Quantities, materials, certifications and lead times are pulled out and pinned to the line they came from.',
+  },
+  {
+    code: 'CLARIFY',
+    title: 'Gaps get clarified',
+    body: 'Target price, Incoterm, destination. Sailwise flags what is missing and drafts one question in the customer’s language.',
+  },
+  {
+    code: 'QUOTE',
+    title: 'The quote is drafted',
+    body: 'Priced from your product list, your margin rules and the live FX rate — every line traceable to its source.',
+  },
 ];
 
-/* ── Ops marquee tokens ─────────────────────────────────────────────────── */
-
-const OPS_TOKENS = [
-  'HKG', 'SZX', 'CNSGH', 'NINGBO', 'FOB', 'CIF', 'EXW',
-  '40HQ', 'MOQ 10K', 'SUS 304', 'FX 7.82', '+14%', 'LC · TT', '30 DAYS', 'SEA · AIR',
+const GATES = [
+  {
+    label: 'Approval',
+    title: 'Every message is a draft',
+    body: 'Replies, quotes and follow-ups all wait for your sign-off before they send.',
+  },
+  {
+    label: 'Knowledge',
+    title: 'Your rules do the pricing',
+    body: 'Products, margins, certifications and FAQ rules define what the AI may say and charge.',
+  },
+  {
+    label: 'Handover',
+    title: 'Step in — and hand it back',
+    body: 'Sailwise flags the sensitive threads — a discount, a complaint, a big order — and hands over. Take control mid-conversation, then hand it back to the AI when you are done.',
+  },
 ];
-
-/* ── Pricing ────────────────────────────────────────────────────────────── */
 
 const PLANS = [
   {
@@ -127,687 +104,545 @@ const PLANS = [
     period: '/mo',
     features: [
       'Email inbox (Google / Microsoft)',
+      'WhatsApp alerts when a thread needs you',
       'Unlimited AI conversations',
       'Unlimited products & FAQ rules',
       'English, Mandarin, Cantonese, Spanish',
-      'Human override & takeover anytime',
-      'Knowledge base & website sync',
-      'Custom AI personality',
+      'Human takeover anytime',
     ],
-    cta: 'Start Free Trial',
-    accent: true,
-    available: true,
   },
 ];
-
-/* ── FAQ ────────────────────────────────────────────────────────────────── */
 
 const FAQS = [
   {
     q: 'Does it work with the email I already use?',
-    a: 'Yes. Sailwise works over your existing mailbox with a one-click Google or Microsoft connection. There is no new software for your team or your customers to learn.',
+    a: 'Yes. Sailwise runs over your existing mailbox with a one-click Google or Microsoft connection — no new software for your team or your customers.',
   },
   {
-    q: 'Can I use a personal Gmail or Hotmail?',
-    a: 'Yes — personal accounts work exactly like business mailboxes. Many of our customers run their entire trading business from a personal email address.',
+    q: 'Can it handle Chinese and mixed-language messages?',
+    a: 'It reads and replies in English, Simplified and Traditional Chinese, and mixed-language threads — common across HK and Shenzhen trade.',
   },
   {
-    q: 'Can it handle Chinese and mixed-language emails?',
-    a: 'Sailwise extracts specs from English, Simplified Chinese, Traditional Chinese, and mixed-language threads — common in HK and SZ trade.',
+    q: 'Who controls what actually gets sent?',
+    a: 'You do. Every reply and every quote is a draft until you approve it. Sailwise cites where each number came from so you can verify fast.',
   },
   {
-    q: 'What happens when a spec is missing?',
-    a: 'AI flags the gap and drafts a clarification question in the customer\'s language, so you never quote on assumptions.',
-  },
-  {
-    q: 'Who controls the final quote?',
-    a: 'You do. Every quote is a draft until you approve it. AI cites where each number came from — product price, margin rule, FX rate — so you can verify fast.',
-  },
-  {
-    q: 'Why not just use ChatGPT or a generic AI add-on?',
-    a: 'Sailwise is a pipeline, not a chat window. It ties each step to your data — your products, margins, and FX rates — and keeps a human approving every outbound message. A generic chatbot can write a reply; it can\'t extract specs with citations, respect your margin rules, or draft a quote you can trace through your own pricing.',
+    q: 'How does the WhatsApp feature work?',
+    a: 'WhatsApp is how Sailwise reaches you, not a channel your customers talk to. When a thread needs a decision — a discount request, a large order — you get an alert with the sender, product and quantity. Replies and quotes always send as normal email from your own mailbox, so your customers see the address they already know.',
   },
   {
     q: 'Do I need to be technical to set it up?',
-    a: 'No. Self-serve setup is guided: connect your Google or Microsoft mailbox, upload your products, and approve your first draft. There\'s also an optional done-for-you setup for HK$1,000 one-time where our team does all of it for you.',
+    a: 'No. Guided setup connects your mailbox, imports your products and gets you approving your first draft the same day.',
   },
   {
     q: 'Is my product and pricing data safe?',
-    a: 'Your knowledge base is private to your company. Data is stored encrypted, access is per-user, and it is never used to train models shared with other customers.',
-  },
-  {
-    q: 'Is there a setup fee?',
-    a: 'You can start free on your own. There\'s also an optional done-for-you setup for HK$1,000 one-time — our team connects your mailbox, uploads your products, and configures the AI for you.',
-  },
-  {
-    q: 'How does the WhatsApp alert feature work?',
-    a: 'Connect your WhatsApp number to Sailwise. When an inquiry needs your attention, you get an alert with the sender, product, and quantity. Tap through to Sailwise to review the extracted specs and approve the draft. Replies and quotes are always sent as a normal email from your own mailbox — nothing is sent from a WhatsApp number, so your customers get the answer where they expect it.',
-  },
-  {
-    q: 'What makes an email "important"?',
-    a: 'Sailwise learns what matters to your business. High-value customers, certain keywords, and new inquiries get flagged. You can customize the rules in your knowledge base to mark repeat customers or specific product categories as high-priority.',
-  },
-  {
-    q: 'Can I cancel anytime?',
-    a: 'Yes. Plans are month-to-month with no contracts. Cancel anytime and keep access through the end of your billing period.',
+    a: 'Your knowledge base is private to your company, stored encrypted, and never used to train models shared with other customers.',
   },
 ];
 
-/* ── Page ───────────────────────────────────────────────────────────────── */
+/* ── Shared ──────────────────────────────────────────────────────────────── */
+
+function SectionHead({
+  label,
+  title,
+  sub,
+  align = 'left',
+}: {
+  label: string;
+  title: ReactNode;
+  sub?: ReactNode;
+  align?: 'left' | 'center';
+}) {
+  return (
+    <div className={align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
+      <p className="eyebrow">{label}</p>
+      <h2 className="display mt-4 text-balance text-[clamp(1.9rem,3.6vw,2.9rem)]">{title}</h2>
+      {sub && (
+        <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-[var(--ink-2)]">{sub}</p>
+      )}
+    </div>
+  );
+}
+
+function Bullet({ children }: { children: ReactNode }) {
+  return (
+    <li className="flex items-start gap-3 text-[15px] leading-relaxed text-[var(--ink-2)]">
+      <span className="mt-[7px] h-[5px] w-[5px] shrink-0 rounded-full bg-[var(--pine)]" />
+      {children}
+    </li>
+  );
+}
+
+/* ── Page ────────────────────────────────────────────────────────────────── */
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen" style={{ background: '#FFFFFF', color: '#0A0A0A' }}>
-      <MouseGlow />
+    <div className="landing min-h-screen">
       <SiteHeader />
 
       {/* ── Hero ── */}
-      <section className="pt-28 pb-14 px-6 relative overflow-hidden">
-        {/* Hero background banner — top band only, anchored left, not behind the demo.
-            Width-capped and centred: on ultrawide viewports a full-bleed band stretched
-            a 1916px image across 3400+px, flattening and blurring it behind the wash. */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
-          <div
-            className="w-full max-w-[1920px] h-[540px] md:h-[600px] 2xl:h-[740px]"
-            style={{
-              backgroundImage: 'url(/hero/hero-banner.jpg)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'right 62% bottom 75%',
-            }}
-          />
-        </div>
-        {/* Light wash for headline legibility; fades to white before the demo dashboard */}
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
-          <div
-            className="w-full max-w-[1920px] h-[540px] md:h-[600px] 2xl:h-[740px]"
-            style={{
-              background:
-                'linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0.85) 100%)',
-            }}
-          />
-        </div>
-        <div aria-hidden="true" className="btk-breathe pointer-events-none absolute top-0 left-1/2 -translate-x-1/2 w-[940px] h-[640px] 2xl:w-[1500px] 2xl:h-[820px]" style={{ background: 'radial-gradient(50% 50% at 50% 28%, rgba(0,0,0,0.045), rgba(0,0,0,0) 70%)' }} />
-        {/* Centred to the same measure as the sections below. This was `max-w-5xl
-            mx-auto sm:ml-6 md:sm:ml-10`, where the margin override beat `mx-auto`
-            and pinned the hero to the left edge — a ~575px drift from the centred
-            nav on a 2560px display. */}
-        <div className="max-w-6xl 2xl:max-w-7xl 3xl:max-w-[90rem] mx-auto relative">
-          <div className="sm:max-w-2xl text-center sm:text-left">
-            <div className="btk-anim-fade-down inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-8 border" style={{ background: 'rgba(255,255,255,0.85)', color: '#000', borderColor: '#E0E0E0', animationDelay: '0ms', backdropFilter: 'blur(6px)' }}>
-              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#000' }}></span>
-              Built for HK &amp; SZ trading companies
-            </div>
-
-            <h1 className="text-5xl md:text-7xl 2xl:text-8xl 3xl:text-9xl font-bold tracking-tight leading-[1.05] mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif', letterSpacing: '-0.02em' }}>
-              <span className="btk-anim-rise block" style={{ animationDelay: '90ms' }}>
-                From inquiry to quote.
-              </span>
-              <span className="relative inline-block btk-anim-rise" style={{ color: '#000', animationDelay: '210ms' }}>
-                In hours, not days.
-                <span className="absolute left-0 -bottom-1 h-[3px] w-full rounded-full" style={{ background: '#000', opacity: 0.35, animation: 'btk-trace 0.9s cubic-bezier(0.16,1,0.3,1) 0.55s backwards' }} />
-              </span>
+      <section className="hero-wash px-6 pt-32 pb-16 md:pt-40 md:pb-20">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="eyebrow">For HK &amp; Shenzhen trading companies</p>
+            <h1 className="display mt-6 text-[clamp(2.5rem,6.4vw,4.5rem)]">
+              Every inquiry answered.
+              <br />
+              <em>In seconds, not hours.</em>
             </h1>
-
-            <p className="btk-anim-rise text-lg md:text-xl max-w-2xl mx-auto sm:mx-0 mb-10 leading-relaxed" style={{ color: '#4A4A4A', animationDelay: '330ms', textShadow: '0 1px 0 rgba(255,255,255,0.6)' }}>
-              Sailwise turns a customer inquiry into a priced, spec-backed quote draft — so you can review and send a quote in hours, not days. You approve every reply and every quote before it goes out.
+            <p className="mx-auto mt-7 max-w-xl text-balance text-[1.0625rem] leading-[1.75] text-[var(--ink-2)]">
+              Sailwise turns a buyer’s email into a tracked deal — every spec extracted with its
+              source, gaps flagged, and a priced quote drafted from your own product list and margin
+              rules. You approve every word before it sends.
             </p>
-
-            <div className="btk-anim-rise flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4 mb-10" style={{ animationDelay: '450ms' }}>
-              <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-3.5">
-                Start Free Trial
-                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+              <Link href="/signup" className="group btn-primary w-full px-6 py-3 sm:w-auto">
+                Start free trial
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
-              <Link href="#see-it-in-action" className="btn-ghost w-full sm:w-auto px-8 py-3.5">
-                See a Live Demo
+              <Link href="#product" className="btn-ghost w-full px-6 py-3 sm:w-auto">
+                See the product
               </Link>
             </div>
+            <p className="mt-5 text-[13px] text-[var(--ink-3)]">
+              14-day free trial · No contracts · Cancel anytime
+            </p>
           </div>
 
-          <div className="relative">
-            <div aria-hidden="true" className="btk-breathe pointer-events-none absolute -inset-x-8 -inset-y-12 rounded-[40px]" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.015) 40%, transparent 75%)', filter: 'blur(28px)' }} />
-            <div className="btk-anim-rise relative" style={{ animationDelay: '560ms' }}>
-              <GlowCard className="rounded-2xl">
-                <HeroDemo />
-              </GlowCard>
-            </div>
-          </div>
-
-          <div className="mt-14 overflow-hidden" aria-hidden="true" style={{ maskImage: 'linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent)', WebkitMaskImage: 'linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent)' }}>
-            <div className="btk-marquee flex w-max gap-6 text-[11px] font-semibold uppercase whitespace-nowrap" style={{ color: '#9A9A9A' }}>
-              {[0, 1].map((n) => (
-                <div key={n} className="flex shrink-0 items-center gap-6 pr-6">
-                  {OPS_TOKENS.map((tok, i) => (
-                    <span key={`${n}-${i}`} className="flex items-center gap-6">
-                      <span className="w-1 h-1 rounded-full" style={{ background: '#C9C9C9' }}></span>
-                      {tok}
-                    </span>
-                  ))}
-                </div>
-              ))}
-            </div>
+          <div className="mx-auto mt-16 max-w-5xl md:mt-20">
+            <HeroProduct />
           </div>
         </div>
       </section>
 
-      {/* ── Features: the pipeline ── */}
-      <section id="features" className="py-24 2xl:py-32 3xl:py-40 px-6">
-        <div className="max-w-6xl 2xl:max-w-7xl 3xl:max-w-[90rem] mx-auto">
-          <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
-              01
+      {/* ── Product facts ── */}
+      <section className="border-y border-[var(--hairline)] px-6 py-14">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-8 sm:grid-cols-4">
+          {FACTS.map((f) => (
+            <div key={f.label} className="text-center">
+              <div className="display text-[1.5rem]">{f.value}</div>
+              <div className="mt-1 text-[13px] text-[var(--ink-3)]">{f.label}</div>
             </div>
-            <p className="btk-kicker mb-5">01 · The pipeline</p>
-            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              Everything you need. Nothing you don&apos;t.
-            </h2>
-            <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
-              Built for the way traders actually work — citation-backed, human-approved.
-            </p>
-          </Reveal>
-          <div className="grid md:grid-cols-2 lg:grid-cols-6 gap-6 2xl:gap-8">
-            {CORE_FEATURES.map((f, i) => {
-              const Icon = f.icon;
-              return (
-                <Reveal key={f.title} delay={(i % 3) * 90} className={f.span}>
-                  <GlowCard
-                    className={`group relative h-full p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-black/25 hover:shadow-[0_24px_48px_-28px_rgba(0,0,0,0.22)] ${f.wide ? 'md:flex md:items-center lg:gap-10' : ''}`}
-                    style={{ background: '#fff', borderColor: '#E5E5E5', boxShadow: 'var(--shadow-card)' }}
-                  >
-                    <span aria-hidden="true" className="btk-mono absolute top-6 right-6 text-[9px]" style={{ color: '#9A9A9A' }}>{f.code}</span>
-                    <div className={f.wide ? 'md:w-1/2 lg:w-3/5 pr-0' : ''}>
-                      <div className="flex items-center gap-3.5 mb-4">
-                        <span className="w-11 h-11 rounded-xl flex items-center justify-center border transition-transform duration-300 group-hover:scale-105" style={{ background: '#F4F4F4', color: '#000', borderColor: '#E5E5E5' }}>
-                          <Icon className="w-5 h-5" />
-                        </span>
-                        <h3 className="text-lg font-bold">{f.title}</h3>
-                      </div>
-                      <p className="text-sm leading-relaxed mb-4" style={{ color: '#555555' }}>{f.desc}</p>
-                      <p className="text-xs leading-relaxed px-4 py-3 rounded-lg border" style={{ background: 'var(--panel-bg)', color: 'var(--panel-text)', borderColor: 'var(--panel-border)' }}>{f.detail}</p>
-                    </div>
-                  </GlowCard>
-                </Reveal>
-              );
-            })}
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ── You stay in control ── */}
-      <section className="py-24 px-6 xl:py-28 2xl:py-32 3xl:py-40" style={{ background: '#FAFAFA' }}>
-        <div className="max-w-6xl 2xl:max-w-7xl 3xl:max-w-[90rem] mx-auto">
-          <Reveal className="relative text-center mb-14">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
-              02
+      {/* ── Proof trio ── */}
+      <section className="border-y border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-16 md:py-20">
+        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-3 md:gap-14">
+          {PROOF.map((p) => (
+            <div key={p.title}>
+              <h3 className="display text-[1.35rem]">{p.title}</h3>
+              <p className="mt-3 text-[15px] leading-relaxed text-[var(--ink-2)]">{p.body}</p>
             </div>
-            <p className="btk-kicker mb-5">02 · Built-in control</p>
-            <h2 className="text-2xl md:text-4xl font-bold tracking-tight mb-3" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              AI does the legwork. You stay in control.
-            </h2>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: '#555555' }}>
-              Every message is a draft until you approve it — your margins, your voice, your relationships.
-            </p>
-          </Reveal>
-          <div className="grid md:grid-cols-4 gap-6">
-            {CONTROL_FEATURES.map((f, i) => {
-              const Icon = f.icon;
-              return (
-                <Reveal key={f.title} delay={i * 90}>
-                  <GlowCard className="h-full rounded-2xl p-6 border transition-all duration-300 hover:-translate-y-1 hover:border-black/25 hover:shadow-[0_16px_32px_-24px_rgba(0,0,0,0.25)]" style={{ background: '#fff', borderColor: '#E5E5E5' }}>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="w-10 h-10 rounded-xl flex items-center justify-center border" style={{ background: '#F4F4F4', color: '#000', borderColor: '#E5E5E5' }}>
-                        <Icon className="w-5 h-5" />
-                      </span>
-                      <span className="btk-mono text-[9px]" style={{ color: '#9A9A9A' }}>{f.code}</span>
-                    </div>
-                    <h3 className="text-base font-bold mb-1.5">{f.title}</h3>
-                    <p className="text-sm leading-relaxed" style={{ color: '#555555' }}>{f.desc}</p>
-                  </GlowCard>
-                </Reveal>
-              );
-            })}
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ── WhatsApp Mobile Alerts ── */}
-      <section className="py-24 px-6 xl:py-28 2xl:py-32 3xl:py-40" style={{ background: '#FAFAFA' }}>
-        <div className="max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl mx-auto">
-          <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
-              02
-            </div>
-            <p className="btk-kicker mb-5">02 · Mobile-first alerts</p>
-            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              Get alerts where you are
-            </h2>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: '#555555' }}>
-              Sailwise pushes an alert to WhatsApp when an inquiry needs you — so you know it landed, even away from your desk. Replies and quotes are sent from your mailbox, where your customers already expect them.
-            </p>
-          </Reveal>
-
-          <div className="grid md:grid-cols-2 gap-12 2xl:gap-16 items-center">
-            <Reveal delay={120}>
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1">Instant notifications</h3>
-                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>An inquiry that needs your attention triggers a WhatsApp alert right away — never miss a deal while you&apos;re away from your desk.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1">The alert tells you what matters</h3>
-                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Sender, company, product, quantity, and value — enough to decide whether to deal with it now or after lunch.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1">Reply from your own mailbox</h3>
-                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Tap through to Sailwise, review the extracted specs and the drafted quote, approve, and send as a normal email from the address your customer already knows.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center" style={{ background: '#000' }}>
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold mb-1">Smart filtering</h3>
-                    <p style={{ color: '#555555', fontSize: '0.95rem' }}>Only inquiries worth interrupting you for trigger an alert — VIP customers, high-value orders, new leads. Set the rules yourself.</p>
-                  </div>
-                </div>
-              </div>
-            </Reveal>
-
-            <Reveal delay={200}>
-              <div className="flex flex-col rounded-2xl border" style={{ background: '#ece5dd', borderColor: '#D0C7BB' }}>
-                {/* WhatsApp Header */}
-                <div className="px-4 py-3 flex items-center gap-2" style={{ background: '#075e54', borderRadius: '16px 16px 0 0' }}>
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-xs" style={{ background: '#128C7E' }}>S</div>
-                  <div>
-                    <div className="font-semibold text-xs text-white">Sailwise</div>
-                    <div className="text-[10px]" style={{ color: '#DCFFF4' }}>online</div>
-                  </div>
-                </div>
-
-                {/* Messages */}
-                <div className="p-4 space-y-3">
-                  {/* Email Alert Message */}
-                  <div className="flex justify-start">
-                    <div className="max-w-xs px-4 py-3 rounded-2xl text-sm" style={{ background: '#fff', color: '#000' }}>
-                      <div className="font-semibold mb-2">📧 Bulk Order – Vacuum Bottles</div>
-                      <div className="text-xs mb-2" style={{ color: '#666' }}>From: Sarah Chen</div>
-                      <div className="text-xs leading-relaxed mb-2" style={{ color: '#555' }}>
-                        <p className="mb-2">We need 10,000 pcs of 500ml stainless steel vacuum bottles.</p>
-                        <p className="font-semibold mb-1">Requirements:</p>
-                        <ul className="list-disc list-inside space-y-1" style={{ color: '#666' }}>
-                          <li>Double-wall, 304 food grade</li>
-                          <li>Logo printing capability</li>
-                          <li>Sample needed</li>
-                          <li>Best lead time?</li>
-                        </ul>
-                      </div>
-                      <div className="text-[11px]" style={{ color: '#999' }}>9:32 AM</div>
-                    </div>
-                  </div>
-
-                  {/* Read-only notice — alerts only, replies happen in Sailwise */}
-                  <div className="flex justify-start">
-                    <div className="max-w-xs px-4 py-3 rounded-2xl text-sm" style={{ background: '#fff', color: '#000', border: '1px solid #D0C7BB' }}>
-                      <div className="text-xs leading-relaxed" style={{ color: '#666' }}>
-                        <p className="mb-2">Open Sailwise to review the extracted specs and approve the draft quote.</p>
-                        <span className="font-semibold" style={{ color: '#075e54' }}>Review and send &rarr;</span>
-                      </div>
-                      <div className="text-[11px] mt-2" style={{ color: '#999' }}>9:32 AM</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="px-4 pb-3 pt-0 text-center text-[10px]" style={{ color: '#9A8F80' }}>
-                  Alerts only — replies are sent from your mailbox
-                </div>
-              </div>
-            </Reveal>
-          </div>
+      {/* ── Statement ── */}
+      <section className="band-dark px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-4xl text-center">
+          <p className="display text-[clamp(1.7rem,3.8vw,2.9rem)] leading-[1.22]">
+            While you sleep, customers message three suppliers at once.
+            <br className="hidden sm:block" /> Sailwise replies <em>first</em>.
+          </p>
+          <p className="mx-auto mt-7 max-w-lg text-[15px] leading-relaxed text-[rgba(244,241,236,0.68)]">
+            In seconds, in their language, with pricing pulled from your own data.
+          </p>
         </div>
       </section>
 
-      {/* ── How It Works ── */}
-      <section id="how-it-works" className="py-24 2xl:py-32 3xl:py-40 px-6">
-        <div className="max-w-3xl 2xl:max-w-4xl mx-auto">
-          <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
-              03
-            </div>
-            <p className="btk-kicker mb-5">03 · The workflow</p>
-            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              From inquiry to quote in 3 steps
-            </h2>
-            <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
-              The whole sourcing pipeline, with you approving every message.
-            </p>
-          </Reveal>
-          <div className="relative">
-            <div aria-hidden="true" className="absolute left-[17px] top-3 bottom-3 w-px" style={{ background: '#E5E5E5' }} />
-            <div className="space-y-12">
-              {STEPS.map((s, i) => (
-                <Reveal key={s.num} delay={i * 90}>
-                  <div className={`relative flex gap-6 ${i < STEPS.length - 1 ? '' : ''}`}>
-                    <div
-                      className="relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border font-mono text-[11px] font-bold"
-                      style={{
-                        background: i === STEPS.length - 1 ? '#000' : '#fff',
-                        color: i === STEPS.length - 1 ? '#fff' : '#000',
-                        borderColor: '#000',
-                      }}
-                    >
-                      {s.num}
-                    </div>
-                    <div className="flex-1 pb-2">
-                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-1.5">
-                        <span className="btk-mono text-[10px]" style={{ color: '#000' }}>{s.code}</span>
-                        <span className="btk-mono text-[10px]" style={{ color: '#9A9A9A' }}>{s.channels}</span>
-                      </div>
-                      <h3 className="text-lg font-bold mb-1.5">{s.title}</h3>
-                      <p className="text-sm max-w-2xl leading-relaxed" style={{ color: '#555555' }}>{s.desc}</p>
-                      <div className="mt-3 inline-flex items-center gap-2 rounded-md px-2.5 py-1 text-[10px] font-semibold" style={{ border: '1px solid #E0E0E0', background: '#FAFAFA', color: '#555555' }}>
-                        <span className="w-1.5 h-1.5 rounded-full" style={{ background: i === STEPS.length - 1 ? '#000' : '#B5B5B5' }} />
-                        {s.gate}
-                      </div>
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── See It In Action ── */}
-      <section id="see-it-in-action" className="py-24 2xl:py-32 3xl:py-40 px-6" style={{ background: '#FAFAFA' }}>
-        <div className="max-w-5xl 2xl:max-w-6xl 3xl:max-w-7xl mx-auto">
-          <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
-              04
-            </div>
-            <p className="btk-kicker mb-5">04 · Product demo</p>
-            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              See it in action
-            </h2>
-            <p className="text-lg max-w-xl mx-auto" style={{ color: '#555555' }}>
-              A real inquiry, minutes later. Here&apos;s the whole flow.
-            </p>
-          </Reveal>
-
-          <div className="space-y-6">
-            <Reveal>
-            <GlowCard className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-black/25" style={{ background: '#fff', borderColor: '#E5E5E5' }}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#000' }}>1</div>
-                <div>
-                  <div className="text-sm font-semibold">The inquiry arrives</div>
-                  <div className="text-xs" style={{ color: '#8A8A8A' }}>The inquiry lands in your inbox</div>
-                </div>
-                <span className="btk-mono ml-auto text-[10px]" style={{ color: '#9A9A9A' }}>T+00:00</span>
-              </div>
-              <div className="px-5 py-4 rounded-xl text-sm leading-relaxed" style={{ background: '#FAFAFA', color: '#555555', border: '1px solid #ECECEC' }}>
-                <div className="btk-mono text-[10px] mb-2" style={{ color: '#8A8A8A' }}>FROM: SARAH CHEN</div>
-                Hi, we need 10,000 pcs of 500ml stainless steel vacuum bottles for a corporate order. Please quote with logo printing and your best lead time. Preference for double-wall, 304 food grade. We also need a sample before mass production. Thank you!
-              </div>
-            </GlowCard>
-            </Reveal>
-
-            <Reveal delay={120}>
-            <GlowCard className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-black/25" style={{ background: '#fff', borderColor: '#E5E5E5' }}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#000' }}>2</div>
-                <div>
-                  <div className="text-sm font-semibold">AI extracts every spec</div>
-                  <div className="text-xs" style={{ color: '#8A8A8A' }}>It pulls specs, detects the gaps, and asks only what&apos;s missing</div>
-                </div>
-                <span className="btk-mono ml-auto text-[10px]" style={{ color: '#9A9A9A' }}>T+02:10</span>
-              </div>
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="px-5 py-4 rounded-xl text-sm" style={{ background: '#FAFAFA', border: '1px solid #ECECEC' }}>
-                  <div className="btk-mono text-[10px] mb-3" style={{ color: '#8A8A8A' }}>Extracted</div>
-                  <ul className="space-y-2 text-sm" style={{ color: '#333333' }}>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#000' }}></span>10,000 pcs</li>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#000' }}></span>500ml, double-wall, 304</li>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#000' }}></span>Logo printing requested</li>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#000' }}></span>Sample required pre-order</li>
-                  </ul>
-                </div>
-                <div className="px-5 py-4 rounded-xl text-sm" style={{ background: '#FCFCFC', border: '1px dashed #D5D5D5' }}>
-                  <div className="btk-mono text-[10px] mb-3" style={{ color: '#8A8A8A' }}>Gaps it flagged</div>
-                  <ul className="space-y-2 text-sm" style={{ color: '#333333' }}>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#000' }}></span>Target price or budget?</li>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#000' }}></span>Incoterm (FOB / CIF / EXW)?</li>
-                    <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full" style={{ background: '#000' }}></span>Delivery destination &amp; date?</li>
-                  </ul>
-                </div>
-              </div>
-            </GlowCard>
-            </Reveal>
-
-            <Reveal delay={240}>
-            <GlowCard className="p-8 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:border-black/25" style={{ background: '#fff', borderColor: '#E5E5E5' }}>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: '#000' }}>3</div>
-                <div>
-                  <div className="text-sm font-semibold">A quote you can trace</div>
-                  <div className="text-xs" style={{ color: '#8A8A8A' }}>Every number traces back to your product price, a margin rule, or the FX rate</div>
-                </div>
-                <span className="btk-mono ml-auto text-[10px]" style={{ color: '#9A9A9A' }}>T+09:25</span>
-              </div>
-              <div className="px-5 py-4 rounded-xl text-sm" style={{ background: '#FAFAFA', border: '1px solid #ECECEC' }}>
-                <div className="flex justify-between items-baseline mb-3">
-                  <span className="font-semibold" style={{ color: '#0A0A0A' }}>
-                    <span className="btk-mono text-[10px] mr-1" style={{ color: '#8A8A8A' }}>10,000 PCS</span>
-                    500ml Vacuum Bottle, Double-Wall 304
-                  </span>
-                  <span className="font-bold shrink-0 ml-3" style={{ color: '#000' }}>USD 5.00 / pc</span>
-                </div>
-                <div className="flex justify-between items-baseline mb-3">
-                  <span className="font-semibold" style={{ color: '#0A0A0A' }}>
-                    <span className="btk-mono text-[10px] mr-1" style={{ color: '#8A8A8A' }}>10,000 PCS</span>
-                    Logo Printing (single-color laser)
-                  </span>
-                  <span className="font-bold shrink-0 ml-3" style={{ color: '#000' }}>USD 0.35 / pc</span>
-                </div>
-                <div className="flex justify-between items-baseline mb-4">
-                  <span className="font-semibold" style={{ color: '#0A0A0A' }}>
-                    <span className="btk-mono text-[10px] mr-1" style={{ color: '#8A8A8A' }}>1 PC</span>
-                    Sample (air freight)
-                  </span>
-                  <span className="font-bold shrink-0 ml-3" style={{ color: '#000' }}>USD 25.00</span>
-                </div>
-                <div className="flex justify-between items-baseline py-3 border-t text-sm font-bold" style={{ borderColor: '#ECECEC', color: '#000' }}>
-                  <span>Subtotal</span>
-                  <span>USD 53,525</span>
-                </div>
-                <div className="py-3 border-t text-xs" style={{ borderColor: '#ECECEC', color: '#555555' }}>
-                  <span className="font-semibold" style={{ color: '#000' }}>Sources: </span>
-                  Product price list · 20% margin rule (4.00 → 5.00) · FX 7.82 · Holds for 15 days
-                </div>
-              </div>
-              <p className="text-sm mt-4" style={{ color: '#555555' }}>
-                Sailwise drafts every reply, quote and follow-up for your approval - nothing sends until you approve it.
+      {/* ── Product: one inbox ── */}
+      <section id="product" className="px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead label="One inbox" title="Your mailbox, turned into a work queue" />
+          <div className="mt-6 grid gap-14 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-16">
+            <div>
+              <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
+                Inquiries land in the mailbox you already use — Gmail or Outlook, connected in one
+                click. Sailwise extracts the specs, flags what is missing, and sorts every thread by
+                what it needs from you next.
               </p>
-            </GlowCard>
-            </Reveal>
+              <ul className="mt-7 space-y-3.5">
+                <Bullet>Works over the Gmail or Outlook mailbox you already use</Bullet>
+                <Bullet>Specs, quantities and gaps pulled from the thread and its attachments</Bullet>
+                <Bullet>Replies drafted in the customer’s own language</Bullet>
+              </ul>
+            </div>
+            <div className="min-w-0">
+              <InboxMock />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Two-up: extraction & clarification ── */}
+      <section className="border-y border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-24 md:py-28">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-10 md:grid-cols-2 md:gap-8">
+            <div className="ecard p-8 md:p-10">
+              <p className="eyebrow">Extraction</p>
+              <h3 className="display mt-4 text-[1.6rem]">Specs, pinned to the source</h3>
+              <p className="mt-4 text-[15px] leading-relaxed text-[var(--ink-2)]">
+                Quantities, materials, certifications and lead times are pulled out of the thread and
+                tied to the exact line they came from. Nothing is inferred.
+              </p>
+              <div className="mt-7 rounded-xl border border-[var(--hairline)] bg-[var(--paper)] p-5">
+                <p className="text-[11px] font-medium tracking-[0.16em] text-[var(--ink-3)] uppercase">
+                  Extracted
+                </p>
+                <ul className="mt-3 space-y-2 text-[14px] text-[var(--ink)]">
+                  <li>10,000 pcs · 500ml · double-wall 304</li>
+                  <li>Logo printing · sample required</li>
+                </ul>
+                <p className="mt-4 border-t border-[var(--hairline)] pt-4 text-[12px] leading-relaxed text-[var(--ink-3)] italic">
+                  from “Hi, we need 10,000 pcs of 500ml stainless steel bottles…”
+                </p>
+              </div>
+            </div>
+
+            <div className="ecard p-8 md:p-10">
+              <p className="eyebrow">Clarification</p>
+              <h3 className="display mt-4 text-[1.6rem]">Gaps get asked about, not assumed</h3>
+              <p className="mt-4 text-[15px] leading-relaxed text-[var(--ink-2)]">
+                Sailwise drafts one question in the customer’s language for whatever is missing. You
+                approve it before it goes out.
+              </p>
+              <div className="mt-7 rounded-xl border border-[var(--hairline)] bg-[var(--paper)] p-5">
+                <p className="text-[11px] font-medium tracking-[0.16em] text-[var(--ink-3)] uppercase">
+                  Flagged before quoting
+                </p>
+                <ul className="mt-3 space-y-2 text-[14px] text-[var(--ink)]">
+                  <li>Target price or budget?</li>
+                  <li>Incoterm — FOB / CIF / EXW?</li>
+                  <li>Delivery destination &amp; date?</li>
+                </ul>
+                <p className="mt-4 border-t border-[var(--hairline)] pt-4 text-[12px] text-[var(--ink-3)]">
+                  Asked in English, 简体中文 or Español.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Work queue ── */}
+      <section className="px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead label="The work queue" title="Every thread sorted by what it needs next" />
+          <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] md:grid-cols-3">
+            {QUEUE.map((q) => (
+              <div key={q.label} className="bg-[var(--paper)] p-8">
+                <div className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: q.tone }} />
+                  <span
+                    className="font-mono text-[11px] tracking-[0.18em] uppercase"
+                    style={{ color: q.tone }}
+                  >
+                    {q.label}
+                  </span>
+                </div>
+                <h3 className="display mt-4 text-[1.35rem]">{q.title}</h3>
+                <p className="mt-3 text-[15px] leading-relaxed text-[var(--ink-2)]">{q.body}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-5 max-w-2xl text-[14px] leading-relaxed text-[var(--ink-3)]">
+            Each thread’s state is derived from the conversation itself — who spoke last, what is
+            still missing, how many chases have gone unanswered — so the queue stays current without
+            anyone maintaining it.
+          </p>
+        </div>
+      </section>
+
+      {/* ── Control (dark) ── */}
+      <section className="band-dark px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-16">
+            <div>
+              <p className="eyebrow">Built-in control</p>
+              <h2 className="display mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)]">
+                AI does the legwork.
+                <br />
+                You stay in <em>control</em>.
+              </h2>
+              <p className="mt-6 max-w-lg text-[16px] leading-[1.75] text-[rgba(244,241,236,0.7)]">
+                Nothing is sent on your behalf without a decision. Every message is a draft, every
+                number is traceable, and you can take over any thread mid-conversation.
+              </p>
+              <ul className="mt-9 space-y-7">
+                {GATES.map((g) => (
+                  <li key={g.label}>
+                    <p className="font-mono text-[11px] tracking-[0.2em] text-[rgba(244,241,236,0.5)] uppercase">
+                      {g.label}
+                    </p>
+                    <p className="display mt-2 text-[1.25rem]">{g.title}</p>
+                    <p className="mt-1.5 max-w-md text-[14.5px] leading-relaxed text-[rgba(244,241,236,0.62)]">
+                      {g.body}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="min-w-0">
+              <HandoffMock />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Quotes ── */}
+      <section className="px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead label="Quotes" title="Quotes in seconds, priced from your data" />
+          <div className="mt-6 grid gap-14 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-16">
+            <div>
+              <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
+                Every line is priced from your own product list and your margin rules, and shown on
+                the quote so you can check it in seconds. You approve it before it sends as a normal
+                email.
+              </p>
+              <ul className="mt-7 space-y-3.5">
+                <Bullet>Priced from your product list and margin rules</Bullet>
+                <Bullet>Lines that cannot be matched confidently are flagged, not guessed</Bullet>
+                <Bullet>One click to send from your own mailbox</Bullet>
+              </ul>
+            </div>
+            <div className="min-w-0">
+              <QuoteMock />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WhatsApp ── */}
+      <section className="border-t border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-24 md:py-28">
+        <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-20">
+          <div className="order-2 lg:order-1">
+            <WhatsAppMock />
+          </div>
+          <div className="order-1 lg:order-2">
+            <p className="eyebrow">Alerts</p>
+            <h2 className="display mt-4 text-[clamp(1.9rem,3.6vw,2.7rem)]">
+              Know the moment
+              <br />
+              something needs you.
+            </h2>
+            <p className="mt-6 max-w-lg text-[16px] leading-[1.75] text-[var(--ink-2)]">
+              When a thread needs a decision, Sailwise sends a WhatsApp alert with the sender, the
+              product and the quantity — so a deal never goes cold while you are away from your desk.
+              Replies and quotes still go out as normal email from your own address.
+            </p>
+            <ul className="mt-7 space-y-3.5">
+              <Bullet>WhatsApp alert when a thread needs a decision</Bullet>
+              <Bullet>Sender, product, quantity and status at a glance</Bullet>
+              <Bullet>Replies and quotes always sent from your own mailbox</Bullet>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* ── How it works ── */}
+      <section className="px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-5xl">
+          <SectionHead
+            label="How it works"
+            title="From inquiry to quote, end to end"
+            sub="The whole pipeline, with you approving every message."
+          />
+          <div className="mt-12">
+            {STEPS.map((s, i) => (
+              <div key={s.code} className="step-row">
+                <span className="step-num">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <p className="font-mono text-[11px] tracking-[0.2em] text-[var(--pine)] uppercase">
+                    {s.code}
+                  </p>
+                  <h3 className="display mt-2 text-[1.3rem]">{s.title}</h3>
+                </div>
+                <p className="max-w-xl text-[15.5px] leading-[1.75] text-[var(--ink-2)]">{s.body}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── Pricing ── */}
-      <section id="pricing" className="py-24 2xl:py-32 3xl:py-40 px-6 relative overflow-hidden">
-        <div aria-hidden="true" className="btk-breathe pointer-events-none absolute -top-48 left-1/2 w-[820px] h-[460px] rounded-full" style={{ marginLeft: -410, background: 'radial-gradient(closest-side, rgba(0,0,0,0.06), rgba(0,0,0,0) 70%)' }} />
-        <div className="max-w-4xl 2xl:max-w-5xl mx-auto text-center relative">
-          <Reveal className="relative text-center">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
-              05
+      <section
+        id="pricing"
+        className="border-y border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-24 md:py-32"
+      >
+        <div className="mx-auto max-w-2xl text-center">
+          <SectionHead label="Pricing" title="One plan. Everything included." align="center" />
+          <p className="mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-[var(--ink-2)]">
+            14-day free trial, then HK$1,880 per month. Cancel anytime.
+          </p>
+
+          <div className="ecard mx-auto mt-12 max-w-[460px] p-8 text-left md:p-9">
+            <div className="flex items-baseline justify-between">
+              <span className="display text-[1.35rem]">Starter</span>
+              <span className="font-mono text-[10px] tracking-[0.16em] text-[var(--pine)] uppercase">
+                everything included
+              </span>
             </div>
-            <p className="btk-kicker mb-5">05 · Pricing</p>
-            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              Simple, transparent pricing
-            </h2>
-            <p className="text-lg mb-16" style={{ color: '#555555' }}>
-              14-day free trial, then HK$1,880/month. Cancel anytime.
-            </p>
-          </Reveal>
-          <Reveal className="max-w-[440px] mx-auto">
-            <div
-              className="relative flex h-full flex-col p-8 rounded-2xl text-left transition-all duration-300 md:hover:-translate-y-2 btk-card-hover"
-              style={{
-                background: '#fff',
-                border: '1.5px solid #000',
-              }}
-            >
-              <div>
-                <div className="text-lg font-semibold tracking-tight" style={{ color: '#0A0A0A' }}>{PLANS[0].name}</div>
-                <span className="btk-mono text-[10px] font-semibold px-2.5 py-1 rounded-full border inline-block mt-2" style={{ color: '#8A8A8A', borderColor: '#E0E0E0' }}>one plan · everything included</span>
-              </div>
-              <PricingPrice monthly={PLANS[0].price} annual="HK$1,504" period={PLANS[0].period} />
-              <div className="h-px bg-black/10 mb-4" />
-              <p className="btk-mono text-[10px] mb-4 text-left" style={{ color: '#8A8A8A' }}>
-                What&apos;s included
+            <PricingPrice monthly={PLANS[0].price} annual="HK$1,504" period={PLANS[0].period} />
+            <div className="mt-6 mb-6 h-px bg-[var(--hairline)]" />
+            <ul className="space-y-3">
+              {PLANS[0].features.map((f) => (
+                <li
+                  key={f}
+                  className="flex items-start gap-2.5 text-[14.5px] leading-snug text-[var(--ink-2)]"
+                >
+                  <Check className="mt-[3px] h-3.5 w-3.5 shrink-0 text-[var(--pine)]" strokeWidth={2.5} />
+                  {f}
+                </li>
+              ))}
+            </ul>
+            <div className="mt-8 border-t border-[var(--hairline)] pt-6">
+              <Link href="/signup" className="group btn-primary w-full py-3">
+                Start free trial
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <p className="mt-3 text-center text-[12px] text-[var(--ink-3)]">
+                14-day free trial · Card required · Cancel anytime
               </p>
-              <ul className="space-y-3 mb-2 flex-1">
-                {PLANS[0].features.map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm leading-snug" style={{ color: '#333333' }}>
-                    <span className="w-5 h-5 mt-px rounded-full flex items-center justify-center shrink-0" style={{ background: '#0A0A0A', color: '#fff' }}>
-                      <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                      </svg>
-                    </span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="pt-5 border-t border-black/10">
-                <Link href="/signup" className="group/cta btn-primary w-full py-3.5">
-                  Start Free Trial
-                  <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/cta:translate-x-0.5" />
-                </Link>
-                <p className="text-center mt-3 text-[11px]" style={{ color: '#8A8A8A' }}>
-                  14-day free trial · Card required · Cancel anytime
-                </p>
-              </div>
             </div>
-          </Reveal>
-          <p className="text-xs mt-10" style={{ color: '#555555' }}>
-            50 AI drafts and 25 emails included during the trial.
-          </p>
-          <p className="text-xs mt-4 max-w-xl mx-auto" style={{ color: '#555555' }}>
-            Prefer a white-glove start? For <span className="font-semibold" style={{ color: '#0A0A0A' }}>HK$1,000</span> one-time we connect your mailbox, upload your products, and configure the AI for you. Annual billing drops the price to HK$1,504/month —{' '}
-            <Link href="/pricing" className="font-medium underline underline-offset-2" style={{ color: '#000' }}>see pricing</Link>.
-          </p>
-          <p className="text-xs mt-3" style={{ color: '#8A8A8A' }}>
-            Need a bigger team, more AI conversations, or custom workflows? We do custom plans —{' '}
-            <a href="mailto:tradeflow.hk@gmail.com" className="font-medium underline underline-offset-2" style={{ color: '#000' }}>
-              tradeflow.hk@gmail.com
+          </div>
+
+          <p className="mx-auto mt-8 max-w-md text-[13.5px] leading-relaxed text-[var(--ink-3)]">
+            Annual billing is HK$1,504/month. Need a bigger team or custom workflows?{' '}
+            <a
+              href="mailto:tradeflow.hk@gmail.com"
+              className="text-[var(--pine)] underline underline-offset-4"
+            >
+              Talk to us
             </a>
+            .
           </p>
         </div>
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-24 px-6 xl:py-28 2xl:py-32 3xl:py-40" style={{ background: '#FAFAFA' }}>
-        <div className="max-w-3xl 2xl:max-w-4xl mx-auto">
-          <Reveal className="relative text-center mb-16">
-            <div aria-hidden="true" className="pointer-events-none select-none absolute inset-x-0 -top-4 flex items-center justify-center" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: 'rgba(0,0,0,0.045)', fontSize: 'clamp(6rem, 14vw, 11rem)', lineHeight: 1, zIndex: -1 }}>
-              06
-            </div>
-            <p className="btk-kicker mb-5">06 · FAQ</p>
-            <h2 className="text-3xl md:text-5xl 2xl:text-6xl font-bold tracking-tight mb-4" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-              Questions, answered
-            </h2>
-            <p className="text-lg" style={{ color: '#555555' }}>
-              Everything traders ask us before starting.
-            </p>
-          </Reveal>
-          <div className="space-y-3">
-            {FAQS.map((faq, i) => (
-              <Reveal key={faq.q} delay={Math.min(i, 6) * 60}>
-              <details key={faq.q} className="group rounded-2xl border transition-colors duration-300 hover:border-black/25" style={{ background: '#fff', borderColor: '#E5E5E5' }}>
-                <summary className="flex items-center justify-between gap-4 px-8 py-5 text-base font-medium cursor-pointer select-none list-none" style={{ color: '#0A0A0A' }}>
-                  {faq.q}
-                  <svg className="w-4 h-4 shrink-0 transition-transform group-open:rotate-180" style={{ color: '#8A8A8A' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <section id="faq" className="px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-3xl">
+          <SectionHead
+            label="FAQ"
+            title="Questions, answered"
+            sub="Everything traders ask us before starting."
+          />
+          <div className="mt-12">
+            {FAQS.map((f) => (
+              <details key={f.q} className="faq-item group">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left">
+                  <span className="display text-[1.15rem] md:text-[1.3rem]">{f.q}</span>
+                  <svg
+                    className="h-4 w-4 shrink-0 text-[var(--ink-3)] transition-transform duration-300 group-open:rotate-180"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                  >
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                   </svg>
                 </summary>
-                <div className="px-8 pb-6 -mt-1 text-sm leading-relaxed" style={{ color: '#555555' }}>
-                  {faq.a}
-                </div>
+                <p className="-mt-1 max-w-2xl pb-7 text-[15.5px] leading-[1.75] text-[var(--ink-2)]">
+                  {f.a}
+                </p>
               </details>
-              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ── Final CTA ── */}
-      <section className="py-24 px-6 xl:py-28 2xl:py-32 3xl:py-40 relative overflow-hidden">
-        <div aria-hidden="true" className="btk-drift pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center select-none whitespace-nowrap font-bold leading-none" style={{ fontFamily: 'Georgia, "Times New Roman", serif', color: '#F4F4F4', fontSize: 'clamp(6rem, 22vw, 16rem)' }}>
-          Sailwise
-        </div>
-        <Reveal className="relative max-w-3xl mx-auto text-center">
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-6" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-            Stop copy-pasting quotes.<br />
-            <span style={{ color: '#000' }}>Start closing deals.</span>
-          </h2>
-          <p className="text-lg mb-10" style={{ color: '#555555' }}>
-            Sailwise helps trading companies in HK, Shenzhen, and beyond quote faster and win more deals.
+      <section className="band-dark px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="display text-[clamp(2rem,4.4vw,3.25rem)]">Stop copy-pasting quotes.</h2>
+          <p className="mx-auto mt-6 max-w-md text-[16px] leading-relaxed text-[rgba(244,241,236,0.7)]">
+            Let Sailwise answer first — then close the deal.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup" className="group btn-primary w-full sm:w-auto px-8 py-4">
-              Start Free Trial
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/signup"
+              className="group inline-flex w-full items-center justify-center gap-1.5 rounded-[9px] bg-[#faf7f2] px-6 py-3 text-[14px] font-medium text-[var(--pine-deep)] transition hover:-translate-y-px sm:w-auto"
+            >
+              Start free trial
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
-            <a href="mailto:tradeflow.hk@gmail.com?subject=Demo%20request" className="btn-ghost w-full sm:w-auto px-8 py-4">
-              Book a Demo
+            <a
+              href="mailto:tradeflow.hk@gmail.com?subject=Demo%20request"
+              className="inline-flex w-full items-center justify-center rounded-[9px] border border-[rgba(244,241,236,0.28)] px-6 py-3 text-[14px] font-medium text-[#f4f1ec] transition hover:border-[rgba(244,241,236,0.6)] sm:w-auto"
+            >
+              Book a demo
             </a>
           </div>
-        </Reveal>
+        </div>
       </section>
 
       {/* ── Footer ── */}
-      <footer className="py-14 px-6 xl:py-16 3xl:py-20 border-t" style={{ borderColor: '#E5E5E5' }}>
-        <div className="max-w-6xl 2xl:max-w-7xl 3xl:max-w-[90rem] mx-auto grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
+      <footer className="border-t border-[var(--hairline)] px-6 py-16">
+        <div className="mx-auto grid max-w-6xl gap-12 md:grid-cols-[1.6fr_1fr_1fr]">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <img src="/brand/sailwise-mark.png" alt="" aria-hidden="true" className="h-6 w-6 object-contain" />
-              <span className="text-sm font-semibold" style={{ color: '#0A0A0A' }}>Sailwise</span>
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/brand/sailwise-mark.png"
+                alt=""
+                aria-hidden="true"
+                className="h-6 w-6 object-contain"
+              />
+              <span className="display text-[1.05rem]">Sailwise</span>
             </div>
-            <p className="text-sm max-w-[280px]" style={{ color: '#555555' }}>
-              The AI copilot for HK and Shenzhen trading companies — from inquiry to sent quote, with you approving every message.
+            <p className="mt-4 max-w-[300px] text-[14px] leading-relaxed text-[var(--ink-2)]">
+              The AI sales assistant for HK and Shenzhen trading companies — from inquiry to sent
+              quote, with you approving every message.
             </p>
-            <p className="text-xs mt-6" style={{ color: '#9A9A9A' }}>© 2026 Sailwise. All rights reserved.</p>
+            <p className="mt-8 text-[12px] text-[var(--ink-3)]">
+              © 2026 Sailwise. All rights reserved.
+            </p>
           </div>
           <div>
-            <div className="btk-mono text-[10px] mb-4" style={{ color: '#8A8A8A' }}>Product</div>
-            <ul className="space-y-2.5 text-sm" style={{ color: '#555555' }}>
-              <li><a href="#features" className="hover:text-black transition-colors">Features</a></li>
-              <li><a href="#how-it-works" className="hover:text-black transition-colors">How It Works</a></li>
-              <li><a href="#see-it-in-action" className="hover:text-black transition-colors">Live Demo</a></li>
-              <li><Link href="/pricing" className="hover:text-black transition-colors">Pricing</Link></li>
+            <p className="eyebrow">Product</p>
+            <ul className="mt-5 space-y-3 text-[14px]">
+              <li>
+                <a href="#product" className="footer-link">
+                  Product
+                </a>
+              </li>
+              <li>
+                <a href="#pricing" className="footer-link">
+                  Pricing
+                </a>
+              </li>
+              <li>
+                <a href="#faq" className="footer-link">
+                  FAQ
+                </a>
+              </li>
             </ul>
           </div>
           <div>
-            <div className="btk-mono text-[10px] mb-4" style={{ color: '#8A8A8A' }}>Company</div>
-            <ul className="space-y-2.5 text-sm" style={{ color: '#555555' }}>
-              <li><Link href="/login" className="hover:text-black transition-colors">Log in</Link></li>
-              <li><Link href="/signup" className="hover:text-black transition-colors">Start Free</Link></li>
-              <li><a href="/privacy" className="hover:text-black transition-colors">Privacy</a></li>
-              <li><a href="mailto:tradeflow.hk@gmail.com" className="hover:text-black transition-colors">Contact</a></li>
+            <p className="eyebrow">Company</p>
+            <ul className="mt-5 space-y-3 text-[14px]">
+              <li>
+                <Link href="/login" className="footer-link">
+                  Log in
+                </Link>
+              </li>
+              <li>
+                <Link href="/signup" className="footer-link">
+                  Start free
+                </Link>
+              </li>
+              <li>
+                <a href="/privacy" className="footer-link">
+                  Privacy
+                </a>
+              </li>
+              <li>
+                <a href="mailto:tradeflow.hk@gmail.com" className="footer-link">
+                  Contact
+                </a>
+              </li>
             </ul>
           </div>
         </div>
