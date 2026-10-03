@@ -198,6 +198,10 @@ export default function InboxDetailPage() {
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [draft, setDraft] = useState('');
+  const [replySubject, setReplySubject] = useState('');
+  const [cc, setCc] = useState('');
+  const [bcc, setBcc] = useState('');
+  const [showCc, setShowCc] = useState(false);
   const [sending, setSending] = useState(false);
   const [togglingSearch, setTogglingSearch] = useState(false);
   const [detectLang, setDetectLang] = useState<string | null>(null);
@@ -214,6 +218,7 @@ export default function InboxDetailPage() {
       if (!res.ok) throw new Error('Failed to load conversation');
       const data = await res.json();
       setDetail(data);
+      setReplySubject(data?.subject || '');
       if (data?.detected_language) setDetectLang(data.detected_language);
       authFetch(`/api/admin/inbox/${id}`, {
         method: 'PATCH',
@@ -385,13 +390,21 @@ export default function InboxDetailPage() {
   const handleSendMessage = async () => {
     if (!inputValue.trim() || !detail) return;
     const content = inputValue.trim();
-    const subject = detail.subject || undefined;
+    const subject = replySubject.trim() || detail.subject || undefined;
+    const split = (s: string) => s.split(/[,;]/).map((x) => x.trim()).filter(Boolean);
     setSending(true);
     try {
       const res = await authFetch(`/api/admin/inbox/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, subject, kind: 'reply', status: 'human' }),
+        body: JSON.stringify({
+          content,
+          subject,
+          cc: split(cc),
+          bcc: split(bcc),
+          kind: 'reply',
+          status: 'human',
+        }),
       });
       if (!res.ok) {
         const data = await res.json().catch(() => null);
@@ -848,6 +861,50 @@ export default function InboxDetailPage() {
           <div className="px-3 md:px-5 py-3 md:py-4 border-t flex-shrink-0" style={{ borderColor: 'var(--border)' }}>
             {body ? (
               <div>
+                <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[11px] w-10 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{t('Subject', '主旨')}</span>
+                  <input
+                    value={replySubject}
+                    onChange={(e) => setReplySubject(e.target.value)}
+                    placeholder={t('Subject', '主旨')}
+                    className="flex-1 border rounded-[4px] px-2.5 py-1.5 text-[12px] focus:outline-none min-w-0"
+                    style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+                    disabled={sending}
+                  />
+                </div>
+                {showCc ? (
+                  <>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-[11px] w-10 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>Cc</span>
+                      <input
+                        value={cc}
+                        onChange={(e) => setCc(e.target.value)}
+                        placeholder={t('name@company.com, second@company.com', '名稱@公司.com，第二位@公司.com')}
+                        className="flex-1 border rounded-[4px] px-2.5 py-1.5 text-[12px] focus:outline-none min-w-0"
+                        style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+                        disabled={sending}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-[11px] w-10 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>Bcc</span>
+                      <input
+                        value={bcc}
+                        onChange={(e) => setBcc(e.target.value)}
+                        className="flex-1 border rounded-[4px] px-2.5 py-1.5 text-[12px] focus:outline-none min-w-0"
+                        style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+                        disabled={sending}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <button
+                    onClick={() => setShowCc(true)}
+                    className="text-[11px] mb-1.5 hover:underline"
+                    style={{ color: 'var(--text-muted)', marginLeft: 48 }}
+                  >
+                    Cc / Bcc
+                  </button>
+                )}
                 <div className="flex gap-2 mb-2">
                   <textarea
                     value={inputValue}

@@ -276,9 +276,29 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     const body = await req.json();
     const content = typeof body.content === 'string' ? body.content.trim() : '';
-    const subject = typeof body.subject === 'string' ? body.subject.trim() : conversation.subject || null;
     const recipientEmail = conversation.contact_email || body.recipient_email || null;
     const kind = body.kind === 'forward' ? 'forward' : 'reply';
+
+    const cleanList = (v: unknown): string[] => {
+      const raw = Array.isArray(v) ? v : typeof v === 'string' ? v.split(/[,;]/) : [];
+      return raw.map((s) => String(s).trim()).filter(Boolean);
+    };
+    const ccList = cleanList(body.cc);
+    const bccList = cleanList(body.bcc);
+
+    // Replies carry a proper "Re:" subject line so the thread reads correctly
+    // in the buyer's mail client. Forwards keep whatever the operator typed.
+    const rawSubject =
+      (typeof body.subject === 'string' && body.subject.trim()) ||
+      conversation.subject ||
+      '';
+    let subject: string | null = rawSubject || null;
+    if (kind === 'reply' && subject && !/^re:\s/i.test(subject)) {
+      subject = `Re: ${subject}`;
+    }
+    if (kind === 'reply' && !subject) {
+      subject = 'Re: your inquiry';
+    }
 
     if (!content) {
       return NextResponse.json({ error: 'content is required' }, { status: 400 });
@@ -296,6 +316,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     if (kind === 'reply') {
       const attempt = await sendEmail({
         to: recipientEmail,
+        cc: ccList.length ? ccList : undefined,
+        bcc: bccList.length ? bccList : undefined,
         subject: subject || 'Re: your inquiry',
         html: content.replace(/\n/g, '<br/>'),
         companyId: auth.companyId,
