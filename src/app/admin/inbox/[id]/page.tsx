@@ -734,6 +734,9 @@ export default function InboxDetailPage() {
 
   const body = detail;
   const displayStatus = body?.status || 'ai';
+  // human and ai_paused both mean the same thing to every downstream consumer:
+  // a person owns this thread and the AI stays quiet.
+  const aiOwned = displayStatus === 'human' || displayStatus === 'ai_paused';
   const badge = statusBadge(displayStatus);
   // Prefer the server-resolved identity (opportunity → contact → customer) over
   // the conversation's own fields, which are often empty for synced threads.
@@ -743,6 +746,9 @@ export default function InboxDetailPage() {
     body?.contact_email ||
     body?.contact_phone ||
     t('Customer', '客戶');
+  // The send endpoint mails conversation.contact_email, so show that same
+  // address instead of leaving the recipient invisible.
+  const replyRecipient = body?.contact_email || body?.contact?.email || '';
   const contactEmailLine =
     body?.contact?.email || body?.contact_email || body?.contact_phone || '';
   const contactLabel = contactName;
@@ -1249,7 +1255,11 @@ export default function InboxDetailPage() {
         <div className="flex items-center gap-2 flex-wrap">
           {body && (
             <>
-              {displayStatus === 'human' ? (
+              {/* One control for "who owns this thread". Replying already takes
+                  over, and Pause AI behaved the same as Take over in every
+                  consumer (the chase cron skips human and ai_paused alike), so
+                  the pair collapsed into a single toggle. */}
+              {aiOwned ? (
                 <button
                   onClick={() => setStatus('active')}
                   className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg border"
@@ -1258,30 +1268,33 @@ export default function InboxDetailPage() {
                   {t('Release to AI', '交還 AI')}
                 </button>
               ) : (
-                <>
-                  <button
-                    onClick={() => setStatus(displayStatus === 'ai_paused' ? 'active' : 'ai_paused')}
-                    className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg border"
-                    style={{ borderColor: 'var(--border)', color: displayStatus === 'ai_paused' ? '#D97706' : 'var(--text-muted)' }}
-                  >
-                    {displayStatus === 'ai_paused' ? t('Resume AI', '恢復 AI') : t('Pause AI', '暫停 AI')}
-                  </button>
-                  <button
-                    onClick={() => setStatus(displayStatus === 'bookmarked' ? 'active' : 'bookmarked')}
-                    className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg border"
-                    style={{ borderColor: 'var(--border)', color: displayStatus === 'bookmarked' ? 'var(--error)' : 'var(--text-muted)' }}
-                  >
-                    {displayStatus === 'bookmarked' ? t('Bookmarked', '已加書籤') : t('Bookmark', '加書籤')}
-                  </button>
-                  <button
-                    onClick={() => setStatus('human')}
-                    className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg text-white"
-                    style={{ background: '#038153' }}
-                  >
-                    {t('Take over', '接管')}
-                  </button>
-                </>
+                <button
+                  onClick={() => setStatus('human')}
+                  className="text-[11px] md:text-[12px] font-semibold px-3 md:px-3.5 py-1.5 rounded-lg text-white"
+                  style={{ background: '#038153' }}
+                >
+                  {t('Take over', '接管')}
+                </button>
               )}
+              {/* Flagging is orthogonal to ownership, and it already has a real
+                  boolean on the conversation. Writing it through `status` used
+                  to overwrite the mode, so bookmarking a thread you were
+                  handling silently handed it back to the AI. */}
+              <button
+                onClick={toggleFlag}
+                aria-pressed={!!detail?.flagged}
+                aria-label={detail?.flagged ? t('Remove flag', '移除標記') : t('Flag thread', '標記對話')}
+                title={detail?.flagged ? t('Remove flag', '移除標記') : t('Flag thread', '標記對話')}
+                className="h-[30px] w-[30px] flex items-center justify-center rounded-lg border"
+                style={{ borderColor: 'var(--border)' }}
+              >
+                <Flag
+                  width={13}
+                  height={13}
+                  style={{ color: detail?.flagged ? 'var(--error)' : 'var(--text-muted)' }}
+                  fill={detail?.flagged ? 'var(--error)' : 'transparent'}
+                />
+              </button>
             </>
           )}
         </div>
@@ -1388,6 +1401,25 @@ export default function InboxDetailPage() {
             {body ? (
               <div>
                 <div className="flex items-center gap-2 mb-1.5">
+                  <span className="text-[11px] w-10 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{t('To', '收件')}</span>
+                  <span
+                    className="flex-1 min-w-0 truncate text-[12px]"
+                    style={{ color: replyRecipient ? 'var(--text)' : 'var(--error)' }}
+                    title={replyRecipient || t('No email address on this contact', '此聯絡人沒有電郵地址')}
+                  >
+                    {replyRecipient || t('No email on file — this reply cannot be sent', '沒有電郵地址 — 無法發送此回覆')}
+                  </span>
+                  {!showCc && (
+                    <button
+                      onClick={() => setShowCc(true)}
+                      className="text-[11px] shrink-0 hover:underline"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
+                      {t('Cc / Bcc', '副本／密送')}
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center gap-2 mb-1.5">
                   <span className="text-[11px] w-10 flex-shrink-0" style={{ color: 'var(--text-muted)' }}>{t('Subject', '主旨')}</span>
                   <input
                     value={replySubject}
@@ -1422,29 +1454,36 @@ export default function InboxDetailPage() {
                       />
                     </div>
                   </>
-                ) : (
-                  <button
-                    onClick={() => setShowCc(true)}
-                    className="text-[11px] mb-1.5 hover:underline"
-                    style={{ color: 'var(--text-muted)', marginLeft: 48 }}
-                  >
-                    Cc / Bcc
-                  </button>
-                )}
+                ) : null}
                 <div className="flex gap-2 mb-2">
                   <textarea
                     value={inputValue}
                     onChange={(e) => { setInputValue(e.target.value); setDraft(e.target.value); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
+                    }}
                     placeholder={t('Type your reply…', '輸入回覆...')}
                     rows={2}
-                    className="flex-1 border rounded-[4px] px-3 py-2.5 text-[16px] focus:outline-none resize-none"
-                    style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+                    aria-label={t('Reply', '回覆')}
+                    className="flex-1 border rounded-[4px] px-3 py-2.5 text-[16px] focus:outline-none"
+                    style={{
+                      borderColor: 'var(--border)',
+                      background: 'var(--bg)',
+                      // Grows with the reply instead of hiding it behind two rows;
+                      // falls back to a scrollable box where unsupported.
+                      fieldSizing: 'content',
+                      minHeight: '52px',
+                      maxHeight: '40vh',
+                      overflowY: 'auto',
+                    }}
                     disabled={sending}
                   />
                   <button
                     onClick={handleSendMessage}
-                    disabled={sending || !inputValue.trim()}
+                    // No recipient means the endpoint answers 400 — block it here
+                    // instead of letting the user discover it after typing.
+                    disabled={sending || !inputValue.trim() || !replyRecipient}
+                    title={!replyRecipient ? t('This contact has no email address on file', '此聯絡人沒有電郵地址') : undefined}
                     className="text-[12px] md:text-[13px] font-medium px-4 md:px-5 py-2.5 md:py-0 min-h-[44px] md:min-h-0 rounded-[4px] text-white self-end disabled:opacity-50"
                     style={{ background: '#038153' }}
                   >
@@ -1453,17 +1492,11 @@ export default function InboxDetailPage() {
                 </div>
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-[11px] md:text-[12px]" style={{ color: 'var(--text-muted)' }}>
-                    {displayStatus === 'human'
-                      ? t("You're replying as a human.", '您正在以人手身份回覆。')
+                    {aiOwned
+                      ? t("You're replying as a human — the AI stays quiet until you release it.", '您正在以人手身份回覆——交還 AI 前 AI 會保持靜默。')
                       : t('Replying takes over from the AI.', '回覆會把對話從 AI 手中接管。')}
+                    <span className="hidden md:inline"> {t('Enter to send · Shift+Enter for a new line', 'Enter 發送 · Shift+Enter 換行')}</span>
                   </p>
-                  <button
-                    onClick={() => setStatus(displayStatus === 'human' ? 'active' : 'human')}
-                    className="text-[11px] md:text-[12px] font-medium px-3 py-1.5 rounded-[4px] border shrink-0"
-                    style={{ borderColor: 'var(--border)', color: displayStatus === 'human' ? 'var(--text)' : '#038153' }}
-                  >
-                    {displayStatus === 'human' ? t('Release to AI', '交還 AI') : t('Take over', '接管')}
-                  </button>
                 </div>
               </div>
             ) : (
