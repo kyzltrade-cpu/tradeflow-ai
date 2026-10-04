@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@supabase/supabase-js';
-import { ArrowLeft, Globe, Sparkles, FileText, RefreshCw, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy } from 'lucide-react';
+import { ArrowLeft, Globe, Sparkles, FileText, RefreshCw, Clock, User, Flag, CheckCircle, Download, Archive, Trash2, Inbox, Trophy, Building2 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
@@ -158,6 +158,18 @@ interface SuggestionLine {
   sources: PriceSource[];
 }
 
+interface SupplierRec {
+  id: string;
+  name: string;
+  location: string | null;
+  is_approved: boolean;
+  capabilities: string[];
+  match_reason: string;
+  performance_score: number | null;
+  typical_lead_time_days: number | null;
+  payment_terms: string | null;
+}
+
 interface Suggestion {
   request_summary: string | null;
   currency: string | null;
@@ -245,6 +257,7 @@ export default function InboxDetailPage() {
   const [detail, setDetail] = useState<ConversationWithRelations | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+  const [supplierMatches, setSupplierMatches] = useState<SupplierRec[] | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -333,6 +346,24 @@ export default function InboxDetailPage() {
   useEffect(() => {
     fetchDetail();
   }, [fetchDetail]);
+
+  // Supplier matches are heuristic and quota-free, so they load with the
+  // thread rather than waiting on the "Price" action.
+  useEffect(() => {
+    if (companyLoading || !companyId || !id) return;
+    let cancelled = false;
+    authFetch(`/api/admin/inbox/${id}/supplier-matches`)
+      .then((r) => (r.ok ? r.json() : { suppliers: [] }))
+      .then((data) => {
+        if (!cancelled) setSupplierMatches((data.suppliers || []) as SupplierRec[]);
+      })
+      .catch(() => {
+        if (!cancelled) setSupplierMatches([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, companyId, companyLoading]);
 
   // Load the parsed spec extraction up front (preview = no auto-draft side effect).
   useEffect(() => {
@@ -1647,6 +1678,70 @@ export default function InboxDetailPage() {
                 </button>
               ))}
             </div>
+          </div>
+        )}
+        {/* ── Pod: Supplier matches (always last) ─────────────────── */}
+        {supplierMatches && supplierMatches.length > 0 && (
+          <div className="border-b p-4">
+            <div className="flex items-center gap-2 mb-1">
+              <Building2 width="14" height="14" style={{ color: 'var(--accent)' }} />
+              <h3 className="text-[13px] font-semibold">{t('Supplier matches', '供應商配對')}</h3>
+            </div>
+            <p className="text-[11px] mb-2.5" style={{ color: 'var(--text-muted)' }}>
+              {t('From your directory, based on this thread', '根據此對話從您的目錄配對')}
+            </p>
+            <div className="space-y-1.5">
+              {supplierMatches.map((s) => (
+                <div
+                  key={s.id}
+                  className="rounded-[6px] border px-3 py-2"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-[12.5px] font-semibold truncate" style={{ color: 'var(--text)' }}>
+                      {s.name}
+                    </p>
+                    {s.is_approved && (
+                      <span
+                        className="text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0"
+                        style={{ background: '#E8F5F1', color: '#038153' }}
+                      >
+                        {t('APPROVED', '已核准')}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                    {[s.location, s.typical_lead_time_days ? `${s.typical_lead_time_days}d` : null]
+                      .filter(Boolean)
+                      .join(' · ') || '—'}
+                  </p>
+                  {s.capabilities.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {s.capabilities.map((c) => (
+                        <span
+                          key={c}
+                          className="text-[10px] px-1.5 py-0.5 rounded"
+                          style={{
+                            background: 'var(--surface)',
+                            border: '1px solid var(--border)',
+                            color: 'var(--text-muted)',
+                          }}
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+            <Link
+              href="/admin/suppliers"
+              className="inline-block text-[12px] font-medium mt-2.5"
+              style={{ color: 'var(--accent)' }}
+            >
+              {t('View all suppliers', '查看所有供應商')}
+            </Link>
           </div>
         )}
       </div>
