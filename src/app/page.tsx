@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import SiteHeader from '@/components/landing/SiteHeader';
+import Reveal from '@/components/landing/Reveal';
 import PricingPrice from '@/components/landing/PricingPrice';
 import { useLang } from '@/lib/lang';
 import {
@@ -246,13 +247,13 @@ function SectionHead({
   align?: 'left' | 'center';
 }) {
   return (
-    <div className={align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
+    <Reveal className={align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
       <p className="eyebrow">{label}</p>
       <h2 className="display mt-4 text-balance text-[clamp(1.9rem,3.6vw,2.9rem)]">{title}</h2>
       {sub && (
         <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-[var(--ink-2)]">{sub}</p>
       )}
-    </div>
+    </Reveal>
   );
 }
 
@@ -321,12 +322,12 @@ export default function LandingPage() {
       <section className="border-y border-[var(--hairline)] px-6 py-14">
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-4">
           {FACTS.map((f, i) => (
-            <div key={i} className="bg-[var(--paper)] px-5 py-7 text-center">
+            <Reveal key={i} delay={i * 70} className="bg-[var(--paper)] px-5 py-7 text-center">
               <div className="display text-[1.55rem] leading-tight">{t(f.value[0], f.value[1])}</div>
               <div className="mt-2 text-[12.5px] leading-snug text-[var(--ink-3)]">
                 {t(f.label[0], f.label[1])}
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -354,7 +355,7 @@ export default function LandingPage() {
       <section className="border-b border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-16 md:py-20">
         <div className="mx-auto grid max-w-6xl gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] md:grid-cols-3">
           {PROOF.map((p, i) => (
-            <div key={i} className="bg-[var(--paper-2)] px-7 py-8">
+            <Reveal key={i} delay={i * 80} className="bg-[var(--paper-2)] px-7 py-8">
               <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--ink-3)]">
                 {String(i + 1).padStart(2, '0')}
               </span>
@@ -362,7 +363,7 @@ export default function LandingPage() {
               <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--ink-2)]">
                 {t(p.body[0], p.body[1])}
               </p>
-            </div>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -383,8 +384,8 @@ export default function LandingPage() {
               <ExtractionMock />
             </div>
             <div className="order-1 space-y-11 lg:order-2">
-              {EXTRACTION.map((b) => (
-                <div key={b.label[0]}>
+              {EXTRACTION.map((b, i) => (
+                <Reveal key={b.label[0]} delay={i * 110}>
                   <p className="eyebrow">{t(b.label[0], b.label[1])}</p>
                   <h3 className="display mt-3 text-[1.45rem]">{t(b.title[0], b.title[1])}</h3>
                   <p className="mt-3 text-[15.5px] leading-[1.75] text-[var(--ink-2)]">
@@ -395,7 +396,7 @@ export default function LandingPage() {
                       <Bullet key={j}>{t(p[0], p[1])}</Bullet>
                     ))}
                   </ul>
-                </div>
+                </Reveal>
               ))}
             </div>
           </div>
@@ -439,7 +440,7 @@ export default function LandingPage() {
           />
           <div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-14">
             {QUEUE.map((q, i) => (
-              <div key={i}>
+              <Reveal key={i} delay={i * 90}>
                 <div className="flex items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ background: q.tone }} />
                   <span
@@ -451,7 +452,7 @@ export default function LandingPage() {
                 </div>
                 <h3 className="display mt-4 text-[1.35rem]">{t(q.title[0], q.title[1])}</h3>
                 <p className="mt-3 text-[15px] leading-relaxed text-[var(--ink-2)]">{t(q.body[0], q.body[1])}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
           <p className="mt-12 max-w-2xl text-[14px] leading-relaxed text-[var(--ink-3)]">
@@ -569,7 +570,7 @@ export default function LandingPage() {
           />
           <div className="mt-12">
             {STEPS.map((s, i) => (
-              <div key={s.code} className="step-row">
+              <Reveal key={s.code} delay={i * 80} className="step-row">
                 <span className="step-num">{String(i + 1).padStart(2, '0')}</span>
                 <div>
                   <p className="font-mono text-[11px] tracking-[0.2em] text-[var(--pine)] uppercase">
@@ -578,7 +579,7 @@ export default function LandingPage() {
                   <h3 className="display mt-2 text-[1.3rem]">{t(s.title[0], s.title[1])}</h3>
                 </div>
                 <p className="max-w-xl text-[15.5px] leading-[1.75] text-[var(--ink-2)]">{t(s.body[0], s.body[1])}</p>
-              </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -656,7 +657,8 @@ export default function LandingPage() {
           />
           <div className="mt-12">
             {FAQS.map((f, i) => (
-              <details key={i} className="faq-item group">
+              <Reveal key={i} delay={Math.min(i, 5) * 60}>
+                <details className="faq-item group">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left">
                   <span className="display text-[1.15rem] md:text-[1.3rem]">{t(f.q[0], f.q[1])}</span>
                   <svg
@@ -673,6 +675,7 @@ export default function LandingPage() {
                   {t(f.a[0], f.a[1])}
                 </p>
               </details>
+              </Reveal>
             ))}
           </div>
         </div>

@@ -135,7 +135,7 @@ function Avatar({
       </span>
       {dot && (
         <span
-          className="absolute rounded-full"
+          className="sail-pulse absolute rounded-full"
           style={{
             right: -1,
             bottom: -1,
@@ -177,7 +177,9 @@ function ConvoList({ selected = 0 }: { selected?: number }) {
                   {c.msg}
                 </div>
               </div>
-              {c.hot && <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: TERRA }} />}
+              {c.hot && (
+                <span className="sail-pulse h-2 w-2 shrink-0 rounded-full" style={{ background: TERRA }} />
+              )}
             </div>
           );
         })}
@@ -316,6 +318,25 @@ export function InboxMock() {
             <Bubble side="in" meta="Email · 09:41">
               Target price and Incoterm please?
             </Bubble>
+
+            {/* Live: the AI is drafting the next reply, right now */}
+            <div className="flex justify-end">
+              <div
+                className="flex items-center gap-1.5 rounded-xl rounded-br-[4px] px-3.5 py-2.5"
+                style={{ background: TEAL_SOFT }}
+              >
+                {[0, 1, 2].map((d) => (
+                  <span
+                    key={d}
+                    className="sail-typing h-1.5 w-1.5 rounded-full"
+                    style={{ background: TEAL, animationDelay: `${d * 0.16}s` }}
+                  />
+                ))}
+                <span className="ml-1 text-[10px] font-medium" style={{ color: TEAL }}>
+                  drafting a reply…
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

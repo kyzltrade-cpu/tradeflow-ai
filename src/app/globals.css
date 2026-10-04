@@ -923,6 +923,21 @@ section[id] { scroll-margin-top: 84px; }
   animation: glass-in 460ms var(--ease-out) backwards;
 }
 
+/* ── Landing: living details ───────────────────────────────────────────────
+   Small, continuous motion so the product mocks read as running software
+   rather than a screenshot. Both are killed by the global
+   prefers-reduced-motion block at the end of this file. */
+@keyframes sail-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.45); opacity: 0.5; }
+}
+.sail-pulse {
+  animation: sail-pulse 2.4s var(--ease-out) infinite;
+}
+.sail-typing {
+  animation: btk-chat-dot 1.25s var(--ease-out) infinite;
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
