@@ -207,10 +207,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     return NextResponse.json({ suppliers: matches });
   } catch (e) {
-    const message = e instanceof Error ? e.message : 'Unknown error';
-    if (message === 'Not authenticated' || message === 'Invalid or expired session') {
-      return NextResponse.json({ error: message }, { status: 401 });
-    }
+    // requireAuth signals failure by throwing a Response, not an Error.
+    if (e instanceof Response) return e;
     console.error('[inbox-supplier-matches]', e);
     return NextResponse.json({ error: 'Failed to match suppliers' }, { status: 500 });
   }
