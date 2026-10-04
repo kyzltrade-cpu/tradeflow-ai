@@ -669,8 +669,8 @@ section[id] { scroll-margin-top: 84px; }
 /* Soft warm wash behind the hero */
 .hero-wash {
   background:
-    radial-gradient(62% 50% at 50% 0%, rgba(180, 85, 45, 0.15), transparent 74%),
-    radial-gradient(46% 40% at 86% 12%, rgba(20, 52, 43, 0.12), transparent 74%);
+    radial-gradient(68% 54% at 50% 0%, rgba(180, 85, 45, 0.22), transparent 76%),
+    radial-gradient(50% 44% at 86% 10%, rgba(20, 52, 43, 0.17), transparent 76%);
 }
 
 /* ── Paper texture + ambient life ──────────────────────────────────────────
