@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
+import { sanitizeExtractionSpecs } from '@/lib/extraction-specs';
 
 // GET — get company settings
 export async function GET(req: NextRequest) {
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
       email_from_email,
       email_from_name,
       pricing,
+      extraction_specs,
     } = body;
 
     // During onboarding, company_id is passed in body (auth.companyId may be null yet)
@@ -105,6 +107,26 @@ export async function POST(req: NextRequest) {
       };
     }
 
+    // extraction_specs lives in migration 027, which not every deployment has
+    // run yet. Probe first: writing an unknown column would fail the whole
+    // settings upsert, so a missing migration must not block saving anything
+    // else. The response below tells the caller the fields were not stored.
+    let extractionSpecsSaved = true;
+    if (extraction_specs !== undefined) {
+      const probe = await supabaseAdmin
+        .from('company_settings')
+        .select('extraction_specs')
+        .eq('company_id', companyId)
+        .maybeSingle();
+      if (probe.error) {
+        extractionSpecsSaved = false;
+      } else {
+        // Only well-formed entries survive: a blank label would render an
+        // empty row in the Specs pod, and a blank key cannot be echoed back.
+        settingsPayload.extraction_specs = sanitizeExtractionSpecs(extraction_specs);
+      }
+    }
+
     const { error: settingsError } = await supabaseAdmin
       .from('company_settings')
       .upsert(settingsPayload, { onConflict: 'company_id' });
@@ -133,7 +155,10 @@ export async function POST(req: NextRequest) {
       if (companyError) return NextResponse.json({ error: companyError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({
+      ok: true,
+      extraction_specs_saved: extractionSpecsSaved,
+    });
   } catch (err) {
     if (err instanceof Response) return err;
     console.error('[settings:POST] Unexpected error:', err);

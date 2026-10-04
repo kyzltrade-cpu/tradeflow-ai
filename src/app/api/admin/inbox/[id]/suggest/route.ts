@@ -4,6 +4,7 @@ import { requireAuth } from '@/lib/api-auth';
 import { ensureAutoDraft } from '@/lib/auto-draft';
 import { getLiveFx, type LiveFx } from '@/lib/fx-rate';
 import { enforcePlanLimit, planLimitResponse } from '@/lib/billing/limits';
+import { sanitizeExtractionSpecs, type ExtractionSpec } from '@/lib/extraction-specs';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
@@ -23,6 +24,7 @@ interface ExtractedRequest {
   request_summary: string;
   currency?: string;
   items: ExtractItem[];
+  custom_specs?: Record<string, string>;
 }
 
 interface PriceSource {
@@ -128,10 +130,31 @@ function tokenize(text: string): string[] {
     .filter((w) => w.length >= 3);
 }
 
+// The model occasionally returns numbers, objects, or the literal string
+// "null" for a configured field. Only keep clean, non-empty strings — the
+// Specs pod renders "missing" for anything absent.
+function coerceCustomSpecs(
+  raw: unknown,
+  fields: ExtractionSpec[]
+): Record<string, string> {
+  const source = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const out: Record<string, string> = {};
+  for (const field of fields) {
+    const value = source[field.key];
+    if (value === null || value === undefined) continue;
+    const text = typeof value === 'string' ? value : String(value);
+    const trimmed = text.trim();
+    if (!trimmed || trimmed.toLowerCase() === 'null' || trimmed.toLowerCase() === 'n/a') continue;
+    out[field.key] = trimmed.slice(0, 200);
+  }
+  return out;
+}
+
 async function extractRequest(
   input: string,
   companyName?: string,
-  confirmedFacts?: Array<{ name: string; value: string | null }>
+  confirmedFacts?: Array<{ name: string; value: string | null }>,
+  customSpecs: ExtractionSpec[] = []
 ): Promise<ExtractedRequest & { source: 'ai' | 'heuristic' }> {
   const factsBlock = confirmedFacts && confirmedFacts.length > 0
     ? `\n\nUSER-CONFIRMED FACTS (the user already verified these on the linked inquiry — they are ground truth. Use EXACTLY these values and never contradict them, even if the email differs):\n${confirmedFacts
@@ -139,8 +162,16 @@ async function extractRequest(
         .join('\n')}\n`
     : '';
 
+  // Fields the company configured in Settings. They are asked for by machine
+  // key so the Specs pod can match them back to the configured label.
+  const specsBlock = customSpecs.length > 0
+    ? `\n\nALSO FILL "custom_specs" — these fields were configured by this company, so extract them the same way (exact value if stated, null if the buyer never mentioned it):\n${customSpecs
+        .map((f) => `- "${f.key}" (${f.label})${f.hint ? ` — look for: ${f.hint}` : ''}`)
+        .join('\n')}\n`
+    : '';
+
   const prompt = `You are a procurement assistant for ${companyName || 'a trading company'}. Extract the buying request from this customer email.
-${factsBlock}
+${factsBlock}${specsBlock}
 Return STRICT JSON only, no prose:
 {
   "request_summary": "one-line summary of what the buyer wants",
@@ -153,7 +184,7 @@ Return STRICT JSON only, no prose:
       "specs": "key specs if stated, else null",
       "target_price": "target price if stated, else null"
     }
-  ]
+  ]${customSpecs.length > 0 ? `,\n  "custom_specs": { ${customSpecs.map((f) => `"${f.key}": "value or null"`).join(', ')} }` : ''}
 }
 
 Rules:
@@ -167,7 +198,11 @@ Rules:
   laser engraving" becomes TWO items: the bottle, and "laser engraving of logo on the front").
 - If the buyer asks about price tiers / volumes / bulk discounts (e.g. "MOQ and pricing
   tiers", "10,000 vs 25,000"), put "pricing tiers requested" in the spec of the relevant item.
-- Keep product names in the customer's own words.
+- Keep product names in the customer's own words.${
+  customSpecs.length > 0
+    ? `\n- "custom_specs" must contain EVERY configured key, with the exact value from the email or null. Never guess, never leave a key out, and copy units, tolerances and codes verbatim.`
+    : ''
+}
 
 Email:
 ${input.slice(0, 4000)}
@@ -184,7 +219,7 @@ JSON:`;
       body: JSON.stringify({
         model: NIM_MODEL,
         messages: [{ role: 'user', content: prompt }],
-        max_tokens: 500,
+        max_tokens: 500 + customSpecs.length * 40,
         temperature: 0,
       }),
       signal: AbortSignal.timeout(25000),
@@ -214,6 +249,7 @@ JSON:`;
       request_summary: parsed.request_summary || (items[0]?.product || ''),
       currency: parsed.currency && String(parsed.currency).toLowerCase() !== 'null' ? String(parsed.currency).toUpperCase() : undefined,
       items: backfillQuantities(items, input),
+      custom_specs: coerceCustomSpecs(parsed.custom_specs, customSpecs),
       source: 'ai',
     };
   } catch (err) {
@@ -230,6 +266,7 @@ JSON:`;
     return {
       request_summary: items[0]?.product || 'Customer request',
       items,
+      custom_specs: {},
       source: 'heuristic' as const,
     };
   }
@@ -403,10 +440,18 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       });
     }
 
-    const [companyRes, productsRes, settingsRes] = await Promise.all([
+    const [companyRes, productsRes, settingsRes, specsRes] = await Promise.all([
       supabaseAdmin.from('companies').select('name').eq('id', auth.companyId).single(),
       supabaseAdmin.from('products').select('*').eq('company_id', auth.companyId),
       supabaseAdmin.from('company_settings').select('pricing').eq('company_id', auth.companyId).maybeSingle(),
+      // Configured extraction fields arrived in migration 027, so this query
+      // is isolated: on a deployment that has not run it, the error is
+      // ignored and the tenant simply gets built-in specs only.
+      supabaseAdmin
+        .from('company_settings')
+        .select('extraction_specs')
+        .eq('company_id', auth.companyId)
+        .maybeSingle(),
     ]);
 
     const companyName = companyRes.data?.name as string | undefined;
@@ -455,7 +500,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         }));
     }
 
-    const extraction = await extractRequest(userThread, companyName, confirmedFacts);
+    const extractionSpecs = specsRes.error ? [] : sanitizeExtractionSpecs(specsRes.data?.extraction_specs);
+
+    const extraction = await extractRequest(userThread, companyName, confirmedFacts, extractionSpecs);
 
     const liveFx = await getLiveFx(config.fx_pair, config.fx_rate);
     config.fx_rate = liveFx.rate;
@@ -585,7 +632,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       fx,
       margin_rules: config.margin_rules,
       sources_summary: sourcesSummary,
-      extraction,
+      extraction: {
+        ...extraction,
+        // Field list travels with the values so the client renders configured
+        // rows in the same order the user set them in Settings.
+        specs_fields: extractionSpecs,
+      },
       draft,
     });
   } catch (err) {

@@ -178,7 +178,12 @@ interface Suggestion {
   fx: { rate: number; pair: string; live?: boolean; source?: string; updated_at?: string } | null;
   margin_rules: Array<{ name: string; margin_pct: number }>;
   sources_summary: string[];
-  extraction: { source: 'ai' | 'heuristic' | 'none'; items: Array<Record<string, unknown>> };
+  extraction: {
+    source: 'ai' | 'heuristic' | 'none';
+    items: Array<Record<string, unknown>>;
+    custom_specs?: Record<string, string>;
+    specs_fields?: Array<{ key: string; label: string; hint?: string }>;
+  };
   [key: string]: unknown;
 }
 
@@ -780,6 +785,16 @@ export default function InboxDetailPage() {
     { key: 'target', label: t('Target price', '目標價'), value: uniqueVals(specItems.map((i) => i.target_price)).join(', ') || null },
     { key: 'timeline', label: t('Timeline', '交期'), value: timelineMatch ? timelineMatch[0].trim() : null },
   ];
+  // Fields the company configured in Settings → AI extraction fields. They
+  // render after the built-ins, in the order the user set them up, and fall
+  // back to an empty object when the tenant has configured none.
+  const customSpecFields = ((
+    suggestion?.extraction?.specs_fields as Array<{ key: string; label: string; hint?: string }> | undefined
+  ) || []).filter((f) => f?.key && f?.label);
+  const customSpecValues = (suggestion?.extraction?.custom_specs as Record<string, string> | undefined) || {};
+  for (const field of customSpecFields) {
+    specRows.push({ key: `custom_${field.key}`, label: field.label, value: customSpecValues[field.key] || null });
+  }
   const specsLoading = loadingSuggest && !suggestion;
 
   const buyer = body?.buyer || null;
@@ -859,6 +874,71 @@ export default function InboxDetailPage() {
       </div>
     );
   };
+
+  const renderSupplierMatchesCard = () =>
+    supplierMatches && supplierMatches.length > 0 ? (
+      <div className="border-b p-4">
+        <div className="flex items-center gap-2 mb-1">
+          <Building2 width="14" height="14" style={{ color: 'var(--accent)' }} />
+          <h3 className="text-[13px] font-semibold">{t('Supplier matches', '供應商配對')}</h3>
+        </div>
+        <p className="text-[11px] mb-2.5" style={{ color: 'var(--text-muted)' }}>
+          {t('From your directory, based on this thread', '根據此對話從您的目錄配對')}
+        </p>
+        <div className="space-y-1.5">
+          {supplierMatches.map((s) => (
+            <div
+              key={s.id}
+              className="rounded-[6px] border px-3 py-2"
+              style={{ borderColor: 'var(--border)' }}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[12.5px] font-semibold truncate" style={{ color: 'var(--text)' }}>
+                  {s.name}
+                </p>
+                {s.is_approved && (
+                  <span
+                    className="text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0"
+                    style={{ background: '#E8F5F1', color: '#038153' }}
+                  >
+                    {t('APPROVED', '已核准')}
+                  </span>
+                )}
+              </div>
+              <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                {[s.location, s.typical_lead_time_days ? `${s.typical_lead_time_days}d` : null]
+                  .filter(Boolean)
+                  .join(' · ') || '—'}
+              </p>
+              {s.capabilities.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {s.capabilities.map((c) => (
+                    <span
+                      key={c}
+                      className="text-[10px] px-1.5 py-0.5 rounded"
+                      style={{
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <Link
+          href="/admin/suppliers"
+          className="inline-block text-[12px] font-medium mt-2.5"
+          style={{ color: 'var(--accent)' }}
+        >
+          {t('View all suppliers', '查看所有供應商')}
+        </Link>
+      </div>
+    ) : null;
 
   const renderBuyerCard = () => (
     <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
@@ -1399,6 +1479,9 @@ export default function InboxDetailPage() {
           {/* ── Pod: Buyer ─────────────────────────────────────── */}
           {renderBuyerCard()}
 
+          {/* ── Pod: Supplier matches ──── */}
+          {renderSupplierMatchesCard()}
+
           {/* ── Pod: Specs ─────────────────────────────────────── */}
           {renderSpecsCard()}
 
@@ -1678,70 +1761,6 @@ export default function InboxDetailPage() {
                 </button>
               ))}
             </div>
-          </div>
-        )}
-        {/* ── Pod: Supplier matches (always last) ─────────────────── */}
-        {supplierMatches && supplierMatches.length > 0 && (
-          <div className="border-b p-4">
-            <div className="flex items-center gap-2 mb-1">
-              <Building2 width="14" height="14" style={{ color: 'var(--accent)' }} />
-              <h3 className="text-[13px] font-semibold">{t('Supplier matches', '供應商配對')}</h3>
-            </div>
-            <p className="text-[11px] mb-2.5" style={{ color: 'var(--text-muted)' }}>
-              {t('From your directory, based on this thread', '根據此對話從您的目錄配對')}
-            </p>
-            <div className="space-y-1.5">
-              {supplierMatches.map((s) => (
-                <div
-                  key={s.id}
-                  className="rounded-[6px] border px-3 py-2"
-                  style={{ borderColor: 'var(--border)' }}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[12.5px] font-semibold truncate" style={{ color: 'var(--text)' }}>
-                      {s.name}
-                    </p>
-                    {s.is_approved && (
-                      <span
-                        className="text-[10px] px-1.5 py-0.5 rounded font-semibold shrink-0"
-                        style={{ background: '#E8F5F1', color: '#038153' }}
-                      >
-                        {t('APPROVED', '已核准')}
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                    {[s.location, s.typical_lead_time_days ? `${s.typical_lead_time_days}d` : null]
-                      .filter(Boolean)
-                      .join(' · ') || '—'}
-                  </p>
-                  {s.capabilities.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
-                      {s.capabilities.map((c) => (
-                        <span
-                          key={c}
-                          className="text-[10px] px-1.5 py-0.5 rounded"
-                          style={{
-                            background: 'var(--surface)',
-                            border: '1px solid var(--border)',
-                            color: 'var(--text-muted)',
-                          }}
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-            <Link
-              href="/admin/suppliers"
-              className="inline-block text-[12px] font-medium mt-2.5"
-              style={{ color: 'var(--accent)' }}
-            >
-              {t('View all suppliers', '查看所有供應商')}
-            </Link>
           </div>
         )}
       </div>
