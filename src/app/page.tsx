@@ -11,8 +11,6 @@ import { useLang } from '@/lib/lang';
 import {
   HeroProduct,
   ExtractionMock,
-  InboxMock,
-  HandoffMock,
   QuoteMock,
   WhatsAppMock,
 } from '@/components/landing/ProductMocks';
@@ -20,30 +18,6 @@ import {
 /* ── Content ─────────────────────────────────────────────────────────────── */
 
 type Bi = [en: string, zh: string];
-
-const PROOF: { title: Bi; body: Bi }[] = [
-  {
-    title: ['Every field shows its work', '每個欄位都有出處'],
-    body: [
-      'Each extracted spec carries a confidence, a status and the source it came from — never a black-box summary you have to trust.',
-      '每個擷取的規格都附有可信度、狀態與來源，絕非只能硬信的黑箱摘要。',
-    ],
-  },
-  {
-    title: ['Approved, not auto-sent', '待您批准，絕不自動發送'],
-    body: [
-      'Replies and quotes stay drafts until you say go. Nothing leaves your mailbox without you.',
-      '回覆與報價在您確認前都是草稿，未經您同意不會離開您的信箱。',
-    ],
-  },
-  {
-    title: ['Your prices, your margins', '您的價格，您的利潤'],
-    body: [
-      'Quote lines are calculated from your product list and margin rules — not invented by a language model.',
-      '報價行由您的產品清單與利潤規則計算，並非由語言模型憑空生成。',
-    ],
-  },
-];
 
 const FACTS: { value: Bi; label: Bi }[] = [
   { value: ['1 click', '一按'], label: ['Connects Gmail or Outlook', '連接 Gmail 或 Outlook'] },
@@ -107,41 +81,6 @@ const EXTRACTION: { label: Bi; title: Bi; body: Bi; points: Bi[] }[] = [
       ['Target price, Incoterm, destination and date', '目標價、貿易條件、目的地與日期'],
       ['Drafted in English, 繁體中文, 简体中文 or Español', '以英文、繁體中文、簡體中文或西班牙文草擬'],
       ['Flagged before quoting so nothing is guessed on your behalf', '報價前先標示，絕不代您臆測'],
-    ],
-  },
-];
-
-const STEPS: { code: string; title: Bi; body: Bi }[] = [
-  {
-    code: 'INBOUND',
-    title: ['The inquiry arrives', '詢盤送達'],
-    body: [
-      'A buyer’s email lands in the mailbox you already use — no new app for your team or your customers to learn.',
-      '買家的電郵落入您現用的信箱——團隊與客戶都無需學習新應用。',
-    ],
-  },
-  {
-    code: 'EXTRACT',
-    title: ['Specs, extracted', '擷取規格'],
-    body: [
-      'Quantities, materials, certifications and lead times are pulled out and pinned to the line they came from.',
-      '數量、材質、認證與交期全被擷取，並釘在原本的那一行。',
-    ],
-  },
-  {
-    code: 'CLARIFY',
-    title: ['Gaps get clarified', '釐清缺漏'],
-    body: [
-      'Target price, Incoterm, destination. Sailwise flags what is missing and drafts one question in the customer’s language.',
-      '目標價、貿易條件、目的地。Sailwise 標示缺漏，並以客戶的語言草擬一個問題。',
-    ],
-  },
-  {
-    code: 'QUOTE',
-    title: ['The quote is drafted', '草擬報價'],
-    body: [
-      'Priced from your product list and your margin rules — nothing invented, and any line that cannot be matched is flagged for review.',
-      '依您的產品清單與利潤規則定價——絕不憑空生成，無法比對的行會標示待審核。',
     ],
   },
 ];
@@ -360,23 +299,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Proof trio ── */}
-      <section className="border-b border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-16 md:py-20">
-        <div className="mx-auto grid max-w-6xl gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] md:grid-cols-3">
-          {PROOF.map((p, i) => (
-            <Reveal key={i} delay={i * 80} className="bg-[var(--paper-2)] px-7 py-8">
-              <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--ink-3)]">
-                {String(i + 1).padStart(2, '0')}
-              </span>
-              <h3 className="display mt-4 text-[1.3rem]">{t(p.title[0], p.title[1])}</h3>
-              <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--ink-2)]">
-                {t(p.body[0], p.body[1])}
-              </p>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
       {/* ── Extraction ── */}
       <section id="extraction" className="px-6 py-24 md:py-32">
         <div className="mx-auto max-w-6xl">
@@ -424,7 +346,7 @@ export default function LandingPage() {
             label={t('One inbox', '單一收件匣')}
             title={t('Your mailbox, turned into a work queue', '把您的信箱變成工作佇列')}
           />
-          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-16">
+          <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-20">
             <div>
               <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
                 {t(
@@ -438,32 +360,31 @@ export default function LandingPage() {
                 <Bullet>{t('Replies drafted in the customer’s own language', '以客戶的語言草擬回覆')}</Bullet>
               </ul>
             </div>
-            <div className="min-w-0">
-              <InboxMock />
+
+            {/* The three states every thread is sorted into. This is the
+                section's visual — a fourth white card would only repeat the
+                inbox already shown in the hero. */}
+            <div className="space-y-9 lg:pt-1">
+              {QUEUE.map((q, i) => (
+                <Reveal key={i} delay={i * 90}>
+                  <div className="flex items-center gap-2">
+                    <span className="h-1.5 w-1.5 rounded-full" style={{ background: q.tone }} />
+                    <span
+                      className="font-mono text-[11px] tracking-[0.18em] uppercase"
+                      style={{ color: q.tone }}
+                    >
+                      {t(q.label[0], q.label[1])}
+                    </span>
+                  </div>
+                  <h3 className="display mt-3 text-[1.3rem]">{t(q.title[0], q.title[1])}</h3>
+                  <p className="mt-2 max-w-md text-[15px] leading-relaxed text-[var(--ink-2)]">
+                    {t(q.body[0], q.body[1])}
+                  </p>
+                </Reveal>
+              ))}
             </div>
           </div>
-
-          {/* The three states every thread gets sorted into. */}
-          <div className="mt-20 grid gap-10 border-t border-[var(--hairline-2)] pt-14 md:grid-cols-3 md:gap-14">
-            {QUEUE.map((q, i) => (
-              <Reveal key={i} delay={i * 90}>
-                <div className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full" style={{ background: q.tone }} />
-                  <span
-                    className="font-mono text-[11px] tracking-[0.18em] uppercase"
-                    style={{ color: q.tone }}
-                  >
-                    {t(q.label[0], q.label[1])}
-                  </span>
-                </div>
-                <h3 className="display mt-4 text-[1.35rem]">{t(q.title[0], q.title[1])}</h3>
-                <p className="mt-3 text-[15px] leading-relaxed text-[var(--ink-2)]">
-                  {t(q.body[0], q.body[1])}
-                </p>
-              </Reveal>
-            ))}
-          </div>
-          <p className="mt-10 max-w-2xl text-[14px] leading-relaxed text-[var(--ink-3)]">
+          <p className="mt-14 max-w-2xl border-t border-[var(--hairline-2)] pt-8 text-[14px] leading-relaxed text-[var(--ink-3)]">
             {t(
               'Each thread’s state is derived from the conversation itself — who spoke last, what is still missing, how many chases have gone unanswered — so the queue stays current without anyone maintaining it.',
               '每條對話的狀態由對話本身推導——誰最後發言、還缺什麼、追問了幾次未回——佇列無需人手維護，始終保持最新。'
@@ -475,10 +396,10 @@ export default function LandingPage() {
       {/* ── Control (dark) ── */}
       <section className="band-dark px-6 py-24 md:py-32">
         <div className="mx-auto max-w-6xl">
-          <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-16">
+          <div className="grid gap-14 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-20">
             <div>
               <p className="eyebrow">{t('Built-in control', '內建掌控')}</p>
-              <h2 className="display mt-4 text-[clamp(1.9rem,3.6vw,2.9rem)]">
+              <h2 className="display mt-4 text-[clamp(2.2rem,4.4vw,3.5rem)]">
                 {t('AI does the legwork.', 'AI 負責苦工。')}
                 <br />
                 {t('You stay in ', '主導權在')}
@@ -491,23 +412,23 @@ export default function LandingPage() {
                   '未經您決定，不會代您發送任何內容。每則訊息都是草稿，每個數字都可溯源，您可隨時接手任何對話。'
                 )}
               </p>
-              <ul className="mt-9 space-y-7">
-                {GATES.map((g, i) => (
-                  <li key={i}>
-                    <p className="font-mono text-[11px] tracking-[0.2em] text-[rgba(244,241,236,0.5)] uppercase">
-                      {t(g.label[0], g.label[1])}
-                    </p>
-                    <p className="display mt-2 text-[1.25rem]">{t(g.title[0], g.title[1])}</p>
-                    <p className="mt-1.5 max-w-md text-[14.5px] leading-relaxed text-[rgba(244,241,236,0.62)]">
-                      {t(g.body[0], g.body[1])}
-                    </p>
-                  </li>
-                ))}
-              </ul>
             </div>
-            <div className="min-w-0">
-              <HandoffMock />
-            </div>
+
+            {/* The three gates sit in their own column so the band reads as a
+                full-width statement rather than a narrow stack with dead space. */}
+            <ul className="space-y-9 lg:pt-2">
+              {GATES.map((g, i) => (
+                <li key={i}>
+                  <p className="font-mono text-[11px] tracking-[0.2em] text-[rgba(244,241,236,0.5)] uppercase">
+                    {t(g.label[0], g.label[1])}
+                  </p>
+                  <p className="display mt-2 text-[1.35rem]">{t(g.title[0], g.title[1])}</p>
+                  <p className="mt-2 max-w-md text-[15px] leading-relaxed text-[rgba(244,241,236,0.62)]">
+                    {t(g.body[0], g.body[1])}
+                  </p>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>

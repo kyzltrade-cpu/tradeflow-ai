@@ -609,12 +609,6 @@ export function QuoteMock() {
             USD 53,525
           </span>
         </div>
-        <div className="rounded-lg px-3.5 py-2.5 text-[10.5px] leading-relaxed" style={{ background: PANEL, border: `1px solid ${HAIR}`, color: MUTED }}>
-          <span className="font-semibold" style={{ color: INK }}>
-            Every number is sourced:{' '}
-          </span>
-          price list · 20% margin rule (4.00 → 5.00) · holds 15 days
-        </div>
         <div className="mt-4 flex items-center gap-2">
           <span className="rounded-lg px-4 py-2.5 text-[11.5px] font-semibold text-white" style={{ background: TEAL }}>
             Approve &amp; send
