@@ -254,11 +254,10 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
             <p className="eyebrow">{t('Every inquiry arrives half-finished', '每封詢盤都不完整')}</p>
-            <h1 className="display mt-6 text-[clamp(2.2rem,5.8vw,4rem)]">
-              {t('The whole spec,', '一封郵件，')}
+            <h1 className="display display-hero mt-6 text-[clamp(2.2rem,5.8vw,4rem)]">
+              {t('One email in.', '一封郵件進來，')}
               <br />
-              {t('from ', '')}
-              <em>{t('one email.', '完整規格。')}</em>
+              <em>{t('every spec out.', '完整規格出去。')}</em>
             </h1>
             <p className="mx-auto mt-7 max-w-xl text-balance text-[1.0625rem] leading-[1.75] text-[var(--ink-2)]">
               {t(

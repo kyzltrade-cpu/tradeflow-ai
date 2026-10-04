@@ -489,18 +489,35 @@ function MailBubble({
 }
 
 export function HeroProduct() {
+  /* The real thread screen is nav | thread | buyer rail. There is no email
+     list on this screen — the list is its own page — so the rail carries the
+     buyer, and the thread carries the conversation. Provenance is the point:
+     a tick means Sailwise read it out of the email or its attachment, an amber
+     tag means it was missing and got filled automatically. */
+  const SPECS: {
+    label: string;
+    value: string | null;
+    fetched?: boolean;
+  }[] = [
+    { label: 'Quantity', value: '5,000 pcs' },
+    { label: 'Product', value: '500 ml double-wall vacuum flask' },
+    { label: 'Material / size', value: '304 stainless steel, double-wall' },
+    { label: 'Logo / printing', value: 'Laser, 1 colour' },
+    { label: 'Incoterm', value: 'FOB Rotterdam' },
+    { label: 'Target price', value: null },
+    { label: 'Destination port', value: 'Singapore' },
+    { label: 'Timeline', value: '30 days after sample approval', fetched: true },
+    { label: 'Certification', value: 'EN 4210, LFGB', fetched: true },
+  ];
+  const fetchedCount = SPECS.filter((r) => r.fetched).length;
+
   return (
     <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
       <div className="flex flex-col @min-[620px]:h-[592px] @min-[620px]:flex-row">
         <Sidebar />
-        <ConvoList selected={0} />
-        {/* The thread is a layer above the list, not a third column of it:
-            its own white surface, a visible left edge, and a shadow that
-            separates the two panes at every viewport. */}
-        <div
-          className="flex min-w-0 flex-1 flex-col bg-white"
-          style={{ boxShadow: '-12px 0 24px -18px rgba(27,25,23,0.55)' }}
-        >
+
+        {/* Thread */}
+        <div className="flex min-w-0 flex-1 flex-col bg-white">
           {/* Mail header — back link, contact, subject, thread controls. */}
           <div
             className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 border-b px-4 py-3"
@@ -513,7 +530,7 @@ export function HeroProduct() {
                 </svg>
                 Inbox
               </span>
-              <span className="h-5 w-px shrink-0" style={{ background: HAIR }} />
+              <span className="h-5 w-px shrink-0" style={{ background: EDGE }} />
               <div className="min-w-0">
                 <div className="truncate text-[14px] font-semibold" style={{ color: INK }}>
                   Sarah Chen
@@ -522,7 +539,7 @@ export function HeroProduct() {
                   sarah@apexretail.sg · English
                 </div>
                 <div className="truncate text-[11.5px] font-medium" style={{ color: MUTED }}>
-                  FOB Rotterdam to Singapore
+                  5,000 × 500 ml flask · FOB Rotterdam
                 </div>
               </div>
             </div>
@@ -545,50 +562,41 @@ export function HeroProduct() {
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col gap-3 overflow-hidden px-4 py-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 py-4">
             <MailBubble role="buyer" time="Email · 09:12">
-              Can you do FOB to Singapore? We need 5,000 units.
-            </MailBubble>
-
-            {/* What the AI filled in without being asked. */}
-            <div className="flex justify-start">
-              <div
-                className="rounded-lg px-3 py-2 text-[11.5px]"
-                style={{ background: PANEL, border: `1px solid ${HAIR}`, color: MUTED }}
+              Hi — we’re looking at 5,000 double-wall flasks for our Q4 range. Last
+              year’s spec sheet is attached. Can you quote FOB Rotterdam?
+              <span
+                className="mt-2 flex w-fit items-center gap-1.5 rounded border px-2 py-1 text-[10.5px]"
+                style={{ borderColor: HAIR, background: '#FBFBFB', color: MUTED }}
               >
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className="rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.06em]"
-                    style={{ background: TEAL_SOFT, color: TEAL }}
-                  >
-                    Fetched automatically
-                  </span>
-                  <span style={{ color: FAINT }}>no back-and-forth</span>
-                </div>
-                <ul className="mt-1.5 space-y-0.5" style={{ color: INK }}>
-                  <li>Incoterm FOB · destination Singapore</li>
-                  <li>Air freight estimate · Rotterdam → SIN</li>
-                  <li>Certifications on file · ISO 9001, SGS, FDA</li>
-                </ul>
-              </div>
-            </div>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                </svg>
+                Apex-RFQ-Q4.pdf
+              </span>
+            </MailBubble>
 
             <MailBubble role="ai" time="AI · 09:13">
-              FOB Rotterdam: USD 1,825, plus roughly USD 400 air freight. Full quote attached.
+              Read the email and the PDF. Quantity, product, material and incoterm are
+              covered. Logo method, destination port, target price, timeline and
+              certification weren’t in either — I filled those from your catalogue and
+              marked them so you can see what came from where.
             </MailBubble>
+
             <MailBubble role="buyer" time="Email · 09:41">
-              What about certifications?
+              Destination is Singapore. Logo needs to be laser-etched, one colour.
             </MailBubble>
+
             <MailBubble role="ai" time="AI · 09:42">
-              We hold ISO 9001, SGS and FDA. Attaching the certificates with the quote.
+              Updated. Target price is the only field still open — the buyer hasn’t
+              stated one, so I left it for you rather than guessing. Draft reply is
+              ready below.
             </MailBubble>
           </div>
 
           {/* Composer — the reply opens in the canvas, as it does in the app. */}
-          <div
-            className="flex items-center gap-2 border-t px-4 py-3"
-            style={{ borderColor: EDGE }}
-          >
+          <div className="flex items-center gap-2 border-t px-4 py-3" style={{ borderColor: EDGE }}>
             <span
               className="min-w-0 flex-1 truncate rounded px-3 py-2.5 text-[12.5px]"
               style={{ border: `1px solid ${HAIR}`, background: '#FBFBFB', color: FAINT }}
@@ -601,6 +609,166 @@ export function HeroProduct() {
             >
               Reply
             </span>
+          </div>
+        </div>
+
+        {/* Buyer rail — the right-hand panel in the app: who they are, what
+            they asked for, and which fields Sailwise had to go fetch. Hidden on
+            narrow viewports so the thread never gets squeezed. */}
+        <div
+          className="hidden min-h-0 w-[272px] shrink-0 flex-col overflow-y-auto border-l bg-white @min-[1000px]:flex"
+          style={{ borderColor: EDGE, background: '#FCFBF9' }}
+        >
+          {/* Buyer */}
+          <div className="border-b px-4 py-4" style={{ borderColor: EDGE }}>
+            <div className="mb-3 flex items-center gap-2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              <span className="text-[12.5px] font-semibold" style={{ color: INK }}>
+                Buyer
+              </span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <span
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white"
+                style={{ background: '#6366F1' }}
+              >
+                SC
+              </span>
+              <div className="min-w-0">
+                <div className="truncate text-[13px] font-semibold" style={{ color: INK }}>
+                  Sarah Chen
+                </div>
+                <div className="truncate text-[11px]" style={{ color: FAINT }}>
+                  sarah@apexretail.sg
+                </div>
+              </div>
+            </div>
+            <dl
+              className="mt-3 overflow-hidden rounded-md"
+              style={{ background: '#FFFFFF', border: `1px solid ${HAIR}` }}
+            >
+              {[
+                ['Company', 'Apex Retail Pte Ltd'],
+                ['Industry', 'Retail, home & lifestyle'],
+                ['Country', 'Singapore'],
+                ['Payment', '30% deposit, 70% vs B/L'],
+              ].map(([k, v]) => (
+                <div
+                  key={k}
+                  className="flex items-baseline justify-between gap-2 border-b px-2.5 py-1.5 last:border-b-0"
+                  style={{ borderColor: HAIR }}
+                >
+                  <dt
+                    className="shrink-0 text-[10px] uppercase tracking-[0.06em]"
+                    style={{ color: FAINT }}
+                  >
+                    {k}
+                  </dt>
+                  <dd className="min-w-0 truncate text-right text-[11.5px] font-medium" style={{ color: INK }}>
+                    {v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {[
+                ['Past threads', '6'],
+                ['Past orders', '$84,200'],
+              ].map(([k, v]) => (
+                <div
+                  key={k}
+                  className="rounded-md px-2.5 py-2"
+                  style={{ background: '#FFFFFF', border: `1px solid ${HAIR}` }}
+                >
+                  <p className="text-[10px] uppercase tracking-[0.06em]" style={{ color: FAINT }}>
+                    {k}
+                  </p>
+                  <p className="mt-0.5 text-[14px] font-semibold leading-none" style={{ color: INK }}>
+                    {v}
+                  </p>
+                </div>
+              ))}
+            </div>
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {['email', 'EN', '4 Oct'].map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded border px-1.5 py-0.5 text-[10px] font-medium"
+                  style={{ background: '#FFFFFF', borderColor: HAIR, color: MUTED }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {/* Specs — the extraction, with provenance on every row. */}
+          <div className="border-b px-4 py-4" style={{ borderColor: EDGE }}>
+            <div className="mb-3 flex items-center gap-2">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+              </svg>
+              <span className="text-[12.5px] font-semibold" style={{ color: INK }}>
+                Specs
+              </span>
+              <span
+                className="ml-auto rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em]"
+                style={{ background: '#E8F5F1', color: '#038153' }}
+              >
+                Extracted
+              </span>
+            </div>
+            <div className="space-y-2">
+              {SPECS.map((r) => (
+                <div key={r.label} className="flex items-start gap-2">
+                  <span
+                    className="w-[86px] shrink-0 text-[10.5px] leading-[1.35]"
+                    style={{ color: FAINT }}
+                  >
+                    {r.label}
+                  </span>
+                  {r.value ? (
+                    <span className="flex min-w-0 flex-1 items-start gap-1">
+                      <svg
+                        width="11"
+                        height="11"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#038153"
+                        strokeWidth="2.5"
+                        className="mt-[3px] shrink-0"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="min-w-0 text-[11.5px] leading-[1.35]" style={{ color: INK }}>
+                        {r.value}
+                        {r.fetched && (
+                          <span
+                            className="ml-1.5 rounded px-1 py-px align-middle text-[9.5px] font-semibold uppercase tracking-[0.04em]"
+                            style={{ background: PEACH_SOFT, color: '#A9661F' }}
+                          >
+                            fetched
+                          </span>
+                        )}
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="min-w-0 flex-1 text-[11.5px] leading-[1.35]" style={{ color: '#C2410C' }}>
+                      missing — ask the buyer
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p
+              className="mt-3 border-t pt-2.5 text-[10.5px] leading-snug"
+              style={{ borderColor: HAIR, color: FAINT }}
+            >
+              {SPECS.length - fetchedCount - 1} read from the email and PDF ·{' '}
+              {fetchedCount} filled automatically · 1 still open
+            </p>
           </div>
         </div>
       </div>

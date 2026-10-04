@@ -535,6 +535,23 @@ section[id] { scroll-margin-top: 84px; }
   color: var(--pine);
 }
 
+/* Hero display size needs its own metrics. At 4rem the 1.04 body line-height
+   lets descenders collide with the line below, the -0.018em tracking is too
+   tight once an italic accent joins the line, and if the italic face ever
+   fails to load the browser fakes an oblique — which reads as broken. */
+.display-hero {
+  line-height: 1.08;
+  letter-spacing: -0.022em;
+  padding-bottom: 0.08em;
+  font-synthesis-style: none;
+  font-synthesis-weight: none;
+  text-wrap: balance;
+}
+.display-hero em {
+  letter-spacing: -0.01em;
+  padding-right: 0.03em;
+}
+
 .eyebrow {
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 11px;
