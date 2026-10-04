@@ -480,17 +480,12 @@ function MailBubble({
   return (
     <div className={`flex ${buyer ? 'justify-end' : 'justify-start'}`}>
       <div
-        className="max-w-[78%] rounded-[4px] px-3.5 py-2.5 text-[13.5px] leading-[1.5]"
+        className="max-w-[86%] rounded-[4px] px-3.5 py-2.5 text-[12.5px] leading-[1.45]"
         style={{
           background: buyer ? '#EAF3F0' : '#FFFFFF',
           border: `1px solid ${buyer ? 'transparent' : HAIR}`,
         }}
       >
-        {!buyer && (
-          <p className="mb-1 text-[10.5px] font-medium" style={{ color: TEAL }}>
-            AI
-          </p>
-        )}
         <p className="whitespace-pre-wrap" style={{ color: INK }}>
           {children}
         </p>
@@ -527,7 +522,7 @@ export function HeroProduct() {
 
   return (
     <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
-      <div className="flex flex-col @min-[620px]:h-[592px] @min-[620px]:flex-row">
+      <div className="flex flex-col @min-[620px]:h-[660px] @min-[620px]:flex-row">
         <Sidebar />
 
         {/* Thread */}
@@ -576,7 +571,7 @@ export function HeroProduct() {
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden px-4 py-4">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-4 py-4">
             <MailBubble role="buyer" time="Email · 09:12">
               Hi — we’re looking at 5,000 double-wall flasks for our Q4 range. Last
               year’s spec sheet is attached. Can you quote FOB Rotterdam?
@@ -592,14 +587,14 @@ export function HeroProduct() {
             </MailBubble>
 
             <MailBubble role="ai" time="AI · 09:13">
-              Thanks — quantity, product, material and incoterm came straight out of the
-              spec sheet. Timeline and certification weren’t in it, so I filled those from
-              our catalogue and marked where each came from. You didn’t state a target, so
-              I’ve given you a range rather than guessing.
-              <br />
-              5,000 × 500 ml double-wall, 304 steel, FOB Rotterdam, logo as we ran it last
-              time: about USD 4.60–4.90 per unit, so USD 23,000–24,500 for the batch before
-              freight. Sample in 12 days if that works.
+              Thank you for the inquiry, and for the spec sheet — it answered most of it.
+              {'\n\n'}Confirmed from your documents: 5,000 pcs, 500 ml double-wall flask,
+              304 stainless steel, FOB Rotterdam. Added from our own records: EN 4210 and
+              LFGB certification, and 30 days after sample approval.
+              {'\n\n'}So that we can firm up the quotation, could you confirm the
+              destination port, the logo method, and your target price per unit?
+              {'\n\n'}Indicatively we are at USD 4.60–4.90 per unit — USD 23,000–24,500
+              for 5,000 pcs — freight excluded.
             </MailBubble>
 
             <MailBubble role="buyer" time="Email · 09:41">
@@ -607,9 +602,9 @@ export function HeroProduct() {
             </MailBubble>
 
             <MailBubble role="ai" time="AI · 09:42">
-              Updated — Singapore destination, laser-etched in one colour. The range holds
-              at USD 4.60–4.90; laser is a tooling-free pass. EN 4210 and LFGB reports
-              attached. Draft reply is ready below.
+              Thank you — Singapore and laser-etched in one colour, noted. The range holds
+              at USD 4.60–4.90 per unit; laser is a tooling-free pass. Certificates
+              attached, and the draft reply is ready below.
             </MailBubble>
           </div>
 

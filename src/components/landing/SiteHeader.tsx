@@ -60,7 +60,7 @@ export default function SiteHeader() {
           : 'inset-x-0 top-0 border-b border-transparent'
       }`}
       style={{
-        background: scrolled ? 'rgba(250,247,242,0.94)' : 'rgba(250,247,242,0.55)',
+        background: scrolled ? 'rgba(250,247,242,0.68)' : 'rgba(250,247,242,0.34)',
         borderColor: scrolled ? 'var(--hairline)' : 'transparent',
       }}
     >
