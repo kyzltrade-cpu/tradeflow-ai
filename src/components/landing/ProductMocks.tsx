@@ -323,6 +323,158 @@ export function InboxMock() {
   );
 }
 
+/* ── Extraction ────────────────────────────────────────────────────────────
+   The differentiating surface: the buyer line a spec came from, each field
+   pulled out of it with the confidence and status behind it, and the gap that
+   turns into a drafted question in the buyer's own language. */
+
+const EXTRACT_FIELDS = [
+  { label: 'Quantity', value: '10,000 pcs', conf: 0.98, status: 'Confirmed', cite: 'line 12' },
+  { label: 'Specification', value: '500ml · double-wall 304', conf: 0.94, status: 'Confirmed', cite: 'line 12' },
+  { label: 'Branding', value: 'Logo printing · sample required', conf: 0.81, status: 'Needs check', cite: 'line 12' },
+] as const;
+
+const GAP_LANGS = ['English', '简体中文', 'Español'];
+const FLAGGED = ['Target price', 'Incoterm', 'Destination & date'];
+
+function ConfBar({ value, delay }: { value: number; delay: number }) {
+  return (
+    <span className="relative block h-[3px] w-full overflow-hidden rounded-full" style={{ background: '#EFECE6' }}>
+      <span
+        className="sail-bar-fill absolute inset-y-0 left-0 rounded-full"
+        style={{ width: `${Math.round(value * 100)}%`, background: TEAL, animationDelay: `${delay}ms` }}
+      />
+    </span>
+  );
+}
+
+export function ExtractionMock() {
+  return (
+    <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
+      <div
+        className="flex items-center justify-between px-4 py-3"
+        style={{ borderBottom: `1px solid ${HAIR}` }}
+      >
+        <div className="flex items-center gap-2">
+          <Logo />
+          <span className="text-[12.5px] font-semibold" style={{ color: INK }}>
+            Extraction
+          </span>
+        </div>
+        <span
+          className="rounded-md border px-2.5 py-1 text-[10.5px] font-medium"
+          style={{ borderColor: HAIR, color: MUTED }}
+        >
+          Thread · line 12
+        </span>
+      </div>
+
+      <div className="px-4 pt-3.5 pb-3">
+        <p className="text-[9.5px] font-semibold uppercase tracking-wider" style={{ color: FAINT }}>
+          Source
+        </p>
+        <blockquote
+          className="mt-2 border-l-2 pl-3 text-[11.5px] leading-relaxed"
+          style={{ borderColor: PEACH, color: INK }}
+        >
+          &ldquo;Hi, we need 10,000 pcs of 500ml stainless steel bottles. Please quote with logo
+          printing.&rdquo;
+        </blockquote>
+      </div>
+
+      <div className="px-4 pb-4">
+        <div className="flex items-center justify-between">
+          <p className="text-[9.5px] font-semibold uppercase tracking-wider" style={{ color: FAINT }}>
+            Extracted
+          </p>
+          <span className="text-[9.5px]" style={{ color: FAINT }}>
+            confidence · status
+          </span>
+        </div>
+        <ul className="mt-2.5 space-y-3">
+          {EXTRACT_FIELDS.map((f, i) => (
+            <li key={f.label}>
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="text-[11px]" style={{ color: MUTED }}>
+                  {f.label}
+                </span>
+                <span className="text-[9.5px]" style={{ color: FAINT }}>
+                  {f.cite}
+                </span>
+              </div>
+              <div className="mt-1 flex items-center gap-2.5">
+                <span className="flex-1 text-[11.5px] font-medium" style={{ color: INK }}>
+                  {f.value}
+                </span>
+                <span
+                  className="shrink-0 rounded-full px-2 py-[2px] text-[9px] font-semibold"
+                  style={
+                    f.status === 'Confirmed'
+                      ? { background: TEAL_SOFT, color: TEAL }
+                      : { background: PEACH_SOFT, color: TERRA }
+                  }
+                >
+                  {f.status}
+                </span>
+              </div>
+              <div className="mt-1.5">
+                <ConfBar value={f.conf} delay={140 + i * 130} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div
+        className="mx-4 mb-4 rounded-xl px-3.5 py-3"
+        style={{ background: '#FAFAFA', border: `1px solid ${HAIR}` }}
+      >
+        <div className="flex items-center justify-between">
+          <p className="text-[9.5px] font-semibold uppercase tracking-wider" style={{ color: FAINT }}>
+            Clarification
+          </p>
+          <span
+            className="rounded-full px-2 py-[2px] text-[9px] font-semibold"
+            style={{ background: PEACH_SOFT, color: TERRA }}
+          >
+            Draft
+          </span>
+        </div>
+        <p className="mt-2 text-[11.5px] leading-relaxed" style={{ color: INK }}>
+          Target price and Incoterm please?
+        </p>
+        <div className="mt-2.5 flex flex-wrap gap-1.5">
+          {GAP_LANGS.map((l) => (
+            <span
+              key={l}
+              className="rounded-full border px-2 py-[2px] text-[9px]"
+              style={{ borderColor: HAIR, color: MUTED }}
+            >
+              {l}
+            </span>
+          ))}
+        </div>
+        <div className="mt-3 border-t pt-2.5" style={{ borderColor: HAIR }}>
+          <p className="text-[9.5px] font-semibold uppercase tracking-wider" style={{ color: FAINT }}>
+            Flagged before quoting
+          </p>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {FLAGGED.map((g) => (
+              <span
+                key={g}
+                className="rounded-full px-2 py-[2px] text-[9px]"
+                style={{ background: '#F4F1EC', color: MUTED }}
+              >
+                {g}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ── AI hand-off ────────────────────────────────────────────────────────── */
 
 export function HandoffMock() {

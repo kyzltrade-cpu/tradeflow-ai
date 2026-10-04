@@ -642,6 +642,76 @@ section[id] { scroll-margin-top: 84px; }
     radial-gradient(42% 38% at 88% 14%, rgba(20, 52, 43, 0.06), transparent 72%);
 }
 
+/* ── Paper texture + ambient life ──────────────────────────────────────────
+   A fine 12px grid over the whole page, plus two wash blobs that drift for the
+   better part of a minute. Both live in one fixed, click-through overlay: at
+   ~3% the grid reads as paper tooth rather than as a pattern, and because the
+   blobs animate transform/opacity only they never trigger layout or paint.
+   Sections with their own background stay legible — the grid is too faint to
+   muddy them. The prefers-reduced-motion block at the end of this file kills
+   all of it. */
+.landing-ambience {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: hidden;
+  pointer-events: none;
+}
+.landing-ambience::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(27, 25, 23, 0.032) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(27, 25, 23, 0.032) 1px, transparent 1px);
+  background-size: 12px 12px;
+  background-position: -1px -1px;
+}
+.landing-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(80px);
+}
+.landing-blob-peach {
+  top: -14vh;
+  left: -8vw;
+  width: 46vw;
+  height: 46vw;
+  min-width: 340px;
+  min-height: 340px;
+  background: radial-gradient(circle, rgba(201, 106, 68, 0.13), transparent 68%);
+}
+.landing-blob-pine {
+  right: -12vw;
+  bottom: -18vh;
+  width: 52vw;
+  height: 52vw;
+  min-width: 380px;
+  min-height: 380px;
+  background: radial-gradient(circle, rgba(10, 110, 92, 0.11), transparent 68%);
+}
+
+@keyframes sail-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(2.5%, -3.5%, 0) scale(1.09); }
+}
+@keyframes sail-drift-alt {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
+  50% { transform: translate3d(-3%, 2.5%, 0) scale(1); }
+}
+.landing-blob-peach { animation: sail-drift 38s var(--ease-out) infinite; }
+.landing-blob-pine { animation: sail-drift-alt 52s var(--ease-out) infinite; }
+
+/* Extraction confidence bars fill once on entry, staggered per field. */
+@keyframes sail-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.sail-bar-fill {
+  transform-origin: left center;
+  animation: sail-fill 900ms var(--ease-out) backwards;
+}
+
 /* ── Nav ───────────────────────────────────────────────────────────────── */
 .landing .btk-nav-link::after {
   background: var(--pine);
@@ -862,8 +932,12 @@ section[id] { scroll-margin-top: 84px; }
     scroll-behavior: auto !important;
   }
   .btk-marquee, .btk-anim-rise, .btk-anim-rise-sm, .btk-anim-fade-down, .btk-chat-dot,
-  .btk-breathe, .btk-drift, .btk-flow-track {
+  .btk-breathe, .btk-drift, .btk-flow-track,
+  .landing-blob-peach, .landing-blob-pine, .sail-bar-fill {
     animation: none;
+  }
+  .sail-bar-fill {
+    transform: none;
   }
   .glass-anim-in {
     animation: none;

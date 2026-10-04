@@ -8,6 +8,7 @@ import PricingPrice from '@/components/landing/PricingPrice';
 import { useLang } from '@/lib/lang';
 import {
   HeroProduct,
+  ExtractionMock,
   InboxMock,
   HandoffMock,
   QuoteMock,
@@ -75,6 +76,35 @@ const QUEUE: { label: Bi; tone: string; title: Bi; body: Bi }[] = [
     body: [
       'A reply or a quote has been drafted and is sitting in your approval queue, one tap from going out.',
       '回覆或報價已草擬完成，正躺在您的批准佇列中，一按即可送出。',
+    ],
+  },
+];
+
+const EXTRACTION: { label: Bi; title: Bi; body: Bi; points: Bi[] }[] = [
+  {
+    label: ['Extraction', '擷取'],
+    title: ['Every spec carries its source', '每個規格都附帶來源'],
+    body: [
+      'Each field lands with the line it came from, a confidence and a status — so you can see exactly what Sailwise read, and exactly what it is still unsure about.',
+      '每個欄位都連同來源行、可信度與狀態一起落地——您看得見 Sailwise 讀到了什麼，以及哪裡仍不確定。',
+    ],
+    points: [
+      ['Quantities, materials, certifications and lead times', '數量、材質、認證與交期'],
+      ['Attachments parsed alongside the message', '附件與訊息一併解析'],
+      ['Low-confidence fields flagged, never quietly filled in', '可信度低的欄位會標示，絕不悄悄填補'],
+    ],
+  },
+  {
+    label: ['Clarification', '釐清'],
+    title: ['Gaps get asked about, not assumed', '缺漏用問的，不用猜的'],
+    body: [
+      'What is missing becomes one plain question in the buyer’s own language — drafted for you to approve, never sent on its own.',
+      '缺漏的資料會變成一句對方語言的具體問題——由您草擬批准，絕不自行寄出。',
+    ],
+    points: [
+      ['Target price, Incoterm, destination and date', '目標價、貿易條件、目的地與日期'],
+      ['Drafted in English, 繁體中文, 简体中文 or Español', '以英文、繁體中文、簡體中文或西班牙文草擬'],
+      ['Flagged before quoting so nothing is guessed on your behalf', '報價前先標示，絕不代您臆測'],
     ],
   },
 ];
@@ -242,6 +272,13 @@ export default function LandingPage() {
 
   return (
     <div className="landing min-h-screen">
+      {/* Paper tooth + two slow washes. Fixed, click-through, and switched off
+          entirely under prefers-reduced-motion. */}
+      <div className="landing-ambience" aria-hidden="true">
+        <span className="landing-blob landing-blob-peach" />
+        <span className="landing-blob landing-blob-pine" />
+      </div>
+
       <SiteHeader />
 
       {/* ── Hero ── */}
@@ -282,23 +319,13 @@ export default function LandingPage() {
 
       {/* ── Product facts ── */}
       <section className="border-y border-[var(--hairline)] px-6 py-14">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-y-8 sm:grid-cols-4">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-4">
           {FACTS.map((f, i) => (
-            <div key={i} className="text-center">
-              <div className="display text-[1.5rem]">{t(f.value[0], f.value[1])}</div>
-              <div className="mt-1 text-[13px] text-[var(--ink-3)]">{t(f.label[0], f.label[1])}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Proof trio ── */}
-      <section className="border-y border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-16 md:py-20">
-        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-3 md:gap-14">
-          {PROOF.map((p, i) => (
-            <div key={i}>
-              <h3 className="display text-[1.35rem]">{t(p.title[0], p.title[1])}</h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-[var(--ink-2)]">{t(p.body[0], p.body[1])}</p>
+            <div key={i} className="bg-[var(--paper)] px-5 py-7 text-center">
+              <div className="display text-[1.55rem] leading-tight">{t(f.value[0], f.value[1])}</div>
+              <div className="mt-2 text-[12.5px] leading-snug text-[var(--ink-3)]">
+                {t(f.label[0], f.label[1])}
+              </div>
             </div>
           ))}
         </div>
@@ -320,6 +347,58 @@ export default function LandingPage() {
               '數秒內，以客戶的語言回覆，價格全部取自您自己的資料。'
             )}
           </p>
+        </div>
+      </section>
+
+      {/* ── Proof trio ── */}
+      <section className="border-b border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-16 md:py-20">
+        <div className="mx-auto grid max-w-6xl gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] md:grid-cols-3">
+          {PROOF.map((p, i) => (
+            <div key={i} className="bg-[var(--paper-2)] px-7 py-8">
+              <span className="font-mono text-[10px] tracking-[0.2em] text-[var(--ink-3)]">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <h3 className="display mt-4 text-[1.3rem]">{t(p.title[0], p.title[1])}</h3>
+              <p className="mt-3 text-[14.5px] leading-relaxed text-[var(--ink-2)]">
+                {t(p.body[0], p.body[1])}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Extraction ── */}
+      <section id="extraction" className="px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead
+            label={t('Extraction', '擷取')}
+            title={t('Specs, pinned to the source', '規格，釘在來源那一行')}
+            sub={t(
+              'Quantities, materials, certifications and lead times are pulled from the thread and tied to source lines — nothing is inferred.',
+              '數量、材質、認證與交期都從對話中擷取，並綁定到來源行——絕不憑空推測。'
+            )}
+          />
+          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-16">
+            <div className="order-2 min-w-0 lg:order-1">
+              <ExtractionMock />
+            </div>
+            <div className="order-1 space-y-11 lg:order-2">
+              {EXTRACTION.map((b) => (
+                <div key={b.label[0]}>
+                  <p className="eyebrow">{t(b.label[0], b.label[1])}</p>
+                  <h3 className="display mt-3 text-[1.45rem]">{t(b.title[0], b.title[1])}</h3>
+                  <p className="mt-3 text-[15.5px] leading-[1.75] text-[var(--ink-2)]">
+                    {t(b.body[0], b.body[1])}
+                  </p>
+                  <ul className="mt-5 space-y-3">
+                    {b.points.map((p, j) => (
+                      <Bullet key={j}>{t(p[0], p[1])}</Bullet>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
