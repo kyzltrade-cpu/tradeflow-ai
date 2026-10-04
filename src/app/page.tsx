@@ -262,8 +262,8 @@ export default function LandingPage() {
             </h1>
             <p className="mx-auto mt-7 max-w-xl text-balance text-[1.0625rem] leading-[1.75] text-[var(--ink-2)]">
               {t(
-                'A buyer writes asking for 5,000 units. Sailwise watches for inquiries like it, pulls the specs out of the message and its attachments, fetches whatever is still missing, and drafts the reply — while they are still waiting.',
-                '買方來信要 5,000 件。Sailwise 留意新的詢盤，一旦有這樣的信，便從郵件與附件中擷取規格，自動補齊缺項，並草擬回覆——趁對方還在等。'
+                'A buyer writes asking for 5,000 units. Sailwise pulls the specs from the message and its attachments, fetches what is missing, and drafts the reply.',
+                '買方來信要 5,000 件。Sailwise 從郵件與附件中擷取規格，自動補齊缺項，並草擬回覆。'
               )}
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -296,7 +296,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="mx-auto mt-20 max-w-6xl md:mt-28">
+          <div className="mx-auto mt-20 max-w-5xl md:mt-28">
             <HeroProduct />
           </div>
         </div>
@@ -323,14 +323,14 @@ export default function LandingPage() {
             <p className="display text-[clamp(1.7rem,3.8vw,2.9rem)] leading-[1.22]">
               {t('One inbox.', '一個信箱。')}
               <br className="hidden sm:block" />
-              {t(' Every quote out ', ' 每份報價')}
-              <em>{t('in minutes', '數分鐘內寄出')}</em>
+              {t(' Every missing spec ', ' 每一項缺漏')}
+              <em>{t('filled in', '自動補齊')}</em>
               {t('.', '。')}
             </p>
             <p className="mx-auto mt-7 max-w-lg text-[15px] leading-relaxed text-[rgba(244,241,236,0.68)]">
               {t(
-                'In seconds, in their language, with pricing pulled from your own data.',
-                '數秒內，以客戶的語言回覆，價格全部取自您自己的資料。'
+                'Before you reply, Sailwise has the specs, the gaps filled, and an answer drafted in the buyer\u2019s language.',
+                '在您回覆之前，Sailwise 已備齊規格、補上缺項，並用買方的語言草擬好回覆。'
               )}
             </p>
           </Reveal>

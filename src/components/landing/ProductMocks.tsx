@@ -20,6 +20,11 @@ const PEACH = '#EDBF86';
 const PEACH_SOFT = '#FBF1E6';
 const TERRA = '#C96A44';
 
+/* Pane dividers. Inside a pane, HAIR is enough; between panes it
+   disappears and the columns read as one block of text. */
+const EDGE = '#D5CFC4';
+const LIST_SURFACE = '#FBFAF8';
+
 const CARD = {
   borderColor: HAIR,
   boxShadow: '0 1px 2px rgba(27,25,23,0.04), 0 32px 64px -48px rgba(27,25,23,0.50)',
@@ -104,7 +109,7 @@ function Sidebar() {
   return (
     <div
       className="hidden w-[186px] shrink-0 flex-col @min-[820px]:flex"
-      style={{ background: SIDEBAR, borderRight: `1px solid ${HAIR}` }}
+      style={{ background: SIDEBAR, borderRight: `1px solid ${EDGE}` }}
     >
       <div
         className="flex h-11 shrink-0 items-center gap-2 border-b px-3.5"
@@ -312,7 +317,7 @@ function ConvoList({ selected = 0 }: { selected?: number }) {
   return (
     <div
       className="hidden w-full shrink-0 flex-col @min-[620px]:flex @min-[620px]:w-[238px]"
-      style={{ borderRight: `1px solid ${HAIR}` }}
+      style={{ background: LIST_SURFACE, borderRight: `1px solid ${EDGE}` }}
     >
       <div
         className="flex items-center gap-1 px-3"
@@ -486,14 +491,20 @@ function MailBubble({
 export function HeroProduct() {
   return (
     <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
-      <div className="flex flex-col @min-[620px]:h-[500px] @min-[620px]:flex-row">
+      <div className="flex flex-col @min-[620px]:h-[592px] @min-[620px]:flex-row">
         <Sidebar />
         <ConvoList selected={0} />
-        <div className="flex min-w-0 flex-1 flex-col">
+        {/* The thread is a layer above the list, not a third column of it:
+            its own white surface, a visible left edge, and a shadow that
+            separates the two panes at every viewport. */}
+        <div
+          className="flex min-w-0 flex-1 flex-col bg-white"
+          style={{ boxShadow: '-12px 0 24px -18px rgba(27,25,23,0.55)' }}
+        >
           {/* Mail header — back link, contact, subject, thread controls. */}
           <div
             className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 border-b px-4 py-3"
-            style={{ borderColor: HAIR, background: '#FFFFFF' }}
+            style={{ borderColor: EDGE, background: '#FFFFFF' }}
           >
             <div className="flex min-w-0 items-center gap-2.5">
               <span className="flex items-center gap-1 text-[11.5px] font-medium" style={{ color: MUTED }}>
@@ -576,7 +587,7 @@ export function HeroProduct() {
           {/* Composer — the reply opens in the canvas, as it does in the app. */}
           <div
             className="flex items-center gap-2 border-t px-4 py-3"
-            style={{ borderColor: HAIR }}
+            style={{ borderColor: EDGE }}
           >
             <span
               className="min-w-0 flex-1 truncate rounded px-3 py-2.5 text-[12.5px]"
