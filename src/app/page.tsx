@@ -87,14 +87,6 @@ const EXTRACTION: { label: Bi; title: Bi; body: Bi; points: Bi[] }[] = [
 
 const GATES: { label: Bi; title: Bi; body: Bi }[] = [
   {
-    label: ['Approval', '批准'],
-    title: ['Every message is a draft', '每則訊息都是草稿'],
-    body: [
-      'Replies, quotes and follow-ups all wait for your sign-off before they send.',
-      '回覆、報價與跟進在送出前都等待您簽核。',
-    ],
-  },
-  {
     label: ['Knowledge', '知識'],
     title: ['Your rules do the pricing', '定價由您的規則決定'],
     body: [
