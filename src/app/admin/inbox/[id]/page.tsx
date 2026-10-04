@@ -8,6 +8,7 @@ import { ArrowLeft, Globe, Sparkles, FileText, RefreshCw, Clock, User, Flag, Che
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
+import EmailCompose from '@/components/admin/EmailCompose';
 import { authFetch } from '@/lib/auth-fetch';
 import { isBigDeal } from '@/lib/big-deals';
 
@@ -265,14 +266,14 @@ export default function InboxDetailPage() {
   const [supplierMatches, setSupplierMatches] = useState<SupplierRec[] | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(true);
   const [loadingSuggest, setLoadingSuggest] = useState(false);
-  const [inputValue, setInputValue] = useState('');
-  const [draft, setDraft] = useState('');
-  const [replySubject, setReplySubject] = useState('');
-  const [cc, setCc] = useState('');
-  const [bcc, setBcc] = useState('');
-  const [showCc, setShowCc] = useState(false);
-  const [sending, setSending] = useState(false);
   const [composeOpen, setComposeOpen] = useState(false);
+  // Body the AI drafted for the trader to review — opened in the canvas rather
+  // than dropped into a text field they may never look at.
+  const [composePrefill, setComposePrefill] = useState('');
+  const openCompose = (prefill = '') => {
+    setComposePrefill(prefill);
+    setComposeOpen(true);
+  };
   const [togglingSearch, setTogglingSearch] = useState(false);
   const [detectLang, setDetectLang] = useState<string | null>(null);
   const [approvingChase, setApprovingChase] = useState(false);
@@ -288,7 +289,6 @@ export default function InboxDetailPage() {
       if (!res.ok) throw new Error('Failed to load conversation');
       const data = await res.json();
       setDetail(data);
-      setReplySubject(data?.subject || '');
       if (data?.detected_language) setDetectLang(data.detected_language);
       authFetch(`/api/admin/inbox/${id}`, {
         method: 'PATCH',
@@ -420,7 +420,7 @@ export default function InboxDetailPage() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [detail?.messages, draft]);
+  }, [detail?.messages]);
 
   const patchConversation = useCallback(async (patch: Record<string, unknown>) => {
     try {
@@ -484,21 +484,17 @@ export default function InboxDetailPage() {
     router.push('/admin/inbox');
   };
 
-  const handleSendMessage = async () => {
-    if (!inputValue.trim() || !detail) return;
-    const content = inputValue.trim();
-    const subject = replySubject.trim() || detail.subject || undefined;
-    const split = (s: string) => s.split(/[,;]/).map((x) => x.trim()).filter(Boolean);
-    setSending(true);
+  const sendReply = async (payload: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string }) => {
+    if (!payload.body.trim() || !detail) return;
     try {
       const res = await authFetch(`/api/admin/inbox/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          content,
-          subject,
-          cc: split(cc),
-          bcc: split(bcc),
+          content: payload.body.trim(),
+          subject: payload.subject.trim() || detail.subject || undefined,
+          cc: payload.cc,
+          bcc: payload.bcc,
           kind: 'reply',
           status: 'human',
         }),
@@ -509,21 +505,16 @@ export default function InboxDetailPage() {
       }
       const data = await res.json();
       setDetail((prev) => prev ? { ...prev, messages: [...prev.messages, data.message], status: 'human' } : prev);
-      setInputValue('');
-      setDraft('');
-      setComposeOpen(false);
       if (data.email_delivered === false) {
         showToast(t('Stored locally — outbound email not configured (add RESEND_API_KEY)', '已儲存——尚未設定外寄郵件（需加入 RESEND_API_KEY）'), 'error');
       } else {
-        showToast(t('Message sent', '訊息已寄出'), 'success');
+        showToast(t('Reply sent', '回覆已寄出'), 'success');
       }
     } catch (err) {
-      showToast(err instanceof Error ? err.message : t('Failed to send message', '發送訊息失敗'), 'error');
-    } finally {
-      setSending(false);
+      showToast(err instanceof Error ? err.message : 'Send failed', 'error');
+      throw err;
     }
   };
-
   const handleClarify = () => {
     if (!suggestion) {
       void fetchSuggestion();
@@ -539,10 +530,9 @@ export default function InboxDetailPage() {
           'Thanks for your inquiry! Could you confirm the destination and delivery timeline so we can finalize your quote?',
           '多謝查詢！可否確認目的地及交貨時間，以便我們確定報價？'
         );
-    setDraft(question);
-    setInputValue(question);
+    openCompose(question);
     if (detail && detail.status !== 'human') {
-      showToast(t('Take over the conversation before sending', '接管對話後方可發送'));
+      showToast(t('Sending this takes over from the AI', '發送後將從 AI 手中接管對話'));
     }
   };
 
@@ -751,46 +741,6 @@ export default function InboxDetailPage() {
   // The send endpoint mails conversation.contact_email, so show that same
   // address instead of leaving the recipient invisible.
   const replyRecipient = body?.contact_email || body?.contact?.email || '';
-  const composeBodyRef = useRef<HTMLTextAreaElement>(null);
-  const composeDialogRef = useRef<HTMLDivElement>(null);
-
-  // Canvas lifecycle: lock the page behind the overlay, close on Escape, and
-  // put the caret in the message body rather than the recipient row.
-  useEffect(() => {
-    if (!composeOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !sending) {
-        setComposeOpen(false);
-        return;
-      }
-      // Keep Tab inside the canvas — a dialog that leaks focus to the thread
-      // behind it strands keyboard and screen-reader users.
-      if (e.key === 'Tab') {
-        const nodes = composeDialogRef.current?.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])',
-        );
-        if (!nodes || nodes.length === 0) return;
-        const first = nodes[0];
-        const last = nodes[nodes.length - 1];
-        const activeEl = document.activeElement;
-        if (e.shiftKey && (activeEl === first || !composeDialogRef.current?.contains(activeEl))) {
-          e.preventDefault();
-          last.focus();
-        } else if (!e.shiftKey && activeEl === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    document.addEventListener('keydown', onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    composeBodyRef.current?.focus();
-    return () => {
-      document.removeEventListener('keydown', onKey);
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [composeOpen, sending]);
   const contactEmailLine =
     body?.contact?.email || body?.contact_email || body?.contact_phone || '';
   const contactLabel = contactName;
@@ -1443,16 +1393,17 @@ export default function InboxDetailPage() {
             {body ? (
               <div className="flex items-center gap-2 md:gap-3">
                 <button
-                  onClick={() => setComposeOpen(true)}
-                  className="flex-1 min-w-0 text-left px-3 py-2.5 md:py-2 border rounded-[4px] text-[13px] focus:outline-none focus:ring-2 focus:ring-offset-0"
-                  style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: inputValue.trim() ? 'var(--text)' : 'var(--text-muted)' }}
+                  onClick={() => openCompose()}
+                  disabled={!replyRecipient}
+                  className="flex-1 min-w-0 text-left px-3 py-2.5 md:py-2 border rounded-[4px] text-[13px] focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:opacity-50"
+                  style={{ borderColor: 'var(--border)', background: 'var(--bg)', color: 'var(--text-muted)' }}
                 >
-                  {inputValue.trim()
-                    ? t('Draft saved — open to finish…', '草稿已儲存 — 開啟以完成…')
-                    : t(`Reply to ${replyRecipient || contactName}…`, `回覆${replyRecipient || contactName}…`)}
+                  {replyRecipient
+                    ? t(`Reply to ${replyRecipient}…`, `回覆${replyRecipient}…`)
+                    : t('No email on file — replies cannot be sent', '沒有電郵地址 — 無法發送回覆')}
                 </button>
                 <button
-                  onClick={() => setComposeOpen(true)}
+                  onClick={() => openCompose()}
                   disabled={!replyRecipient}
                   title={!replyRecipient ? t('This contact has no email address on file', '此聯絡人沒有電郵地址') : undefined}
                   className="shrink-0 text-[13px] md:text-[14px] font-medium px-4 md:px-5 py-2.5 md:py-2 rounded-[4px] text-white disabled:opacity-50 min-h-[44px] md:min-h-0"
@@ -1760,191 +1711,18 @@ export default function InboxDetailPage() {
         )}
       </div>
 
-      {/* Email canvas — the compose surface, styled from the landing hero mock:
-          hairline card over a recessed panel, micro-caps field labels, teal
-          primary action. Draft state is shared with the trigger bar, so closing
-          the canvas never loses a typed reply. */}
       {composeOpen && body && (
-        <div
-          ref={composeDialogRef}
-          className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-3 py-6 md:py-12"
-          style={{ background: 'rgba(27,25,23,0.42)' }}
-          role="dialog"
-          aria-modal="true"
-          aria-label={t('New email', '撰寫郵件')}
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget && !sending) setComposeOpen(false);
-          }}
-        >
-          <div
-            className="w-full max-w-[640px] rounded-[10px] overflow-hidden"
-            style={{
-              background: '#fff',
-              border: '1px solid #E8E4DE',
-              boxShadow: '0 1px 2px rgba(27,25,23,0.04), 0 32px 64px -48px rgba(27,25,23,0.50)',
-            }}
-          >
-            {/* Canvas header */}
-            <div
-              className="flex items-center justify-between gap-3 px-4 md:px-5 py-3"
-              style={{ borderBottom: '1px solid #E8E4DE' }}
-            >
-              <div className="min-w-0">
-                <div className="text-[13px] font-semibold" style={{ color: '#1B1917' }}>
-                  {t('New email', '撰寫郵件')}
-                </div>
-                <div className="truncate text-[11px] mt-0.5" style={{ color: '#8A8279' }}>
-                  {t('Goes out from your own mailbox', '由你自己的郵箱發出')} · {contactName}
-                </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <span
-                  className="rounded-full px-2.5 py-1 text-[10.5px] font-semibold hidden md:inline"
-                  style={{
-                    background: aiOwned ? '#E7F4F0' : '#F5F2EC',
-                    color: aiOwned ? '#0A6E5C' : '#5A554E',
-                  }}
-                >
-                  {aiOwned
-                    ? t('Human owned · AI quiet', '由人接手 · AI 靜默')
-                    : t('Replying takes over the AI', '回覆會接管 AI')}
-                </span>
-                <button
-                  onClick={() => setComposeOpen(false)}
-                  disabled={sending}
-                  aria-label={t('Close', '關閉')}
-                  className="h-7 w-7 flex items-center justify-center rounded-md text-[15px] leading-none disabled:opacity-40"
-                  style={{ color: '#5A554E', background: 'transparent' }}
-                >
-                  &#215;
-                </button>
-              </div>
-            </div>
-
-            {/* Recessed field panel */}
-            <div className="px-4 md:px-5 pt-4">
-              <div className="rounded-[8px] overflow-hidden" style={{ background: '#F5F2EC', border: '1px solid #E8E4DE' }}>
-                <div
-                  className="flex items-center gap-3 px-3.5 py-2.5"
-                  style={{ borderBottom: '1px solid #E8E4DE' }}
-                >
-                  <span className="w-12 shrink-0 text-[9.5px] font-medium uppercase tracking-wider" style={{ color: '#8A8279' }}>
-                    {t('To', '收件')}
-                  </span>
-                  <input
-                    value={replyRecipient}
-                    readOnly
-                    aria-label={t('To', '收件')}
-                    className="flex-1 min-w-0 bg-transparent text-[13px] font-medium focus:outline-none truncate"
-                    style={{ color: replyRecipient ? '#1B1917' : '#C96A44' }}
-                  />
-                </div>
-                {showCc && (
-                  <>
-                    <div className="flex items-center gap-3 px-3.5 py-2.5" style={{ borderBottom: '1px solid #E8E4DE' }}>
-                      <span className="w-12 shrink-0 text-[9.5px] font-medium uppercase tracking-wider" style={{ color: '#8A8279' }}>Cc</span>
-                      <input
-                        value={cc}
-                        onChange={(e) => setCc(e.target.value)}
-                        placeholder={t('name@company.com, second@company.com', '名稱@公司.com，第二位@公司.com')}
-                        aria-label="Cc"
-                        className="flex-1 min-w-0 bg-transparent text-[12.5px] focus:outline-none"
-                        style={{ color: '#1B1917' }}
-                        disabled={sending}
-                      />
-                    </div>
-                    <div className="flex items-center gap-3 px-3.5 py-2.5" style={{ borderBottom: '1px solid #E8E4DE' }}>
-                      <span className="w-12 shrink-0 text-[9.5px] font-medium uppercase tracking-wider" style={{ color: '#8A8279' }}>Bcc</span>
-                      <input
-                        value={bcc}
-                        onChange={(e) => setBcc(e.target.value)}
-                        placeholder={t('hidden@company.com', '密送@公司.com')}
-                        aria-label="Bcc"
-                        className="flex-1 min-w-0 bg-transparent text-[12.5px] focus:outline-none"
-                        style={{ color: '#1B1917' }}
-                        disabled={sending}
-                      />
-                    </div>
-                  </>
-                )}
-                <div className="flex items-center gap-3 px-3.5 py-2.5">
-                  <span className="w-12 shrink-0 text-[9.5px] font-medium uppercase tracking-wider" style={{ color: '#8A8279' }}>
-                    {t('Subject', '主旨')}
-                  </span>
-                  <input
-                    value={replySubject}
-                    onChange={(e) => setReplySubject(e.target.value)}
-                    placeholder={t('Subject', '主旨')}
-                    aria-label={t('Subject', '主旨')}
-                    className="flex-1 min-w-0 bg-transparent text-[12.5px] focus:outline-none"
-                    style={{ color: '#1B1917' }}
-                    disabled={sending}
-                  />
-                  {!showCc && (
-                    <button
-                      onClick={() => setShowCc(true)}
-                      className="shrink-0 text-[11px] hover:underline"
-                      style={{ color: '#8A8279' }}
-                    >
-                      {t('Cc / Bcc', '副本／密送')}
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Message body */}
-            <div className="px-4 md:px-5 pt-3 pb-1">
-              <textarea
-                ref={composeBodyRef}
-                value={inputValue}
-                onChange={(e) => { setInputValue(e.target.value); setDraft(e.target.value); }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); }
-                }}
-                placeholder={t('Write your reply…', '輸入回覆...')}
-                aria-label={t('Message', '內容')}
-                rows={8}
-                className="w-full rounded-[8px] border px-3.5 py-3 text-[16px] leading-relaxed focus:outline-none"
-                style={{ borderColor: '#E8E4DE', background: '#fff', color: '#1B1917', minHeight: '160px' }}
-                disabled={sending}
-              />
-            </div>
-
-            {/* Canvas footer */}
-            <div
-              className="flex items-center justify-between gap-3 px-4 md:px-5 py-3 mt-1"
-              style={{ borderTop: '1px solid #E8E4DE', background: '#F7F5F0' }}
-            >
-              <p className="text-[11px] leading-snug min-w-0" style={{ color: '#8A8279' }}>
-                {t('Enter to send · Shift+Enter for a new line', 'Enter 發送 · Shift+Enter 換行')}
-                {!replyRecipient && (
-                  <span className="block font-medium" style={{ color: '#C96A44' }}>
-                    {t('This contact has no email address on file', '此聯絡人沒有電郵地址')}
-                  </span>
-                )}
-              </p>
-              <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => setComposeOpen(false)}
-                  disabled={sending}
-                  className="rounded-[6px] px-3.5 py-2 text-[12.5px] font-medium disabled:opacity-40"
-                  style={{ background: '#fff', color: '#5A554E', border: '1px solid #E8E4DE' }}
-                >
-                  {t('Cancel', '取消')}
-                </button>
-                <button
-                  onClick={handleSendMessage}
-                  disabled={sending || !inputValue.trim() || !replyRecipient}
-                  className="rounded-[6px] px-4 py-2 text-[12.5px] font-semibold text-white disabled:opacity-40"
-                  style={{ background: '#0A6E5C' }}
-                >
-                  {sending ? t('Sending…', '發送中…') : t('Send', '傳送')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <EmailCompose
+          placement="centered"
+          title={t('Reply', '回覆')}
+          initialTo={replyRecipient}
+          initialSubject={detail?.subject || ''}
+          initialBody={composePrefill}
+          lockTo={!replyRecipient}
+          requireSubject={false}
+          onSend={sendReply}
+          onClose={() => setComposeOpen(false)}
+        />
       )}
     </div>
   );
