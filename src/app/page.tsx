@@ -26,6 +26,33 @@ const FACTS: { value: Bi; label: Bi }[] = [
   { value: ['0', '0'], label: ['Emails sent without your approval', '未經您批准就寄出的郵件'] },
 ];
 
+const BENEFITS: { label: Bi; title: Bi; body: Bi }[] = [
+  {
+    label: ['Specs', '規格'],
+    title: ['Found in seconds, not days', '數秒找到，不是數天'],
+    body: [
+      'Quantities, materials, certifications and lead times are pulled from the message and its attachments — each one cited to the line it came from.',
+      '數量、材質、認證與交期，直接從郵件及附件中擷取——每項都標明來源行。',
+    ],
+  },
+  {
+    label: ['Quote', '報價'],
+    title: ['A price, not just a reply', '給的是價格，不只是回信'],
+    body: [
+      'Priced from your own products, margins and FX rate, then drafted and waiting for you — not a promise to follow up later.',
+      '依您的產品、利潤與匯率算好價，草擬完成等您確認——而不是一句「稍後再報」。',
+    ],
+  },
+  {
+    label: ['Language', '語言'],
+    title: ['In the buyer’s own words', '用買方熟悉的語言'],
+    body: [
+      'English, 繁體中文, 简体中文 or Español — composed in seconds and sent from the address your customers already reply to.',
+      '英文、繁體中文、簡體中文或西班牙文——數秒內完成，並由客戶熟悉的地址寄出。',
+    ],
+  },
+];
+
 const QUEUE: { label: Bi; tone: string; title: Bi; body: Bi }[] = [
   {
     label: ['Needs specs', '待補規格'],
@@ -131,7 +158,7 @@ const FAQS: { q: Bi; a: Bi }[] = [
   {
     q: ['Can it handle Chinese and mixed-language messages?', '能處理中文及混合語言的訊息嗎？'],
     a: [
-      'It reads and replies in English, Traditional and Simplified Chinese, Spanish, and mixed-language threads — common in international trade.',
+      'It handles inquiries in English, Traditional and Simplified Chinese, Spanish, and mixed-language threads — common in international trade.',
       '它能閱讀並以英文、繁體及簡體中文、西班牙文回覆，也能處理混合語言的對話——這在國際貿易中十分常見。',
     ],
   },
@@ -226,17 +253,17 @@ export default function LandingPage() {
       <section className="hero-wash px-6 pt-32 pb-16 md:pt-40 md:pb-20">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="eyebrow">{t('For trading companies worldwide', '專為全球貿易公司而設')}</p>
+            <p className="eyebrow">{t('Slow quotes lose orders', '報價慢，訂單就跑了')}</p>
             <h1 className="display mt-6 text-[clamp(2.2rem,5.8vw,4rem)]">
-              {t('Every inquiry answered.', '每個詢盤都有回覆。')}
+              {t('Specs in seconds.', '數秒抓規格，')}
               <br />
-              {t('Every quote out ', '每份報價，')}
-              <em>{t('in minutes.', '數分鐘內寄出。')}</em>
+              {t('Quotes in ', '')}
+              <em>{t('minutes.', '數分鐘寄出報價。')}</em>
             </h1>
             <p className="mx-auto mt-7 max-w-xl text-balance text-[1.0625rem] leading-[1.75] text-[var(--ink-2)]">
               {t(
-                'Sailwise reads the mailbox you already use, quotes from your own price list, and holds every reply until you approve it.',
-                'Sailwise 直接讀您現用的信箱，報價取自您自己的價格表，每封回覆都待您批准後才送出。'
+                'A buyer writes asking for 5,000 units. Sailwise watches for inquiries like it, pulls the specs out of the message and its attachments, and drafts the quote from your own price list — while they are still waiting.',
+                '買方來信要 5,000 件。Sailwise 留意新的詢盤，一旦有這樣的信，便從郵件與附件中擷取規格，並依您自己的價格表草擬報價——趁對方還在等。'
               )}
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -251,6 +278,22 @@ export default function LandingPage() {
             <p className="mt-5 text-[13px] text-[var(--ink-3)]">
               {t('14-day free trial · Cancel anytime', '14 天免費試用 · 隨時取消')}
             </p>
+          </div>
+
+          <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] md:grid-cols-3">
+            {BENEFITS.map((b, i) => (
+              <Reveal key={b.label[0]} delay={i * 70} className="bg-[var(--paper)] px-6 py-8">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--pine)]">
+                  {t(b.label[0], b.label[1])}
+                </p>
+                <h2 className="mt-3 text-[17px] font-semibold leading-snug text-balance">
+                  {t(b.title[0], b.title[1])}
+                </h2>
+                <p className="mt-2.5 text-[14px] leading-relaxed text-[var(--ink-2)]">
+                  {t(b.body[0], b.body[1])}
+                </p>
+              </Reveal>
+            ))}
           </div>
 
           <div className="mx-auto mt-20 max-w-5xl md:mt-28">

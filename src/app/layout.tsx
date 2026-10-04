@@ -37,7 +37,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Sailwise — Inquiry to Quote, End to End",
-  description: "AI copilot for trading companies. Extract specs from email, clarify gaps, and draft cited quotes from your own pricing — in hours, not days.",
+  description: "Sailwise watches for buyer inquiries, pulls the specs out of the message and its attachments, and drafts a quote from your own price list. Specs in seconds, quotes in minutes.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
