@@ -12,8 +12,18 @@ const FAINT = '#8A8279';
 const HAIR = '#E8E4DE';
 // Recessed inner surfaces. Must be clearly darker than white or the panels
 // read as translucent film on the card rather than as solid objects.
-const PANEL = '#F5F2EC';
-const SIDEBAR = '#F7F5F0';
+const PANEL = '#F2EEE7';
+/* The dashboard sidebar is dark in the product (.sidebar-dark). Sampled from
+   globals.css so the mock is the same object, not a light reinterpretation. */
+const SB_BG = '#101216';
+const SB_BORDER = '#1E2026';
+const SB_TEXT = '#F4F4F5';
+const SB_MUTED = '#A1A1AA';
+const SB_IDLE = '#C9C9CE';
+const SB_FAINT = '#9CA0A8';
+const SB_ACTIVE_BG = '#FFFFFF';
+const SB_ACTIVE_TEXT = '#0A0A0A';
+const SB_BADGE = 'rgba(255,255,255,0.16)';
 const TEAL = '#0A6E5C';
 const TEAL_SOFT = '#E7F4F0';
 const PEACH = '#EDBF86';
@@ -23,7 +33,8 @@ const TERRA = '#C96A44';
 /* Pane dividers. Inside a pane, HAIR is enough; between panes it
    disappears and the columns read as one block of text. */
 const EDGE = '#D5CFC4';
-const LIST_SURFACE = '#FBFAF8';
+const LIST_SURFACE = '#F6F3EC';
+const RAIL_SURFACE = '#F6F3EC';
 
 const CARD = {
   borderColor: HAIR,
@@ -109,28 +120,28 @@ function Sidebar() {
   return (
     <div
       className="hidden w-[186px] shrink-0 flex-col @min-[820px]:flex"
-      style={{ background: SIDEBAR, borderRight: `1px solid ${EDGE}` }}
+      style={{ background: SB_BG, borderRight: `1px solid ${SB_BORDER}` }}
     >
       <div
         className="flex h-11 shrink-0 items-center gap-2 border-b px-3.5"
-        style={{ borderColor: HAIR }}
+        style={{ borderColor: SB_BORDER }}
       >
         <img
           src="/brand/sailwise-mark-dashboard.png"
           alt="Sailwise"
           className="h-6 w-6 shrink-0 rounded-[5px] object-contain"
         />
-        <span className="text-[13px] font-semibold" style={{ color: INK }}>
+        <span className="text-[13px] font-semibold" style={{ color: SB_TEXT }}>
           Sailwise
         </span>
       </div>
 
-      <nav className="flex-1 overflow-hidden px-2.5 py-3">
+      <nav className="min-h-0 flex-1 overflow-hidden px-2.5 py-3">
         {NAV.map((group, gi) => (
           <div key={group.label} className={gi > 0 ? 'mt-5' : ''}>
             <div
               className="mb-1.5 px-2 text-[9.5px] font-semibold uppercase tracking-[0.09em]"
-              style={{ color: FAINT }}
+              style={{ color: SB_FAINT }}
             >
               {group.label}
             </div>
@@ -142,8 +153,8 @@ function Sidebar() {
                     key={item.en}
                     className="flex h-[30px] items-center gap-2 rounded-[7px] px-2.5"
                     style={{
-                      background: item.active ? TEAL_SOFT : 'transparent',
-                      color: item.active ? TEAL : MUTED,
+                      background: item.active ? SB_ACTIVE_BG : 'transparent',
+                      color: item.active ? SB_ACTIVE_TEXT : SB_IDLE,
                       fontWeight: item.active ? 600 : 500,
                     }}
                   >
@@ -153,8 +164,8 @@ function Sidebar() {
                       <span
                         className="flex h-[17px] min-w-[19px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums leading-none"
                         style={{
-                          background: item.active ? TEAL : '#EFECE6',
-                          color: item.active ? '#fff' : MUTED,
+                          background: item.active ? SB_ACTIVE_TEXT : SB_BADGE,
+                          color: '#FFFFFF',
                         }}
                       >
                         {count}
@@ -169,25 +180,28 @@ function Sidebar() {
       </nav>
 
       {/* Account footer, as in the product: who you are, and the language toggle. */}
-      <div className="border-t px-3.5 py-2.5" style={{ borderColor: HAIR }}>
+      <div className="shrink-0 border-t px-3.5 py-2.5" style={{ borderColor: SB_BORDER }}>
         <div className="flex items-center gap-2">
           <span
             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold text-white"
-            style={{ background: INK }}
+            style={{ background: SB_ACTIVE_BG, color: SB_ACTIVE_TEXT }}
           >
             ST
           </span>
-          <span className="min-w-0 flex-1 truncate text-[11px]" style={{ color: MUTED }}>
+          <span className="min-w-0 flex-1 truncate text-[11px]" style={{ color: SB_MUTED }}>
             sales@apextextiles.co
           </span>
         </div>
-        <div className="mt-2 flex items-center justify-between border-t pt-2" style={{ borderColor: HAIR }}>
-          <span className="text-[10.5px]" style={{ color: FAINT }}>
+        <div
+          className="mt-2 flex items-center justify-between border-t pt-2"
+          style={{ borderColor: SB_BORDER }}
+        >
+          <span className="text-[10.5px]" style={{ color: SB_FAINT }}>
             Language
           </span>
           <span
             className="rounded px-1.5 py-0.5 text-[10px] font-semibold"
-            style={{ background: '#EFECE6', color: MUTED }}
+            style={{ background: SB_BADGE, color: '#FFFFFF' }}
           >
             EN · 中文
           </span>
@@ -500,13 +514,13 @@ export function HeroProduct() {
     fetched?: boolean;
   }[] = [
     { label: 'Quantity', value: '5,000 pcs' },
-    { label: 'Product', value: '500 ml double-wall vacuum flask' },
-    { label: 'Material / size', value: '304 stainless steel, double-wall' },
+    { label: 'Product', value: '500 ml double-wall flask' },
+    { label: 'Material / size', value: '304 steel, double-wall' },
     { label: 'Logo / printing', value: 'Laser, 1 colour' },
     { label: 'Incoterm', value: 'FOB Rotterdam' },
     { label: 'Target price', value: null },
     { label: 'Destination port', value: 'Singapore' },
-    { label: 'Timeline', value: '30 days after sample approval', fetched: true },
+    { label: 'Timeline', value: '30 days post-sample', fetched: true },
     { label: 'Certification', value: 'EN 4210, LFGB', fetched: true },
   ];
   const fetchedCount = SPECS.filter((r) => r.fetched).length;
@@ -595,20 +609,41 @@ export function HeroProduct() {
             </MailBubble>
           </div>
 
-          {/* Composer — the reply opens in the canvas, as it does in the app. */}
-          <div className="flex items-center gap-2 border-t px-4 py-3" style={{ borderColor: EDGE }}>
-            <span
-              className="min-w-0 flex-1 truncate rounded px-3 py-2.5 text-[12.5px]"
-              style={{ border: `1px solid ${HAIR}`, background: '#FBFBFB', color: FAINT }}
-            >
-              Reply to sarah@apexretail.sg…
-            </span>
-            <span
-              className="shrink-0 rounded px-4 py-2.5 text-[12.5px] font-medium text-white"
-              style={{ background: '#038153' }}
-            >
-              Reply
-            </span>
+          {/* Composer — the app's compose bar: To is locked to the buyer, Cc
+              and Subject are typed into before sending. */}
+          <div className="shrink-0 border-t" style={{ borderColor: EDGE }}>
+            {[
+              ['To', 'sarah@apexretail.sg'],
+              ['Cc', 'procurement@apexretail.sg'],
+              ['Subject', 'Re: 5,000 × 500 ml flask · FOB Rotterdam'],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                className="flex items-center gap-3 border-b px-4 py-1.5"
+                style={{ borderColor: HAIR }}
+              >
+                <span className="w-12 shrink-0 text-[11px]" style={{ color: FAINT }}>
+                  {label}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-[11.5px]" style={{ color: INK }}>
+                  {value}
+                </span>
+              </div>
+            ))}
+            <div className="flex items-center gap-2 px-4 py-2.5">
+              <span
+                className="min-w-0 flex-1 truncate rounded border px-3 py-2 text-[11.5px]"
+                style={{ borderColor: HAIR, background: '#FBFBFB', color: FAINT }}
+              >
+                Write a reply…
+              </span>
+              <span
+                className="shrink-0 rounded px-3.5 py-2 text-[11.5px] font-medium text-white"
+                style={{ background: '#038153' }}
+              >
+                Reply
+              </span>
+            </div>
           </div>
         </div>
 
@@ -616,8 +651,8 @@ export function HeroProduct() {
             they asked for, and which fields Sailwise had to go fetch. Hidden on
             narrow viewports so the thread never gets squeezed. */}
         <div
-          className="hidden min-h-0 w-[272px] shrink-0 flex-col overflow-y-auto border-l bg-white @min-[1000px]:flex"
-          style={{ borderColor: EDGE, background: '#FCFBF9' }}
+          className="hidden min-h-0 w-[288px] shrink-0 flex-col overflow-y-auto overflow-x-hidden border-l @min-[1000px]:flex"
+          style={{ borderColor: EDGE, background: RAIL_SURFACE }}
         >
           {/* Buyer */}
           <div className="border-b px-4 py-4" style={{ borderColor: EDGE }}>
@@ -647,7 +682,7 @@ export function HeroProduct() {
             </div>
             <dl
               className="mt-3 overflow-hidden rounded-md"
-              style={{ background: '#FFFFFF', border: `1px solid ${HAIR}` }}
+              style={{ background: LIST_SURFACE, border: `1px solid ${HAIR}` }}
             >
               {[
                 ['Company', 'Apex Retail Pte Ltd'],
@@ -680,7 +715,7 @@ export function HeroProduct() {
                 <div
                   key={k}
                   className="rounded-md px-2.5 py-2"
-                  style={{ background: '#FFFFFF', border: `1px solid ${HAIR}` }}
+                  style={{ background: LIST_SURFACE, border: `1px solid ${HAIR}` }}
                 >
                   <p className="text-[10px] uppercase tracking-[0.06em]" style={{ color: FAINT }}>
                     {k}
@@ -696,7 +731,7 @@ export function HeroProduct() {
                 <span
                   key={tag}
                   className="rounded border px-1.5 py-0.5 text-[10px] font-medium"
-                  style={{ background: '#FFFFFF', borderColor: HAIR, color: MUTED }}
+                  style={{ background: LIST_SURFACE, borderColor: HAIR, color: MUTED }}
                 >
                   {tag}
                 </span>
@@ -724,10 +759,17 @@ export function HeroProduct() {
               {SPECS.map((r) => (
                 <div key={r.label} className="flex items-start gap-2">
                   <span
-                    className="w-[86px] shrink-0 text-[10.5px] leading-[1.35]"
+                    className="flex w-[92px] shrink-0 items-center gap-1 text-[10.5px] leading-[1.35]"
                     style={{ color: FAINT }}
                   >
-                    {r.label}
+                    <span className="min-w-0 truncate">{r.label}</span>
+                    {r.fetched && (
+                      <span
+                        title="Filled automatically"
+                        className="h-1.5 w-1.5 shrink-0 rounded-full"
+                        style={{ background: '#D97706' }}
+                      />
+                    )}
                   </span>
                   {r.value ? (
                     <span className="flex min-w-0 flex-1 items-start gap-1">
@@ -744,19 +786,11 @@ export function HeroProduct() {
                       </svg>
                       <span className="min-w-0 text-[11.5px] leading-[1.35]" style={{ color: INK }}>
                         {r.value}
-                        {r.fetched && (
-                          <span
-                            className="ml-1.5 rounded px-1 py-px align-middle text-[9.5px] font-semibold uppercase tracking-[0.04em]"
-                            style={{ background: PEACH_SOFT, color: '#A9661F' }}
-                          >
-                            fetched
-                          </span>
-                        )}
                       </span>
                     </span>
                   ) : (
                     <span className="min-w-0 flex-1 text-[11.5px] leading-[1.35]" style={{ color: '#C2410C' }}>
-                      missing — ask the buyer
+                      missing
                     </span>
                   )}
                 </div>
@@ -766,8 +800,12 @@ export function HeroProduct() {
               className="mt-3 border-t pt-2.5 text-[10.5px] leading-snug"
               style={{ borderColor: HAIR, color: FAINT }}
             >
-              {SPECS.length - fetchedCount - 1} read from the email and PDF ·{' '}
-              {fetchedCount} filled automatically · 1 still open
+              <span
+                className="mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle"
+                style={{ background: '#D97706' }}
+              />
+              {SPECS.length - fetchedCount - 1} read from the email · {fetchedCount} filled
+              automatically · 1 still open
             </p>
           </div>
         </div>
