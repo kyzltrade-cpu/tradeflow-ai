@@ -311,7 +311,7 @@ export default function LandingPage() {
               '數量、材質、認證與交期都從對話中擷取，並綁定到來源行——絕不憑空推測。'
             )}
           />
-          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:items-center lg:gap-16">
+          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center lg:gap-16">
             <div className="order-2 min-w-0 lg:order-1">
               <ExtractionMock />
             </div>
@@ -346,7 +346,7 @@ export default function LandingPage() {
             label={t('One inbox', '單一收件匣')}
             title={t('Your mailbox, turned into a work queue', '把您的信箱變成工作佇列')}
           />
-          <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-20">
+          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
             <div>
               <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
                 {t(
@@ -396,7 +396,7 @@ export default function LandingPage() {
       {/* ── Control (dark) ── */}
       <section className="band-dark px-6 py-24 md:py-32">
         <div className="mx-auto max-w-6xl">
-          <div className="grid gap-14 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:gap-20">
+          <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
             <div>
               <p className="eyebrow">{t('Built-in control', '內建掌控')}</p>
               <h2 className="display mt-4 text-[clamp(2.2rem,4.4vw,3.5rem)]">
@@ -441,7 +441,7 @@ export default function LandingPage() {
             label={t('Quotes', '報價')}
             title={t('Quotes in seconds, priced from your data', '數秒完成報價，價格取自您的資料')}
           />
-          <div className="mt-6 grid gap-14 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-16">
+          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-16">
             <div>
               <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
                 {t(
@@ -463,7 +463,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Mid-page CTA ── */}
-      <section className="px-6 pb-4">
+      <section className="px-6 py-8">
         <div className="mx-auto max-w-6xl">
           <Reveal className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-[var(--hairline)] bg-[var(--paper-2)] px-8 py-7 sm:flex-row sm:items-center">
             <div>
@@ -491,7 +491,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── WhatsApp ── */}
-      <section className="border-t border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-24 md:py-28">
+      <section className="border-t border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-24 md:py-32">
         <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-20">
           <div className="order-2 lg:order-1">
             <WhatsAppMock />
