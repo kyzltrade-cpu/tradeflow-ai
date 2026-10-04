@@ -36,11 +36,11 @@ const BENEFITS: { label: Bi; title: Bi; body: Bi }[] = [
     ],
   },
   {
-    label: ['Quote', '報價'],
-    title: ['A price, not just a reply', '給的是價格，不只是回信'],
+    label: ['Gaps', '缺項'],
+    title: ['Missing specs, filled in', '缺項自動補齊'],
     body: [
-      'Priced from your own products, margins and FX rate, then drafted and waiting for you — not a promise to follow up later.',
-      '依您的產品、利潤與匯率算好價，草擬完成等您確認——而不是一句「稍後再報」。',
+      'Quantities, materials, certifications and lead times come out of the message and its attachments — and Sailwise fetches whatever is still missing, so the reply is specific instead of vague.',
+      '數量、材質、認證與交期，直接從郵件及附件中擷取——仍缺的部分由 Sailwise 自動補齊，回覆因此具體，而不是含糊帶過。',
     ],
   },
   {
@@ -77,8 +77,8 @@ const QUEUE: { label: Bi; tone: string; title: Bi; body: Bi }[] = [
     tone: '#14342B',
     title: ['Ready for sign-off', '待您簽核'],
     body: [
-      'A reply or a quote has been drafted and is sitting in your approval queue, one tap from going out.',
-      '回覆或報價已草擬完成，正躺在您的批准佇列中，一按即可送出。',
+      'A reply has been drafted and is waiting for you, one tap from going out with every number cited.',
+      '回覆已草擬完成，等您一按就能送出，每個數字都標明來源。',
     ],
   },
 ];
@@ -101,8 +101,8 @@ const EXTRACTION: { label: Bi; title: Bi; body: Bi; points: Bi[] }[] = [
     label: ['Clarification', '釐清'],
     title: ['Gaps get asked about, not assumed', '缺漏用問的，不用猜的'],
     body: [
-      'What is missing becomes one plain question in the buyer’s own language — drafted for you to approve, never sent on its own.',
-      '缺漏的資料會變成一句對方語言的具體問題——由您草擬批准，絕不自行寄出。',
+      'Sailwise fetches the missing data automatically, then asks only what is genuinely unknown — in the buyer’s own language.',
+      'Sailwise 自動補齊缺項資料，只有真正查不到的才追問——而且用對方的語言。',
     ],
     points: [
       ['Target price, Incoterm, destination and date', '目標價、貿易條件、目的地與日期'],
@@ -179,8 +179,8 @@ const FAQS: { q: Bi; a: Bi }[] = [
   {
     q: ['Do I need to be technical to set it up?', '設定需要技術背景嗎？'],
     a: [
-      'No. Guided setup connects your mailbox, imports your products and gets you approving your first draft the same day.',
-      '不需要。引導式設定會連接您的信箱、匯入產品，讓您當天就能批准第一份草稿。',
+      'No. Guided setup connects your mailbox, imports your products and has you answering your first inquiry the same day.',
+      '不需要。引導式設定會連接您的信箱、匯入產品，讓您當天就能回覆第一封詢盤。',
     ],
   },
   {
@@ -253,17 +253,17 @@ export default function LandingPage() {
       <section className="hero-wash px-6 pt-32 pb-16 md:pt-40 md:pb-20">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="eyebrow">{t('Slow quotes lose orders', '報價慢，訂單就跑了')}</p>
+            <p className="eyebrow">{t('Every inquiry arrives half-finished', '每封詢盤都不完整')}</p>
             <h1 className="display mt-6 text-[clamp(2.2rem,5.8vw,4rem)]">
-              {t('Specs in seconds.', '數秒抓規格，')}
+              {t('The whole spec,', '一封郵件，')}
               <br />
-              {t('Quotes in ', '')}
-              <em>{t('minutes.', '數分鐘寄出報價。')}</em>
+              {t('from ', '')}
+              <em>{t('one email.', '完整規格。')}</em>
             </h1>
             <p className="mx-auto mt-7 max-w-xl text-balance text-[1.0625rem] leading-[1.75] text-[var(--ink-2)]">
               {t(
-                'A buyer writes asking for 5,000 units. Sailwise watches for inquiries like it, pulls the specs out of the message and its attachments, and drafts the quote from your own price list — while they are still waiting.',
-                '買方來信要 5,000 件。Sailwise 留意新的詢盤，一旦有這樣的信，便從郵件與附件中擷取規格，並依您自己的價格表草擬報價——趁對方還在等。'
+                'A buyer writes asking for 5,000 units. Sailwise watches for inquiries like it, pulls the specs out of the message and its attachments, fetches whatever is still missing, and drafts the reply — while they are still waiting.',
+                '買方來信要 5,000 件。Sailwise 留意新的詢盤，一旦有這樣的信，便從郵件與附件中擷取規格，自動補齊缺項，並草擬回覆——趁對方還在等。'
               )}
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -482,14 +482,14 @@ export default function LandingPage() {
           <SectionHead
             size="major"
             label={t('Quotes', '報價')}
-            title={t('Quotes in seconds, priced from your data', '數秒完成報價，價格取自您的資料')}
+            title={t('Priced from your data, not from memory', '價格取自您的資料，不是憑記憶')}
           />
           <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-16">
             <Reveal>
               <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
                 {t(
-                  'Every line is priced from your own product list and your margin rules, and shown on the quote so you can check it in seconds. You approve it before it sends as a normal email.',
-                  '每一行都由您自己的產品清單與利潤規則定價，並顯示於報價單上，讓您數秒內核對。送出前由您批准，以一般電郵寄出。'
+                  'Every line is priced from your own product list and your margin rules, and shown on the quote so you can check it in seconds. It then sends as a normal email from your own address.',
+                  '每一行都由您自己的產品清單與利潤規則定價，並顯示於報價單上，讓您數秒內核對，再以您自己的地址寄出一般電郵。'
                 )}
               </p>
               <ul className="mt-7 space-y-3.5">
@@ -514,7 +514,7 @@ export default function LandingPage() {
                 {t('See it on your own inquiries.', '用您自己的詢盤試一次。')}
               </p>
               <p className="mt-1.5 text-[14.5px] text-[var(--ink-2)]">
-                {t('Connect a mailbox, approve your first draft the same day.', '連接信箱，當天就能批准第一份草稿。')}
+                {t('Connect a mailbox, answer your first inquiry the same day.', '連接信箱，當天就能回覆第一封詢盤。')}
               </p>
             </div>
             <div className="flex shrink-0 flex-col gap-2.5 sm:flex-row sm:items-center">
@@ -566,8 +566,8 @@ export default function LandingPage() {
         <div className="mx-auto max-w-5xl">
           <SectionHead
             label={t('How it works', '運作方式')}
-            title={t('From inquiry to quote, end to end', '從詢盤到報價，端到端')}
-            sub={t('The whole pipeline, with you approving every message.', '完整流程，每則訊息都由您批准。')}
+            title={t('From inquiry to a specific answer', '從詢盤到具體回覆，端到端')}
+            sub={t('The whole pipeline, in one inbox.', '完整流程，都在一個收件匣裡。')}
           />
           {/* The same four stages the STEPS copy described, but played out —
               the demo advances itself and pauses when you interact with it. */}
@@ -685,7 +685,7 @@ export default function LandingPage() {
       <section className="band-dark px-6 py-24 md:py-32">
         <div className="mx-auto max-w-3xl text-center">
           <h2 className="display text-[clamp(2rem,4.4vw,3.25rem)]">
-            {t('Stop copy-pasting quotes.', '別再複製貼上報價。')}
+            {t('Stop chasing missing specs.', '別再為了補規格來回追問。')}
           </h2>
           <p className="mx-auto mt-6 max-w-md text-[16px] leading-relaxed text-[rgba(244,241,236,0.7)]">
             {t('Let Sailwise answer first — then close the deal.', '讓 Sailwise 先回覆——然後成交。')}
@@ -723,8 +723,8 @@ export default function LandingPage() {
             </div>
             <p className="mt-4 max-w-[300px] text-[14px] leading-relaxed text-[var(--ink-2)]">
               {t(
-                'The AI sales assistant for trading companies worldwide — from inquiry to sent quote, with you approving every message.',
-                '專為全球貿易公司而設的 AI 銷售助理——從詢盤到寄出報價，每則訊息都由您批准。'
+                'The AI sales assistant for trading companies worldwide — from inquiry to a complete, specific answer.',
+                '專為全球貿易公司而設的 AI 銷售助理——從一封詢盤，到完整而具體的回覆。'
               )}
             </p>
             <p className="mt-8 text-[12px] text-[var(--ink-3)]">

@@ -37,7 +37,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: "Sailwise — Inquiry to Quote, End to End",
-  description: "Sailwise watches for buyer inquiries, pulls the specs out of the message and its attachments, and drafts a quote from your own price list. Specs in seconds, quotes in minutes.",
+  description: "Sailwise watches for buyer inquiries, pulls the specs out of the message and its attachments, fetches whatever is still missing, and drafts the reply. The whole spec, from one email.",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

@@ -13,7 +13,6 @@ const HAIR = '#E8E4DE';
 // Recessed inner surfaces. Must be clearly darker than white or the panels
 // read as translucent film on the card rather than as solid objects.
 const PANEL = '#F5F2EC';
-const PANEL_DEEP = '#EDE9E1';
 const SIDEBAR = '#F7F5F0';
 const TEAL = '#0A6E5C';
 const TEAL_SOFT = '#E7F4F0';
@@ -37,63 +36,218 @@ function Logo() {
   );
 }
 
+/* The sidebar as it actually reads: grouped nav, 17px icons, count badges, and
+   the account footer. A flat list of six words looks like a nav bar; this looks
+   like the tool someone keeps open all day. */
+const NAV_ICONS = {
+  inbox: 'M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.929 8.298a2.25 2.25 0 00-2.156-1.548h-2.986a2.25 2.25 0 01-2.157 1.54H11.37a2.25 2.25 0 01-2.157-1.54H6.227a2.25 2.25 0 00-2.156 1.548L1.6 13.177a5.25 5.25 0 00-.1.661z',
+  mail: 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m17.25 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75',
+  sparkles: 'M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.455 2.456L22.5 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z',
+  clock: 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z',
+  box: 'M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z',
+  book: 'M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25',
+  users: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z',
+  cog: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.99a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z',
+};
+
+interface NavEntry {
+  en: string;
+  icon: keyof typeof NAV_ICONS;
+  active?: boolean;
+  count?: number;
+}
+
+const NAV: { label: string; items: NavEntry[] }[] = [
+  {
+    label: 'Inbox',
+    items: [
+      { en: 'Inbox', icon: 'inbox', active: true },
+      { en: 'Needs specs', icon: 'mail', count: 4 },
+      { en: 'Owed replies', icon: 'mail', count: 7 },
+      { en: 'Needs you', icon: 'sparkles', count: 2 },
+    ],
+  },
+  {
+    label: 'Pipeline',
+    items: [
+      { en: 'Opportunities', icon: 'sparkles' },
+      { en: 'Follow-ups', icon: 'clock', count: 3 },
+    ],
+  },
+  {
+    label: 'Catalog',
+    items: [
+      { en: 'Products', icon: 'box' },
+      { en: 'Suppliers', icon: 'users' },
+      { en: 'Knowledge Base', icon: 'book' },
+      { en: 'Settings', icon: 'cog' },
+    ],
+  },
+];
+
+function NavIcon({ d, active }: { d: string; active?: boolean }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={active ? 2 : 1.75}
+      stroke="currentColor"
+      className="h-[15px] w-[15px] shrink-0"
+    >
+      <path strokeLinecap="round" strokeLinejoin="round" d={d} />
+    </svg>
+  );
+}
+
 function Sidebar() {
-  const items = ['Inbox', 'Opportunities', 'Follow-ups', 'Products', 'Knowledge', 'Settings'];
   return (
     <div
-      className="hidden w-[170px] shrink-0 flex-col p-3.5 @min-[700px]:flex"
+      className="hidden w-[186px] shrink-0 flex-col @min-[820px]:flex"
       style={{ background: SIDEBAR, borderRight: `1px solid ${HAIR}` }}
     >
-      <div className="mb-5 flex items-center gap-2">
-        <Logo />
+      <div
+        className="flex h-11 shrink-0 items-center gap-2 border-b px-3.5"
+        style={{ borderColor: HAIR }}
+      >
+        <img
+          src="/brand/sailwise-mark-dashboard.png"
+          alt="Sailwise"
+          className="h-6 w-6 shrink-0 rounded-[5px] object-contain"
+        />
         <span className="text-[13px] font-semibold" style={{ color: INK }}>
           Sailwise
         </span>
       </div>
-      {items.map((item, i) => (
-        <div
-          key={item}
-          className="mb-0.5 rounded-md px-2 py-1.5 text-[11.5px]"
-          style={{
-            background: i === 0 ? TEAL_SOFT : 'transparent',
-            color: i === 0 ? TEAL : MUTED,
-            fontWeight: i === 0 ? 600 : 500,
-          }}
-        >
-          {item}
-        </div>
-      ))}
-      <div className="mt-auto rounded-lg p-2.5 text-[10.5px] leading-snug" style={{ background: PEACH_SOFT, color: TERRA }}>
-        <span className="font-semibold">2 need you</span> — approvals waiting
-      </div>
-    </div>
-  );
-}
 
-function Tabs({ active = 0 }: { active?: number }) {
-  const tabs = ['All', 'Needs specs', 'Owed replies', 'Needs you'];
-  return (
-    <div className="flex items-center gap-1 px-3 pb-2 pt-3" style={{ borderBottom: `1px solid ${HAIR}` }}>
-      {tabs.map((t, i) => (
-        <span
-          key={t}
-          className="rounded-full px-2.5 py-1 text-[10.5px] font-medium"
-          style={{ background: i === active ? INK : 'transparent', color: i === active ? '#fff' : MUTED }}
-        >
-          {t}
-        </span>
-      ))}
+      <nav className="flex-1 overflow-hidden px-2.5 py-3">
+        {NAV.map((group, gi) => (
+          <div key={group.label} className={gi > 0 ? 'mt-5' : ''}>
+            <div
+              className="mb-1.5 px-2 text-[9.5px] font-semibold uppercase tracking-[0.09em]"
+              style={{ color: FAINT }}
+            >
+              {group.label}
+            </div>
+            <div className="space-y-0.5">
+              {group.items.map((item) => {
+                const count = item.count;
+                return (
+                  <div
+                    key={item.en}
+                    className="flex h-[30px] items-center gap-2 rounded-[7px] px-2.5"
+                    style={{
+                      background: item.active ? TEAL_SOFT : 'transparent',
+                      color: item.active ? TEAL : MUTED,
+                      fontWeight: item.active ? 600 : 500,
+                    }}
+                  >
+                    <NavIcon d={NAV_ICONS[item.icon]} active={item.active} />
+                    <span className="min-w-0 flex-1 truncate text-[12px]">{item.en}</span>
+                    {count !== undefined && (
+                      <span
+                        className="flex h-[17px] min-w-[19px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums leading-none"
+                        style={{
+                          background: item.active ? TEAL : '#EFECE6',
+                          color: item.active ? '#fff' : MUTED,
+                        }}
+                      >
+                        {count}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* Account footer, as in the product: who you are, and the language toggle. */}
+      <div className="border-t px-3.5 py-2.5" style={{ borderColor: HAIR }}>
+        <div className="flex items-center gap-2">
+          <span
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[9.5px] font-bold text-white"
+            style={{ background: INK }}
+          >
+            ST
+          </span>
+          <span className="min-w-0 flex-1 truncate text-[11px]" style={{ color: MUTED }}>
+            sales@apextextiles.co
+          </span>
+        </div>
+        <div className="mt-2 flex items-center justify-between border-t pt-2" style={{ borderColor: HAIR }}>
+          <span className="text-[10.5px]" style={{ color: FAINT }}>
+            Language
+          </span>
+          <span
+            className="rounded px-1.5 py-0.5 text-[10px] font-semibold"
+            style={{ background: '#EFECE6', color: MUTED }}
+          >
+            EN · 中文
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
 
 const CONVOS = [
-  { name: 'Sarah Chen', msg: 'Can you do FOB to Singapore?', time: '2m', tag: 'Needs you', hot: true },
-  { name: 'Ah Wei', msg: 'MOQ for the 500ml bottles?', time: '5m', tag: 'Owed reply', hot: false },
-  { name: 'David Tan', msg: 'Thanks for the revised quote!', time: '12m', tag: 'In progress', hot: false },
-  { name: 'Li Ming', msg: 'What certifications do you hold?', time: '18m', tag: 'Needs specs', hot: false },
-  { name: 'Rachel Wong', msg: 'Sample before mass production?', time: '34m', tag: 'In progress', hot: false },
-];
+  {
+    name: 'Sarah Chen',
+    email: 'sarah@apexretail.sg',
+    subject: 'FOB Rotterdam to Singapore',
+    msg: 'Can you do FOB to Singapore? We need 5,000 units.',
+    date: '09:41',
+    filter: 'Needs you',
+    count: 2,
+    hot: true,
+  },
+  {
+    name: 'Ah Wei',
+    email: 'ah.wei@kelvin.sg',
+    subject: '500ml bottles',
+    msg: 'MOQ for the 500ml double-wall bottles?',
+    date: '09:38',
+    filter: 'Needs specs',
+    count: 4,
+    hot: false,
+  },
+  {
+    name: 'David Tan',
+    email: 'david@northbay.com.sg',
+    subject: 'Revised quote',
+    msg: 'Thanks for the revised quote — one question on the tooling.',
+    date: '09:12',
+    filter: 'Owed replies',
+    count: 7,
+    hot: false,
+  },
+  {
+    name: 'Li Ming',
+    email: 'liming@jiangsu-textiles.cn',
+    subject: 'Certifications',
+    msg: 'What certifications do you hold for the 40D canvas?',
+    date: '08:54',
+    filter: 'Needs specs',
+    count: 0,
+    hot: false,
+  },
+  {
+    name: 'Rachel Wong',
+    email: 'rachel@harbourpoint.hk',
+    subject: 'Sample before production',
+    msg: 'Can we see a sample before mass production?',
+    date: '08:20',
+    filter: 'In progress',
+    count: 0,
+    hot: false,
+  },
+] as const;
+
+/* The inbox as it actually reads: filter lenses with counts and an underline
+   on the active one, then a sender/thread/date grid. */
+const FILTERS = ['All', 'Needs specs', 'Owed replies', 'Needs you'] as const;
 
 /* Mock profile pictures — monogram avatars tinted per contact, so the thread
    list reads like a real inbox instead of a row of grey placeholders. */
@@ -109,33 +263,6 @@ const AVATAR_FALLBACK = { bg: '#ECEFF3', fg: '#6B7280' };
 function initialsOf(name: string): string {
   const parts = name.trim().split(/\s+/);
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
-}
-
-/* Two initials fit a 40px circle; a full name does not. Same tone and ring as
-   Avatar, widened into a lozenge so the demo names the person it is about. */
-function AvatarName({ name, dot = false }: { name: string; dot?: boolean }) {
-  const tone = AVATAR_TONES[name] ?? AVATAR_FALLBACK;
-  return (
-    <span
-      className="relative inline-flex shrink-0 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-[13px] font-semibold"
-      style={{
-        background: tone.bg,
-        color: tone.fg,
-        boxShadow: 'inset 0 0 0 1px rgba(15,17,21,0.06)',
-      }}
-    >
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/70 text-[10px] font-bold">
-        {initialsOf(name)}
-      </span>
-      {name}
-      {dot && (
-        <span
-          className="absolute -bottom-0.5 -left-0.5 h-2.5 w-2.5 rounded-full border-2 border-white"
-          style={{ background: TEAL }}
-        />
-      )}
-    </span>
-  );
 }
 
 function Avatar({
@@ -183,34 +310,91 @@ function Avatar({
 
 function ConvoList({ selected = 0 }: { selected?: number }) {
   return (
-    <div className="hidden w-full flex-col @min-[560px]:flex @min-[560px]:w-[244px] @min-[560px]:shrink-0" style={{ borderRight: `1px solid ${HAIR}` }}>
-      <Tabs active={selected === 0 ? 3 : 0} />
-      <div className="flex-1">
+    <div
+      className="hidden w-full shrink-0 flex-col @min-[620px]:flex @min-[620px]:w-[238px]"
+      style={{ borderRight: `1px solid ${HAIR}` }}
+    >
+      <div
+        className="flex items-center gap-1 px-3"
+        style={{ borderBottom: `1px solid ${HAIR}` }}
+      >
+        {FILTERS.map((f, i) => (
+          <span
+            key={f}
+            className="relative flex items-center gap-1.5 px-2 py-2.5 text-[11.5px]"
+            style={{ color: i === 3 ? INK : MUTED, fontWeight: i === 3 ? 600 : 500 }}
+          >
+            {f}
+            {i === 1 && <span className="tabular-nums text-[10.5px]">4</span>}
+            {i === 2 && <span className="tabular-nums text-[10.5px]">7</span>}
+            {i === 3 && (
+              <span
+                className="inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[9.5px] font-semibold text-white"
+                style={{ background: TEAL }}
+              >
+                2
+              </span>
+            )}
+            {i === 3 && (
+              <span
+                className="absolute inset-x-2 -bottom-px h-[2px] rounded-full"
+                style={{ background: TEAL }}
+              />
+            )}
+          </span>
+        ))}
+      </div>
+
+      <div
+        className="grid grid-cols-[1fr_auto] items-center gap-2 px-3 py-1.5"
+        style={{ background: '#FBFBFB', borderBottom: `1px solid ${HAIR}` }}
+      >
+        <span
+          className="text-[9.5px] font-semibold uppercase tracking-[0.05em]"
+          style={{ color: FAINT }}
+        >
+          Sender
+        </span>
+        <span
+          className="text-[9.5px] font-semibold uppercase tracking-[0.05em]"
+          style={{ color: FAINT }}
+        >
+          Date
+        </span>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
         {CONVOS.map((c, i) => {
           const active = i === selected;
           return (
             <div
-              key={c.name}
-              className="flex items-center gap-2.5 px-3 py-2.5"
-              style={{ background: active ? TEAL_SOFT : 'transparent', borderBottom: `1px solid #F3F4F6` }}
+              key={c.email}
+              className="flex items-start gap-2 px-3 py-2.5"
+              style={{
+                background: active ? TEAL_SOFT : 'transparent',
+                borderBottom: `1px solid ${HAIR}`,
+              }}
             >
-              <Avatar name={c.name} size={32} />
+              <Avatar name={c.name} size={28} />
               <div className="min-w-0 flex-1">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate text-[12px] font-semibold" style={{ color: INK }}>
+                <div className="flex items-center gap-1.5">
+                  <span className="truncate text-[11.5px] font-semibold" style={{ color: INK }}>
                     {c.name}
                   </span>
-                  <span className="shrink-0 text-[9.5px]" style={{ color: FAINT }}>
-                    {c.time}
-                  </span>
+                  {c.hot && (
+                    <span className="sail-pulse h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: TERRA }} />
+                  )}
                 </div>
                 <div className="truncate text-[10.5px]" style={{ color: MUTED }}>
+                  {c.subject}
+                </div>
+                <div className="truncate text-[10px]" style={{ color: FAINT }}>
                   {c.msg}
                 </div>
               </div>
-              {c.hot && (
-                <span className="sail-pulse h-2 w-2 shrink-0 rounded-full" style={{ background: TERRA }} />
-              )}
+              <span className="shrink-0 text-[9.5px] tabular-nums" style={{ color: FAINT }}>
+                {c.date}
+              </span>
             </div>
           );
         })}
@@ -257,87 +441,154 @@ function Bubble({
 }
 
 /* ── Hero: the dashboard, running ───────────────────────────────────────────
-   Sidebar, inbox and the one thread that matters in a single frame: the buyer
-   writes, Sailwise drafts, and nothing leaves the building until you approve
-   it. The thread pane keeps hero-sized type so the drafted reply is readable at
-   a glance, while the surrounding chrome stays at the density the product
-   actually uses — the same density the app has at 11px. */
+   Sidebar, inbox and the open thread in one frame. Every pane copies the real
+   surface: the grouped nav, the sender/thread/date grid, the mail header with
+   its back link and subject line, the roles the product actually stores (buyer
+   right, AI left, labelled), and the composer that opens the reply. */
+
+type MailRole = 'buyer' | 'ai';
+
+function MailBubble({
+  role,
+  time,
+  children,
+}: {
+  role: MailRole;
+  time: string;
+  children: ReactNode;
+}) {
+  const buyer = role === 'buyer';
+  return (
+    <div className={`flex ${buyer ? 'justify-end' : 'justify-start'}`}>
+      <div
+        className="max-w-[78%] rounded-[4px] px-3.5 py-2.5 text-[13.5px] leading-[1.5]"
+        style={{
+          background: buyer ? '#EAF3F0' : '#FFFFFF',
+          border: `1px solid ${buyer ? 'transparent' : HAIR}`,
+        }}
+      >
+        {!buyer && (
+          <p className="mb-1 text-[10.5px] font-medium" style={{ color: TEAL }}>
+            AI
+          </p>
+        )}
+        <p className="whitespace-pre-wrap" style={{ color: INK }}>
+          {children}
+        </p>
+        <p className="mt-1.5 flex items-center gap-2 text-[10.5px]" style={{ color: FAINT }}>
+          {time}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export function HeroProduct() {
   return (
     <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
-      <div className="flex flex-col @min-[560px]:h-[448px] @min-[560px]:flex-row">
+      <div className="flex flex-col @min-[620px]:h-[500px] @min-[620px]:flex-row">
         <Sidebar />
         <ConvoList selected={0} />
         <div className="flex min-w-0 flex-1 flex-col">
+          {/* Mail header — back link, contact, subject, thread controls. */}
           <div
-            className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3"
-            style={{ borderBottom: `1px solid ${HAIR}` }}
+            className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 border-b px-4 py-3"
+            style={{ borderColor: HAIR, background: '#FFFFFF' }}
           >
-            <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-              <AvatarName name="Sarah Chen" dot />
-              <span className="text-[12.5px]" style={{ color: FAINT }}>
-                sarah@apexretail.sg · English
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="flex items-center gap-1 text-[11.5px] font-medium" style={{ color: MUTED }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+                Inbox
               </span>
-              <span
-                className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]"
-                style={{ background: TEAL_SOFT, color: TEAL }}
-              >
-                AI
-              </span>
+              <span className="h-5 w-px shrink-0" style={{ background: HAIR }} />
+              <div className="min-w-0">
+                <div className="truncate text-[14px] font-semibold" style={{ color: INK }}>
+                  Sarah Chen
+                </div>
+                <div className="truncate text-[10.5px]" style={{ color: FAINT }}>
+                  sarah@apexretail.sg · English
+                </div>
+                <div className="truncate text-[11.5px] font-medium" style={{ color: MUTED }}>
+                  FOB Rotterdam to Singapore
+                </div>
+              </div>
             </div>
-            {/* The thread controls as they read in the product: AI owns the
-                thread until you pause it, bookmark it, or take it over. */}
             <div className="flex shrink-0 flex-wrap items-center gap-2">
               {['Pause AI', 'Bookmark'].map((label) => (
                 <span
                   key={label}
-                  className="rounded-lg border px-3 py-1.5 text-[12px] font-semibold"
+                  className="rounded-lg border px-2.5 py-1.5 text-[11.5px] font-semibold"
                   style={{ borderColor: HAIR, color: MUTED }}
                 >
                   {label}
                 </span>
               ))}
               <span
-                className="rounded-lg px-3.5 py-1.5 text-[12px] font-semibold text-white"
-                style={{ background: TEAL }}
+                className="rounded-lg px-3 py-1.5 text-[11.5px] font-semibold text-white"
+                style={{ background: '#038153' }}
               >
                 Take over
               </span>
             </div>
           </div>
 
-          <div className="flex flex-1 flex-col gap-3.5 px-4 py-5">
-            <Bubble scale="lg" side="in" meta="Email · 09:12">
-              Can you do FOB to Singapore?
-            </Bubble>
-            <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
-              FOB Rotterdam: USD 1,825, plus roughly USD 400 air freight. Sending the full
-              quote over.
-            </Bubble>
-            <Bubble scale="lg" side="in" meta="Email · 09:41">
+          <div className="flex flex-1 flex-col gap-3 overflow-hidden px-4 py-4">
+            <MailBubble role="buyer" time="Email · 09:12">
+              Can you do FOB to Singapore? We need 5,000 units.
+            </MailBubble>
+
+            {/* What the AI filled in without being asked. */}
+            <div className="flex justify-start">
+              <div
+                className="rounded-lg px-3 py-2 text-[11.5px]"
+                style={{ background: PANEL, border: `1px solid ${HAIR}`, color: MUTED }}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="rounded px-1.5 py-0.5 text-[9.5px] font-semibold uppercase tracking-[0.06em]"
+                    style={{ background: TEAL_SOFT, color: TEAL }}
+                  >
+                    Fetched automatically
+                  </span>
+                  <span style={{ color: FAINT }}>no back-and-forth</span>
+                </div>
+                <ul className="mt-1.5 space-y-0.5" style={{ color: INK }}>
+                  <li>Incoterm FOB · destination Singapore</li>
+                  <li>Air freight estimate · Rotterdam → SIN</li>
+                  <li>Certifications on file · ISO 9001, SGS, FDA</li>
+                </ul>
+              </div>
+            </div>
+
+            <MailBubble role="ai" time="AI · 09:13">
+              FOB Rotterdam: USD 1,825, plus roughly USD 400 air freight. Full quote attached.
+            </MailBubble>
+            <MailBubble role="buyer" time="Email · 09:41">
               What about certifications?
-            </Bubble>
-            <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
-              We hold ISO 9001, SGS and FDA. I&apos;ll attach the certificates with the quote.
-            </Bubble>
+            </MailBubble>
+            <MailBubble role="ai" time="AI · 09:42">
+              We hold ISO 9001, SGS and FDA. Attaching the certificates with the quote.
+            </MailBubble>
           </div>
 
+          {/* Composer — the reply opens in the canvas, as it does in the app. */}
           <div
-            className="flex flex-wrap items-center gap-3 px-4 py-3.5"
-            style={{ borderTop: `1px solid ${HAIR}` }}
+            className="flex items-center gap-2 border-t px-4 py-3"
+            style={{ borderColor: HAIR }}
           >
             <span
-              className="min-w-[220px] flex-1 rounded-lg px-3.5 py-2.5 text-[13px]"
-              style={{ background: PANEL, color: FAINT, border: `1px solid ${HAIR}` }}
+              className="min-w-0 flex-1 truncate rounded px-3 py-2.5 text-[12.5px]"
+              style={{ border: `1px solid ${HAIR}`, background: '#FBFBFB', color: FAINT }}
             >
-              Every reply is a draft until you approve it.
+              Reply to sarah@apexretail.sg…
             </span>
             <span
-              className="rounded-lg px-4 py-2.5 text-[13px] font-semibold text-white"
-              style={{ background: TEAL }}
+              className="shrink-0 rounded px-4 py-2.5 text-[12.5px] font-medium text-white"
+              style={{ background: '#038153' }}
             >
-              Approve &amp; send
+              Reply
             </span>
           </div>
         </div>
