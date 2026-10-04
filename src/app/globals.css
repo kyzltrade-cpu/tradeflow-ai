@@ -716,11 +716,22 @@ section[id] { scroll-margin-top: 84px; }
   content: "";
   position: absolute;
   inset: 0;
+  /* Lifted on phones only. At 3x DPR a 1.9% hairline lands below what most
+     screens resolve, so the grid reads on desktop and all but vanishes on
+     mobile. 5% below 768px, untouched above it. */
   background-image:
-    linear-gradient(to right, rgba(27, 25, 23, 0.019) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(27, 25, 23, 0.019) 1px, transparent 1px);
+    linear-gradient(to right, rgba(27, 25, 23, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(27, 25, 23, 0.05) 1px, transparent 1px);
   background-size: 12px 12px;
   background-position: -1px -1px;
+}
+
+@media (min-width: 768px) {
+  .landing-ambience::before {
+    background-image:
+      linear-gradient(to right, rgba(27, 25, 23, 0.019) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(27, 25, 23, 0.019) 1px, transparent 1px);
+  }
 }
 .landing-blob {
   position: absolute;
