@@ -653,17 +653,30 @@ section[id] { scroll-margin-top: 84px; }
 .landing-ambience {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  /* Sits ABOVE the page background but BELOW every content block. It used to
+     be z-index: 60, which painted the paper tooth and the two washes over the
+     product cards (and over the nav) — the cards read as translucent because
+     you could see the grid through them. */
+  z-index: 0;
   overflow: hidden;
   pointer-events: none;
+}
+
+/* Lift the content above the ambience. The nav is already z-50. Safe to add a
+   containing block here: nothing in these sections is absolutely positioned,
+   and every absolute element inside the mocks has its own positioned parent. */
+.landing > section,
+.landing > footer {
+  position: relative;
+  z-index: 1;
 }
 .landing-ambience::before {
   content: "";
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(to right, rgba(27, 25, 23, 0.032) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(27, 25, 23, 0.032) 1px, transparent 1px);
+    linear-gradient(to right, rgba(27, 25, 23, 0.019) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(27, 25, 23, 0.019) 1px, transparent 1px);
   background-size: 12px 12px;
   background-position: -1px -1px;
 }
