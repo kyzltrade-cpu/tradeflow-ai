@@ -91,6 +91,65 @@ const CONVOS = [
   { name: 'Rachel Wong', msg: 'Sample before mass production?', time: '34m', tag: 'In progress', hot: false },
 ];
 
+/* Mock profile pictures — monogram avatars tinted per contact, so the thread
+   list reads like a real inbox instead of a row of grey placeholders. */
+const AVATAR_TONES: Record<string, { bg: string; fg: string }> = {
+  'Sarah Chen': { bg: '#D8ECE5', fg: '#0A6E5C' },
+  'Ah Wei': { bg: '#F5E2D6', fg: '#B4552D' },
+  'David Tan': { bg: '#ECE9DC', fg: '#7A6A46' },
+  'Li Ming': { bg: '#DFE7EF', fg: '#46586B' },
+  'Rachel Wong': { bg: '#E3EDDB', fg: '#4F6B45' },
+};
+const AVATAR_FALLBACK = { bg: '#ECEFF3', fg: '#6B7280' };
+
+function initialsOf(name: string): string {
+  const parts = name.trim().split(/\s+/);
+  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
+}
+
+function Avatar({
+  name,
+  size = 32,
+  dot = false,
+}: {
+  name: string;
+  size?: number;
+  dot?: boolean;
+}) {
+  const tone = AVATAR_TONES[name] ?? AVATAR_FALLBACK;
+  return (
+    <span className="relative shrink-0" style={{ width: size, height: size }}>
+      <span
+        className="flex h-full w-full items-center justify-center rounded-full font-semibold"
+        style={{
+          background: tone.bg,
+          color: tone.fg,
+          fontSize: Math.round(size * 0.36),
+          letterSpacing: '0.01em',
+          // A hairline ring keeps the avatar legible on both white rows and the
+          // tinted active row.
+          boxShadow: 'inset 0 0 0 1px rgba(15,17,21,0.06), 0 0 0 2px #FFFFFF',
+        }}
+      >
+        {initialsOf(name)}
+      </span>
+      {dot && (
+        <span
+          className="absolute rounded-full"
+          style={{
+            right: -1,
+            bottom: -1,
+            width: Math.round(size * 0.3),
+            height: Math.round(size * 0.3),
+            background: '#1FA97F',
+            boxShadow: '0 0 0 2px #FFFFFF',
+          }}
+        />
+      )}
+    </span>
+  );
+}
+
 function ConvoList({ selected = 0 }: { selected?: number }) {
   return (
     <div className="hidden w-full flex-col @min-[560px]:flex @min-[560px]:w-[244px] @min-[560px]:shrink-0" style={{ borderRight: `1px solid ${HAIR}` }}>
@@ -104,7 +163,7 @@ function ConvoList({ selected = 0 }: { selected?: number }) {
               className="flex items-center gap-2.5 px-3 py-2.5"
               style={{ background: active ? TEAL_SOFT : 'transparent', borderBottom: `1px solid #F3F4F6` }}
             >
-              <span className="h-8 w-8 shrink-0 rounded-full" style={{ background: active ? '#BFE6DC' : '#ECEFF3' }} />
+              <Avatar name={c.name} size={32} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate text-[12px] font-semibold" style={{ color: INK }}>
@@ -172,7 +231,7 @@ export function HeroProduct() {
         <div className="flex flex-1 flex-col">
           <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${HAIR}` }}>
             <div className="flex items-center gap-2.5">
-              <span className="h-7 w-7 rounded-full" style={{ background: '#BFE6DC' }} />
+              <Avatar name="Sarah Chen" size={28} dot />
               <div>
                 <div className="text-[12.5px] font-semibold" style={{ color: INK }}>
                   Sarah Chen
@@ -225,7 +284,7 @@ export function InboxMock() {
         <div className="flex flex-1 flex-col">
           <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${HAIR}` }}>
             <div className="flex items-center gap-2.5">
-              <span className="h-7 w-7 rounded-full" style={{ background: '#BFE6DC' }} />
+              <Avatar name="Sarah Chen" size={28} dot />
               <div>
                 <div className="text-[12.5px] font-semibold" style={{ color: INK }}>
                   Sarah Chen
@@ -274,7 +333,7 @@ export function HandoffMock() {
         <div className="flex flex-1 flex-col">
           <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${HAIR}` }}>
             <div className="flex items-center gap-2.5">
-              <span className="h-7 w-7 rounded-full" style={{ background: '#BFE6DC' }} />
+              <Avatar name="Ah Wei" size={28} dot />
               <div>
                 <div className="text-[12.5px] font-semibold" style={{ color: INK }}>
                   Ah Wei
@@ -377,7 +436,7 @@ export function QuoteMock() {
           <span className="font-semibold" style={{ color: INK }}>
             Every number is sourced:{' '}
           </span>
-          price list · 20% margin rule (4.00 → 5.00) · FX 7.82 · holds 15 days
+          price list · 20% margin rule (4.00 → 5.00) · holds 15 days
         </div>
         <div className="mt-4 flex items-center gap-2">
           <span className="rounded-lg px-4 py-2.5 text-[11.5px] font-semibold text-white" style={{ background: TEAL }}>

@@ -108,8 +108,8 @@ const STEPS: { code: string; title: Bi; body: Bi }[] = [
     code: 'QUOTE',
     title: ['The quote is drafted', '草擬報價'],
     body: [
-      'Priced from your product list, your margin rules and the live FX rate — every line traceable to its source.',
-      '依您的產品清單、利潤規則與即時匯率定價——每一行都可溯源。',
+      'Priced from your product list and your margin rules — nothing invented, and any line that cannot be matched is flagged for review.',
+      '依您的產品清單與利潤規則定價——絕不憑空生成，無法比對的行會標示待審核。',
     ],
   },
 ];
