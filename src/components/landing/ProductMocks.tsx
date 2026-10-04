@@ -592,10 +592,14 @@ export function HeroProduct() {
             </MailBubble>
 
             <MailBubble role="ai" time="AI · 09:13">
-              Read the email and the PDF. Quantity, product, material and incoterm are
-              covered. Logo method, destination port, target price, timeline and
-              certification weren’t in either — I filled those from your catalogue and
-              marked them so you can see what came from where.
+              Thanks — quantity, product, material and incoterm came straight out of the
+              spec sheet. Timeline and certification weren’t in it, so I filled those from
+              our catalogue and marked where each came from. You didn’t state a target, so
+              I’ve given you a range rather than guessing.
+              <br />
+              5,000 × 500 ml double-wall, 304 steel, FOB Rotterdam, logo as we ran it last
+              time: about USD 4.60–4.90 per unit, so USD 23,000–24,500 for the batch before
+              freight. Sample in 12 days if that works.
             </MailBubble>
 
             <MailBubble role="buyer" time="Email · 09:41">
@@ -603,9 +607,9 @@ export function HeroProduct() {
             </MailBubble>
 
             <MailBubble role="ai" time="AI · 09:42">
-              Updated. Target price is the only field still open — the buyer hasn’t
-              stated one, so I left it for you rather than guessing. Draft reply is
-              ready below.
+              Updated — Singapore destination, laser-etched in one colour. The range holds
+              at USD 4.60–4.90; laser is a tooling-free pass. EN 4210 and LFGB reports
+              attached. Draft reply is ready below.
             </MailBubble>
           </div>
 

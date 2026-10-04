@@ -49,16 +49,24 @@ export default function SiteHeader() {
   };
 
   return (
+    /* At the top it is a full-bleed bar. Once you scroll, it detaches into a
+       floating island: inset from the viewport edges, rounded, bordered and
+       lifted off the page, so it reads as an object over the content instead
+       of a strip glued to it. */
     <nav
-      className="fixed top-0 z-50 w-full border-b backdrop-blur-md transition-all duration-300"
+      className={`fixed z-50 backdrop-blur-md transition-all duration-300 ${
+        scrolled
+          ? 'inset-x-3 top-3 rounded-2xl border shadow-[0_12px_32px_-14px_rgba(27,25,23,0.30)] sm:inset-x-6 sm:top-4'
+          : 'inset-x-0 top-0 border-b border-transparent'
+      }`}
       style={{
-        background: scrolled ? 'rgba(250,247,242,0.88)' : 'rgba(250,247,242,0.55)',
+        background: scrolled ? 'rgba(250,247,242,0.94)' : 'rgba(250,247,242,0.55)',
         borderColor: scrolled ? 'var(--hairline)' : 'transparent',
       }}
     >
       <div
         className="mx-auto flex max-w-7xl items-center justify-between px-5 transition-all duration-300 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] 3xl:max-w-[90rem]"
-        style={{ height: scrolled ? 66 : 80 }}
+        style={{ height: scrolled ? 60 : 80 }}
       >
         <Link href="/" className="group flex shrink-0 items-center gap-2.5 justify-self-start">
           <img
