@@ -623,6 +623,20 @@ section[id] { scroll-margin-top: 84px; }
     0 64px 116px -52px rgba(20, 52, 43, 0.7);
 }
 
+/* Terracotta band. Three dark-green bands in a row read as one repeated
+   texture; this gives the pull-quote its own temperature. */
+.band-terra {
+  background: var(--terra);
+  color: #fdf4ee;
+}
+.band-terra .display,
+.band-terra .display em {
+  color: #fdf4ee;
+}
+.band-terra p:not(.display) {
+  color: rgba(253, 244, 238, 0.8);
+}
+
 .band-dark {
   background: var(--pine-deep);
   color: #f4f1ec;

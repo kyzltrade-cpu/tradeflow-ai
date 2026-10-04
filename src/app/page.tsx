@@ -4,6 +4,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import SiteHeader from '@/components/landing/SiteHeader';
+import HeroDemo from '@/components/landing/HeroDemo';
 import Reveal from '@/components/landing/Reveal';
 import PricingPrice from '@/components/landing/PricingPrice';
 import { useLang } from '@/lib/lang';
@@ -45,10 +46,10 @@ const PROOF: { title: Bi; body: Bi }[] = [
 ];
 
 const FACTS: { value: Bi; label: Bi }[] = [
-  { value: ['4', '4'], label: ['Languages handled', '支援語言'] },
-  { value: ['4', '4'], label: ['Attachment formats parsed', '可解析附件格式'] },
-  { value: ['3 days', '3 天'], label: ['Follow-up cadence', '跟進節奏'] },
-  { value: ['Every send', '每次發送'], label: ['Waits for your approval', '都待您批准'] },
+  { value: ['1 click', '一按'], label: ['Connects Gmail or Outlook', '連接 Gmail 或 Outlook'] },
+  { value: ['4', '4'], label: ['Languages, incl. mixed threads', '語言，含混合對話'] },
+  { value: ['3 days', '3 天'], label: ['Before a quiet thread is chased', '靜默對話自動跟進'] },
+  { value: ['Every quote', '每份報價'], label: ['Waits for your sign-off', '都待您簽核'] },
 ];
 
 const QUEUE: { label: Bi; tone: string; title: Bi; body: Bi }[] = [
@@ -239,17 +240,25 @@ function SectionHead({
   label,
   title,
   sub,
+  size = 'default',
   align = 'left',
 }: {
   label: string;
   title: ReactNode;
   sub?: ReactNode;
+  /** 'major' promotes a section so the page reads with a hierarchy instead of
+      eight identical headings. */
+  size?: 'default' | 'major';
   align?: 'left' | 'center';
 }) {
+  const titleSize =
+    size === 'major'
+      ? 'text-[clamp(2.2rem,4.4vw,3.5rem)]'
+      : 'text-[clamp(1.9rem,3.6vw,2.9rem)]';
   return (
     <Reveal className={align === 'center' ? 'mx-auto max-w-2xl text-center' : 'max-w-2xl'}>
       <p className="eyebrow">{label}</p>
-      <h2 className="display mt-4 text-balance text-[clamp(1.9rem,3.6vw,2.9rem)]">{title}</h2>
+      <h2 className={`display mt-4 text-balance ${titleSize}`}>{title}</h2>
       {sub && (
         <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-[var(--ink-2)]">{sub}</p>
       )}
@@ -333,7 +342,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── Statement ── */}
-      <section className="band-dark px-6 py-24 md:py-32">
+      <section className="band-terra px-6 py-24 md:py-32">
         <div className="mx-auto max-w-4xl text-center">
           <p className="display text-[clamp(1.7rem,3.8vw,2.9rem)] leading-[1.22]">
             {t('While you sleep, customers message three suppliers at once.', '當您在休息，客戶同時向三家供應商詢價。')}
@@ -372,6 +381,7 @@ export default function LandingPage() {
       <section id="extraction" className="px-6 py-24 md:py-32">
         <div className="mx-auto max-w-6xl">
           <SectionHead
+            size="major"
             label={t('Extraction', '擷取')}
             title={t('Specs, pinned to the source', '規格，釘在來源那一行')}
             sub={t(
@@ -403,14 +413,18 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── Product: one inbox ── */}
-      <section id="product" className="px-6 py-24 md:py-32">
+      {/* ── Product: the inbox as a work queue ── */}
+      <section
+        id="product"
+        className="border-y border-[var(--hairline)] bg-[var(--pine-wash)] px-6 py-24 md:py-32"
+      >
         <div className="mx-auto max-w-6xl">
           <SectionHead
+            size="major"
             label={t('One inbox', '單一收件匣')}
             title={t('Your mailbox, turned into a work queue', '把您的信箱變成工作佇列')}
           />
-          <div className="mt-6 grid gap-14 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-16">
+          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] lg:items-center lg:gap-16">
             <div>
               <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
                 {t(
@@ -428,17 +442,9 @@ export default function LandingPage() {
               <InboxMock />
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ── Work queue ── */}
-      <section className="border-y border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-24 md:py-32">
-        <div className="mx-auto max-w-6xl">
-          <SectionHead
-            label={t('The work queue', '工作佇列')}
-            title={t('Every thread sorted by what it needs next', '每條對話依下一步需要排序')}
-          />
-          <div className="mt-12 grid gap-10 md:grid-cols-3 md:gap-14">
+          {/* The three states every thread gets sorted into. */}
+          <div className="mt-20 grid gap-10 border-t border-[var(--hairline-2)] pt-14 md:grid-cols-3 md:gap-14">
             {QUEUE.map((q, i) => (
               <Reveal key={i} delay={i * 90}>
                 <div className="flex items-center gap-2">
@@ -451,11 +457,13 @@ export default function LandingPage() {
                   </span>
                 </div>
                 <h3 className="display mt-4 text-[1.35rem]">{t(q.title[0], q.title[1])}</h3>
-                <p className="mt-3 text-[15px] leading-relaxed text-[var(--ink-2)]">{t(q.body[0], q.body[1])}</p>
+                <p className="mt-3 text-[15px] leading-relaxed text-[var(--ink-2)]">
+                  {t(q.body[0], q.body[1])}
+                </p>
               </Reveal>
             ))}
           </div>
-          <p className="mt-12 max-w-2xl text-[14px] leading-relaxed text-[var(--ink-3)]">
+          <p className="mt-10 max-w-2xl text-[14px] leading-relaxed text-[var(--ink-3)]">
             {t(
               'Each thread’s state is derived from the conversation itself — who spoke last, what is still missing, how many chases have gone unanswered — so the queue stays current without anyone maintaining it.',
               '每條對話的狀態由對話本身推導——誰最後發言、還缺什麼、追問了幾次未回——佇列無需人手維護，始終保持最新。'
@@ -508,6 +516,7 @@ export default function LandingPage() {
       <section className="px-6 py-24 md:py-32">
         <div className="mx-auto max-w-6xl">
           <SectionHead
+            size="major"
             label={t('Quotes', '報價')}
             title={t('Quotes in seconds, priced from your data', '數秒完成報價，價格取自您的資料')}
           />
@@ -529,6 +538,34 @@ export default function LandingPage() {
               <QuoteMock />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Mid-page CTA ── */}
+      <section className="px-6 pb-4">
+        <div className="mx-auto max-w-6xl">
+          <Reveal className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-[var(--hairline)] bg-[var(--paper-2)] px-8 py-7 sm:flex-row sm:items-center">
+            <div>
+              <p className="display text-[1.4rem]">
+                {t('See it on your own inquiries.', '用您自己的詢盤試一次。')}
+              </p>
+              <p className="mt-1.5 text-[14.5px] text-[var(--ink-2)]">
+                {t('Connect a mailbox, approve your first draft the same day.', '連接信箱，當天就能批准第一份草稿。')}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-2.5 sm:flex-row sm:items-center">
+              <Link href="/signup" className="group btn-primary px-5 py-2.5 text-[14px]">
+                {t('Start free trial', '開始免費試用')}
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <a
+                href="mailto:tradeflow.hk@gmail.com?subject=Demo%20request"
+                className="btn-ghost px-5 py-2.5 text-[14px]"
+              >
+                {t('Book a demo', '預約示範')}
+              </a>
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -568,19 +605,10 @@ export default function LandingPage() {
             title={t('From inquiry to quote, end to end', '從詢盤到報價，端到端')}
             sub={t('The whole pipeline, with you approving every message.', '完整流程，每則訊息都由您批准。')}
           />
+          {/* The same four stages the STEPS copy described, but played out —
+              the demo advances itself and pauses when you interact with it. */}
           <div className="mt-12">
-            {STEPS.map((s, i) => (
-              <Reveal key={s.code} delay={i * 80} className="step-row">
-                <span className="step-num">{String(i + 1).padStart(2, '0')}</span>
-                <div>
-                  <p className="font-mono text-[11px] tracking-[0.2em] text-[var(--pine)] uppercase">
-                    {s.code}
-                  </p>
-                  <h3 className="display mt-2 text-[1.3rem]">{t(s.title[0], s.title[1])}</h3>
-                </div>
-                <p className="max-w-xl text-[15.5px] leading-[1.75] text-[var(--ink-2)]">{t(s.body[0], s.body[1])}</p>
-              </Reveal>
-            ))}
+            <HeroDemo />
           </div>
         </div>
       </section>
