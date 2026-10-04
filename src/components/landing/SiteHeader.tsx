@@ -56,10 +56,10 @@ export default function SiteHeader() {
       }}
     >
       <div
-        className="mx-auto flex max-w-7xl items-center justify-between px-5 transition-all duration-300 sm:px-6 3xl:max-w-[90rem]"
+        className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-5 transition-all duration-300 sm:px-6 3xl:max-w-[90rem]"
         style={{ height: scrolled ? 66 : 80 }}
       >
-        <Link href="/" className="group flex shrink-0 items-center gap-2.5">
+        <Link href="/" className="group flex shrink-0 items-center gap-2.5 justify-self-start">
           <img
             src="/brand/sailwise-logo.png"
             alt=""
@@ -69,7 +69,7 @@ export default function SiteHeader() {
           <span className="display text-[1.3rem]">Sailwise</span>
         </Link>
 
-        <div className="hidden flex-1 items-center justify-center gap-9 px-6 md:flex">
+        <div className="hidden items-center justify-center gap-9 md:flex">
           {LINKS.map((l) => (
             <a
               key={l.href}
@@ -83,7 +83,7 @@ export default function SiteHeader() {
           ))}
         </div>
 
-        <div className="flex shrink-0 items-center gap-1 sm:gap-3">
+        <div className="flex shrink-0 items-center gap-1 justify-self-end sm:gap-3">
           <div className="hidden sm:block">
             <LangToggle />
           </div>
