@@ -736,7 +736,12 @@ export default function LandingPage() {
             <ul className="mt-5 space-y-3 text-[14px]">
               <li>
                 <a href="#product" className="footer-link">
-                  {t('Product', '產品')}
+                  {t('One inbox', '單一收件匣')}
+                </a>
+              </li>
+              <li>
+                <a href="#extraction" className="footer-link">
+                  {t('Extraction', '擷取')}
                 </a>
               </li>
               <li>

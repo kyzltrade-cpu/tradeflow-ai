@@ -6,6 +6,7 @@ import { useLang, LangToggle } from '@/lib/lang';
 
 const LINKS = [
   { href: '#product', label: ['Product', '產品'] },
+  { href: '#extraction', label: ['Extraction', '擷取'] },
   { href: '#pricing', label: ['Pricing', '價格'] },
   { href: '#faq', label: ['FAQ', '常見問題'] },
 ];
@@ -69,7 +70,7 @@ export default function SiteHeader() {
           <span className="display text-[1.3rem]">Sailwise</span>
         </Link>
 
-        <div className="hidden items-center justify-center gap-9 md:flex">
+        <div className="hidden items-center justify-center gap-9 lg:flex">
           {LINKS.map((l) => (
             <a
               key={l.href}

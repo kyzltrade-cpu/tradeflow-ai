@@ -10,6 +10,10 @@ const INK = '#1B1917';
 const MUTED = '#5A554E';
 const FAINT = '#8A8279';
 const HAIR = '#E8E4DE';
+// Recessed inner surfaces. Must be clearly darker than white or the panels
+// read as translucent film on the card rather than as solid objects.
+const PANEL = '#F5F2EC';
+const PANEL_DEEP = '#EDE9E1';
 const SIDEBAR = '#F7F5F0';
 const TEAL = '#0A6E5C';
 const TEAL_SOFT = '#E7F4F0';
@@ -262,7 +266,7 @@ export function HeroProduct() {
             </Bubble>
           </div>
           <div className="flex items-center gap-2 px-4 py-3" style={{ borderTop: `1px solid ${HAIR}` }}>
-            <span className="flex-1 rounded-lg px-3 py-2 text-[11px]" style={{ background: '#F7F6F3', color: FAINT, border: `1px solid ${HAIR}` }}>
+            <span className="flex-1 rounded-lg px-3 py-2 text-[11px]" style={{ background: PANEL, color: FAINT, border: `1px solid ${HAIR}` }}>
               Your reply is a draft until you approve…
             </span>
             <span className="rounded-lg px-3.5 py-2 text-[11px] font-semibold text-white" style={{ background: TEAL }}>
@@ -296,7 +300,7 @@ export function InboxMock() {
                 </div>
               </div>
             </div>
-            <span className="rounded-md border px-2.5 py-1 text-[10.5px] font-medium" style={{ borderColor: HAIR, color: MUTED }}>
+            <span className="rounded-md border px-2.5 py-1 text-[10.5px] font-medium" style={{ background: PANEL, borderColor: HAIR, color: MUTED }}>
               All mail
             </span>
           </div>
@@ -305,7 +309,7 @@ export function InboxMock() {
               Hi, we need 10,000 pcs of 500ml stainless steel bottles. Please quote with logo printing.
             </Bubble>
             <div className="flex justify-start">
-              <div className="rounded-xl px-3.5 py-2.5 text-[11px]" style={{ background: '#FAFAFA', border: `1px solid ${HAIR}`, color: MUTED }}>
+              <div className="rounded-xl px-3.5 py-2.5 text-[11px]" style={{ background: PANEL, border: `1px solid ${HAIR}`, color: MUTED }}>
                 <div className="mb-1.5 text-[9.5px] font-semibold uppercase tracking-wider" style={{ color: FAINT }}>
                   Extracted
                 </div>
@@ -384,7 +388,7 @@ export function ExtractionMock() {
         </div>
         <span
           className="rounded-md border px-2.5 py-1 text-[10.5px] font-medium"
-          style={{ borderColor: HAIR, color: MUTED }}
+          style={{ background: PANEL, borderColor: HAIR, color: MUTED }}
         >
           Thread · line 12
         </span>
@@ -448,7 +452,7 @@ export function ExtractionMock() {
 
       <div
         className="mx-4 mb-4 rounded-xl px-3.5 py-3"
-        style={{ background: '#FAFAFA', border: `1px solid ${HAIR}` }}
+        style={{ background: PANEL, border: `1px solid ${HAIR}` }}
       >
         <div className="flex items-center justify-between">
           <p className="text-[9.5px] font-semibold uppercase tracking-wider" style={{ color: FAINT }}>
@@ -469,7 +473,7 @@ export function ExtractionMock() {
             <span
               key={l}
               className="rounded-full border px-2 py-[2px] text-[9px]"
-              style={{ borderColor: HAIR, color: MUTED }}
+              style={{ background: '#FFFFFF', borderColor: HAIR, color: MUTED }}
             >
               {l}
             </span>
@@ -484,7 +488,7 @@ export function ExtractionMock() {
               <span
                 key={g}
                 className="rounded-full px-2 py-[2px] text-[9px]"
-                style={{ background: '#F4F1EC', color: MUTED }}
+                style={{ background: PEACH_SOFT, color: TERRA, border: `1px solid ${PEACH}` }}
               >
                 {g}
               </span>
@@ -605,7 +609,7 @@ export function QuoteMock() {
             USD 53,525
           </span>
         </div>
-        <div className="rounded-lg px-3.5 py-2.5 text-[10.5px] leading-relaxed" style={{ background: '#FAFAFA', border: `1px solid ${HAIR}`, color: MUTED }}>
+        <div className="rounded-lg px-3.5 py-2.5 text-[10.5px] leading-relaxed" style={{ background: PANEL, border: `1px solid ${HAIR}`, color: MUTED }}>
           <span className="font-semibold" style={{ color: INK }}>
             Every number is sourced:{' '}
           </span>
