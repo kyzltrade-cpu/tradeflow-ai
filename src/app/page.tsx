@@ -252,7 +252,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="mx-auto mt-16 max-w-5xl md:mt-20">
+          <div className="mx-auto mt-20 max-w-5xl md:mt-28">
             <HeroProduct />
           </div>
         </div>
@@ -273,21 +273,23 @@ export default function LandingPage() {
       </section>
 
       {/* ── Statement ── */}
-      <section className="band-terra px-6 py-24 md:py-32">
+      <section className="band-terra px-6 py-28 md:py-40">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="display text-[clamp(1.7rem,3.8vw,2.9rem)] leading-[1.22]">
-            {t('While you sleep, customers message three suppliers at once.', '當您在休息，客戶同時向三家供應商詢價。')}
-            <br className="hidden sm:block" />
-            {t(' Sailwise replies ', ' Sailwise 率先回覆')}
-            <em>{t('first', '')}</em>
-            {t('.', '。')}
-          </p>
-          <p className="mx-auto mt-7 max-w-lg text-[15px] leading-relaxed text-[rgba(244,241,236,0.68)]">
-            {t(
-              'In seconds, in their language, with pricing pulled from your own data.',
-              '數秒內，以客戶的語言回覆，價格全部取自您自己的資料。'
-            )}
-          </p>
+          <Reveal>
+            <p className="display text-[clamp(1.7rem,3.8vw,2.9rem)] leading-[1.22]">
+              {t('One inbox.', '一個信箱。')}
+              <br className="hidden sm:block" />
+              {t(' Every quote out ', ' 每份報價')}
+              <em>{t('in minutes', '數分鐘內寄出')}</em>
+              {t('.', '。')}
+            </p>
+            <p className="mx-auto mt-7 max-w-lg text-[15px] leading-relaxed text-[rgba(244,241,236,0.68)]">
+              {t(
+                'In seconds, in their language, with pricing pulled from your own data.',
+                '數秒內，以客戶的語言回覆，價格全部取自您自己的資料。'
+              )}
+            </p>
+          </Reveal>
         </div>
       </section>
 
@@ -297,17 +299,17 @@ export default function LandingPage() {
           <SectionHead
             size="major"
             label={t('Extraction', '擷取')}
-            title={t('Specs, pinned to the source', '規格，釘在來源那一行')}
+            title={t('Specs pulled from the email itself.', '規格，直接從郵件裡擷取。')}
             sub={t(
               'Quantities, materials, certifications and lead times are pulled from the thread and tied to source lines — nothing is inferred.',
               '數量、材質、認證與交期都從對話中擷取，並綁定到來源行——絕不憑空推測。'
             )}
           />
-          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center lg:gap-16">
-            <div className="order-2 min-w-0 lg:order-1">
+          <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center lg:gap-16">
+            <Reveal className="order-2 min-w-0 lg:order-1" delay={80}>
               <ExtractionMock />
-            </div>
-            <div className="order-1 space-y-11 lg:order-2">
+            </Reveal>
+            <div className="order-1 space-y-12 lg:order-2">
               {EXTRACTION.map((b, i) => (
                 <Reveal key={b.label[0]} delay={i * 110}>
                   <p className="eyebrow">{t(b.label[0], b.label[1])}</p>
@@ -315,7 +317,7 @@ export default function LandingPage() {
                   <p className="mt-3 text-[15.5px] leading-[1.75] text-[var(--ink-2)]">
                     {t(b.body[0], b.body[1])}
                   </p>
-                  <ul className="mt-5 space-y-3">
+                  <ul className="mt-5 space-y-3.5">
                     {b.points.map((p, j) => (
                       <Bullet key={j}>{t(p[0], p[1])}</Bullet>
                     ))}
@@ -338,8 +340,8 @@ export default function LandingPage() {
             label={t('One inbox', '單一收件匣')}
             title={t('Your mailbox, turned into a work queue', '把您的信箱變成工作佇列')}
           />
-          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
-            <div>
+          <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
+            <Reveal>
               <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
                 {t(
                   'Inquiries land in the mailbox you already use — Gmail or Outlook, connected in one click. Sailwise extracts the specs, flags what is missing, and sorts every thread by what it needs from you next.',
@@ -360,7 +362,7 @@ export default function LandingPage() {
                   '每條對話的狀態由對話本身推導——誰最後發言、還缺什麼、追問了幾次未回——佇列無需人手維護，始終保持最新。'
                 )}
               </p>
-            </div>
+            </Reveal>
 
             {/* The three states every thread is sorted into. This is the
                 section's visual — a fourth white card would only repeat the
@@ -389,10 +391,10 @@ export default function LandingPage() {
       </section>
 
       {/* ── Control (dark) ── */}
-      <section className="band-dark px-6 py-24 md:py-32">
+      <section className="band-dark px-6 py-28 md:py-40">
         <div className="mx-auto max-w-6xl">
           <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
-            <div>
+            <Reveal>
               <p className="eyebrow">{t('Built-in control', '內建掌控')}</p>
               <h2 className="display mt-4 text-[clamp(2.2rem,4.4vw,3.5rem)]">
                 {t('AI does the legwork.', 'AI 負責苦工。')}
@@ -407,20 +409,22 @@ export default function LandingPage() {
                   '未經您決定，不會代您發送任何內容。每則訊息都是草稿，每個數字都可溯源，您可隨時接手任何對話。'
                 )}
               </p>
-            </div>
+            </Reveal>
 
             {/* The three gates sit in their own column so the band reads as a
                 full-width statement rather than a narrow stack with dead space. */}
             <ul className="space-y-9 lg:pt-2">
               {GATES.map((g, i) => (
                 <li key={i}>
-                  <p className="font-mono text-[11px] tracking-[0.2em] text-[rgba(244,241,236,0.5)] uppercase">
-                    {t(g.label[0], g.label[1])}
-                  </p>
-                  <p className="display mt-2 text-[1.35rem]">{t(g.title[0], g.title[1])}</p>
-                  <p className="mt-2 max-w-md text-[15px] leading-relaxed text-[rgba(244,241,236,0.62)]">
-                    {t(g.body[0], g.body[1])}
-                  </p>
+                  <Reveal delay={i * 110}>
+                    <p className="font-mono text-[11px] tracking-[0.2em] text-[rgba(244,241,236,0.5)] uppercase">
+                      {t(g.label[0], g.label[1])}
+                    </p>
+                    <p className="display mt-2 text-[1.35rem]">{t(g.title[0], g.title[1])}</p>
+                    <p className="mt-2 max-w-md text-[15px] leading-relaxed text-[rgba(244,241,236,0.62)]">
+                      {t(g.body[0], g.body[1])}
+                    </p>
+                  </Reveal>
                 </li>
               ))}
             </ul>
@@ -436,8 +440,8 @@ export default function LandingPage() {
             label={t('Quotes', '報價')}
             title={t('Quotes in seconds, priced from your data', '數秒完成報價，價格取自您的資料')}
           />
-          <div className="mt-14 grid gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-16">
-            <div>
+          <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-16">
+            <Reveal>
               <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
                 {t(
                   'Every line is priced from your own product list and your margin rules, and shown on the quote so you can check it in seconds. You approve it before it sends as a normal email.',
@@ -449,10 +453,10 @@ export default function LandingPage() {
                 <Bullet>{t('Lines that cannot be matched confidently are flagged, not guessed', '無法確信匹配的行會被標示，而非臆測')}</Bullet>
                 <Bullet>{t('One click to send from your own mailbox', '一按即從您的信箱寄出')}</Bullet>
               </ul>
-            </div>
-            <div className="min-w-0">
+            </Reveal>
+            <Reveal className="min-w-0" delay={90}>
               <QuoteMock />
-            </div>
+            </Reveal>
           </div>
         </div>
       </section>
