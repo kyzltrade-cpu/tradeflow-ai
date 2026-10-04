@@ -111,6 +111,33 @@ function initialsOf(name: string): string {
   return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase();
 }
 
+/* Two initials fit a 40px circle; a full name does not. Same tone and ring as
+   Avatar, widened into a lozenge so the demo names the person it is about. */
+function AvatarName({ name, dot = false }: { name: string; dot?: boolean }) {
+  const tone = AVATAR_TONES[name] ?? AVATAR_FALLBACK;
+  return (
+    <span
+      className="relative inline-flex shrink-0 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-3.5 text-[13px] font-semibold"
+      style={{
+        background: tone.bg,
+        color: tone.fg,
+        boxShadow: 'inset 0 0 0 1px rgba(15,17,21,0.06)',
+      }}
+    >
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/70 text-[10px] font-bold">
+        {initialsOf(name)}
+      </span>
+      {name}
+      {dot && (
+        <span
+          className="absolute -bottom-0.5 -left-0.5 h-2.5 w-2.5 rounded-full border-2 border-white"
+          style={{ background: TEAL }}
+        />
+      )}
+    </span>
+  );
+}
+
 function Avatar({
   name,
   size = 32,
@@ -240,26 +267,40 @@ export function HeroProduct() {
     <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
       <div className="mx-auto flex max-w-3xl flex-col px-5 py-6 sm:px-7 sm:py-7">
         <div
-          className="flex items-center justify-between gap-4 pb-5"
+          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pb-5"
           style={{ borderBottom: `1px solid ${HAIR}` }}
         >
-          <div className="flex items-center gap-3">
-            <Avatar name="Sarah Chen" size={40} dot />
-            <div>
-              <div className="text-[15px] font-semibold" style={{ color: INK }}>
-                Sarah Chen
-              </div>
-              <div className="text-[12.5px]" style={{ color: FAINT }}>
-                sarah@apexretail.sg · English
-              </div>
-            </div>
+          <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+            <AvatarName name="Sarah Chen" dot />
+            <span className="text-[12.5px]" style={{ color: FAINT }}>
+              sarah@apexretail.sg · English
+            </span>
+            <span
+              className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]"
+              style={{ background: TEAL_SOFT, color: TEAL }}
+            >
+              AI
+            </span>
           </div>
-          <span
-            className="shrink-0 rounded-md px-3 py-1.5 text-[12px] font-semibold"
-            style={{ background: TEAL_SOFT, color: TEAL }}
-          >
-            AI handling · take over
-          </span>
+          {/* The thread controls as they actually read in the product: AI owns
+              the thread until you pause it, bookmark it, or take it over. */}
+          <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {['Pause AI', 'Bookmark'].map((label) => (
+              <span
+                key={label}
+                className="rounded-lg border px-3 py-1.5 text-[12px] font-semibold"
+                style={{ borderColor: HAIR, color: MUTED }}
+              >
+                {label}
+              </span>
+            ))}
+            <span
+              className="rounded-lg px-3.5 py-1.5 text-[12px] font-semibold text-white"
+              style={{ background: TEAL }}
+            >
+              Take over
+            </span>
+          </div>
         </div>
 
         <div className="flex flex-col gap-3.5 py-6">
