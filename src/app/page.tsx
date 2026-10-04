@@ -23,7 +23,7 @@ type Bi = [en: string, zh: string];
 const FACTS: { value: Bi; label: Bi }[] = [
   { value: ['1 click', '一按'], label: ['Connects Gmail or Outlook', '連接 Gmail 或 Outlook'] },
   { value: ['3 days', '3 天'], label: ['Before a quiet thread is chased', '靜默對話自動跟進'] },
-  { value: ['0', '0'], label: ['Emails sent without your approval', '未經您批准就寄出的郵件'] },
+  { value: ['4', '4'], label: ['Languages it reads and writes', '讀寫四種語言'] },
 ];
 
 const BENEFITS: { label: Bi; title: Bi; body: Bi }[] = [
