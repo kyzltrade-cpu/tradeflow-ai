@@ -34,7 +34,7 @@ const TERRA = '#C96A44';
    disappears and the columns read as one block of text. */
 const EDGE = '#D5CFC4';
 const LIST_SURFACE = '#F6F3EC';
-const RAIL_SURFACE = '#F6F3EC';
+const RAIL_SURFACE = '#FCFBF9';
 
 const CARD = {
   borderColor: HAIR,
@@ -534,10 +534,10 @@ export function HeroProduct() {
         <div className="flex min-w-0 flex-1 flex-col bg-white">
           {/* Mail header — back link, contact, subject, thread controls. */}
           <div
-            className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5 border-b px-4 py-3"
+            className="flex flex-nowrap items-center justify-between gap-3 border-b px-4 py-3"
             style={{ borderColor: EDGE, background: '#FFFFFF' }}
           >
-            <div className="flex min-w-0 items-center gap-2.5">
+            <div className="flex min-w-0 flex-1 items-center gap-2.5">
               <span className="flex items-center gap-1 text-[11.5px] font-medium" style={{ color: MUTED }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
@@ -557,7 +557,7 @@ export function HeroProduct() {
                 </div>
               </div>
             </div>
-            <div className="flex shrink-0 flex-wrap items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               {['Pause AI', 'Bookmark'].map((label) => (
                 <span
                   key={label}
@@ -609,41 +609,24 @@ export function HeroProduct() {
             </MailBubble>
           </div>
 
-          {/* Composer — the app's compose bar: To is locked to the buyer, Cc
-              and Subject are typed into before sending. */}
-          <div className="shrink-0 border-t" style={{ borderColor: EDGE }}>
-            {[
-              ['To', 'sarah@apexretail.sg'],
-              ['Cc', 'procurement@apexretail.sg'],
-              ['Subject', 'Re: 5,000 × 500 ml flask · FOB Rotterdam'],
-            ].map(([label, value]) => (
-              <div
-                key={label}
-                className="flex items-center gap-3 border-b px-4 py-1.5"
-                style={{ borderColor: HAIR }}
-              >
-                <span className="w-12 shrink-0 text-[11px]" style={{ color: FAINT }}>
-                  {label}
-                </span>
-                <span className="min-w-0 flex-1 truncate text-[11.5px]" style={{ color: INK }}>
-                  {value}
-                </span>
-              </div>
-            ))}
-            <div className="flex items-center gap-2 px-4 py-2.5">
-              <span
-                className="min-w-0 flex-1 truncate rounded border px-3 py-2 text-[11.5px]"
-                style={{ borderColor: HAIR, background: '#FBFBFB', color: FAINT }}
-              >
-                Write a reply…
-              </span>
-              <span
-                className="shrink-0 rounded px-3.5 py-2 text-[11.5px] font-medium text-white"
-                style={{ background: '#038153' }}
-              >
-                Reply
-              </span>
-            </div>
+          {/* Composer — one bar, no field rows. The product's compose dialog
+              still has To / Cc / Bcc / Subject; the demo keeps the thread. */}
+          <div
+            className="flex shrink-0 items-center gap-2 border-t px-4 py-3"
+            style={{ borderColor: EDGE }}
+          >
+            <span
+              className="min-w-0 flex-1 truncate rounded border px-3 py-2.5 text-[12px]"
+              style={{ borderColor: HAIR, background: '#FBFBFB', color: FAINT }}
+            >
+              Write a reply…
+            </span>
+            <span
+              className="shrink-0 rounded px-4 py-2.5 text-[12px] font-medium text-white"
+              style={{ background: '#038153' }}
+            >
+              Reply
+            </span>
           </div>
         </div>
 
@@ -682,7 +665,7 @@ export function HeroProduct() {
             </div>
             <dl
               className="mt-3 overflow-hidden rounded-md"
-              style={{ background: LIST_SURFACE, border: `1px solid ${HAIR}` }}
+              style={{ background: '#FFFFFF', border: `1px solid ${HAIR}` }}
             >
               {[
                 ['Company', 'Apex Retail Pte Ltd'],
@@ -715,7 +698,7 @@ export function HeroProduct() {
                 <div
                   key={k}
                   className="rounded-md px-2.5 py-2"
-                  style={{ background: LIST_SURFACE, border: `1px solid ${HAIR}` }}
+                  style={{ background: '#FFFFFF', border: `1px solid ${HAIR}` }}
                 >
                   <p className="text-[10px] uppercase tracking-[0.06em]" style={{ color: FAINT }}>
                     {k}
@@ -731,7 +714,7 @@ export function HeroProduct() {
                 <span
                   key={tag}
                   className="rounded border px-1.5 py-0.5 text-[10px] font-medium"
-                  style={{ background: LIST_SURFACE, borderColor: HAIR, color: MUTED }}
+                  style={{ background: '#FFFFFF', borderColor: HAIR, color: MUTED }}
                 >
                   {tag}
                 </span>

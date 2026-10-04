@@ -39,8 +39,8 @@ const BENEFITS: { label: Bi; title: Bi; body: Bi }[] = [
     label: ['Gaps', '缺項'],
     title: ['Missing specs, filled in', '缺項自動補齊'],
     body: [
-      'Quantities, materials, certifications and lead times come out of the message and its attachments — and Sailwise fetches whatever is still missing, so the reply is specific instead of vague.',
-      '數量、材質、認證與交期，直接從郵件及附件中擷取——仍缺的部分由 Sailwise 自動補齊，回覆因此具體，而不是含糊帶過。',
+      'When a field is in neither the email nor the attachments, Sailwise fetches it from your own catalogue and records where it came from — so the reply is specific instead of vague.',
+      '郵件與附件裡都沒有的欄位，Sailwise 會從您自己的目錄補上，並記錄來源——回覆因此具體，而不是含糊帶過。',
     ],
   },
   {
