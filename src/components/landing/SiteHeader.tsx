@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useLang, LangToggle } from '@/lib/lang';
 
+/* Follows the page's five movements rather than a feature list, so the nav
+   doubles as a table of contents for the story. */
 const LINKS = [
-  { href: '#product', label: ['Product', '產品'] },
-  { href: '#extraction', label: ['Extraction', '擷取'] },
+  { href: '#how', label: ['How it works', '運作方式'] },
+  { href: '#setup', label: ['Setup', '設定'] },
   { href: '#pricing', label: ['Pricing', '價格'] },
   { href: '#faq', label: ['FAQ', '常見問題'] },
 ];

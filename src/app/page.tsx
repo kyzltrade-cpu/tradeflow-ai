@@ -53,6 +53,69 @@ const BENEFITS: { label: Bi; title: Bi; body: Bi }[] = [
   },
 ];
 
+const PROBLEM: { label: Bi; title: Bi; body: Bi }[] = [
+  {
+    label: ['Half-written', '殘缺'],
+    title: ['The buyer sends an ask, not a brief', '買方寄來的是「詢問」，不是「規格表」'],
+    body: [
+      'Quantities, materials, certifications, incoterms and dates arrive scattered across the message and its attachments — and some of them never arrive at all.',
+      '數量、材質、認證、貿易條件與日期散落在訊息與附件之中——有些則根本沒有提及。',
+    ],
+  },
+  {
+    label: ['Chasing', '追問'],
+    title: ['Every gap is another round trip', '每一個缺項，都是一趟來回'],
+    body: [
+      'Ask, wait, and the buyer has usually started looking elsewhere. The order goes to whoever answered completely.',
+      '問了、等了，而買方多半已開始找別人。訂單流向最快給出完整答案的那一方。',
+    ],
+  },
+  {
+    label: ['Quoting', '報價'],
+    title: ['The price lives in someone\u2019s head', '價格記在某個人的腦中'],
+    body: [
+      'Each quote gets rebuilt from memory, so two answers to the same product can carry two different numbers — and neither is traceable.',
+      '每份報價都靠記憶重組，同一產品兩次回覆可能出現兩個數字——而且都無從追溯。',
+    ],
+  },
+];
+
+const SETUP: { step: string; title: Bi; body: Bi }[] = [
+  {
+    step: '01',
+    title: ['Connect the mailbox you already use', '連接您現用的信箱'],
+    body: [
+      'One click to Google or Microsoft. Your team keeps the same inbox and the same address your customers already reply to.',
+      '一按連接 Google 或 Microsoft。團隊沿用同一個收件匣，客戶也仍然回覆到熟悉的地址。',
+    ],
+  },
+  {
+    step: '02',
+    title: ['Upload the price list you already keep', '上傳您現有的價格表'],
+    body: [
+      'An .xlsx or .csv. Columns are matched by name — product, category, price, MOQ — and matching products are updated automatically.',
+      '一份 .xlsx 或 .csv。系統依欄名對應——產品、類別、價格、MOQ——相符的產品會自動更新。',
+    ],
+  },
+  {
+    step: '03',
+    title: ['Add what only you know', '補上只有您知道的部分'],
+    body: [
+      'Upload documents, point Sailwise at your website, and set the rules it must answer within. Your margins decide what it may quote.',
+      '上傳文件、連接網站，並設定它必須遵守的規則。您的利潤規則決定它可以怎麼報價。',
+    ],
+  },
+];
+
+const INTEGRATIONS: Bi[] = [
+  ['Gmail', 'Gmail'],
+  ['Microsoft Outlook', 'Microsoft Outlook'],
+  ['WhatsApp alerts', 'WhatsApp 提示'],
+  ['Website chat widget', '網站聊天小工具'],
+  ['.xlsx / .csv price lists', '.xlsx / .csv 價格表'],
+  ['PDFs and attachments', 'PDF 與附件'],
+];
+
 const QUEUE: { label: Bi; tone: string; title: Bi; body: Bi }[] = [
   {
     label: ['Needs specs', '待補規格'],
@@ -224,6 +287,38 @@ function SectionHead({
   );
 }
 
+/* Chapter marker. The page is one story in five movements, so each act is
+   announced rather than implied — the reader always knows where they are. */
+function ActMark({
+  n,
+  label,
+  tone = 'paper',
+}: {
+  n: string;
+  label: string;
+  tone?: 'paper' | 'dark';
+}) {
+  const dim = tone === 'dark' ? 'rgba(244,241,236,0.45)' : 'var(--ink-3)';
+  const rule = tone === 'dark' ? 'rgba(244,241,236,0.18)' : 'var(--hairline)';
+  return (
+    <Reveal className="mb-14 flex items-center gap-5">
+      <span
+        className="font-mono text-[11px] tracking-[0.24em] uppercase"
+        style={{ color: dim }}
+      >
+        {n}
+      </span>
+      <span className="h-px flex-1" style={{ background: rule }} />
+      <span
+        className="font-mono text-[11px] tracking-[0.24em] uppercase"
+        style={{ color: dim }}
+      >
+        {label}
+      </span>
+    </Reveal>
+  );
+}
+
 function Bullet({ children }: { children: ReactNode }) {
   return (
     <li className="flex items-start gap-3 text-[15px] leading-relaxed text-[var(--ink-2)]">
@@ -279,46 +374,47 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="mx-auto mt-16 grid max-w-5xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] md:grid-cols-3">
-            {BENEFITS.map((b, i) => (
-              <Reveal key={b.label[0]} delay={i * 70} className="bg-[var(--paper)] px-6 py-8">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--pine)]">
-                  {t(b.label[0], b.label[1])}
-                </p>
-                <h2 className="mt-3 text-[17px] font-semibold leading-snug text-balance">
-                  {t(b.title[0], b.title[1])}
-                </h2>
-                <p className="mt-2.5 text-[14px] leading-relaxed text-[var(--ink-2)]">
-                  {t(b.body[0], b.body[1])}
-                </p>
-              </Reveal>
-            ))}
-          </div>
-
-          <div className="mx-auto mt-20 max-w-5xl md:mt-28">
+          <div className="mx-auto mt-16 max-w-5xl md:mt-24">
             <HeroProduct />
           </div>
         </div>
       </section>
 
-      {/* ── Product facts ── */}
-      <section className="border-y border-[var(--hairline)] px-6 py-14">
-        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-3">
-          {FACTS.map((f, i) => (
-            <Reveal key={i} delay={i * 70} className="bg-[var(--paper)] px-5 py-7 text-center">
-              <div className="display text-[1.55rem] leading-tight">{t(f.value[0], f.value[1])}</div>
-              <div className="mt-2 text-[12.5px] leading-snug text-[var(--ink-3)]">
-                {t(f.label[0], f.label[1])}
-              </div>
-            </Reveal>
-          ))}
+
+      {/* ── Act 02 · The problem ── */}
+      <section className="px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl">
+          <ActMark n="02" label={t('The problem', '問題')} />
+          <SectionHead
+            size="major"
+            label={t('The problem', '問題')}
+            title={t('The specs you need are rarely all in the email.', '您需要的規格，很少齊備於那封郵件裡。')}
+          />
+          <div className="mt-14 grid gap-12 lg:grid-cols-3 lg:gap-10">
+            {PROBLEM.map((b, i) => (
+              <Reveal key={b.label[0]} delay={i * 90}>
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--ink-3)]">
+                  {t(b.label[0], b.label[1])}
+                </p>
+                <h3 className="display mt-3 text-[1.35rem]">{t(b.title[0], b.title[1])}</h3>
+                <p className="mt-3 max-w-md text-[15px] leading-relaxed text-[var(--ink-2)]">
+                  {t(b.body[0], b.body[1])}
+                </p>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
-
       {/* ── Statement ── */}
       <section className="band-terra px-6 py-28 md:py-40">
         <div className="mx-auto max-w-4xl text-center">
           <Reveal>
+          <p
+            className="mb-8 font-mono text-[11px] tracking-[0.24em] uppercase"
+            style={{ color: 'rgba(244,241,236,0.5)' }}
+          >
+            {t('The turn', '轉折')}
+          </p>
             <p className="display text-[clamp(1.7rem,3.8vw,2.9rem)] leading-[1.22]">
               {t('One inbox.', '一個信箱。')}
               <br className="hidden sm:block" />
@@ -336,6 +432,45 @@ export default function LandingPage() {
         </div>
       </section>
 
+
+      {/* ── Act 03 · What Sailwise does ── */}
+      <section id="how" className="px-6 pt-24 pb-8 md:pt-32">
+        <div className="mx-auto max-w-5xl">
+          <ActMark n="03" label={t('What Sailwise does', 'Sailwise 做什麼')} />
+          <SectionHead
+            label={t('How it works', '運作方式')}
+            title={t('From inquiry to a specific answer', '從詢盤到具體回覆，端到端')}
+            sub={t('The whole pipeline, in one inbox.', '完整流程，都在一個收件匣裡。')}
+          />
+          {/* The same four stages the copy describes, but played out — the demo
+              advances itself and pauses when you interact with it. */}
+          <div className="mt-12">
+            <HeroDemo />
+          </div>
+        </div>
+      </section>
+
+      {/* What that pipeline produces, in the three terms a buyer cares about. */}
+      <section className="px-6 py-20 md:py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] md:grid-cols-3">
+            {BENEFITS.map((b, i) => (
+              <Reveal key={b.label[0]} delay={i * 70} className="bg-[var(--paper)] px-6 py-8">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[var(--pine)]">
+                  {t(b.label[0], b.label[1])}
+                </p>
+                <h2 className="mt-3 text-[17px] font-semibold leading-snug text-balance">
+                  {t(b.title[0], b.title[1])}
+                </h2>
+                <p className="mt-2.5 text-[14px] leading-relaxed text-[var(--ink-2)]">
+                  {t(b.body[0], b.body[1])}
+                </p>
+              </Reveal>
+            ))}
+          </div>
+
+        </div>
+      </section>
       {/* ── Extraction ── */}
       <section id="extraction" className="px-6 py-24 md:py-32">
         <div className="mx-auto max-w-6xl">
@@ -433,9 +568,154 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ── Quotes ── */}
+      <section className="px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead
+            size="major"
+            label={t('Quotes', '報價')}
+            title={t('Priced from your data, not from memory', '價格取自您的資料，不是憑記憶')}
+          />
+          <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-16">
+            <Reveal>
+              <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
+                {t(
+                  'Every line is priced from your own product list and your margin rules, and shown on the quote so you can check it in seconds. It then sends as a normal email from your own address.',
+                  '每一行都由您自己的產品清單與利潤規則定價，並顯示於報價單上，讓您數秒內核對，再以您自己的地址寄出一般電郵。'
+                )}
+              </p>
+              <ul className="mt-7 space-y-3.5">
+                <Bullet>{t('Priced from your product list and margin rules', '依產品清單與利潤規則定價')}</Bullet>
+                <Bullet>{t('Lines that cannot be matched confidently are flagged, not guessed', '無法確信匹配的行會被標示，而非臆測')}</Bullet>
+                <Bullet>{t('One click to send from your own mailbox', '一按即從您的信箱寄出')}</Bullet>
+              </ul>
+            </Reveal>
+            <Reveal className="min-w-0" delay={90}>
+              <QuoteMock />
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ── WhatsApp ── */}
+      <section className="border-t border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-24 md:py-32">
+        <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-20">
+          <div className="order-2 lg:order-1">
+            <WhatsAppMock />
+          </div>
+          <div className="order-1 lg:order-2">
+            <p className="eyebrow">{t('Alerts', '提示')}</p>
+            <h2 className="display mt-4 text-[clamp(1.9rem,3.6vw,2.7rem)]">
+              {t('Know the moment', '一有需要您的事，')}
+              <br />
+              {t('something needs you.', '立即知道。')}
+            </h2>
+            <p className="mt-6 max-w-lg text-[16px] leading-[1.75] text-[var(--ink-2)]">
+              {t(
+                'When a thread needs a decision, Sailwise sends a WhatsApp alert with the sender, the product and the quantity — so a deal never goes cold while you are away from your desk. Replies and quotes still go out as normal email from your own address.',
+                '當對話需要決定，Sailwise 會發送 WhatsApp 提示，附上寄件人、產品與數量——讓商機在您離開座位時不會冷掉。回覆與報價仍以您自己的地址、一般電郵寄出。'
+              )}
+            </p>
+            <ul className="mt-7 space-y-3.5">
+              <Bullet>{t('WhatsApp alert when a thread needs a decision', '對話需要決定時發出 WhatsApp 提示')}</Bullet>
+              <Bullet>{t('Sender, product, quantity and status at a glance', '寄件人、產品、數量與狀態一目了然')}</Bullet>
+              <Bullet>{t('Replies and quotes always sent from your own mailbox', '回覆與報價一律從您的信箱寄出')}</Bullet>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ── Act 04 · Setup and integration ── */}
+      <section id="setup" className="border-t border-[var(--hairline)] px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-6xl">
+          <ActMark n="04" label={t('Setup', '設定')} />
+          <SectionHead
+            size="major"
+            label={t('Setup', '設定')}
+            title={t('Three steps. Nothing new to install.', '三個步驟，不需安裝任何新東西。')}
+            sub={t(
+              'Your team keeps the mailbox and the price list it already has. Sailwise reads both.',
+              '您的團隊繼續用原有的信箱與價格表，Sailwise 直接讀取兩者。'
+            )}
+          />
+
+          <div className="mt-14 grid gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] md:grid-cols-3">
+            {SETUP.map((st, i) => (
+              <Reveal key={st.step} delay={i * 80} className="bg-[var(--paper)] px-6 py-8">
+                <p className="font-mono text-[10px] tracking-[0.2em] text-[var(--pine)]">{st.step}</p>
+                <h3 className="mt-3 text-[17px] font-semibold leading-snug text-balance">
+                  {t(st.title[0], st.title[1])}
+                </h3>
+                <p className="mt-2.5 text-[14px] leading-relaxed text-[var(--ink-2)]">
+                  {t(st.body[0], st.body[1])}
+                </p>
+              </Reveal>
+            ))}
+          </div>
+
+          {/* Named plainly. "Works with your tools" is only believable when the
+              tools are listed, and every one of these exists in the product. */}
+          <Reveal delay={120} className="mt-14">
+            <p className="eyebrow">{t('Works with', '相容於')}</p>
+            <ul className="mt-5 flex flex-wrap gap-2.5">
+              {INTEGRATIONS.map((tag) => (
+                <li
+                  key={tag[0]}
+                  className="rounded-full border border-[var(--hairline)] bg-[var(--paper)] px-4 py-2 text-[13.5px] text-[var(--ink-2)]"
+                >
+                  {t(tag[0], tag[1])}
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+
+          {/* Setup is the ask, so this is where the ask lives. */}
+          <Reveal delay={140} className="mt-16 flex flex-col items-start justify-between gap-6 rounded-2xl border border-[var(--hairline)] bg-[var(--paper-2)] px-8 py-7 sm:flex-row sm:items-center">
+            <div>
+              <p className="display text-[1.4rem]">
+                {t('See it on your own inquiries.', '用您自己的詢盤試一次。')}
+              </p>
+              <p className="mt-1.5 text-[14.5px] text-[var(--ink-2)]">
+                {t(
+                  'Connect a mailbox, answer your first inquiry the same day.',
+                  '連接信箱，當天就能回覆第一封詢盤。'
+                )}
+              </p>
+            </div>
+            <div className="flex shrink-0 flex-col gap-2.5 sm:flex-row sm:items-center">
+              <Link href="/signup" className="group btn-primary px-5 py-2.5 text-[14px]">
+                {t('Start free trial', '開始免費試用')}
+                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <a
+                href="mailto:tradeflow.hk@gmail.com?subject=Demo%20request"
+                className="btn-ghost px-5 py-2.5 text-[14px]"
+              >
+                {t('Book a demo', '預約示範')}
+              </a>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Product facts ── */}
+      <section className="border-y border-[var(--hairline)] px-6 py-14">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-3">
+          {FACTS.map((f, i) => (
+            <Reveal key={i} delay={i * 70} className="bg-[var(--paper)] px-5 py-7 text-center">
+              <div className="display text-[1.55rem] leading-tight">{t(f.value[0], f.value[1])}</div>
+              <div className="mt-2 text-[12.5px] leading-snug text-[var(--ink-3)]">
+                {t(f.label[0], f.label[1])}
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
       {/* ── Control (dark) ── */}
       <section className="band-dark px-6 py-28 md:py-40">
         <div className="mx-auto max-w-6xl">
+          <ActMark n="05" label={t('Before you decide', '決定之前')} tone="dark" />
           <div className="grid gap-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16">
             <Reveal>
               <p className="eyebrow">{t('Built-in control', '內建掌控')}</p>
@@ -471,107 +751,6 @@ export default function LandingPage() {
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Quotes ── */}
-      <section className="px-6 py-24 md:py-32">
-        <div className="mx-auto max-w-6xl">
-          <SectionHead
-            size="major"
-            label={t('Quotes', '報價')}
-            title={t('Priced from your data, not from memory', '價格取自您的資料，不是憑記憶')}
-          />
-          <div className="mt-14 grid gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-16">
-            <Reveal>
-              <p className="max-w-lg text-[17px] leading-[1.75] text-[var(--ink-2)]">
-                {t(
-                  'Every line is priced from your own product list and your margin rules, and shown on the quote so you can check it in seconds. It then sends as a normal email from your own address.',
-                  '每一行都由您自己的產品清單與利潤規則定價，並顯示於報價單上，讓您數秒內核對，再以您自己的地址寄出一般電郵。'
-                )}
-              </p>
-              <ul className="mt-7 space-y-3.5">
-                <Bullet>{t('Priced from your product list and margin rules', '依產品清單與利潤規則定價')}</Bullet>
-                <Bullet>{t('Lines that cannot be matched confidently are flagged, not guessed', '無法確信匹配的行會被標示，而非臆測')}</Bullet>
-                <Bullet>{t('One click to send from your own mailbox', '一按即從您的信箱寄出')}</Bullet>
-              </ul>
-            </Reveal>
-            <Reveal className="min-w-0" delay={90}>
-              <QuoteMock />
-            </Reveal>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Mid-page CTA ── */}
-      <section className="px-6 py-8">
-        <div className="mx-auto max-w-6xl">
-          <Reveal className="flex flex-col items-start justify-between gap-6 rounded-2xl border border-[var(--hairline)] bg-[var(--paper-2)] px-8 py-7 sm:flex-row sm:items-center">
-            <div>
-              <p className="display text-[1.4rem]">
-                {t('See it on your own inquiries.', '用您自己的詢盤試一次。')}
-              </p>
-              <p className="mt-1.5 text-[14.5px] text-[var(--ink-2)]">
-                {t('Connect a mailbox, answer your first inquiry the same day.', '連接信箱，當天就能回覆第一封詢盤。')}
-              </p>
-            </div>
-            <div className="flex shrink-0 flex-col gap-2.5 sm:flex-row sm:items-center">
-              <Link href="/signup" className="group btn-primary px-5 py-2.5 text-[14px]">
-                {t('Start free trial', '開始免費試用')}
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-              <a
-                href="mailto:tradeflow.hk@gmail.com?subject=Demo%20request"
-                className="btn-ghost px-5 py-2.5 text-[14px]"
-              >
-                {t('Book a demo', '預約示範')}
-              </a>
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* ── WhatsApp ── */}
-      <section className="border-t border-[var(--hairline)] bg-[var(--paper-2)] px-6 py-24 md:py-32">
-        <div className="mx-auto grid max-w-6xl gap-14 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-center lg:gap-20">
-          <div className="order-2 lg:order-1">
-            <WhatsAppMock />
-          </div>
-          <div className="order-1 lg:order-2">
-            <p className="eyebrow">{t('Alerts', '提示')}</p>
-            <h2 className="display mt-4 text-[clamp(1.9rem,3.6vw,2.7rem)]">
-              {t('Know the moment', '一有需要您的事，')}
-              <br />
-              {t('something needs you.', '立即知道。')}
-            </h2>
-            <p className="mt-6 max-w-lg text-[16px] leading-[1.75] text-[var(--ink-2)]">
-              {t(
-                'When a thread needs a decision, Sailwise sends a WhatsApp alert with the sender, the product and the quantity — so a deal never goes cold while you are away from your desk. Replies and quotes still go out as normal email from your own address.',
-                '當對話需要決定，Sailwise 會發送 WhatsApp 提示，附上寄件人、產品與數量——讓商機在您離開座位時不會冷掉。回覆與報價仍以您自己的地址、一般電郵寄出。'
-              )}
-            </p>
-            <ul className="mt-7 space-y-3.5">
-              <Bullet>{t('WhatsApp alert when a thread needs a decision', '對話需要決定時發出 WhatsApp 提示')}</Bullet>
-              <Bullet>{t('Sender, product, quantity and status at a glance', '寄件人、產品、數量與狀態一目了然')}</Bullet>
-              <Bullet>{t('Replies and quotes always sent from your own mailbox', '回覆與報價一律從您的信箱寄出')}</Bullet>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* ── How it works ── */}
-      <section className="px-6 py-24 md:py-32">
-        <div className="mx-auto max-w-5xl">
-          <SectionHead
-            label={t('How it works', '運作方式')}
-            title={t('From inquiry to a specific answer', '從詢盤到具體回覆，端到端')}
-            sub={t('The whole pipeline, in one inbox.', '完整流程，都在一個收件匣裡。')}
-          />
-          {/* The same four stages the STEPS copy described, but played out —
-              the demo advances itself and pauses when you interact with it. */}
-          <div className="mt-12">
-            <HeroDemo />
           </div>
         </div>
       </section>
@@ -734,13 +913,18 @@ export default function LandingPage() {
             <p className="eyebrow">{t('Product', '產品')}</p>
             <ul className="mt-5 space-y-3 text-[14px]">
               <li>
-                <a href="#product" className="footer-link">
-                  {t('One inbox', '單一收件匣')}
+                <a href="#how" className="footer-link">
+                  {t('How it works', '運作方式')}
                 </a>
               </li>
               <li>
                 <a href="#extraction" className="footer-link">
                   {t('Extraction', '擷取')}
+                </a>
+              </li>
+              <li>
+                <a href="#setup" className="footer-link">
+                  {t('Setup', '設定')}
                 </a>
               </li>
               <li>
