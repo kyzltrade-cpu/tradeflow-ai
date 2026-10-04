@@ -668,9 +668,20 @@ section[id] { scroll-margin-top: 84px; }
 
 /* Soft warm wash behind the hero */
 .hero-wash {
+  /* Dimmed on phones only. These are percentage radii, so on a narrow viewport
+     the same 0.34/0.24 that reads as a tint on desktop floods the whole fold
+     instead of sitting behind it. Desktop keeps the full-strength wash. */
   background:
-    radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.34), transparent 82%),
-    radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.24), transparent 82%);
+    radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.15), transparent 76%),
+    radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.1), transparent 76%);
+}
+
+@media (min-width: 768px) {
+  .hero-wash {
+    background:
+      radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.34), transparent 82%),
+      radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.24), transparent 82%);
+  }
 }
 
 /* ── Paper texture + ambient life ──────────────────────────────────────────
