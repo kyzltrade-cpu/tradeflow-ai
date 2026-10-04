@@ -351,12 +351,21 @@ export default function LandingPage() {
                 <Bullet>{t('Specs, quantities and gaps pulled from the thread and its attachments', '從對話與附件擷取規格、數量與缺漏')}</Bullet>
                 <Bullet>{t('Replies drafted in the customer’s own language', '以客戶的語言草擬回覆')}</Bullet>
               </ul>
+
+              {/* Lives in the column rather than spanning the section, so the
+                  copy column is not left half-empty beside the queue list. */}
+              <p className="mt-9 max-w-lg border-t border-[var(--hairline-2)] pt-6 text-[14px] leading-relaxed text-[var(--ink-3)]">
+                {t(
+                  'Each thread’s state is derived from the conversation itself — who spoke last, what is still missing, how many chases have gone unanswered — so the queue stays current without anyone maintaining it.',
+                  '每條對話的狀態由對話本身推導——誰最後發言、還缺什麼、追問了幾次未回——佇列無需人手維護，始終保持最新。'
+                )}
+              </p>
             </div>
 
             {/* The three states every thread is sorted into. This is the
                 section's visual — a fourth white card would only repeat the
                 inbox already shown in the hero. */}
-            <div className="space-y-9 lg:pt-1">
+            <div className="space-y-9">
               {QUEUE.map((q, i) => (
                 <Reveal key={i} delay={i * 90}>
                   <div className="flex items-center gap-2">
@@ -376,12 +385,6 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
-          <p className="mt-14 max-w-2xl border-t border-[var(--hairline-2)] pt-8 text-[14px] leading-relaxed text-[var(--ink-3)]">
-            {t(
-              'Each thread’s state is derived from the conversation itself — who spoke last, what is still missing, how many chases have gone unanswered — so the queue stays current without anyone maintaining it.',
-              '每條對話的狀態由對話本身推導——誰最後發言、還缺什麼、追問了幾次未回——佇列無需人手維護，始終保持最新。'
-            )}
-          </p>
         </div>
       </section>
 
