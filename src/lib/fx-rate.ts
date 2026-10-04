@@ -24,7 +24,7 @@ const inFlight = new Map<string, Promise<Fetched>>();
 function parsePair(pair: string): { base: string; target: string } {
   const m = String(pair || '').match(/([A-Z]{3})[^A-Z]*([A-Z]{3})/i);
   if (m) return { base: m[1].toUpperCase(), target: m[2].toUpperCase() };
-  return { base: 'USD', target: 'HKD' };
+  return { base: 'USD', target: 'USD' };
 }
 
 function iso(v?: string): string {

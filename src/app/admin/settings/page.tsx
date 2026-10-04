@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
+import { PLANS as PLAN_CATALOG, formatPrice } from '@/lib/billing-plans';
 import { useSearchParams } from 'next/navigation';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
@@ -31,45 +32,35 @@ interface BillingStatus {
   limits: { ai_quote_drafts_per_month: number | null; emails_sent_per_month: number | null };
 }
 
-const BILLING_PLANS = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    price: 1880,
-    annualPrice: 1504,
-    features: [
-      'Email inbox (Google or Microsoft)',
-      'Unlimited AI conversations',
-      'Unlimited products & FAQ rules',
-      'EN / ZH / Cantonese support',
-      'Human override & takeovers',
-      'Knowledge base & website sync',
-    ],
-  },
-  {
-    id: 'growth',
-    name: 'Growth Trading Desk',
-    price: 2480,
-    annualPrice: 1984,
-    features: [
-      'Multiple email inbox accounts',
-      'Multi-user dashboard',
-      'Analytics & reporting',
-      'Priority support',
-    ],
-  },
-  {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 4880,
-    annualPrice: 3904,
-    features: [
-      'Automated quote generation',
-      'Dedicated account manager',
-      'Custom integrations',
-    ],
-  },
-];
+const SETUP_FEE = 1000;
+
+const PLAN_ORDER = ['starter', 'growth', 'enterprise'] as const;
+
+const PLAN_FEATURES: Record<(typeof PLAN_ORDER)[number], string[]> = {
+  starter: [
+    'Email inbox (Google or Microsoft)',
+    'Unlimited AI conversations',
+    'Unlimited products & FAQ rules',
+    'EN / ZH / Cantonese support',
+    'Human override & takeovers',
+    'Knowledge base & website sync',
+  ],
+  growth: [
+    'Multiple email inbox accounts',
+    'Multi-user dashboard',
+    'Analytics & reporting',
+    'Priority support',
+  ],
+  enterprise: ['Automated quote generation', 'Dedicated account manager', 'Custom integrations'],
+};
+
+const BILLING_PLANS = PLAN_ORDER.map((id) => ({
+  id,
+  name: PLAN_CATALOG[id].name.replace('Sailwise ', ''),
+  price: PLAN_CATALOG[id].monthly,
+  annualPrice: PLAN_CATALOG[id].annual,
+  features: PLAN_FEATURES[id],
+}));
 
 export default function SettingsPage() {
   return (
@@ -105,8 +96,8 @@ function SettingsContent() {
   const [pendingCompanies, setPendingCompanies] = useState<Array<{ id: string; name: string; created_at: string }>>([]);
   const [demoRequests, setDemoRequests] = useState<Array<{ id: string; name: string; email: string; company: string; phone: string; status: string; created_at: string }>>([]);
   const [currency, setCurrency] = useState('USD');
-  const [fxRate, setFxRate] = useState('7.82');
-  const [fxPair, setFxPair] = useState('USD → HKD');
+  const [fxRate, setFxRate] = useState('1');
+  const [fxPair, setFxPair] = useState('USD → USD');
   const [marginRules, setMarginRules] = useState<Array<{ name: string; product_category: string; margin_pct: string }>>([]);
   const [extractionSpecs, setExtractionSpecs] = useState<Array<{ key: string; label: string; hint: string }>>([]);
   // Null until the first load resolves. A deployment that has not run
@@ -604,7 +595,7 @@ function SettingsContent() {
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-[15px] font-semibold">{t('Done-for-you Setup', '代客設定')}</h2>
           <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ background: 'var(--accent-light)', color: 'var(--accent)' }}>
-            +HK$1,000
+            +{formatPrice(SETUP_FEE)}
           </span>
         </div>
         <p className="text-[13px] mb-3" style={{ color: 'var(--text-muted)' }}>
@@ -614,7 +605,7 @@ function SettingsContent() {
           <div>
             <p className="text-[13px] font-medium">{t('Email inbox connection + Product upload + AI config', '電郵收件匣連接 + 產品上傳 + AI 配置')}</p>
           </div>
-          <span className="text-[18px] font-semibold">HK$1,000</span>
+          <span className="text-[18px] font-semibold">{formatPrice(SETUP_FEE)}</span>
         </div>
         <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
           {t('Contact us: tradeflow.hk@gmail.com', '聯繫我們：tradeflow.hk@gmail.com')}
@@ -663,7 +654,7 @@ function SettingsContent() {
             {subscriptionStatus === 'active' ? (
               <>
                 <p className="text-[15px] font-semibold mt-0.5">
-                  {billingStatus?.plan_label?.en ?? 'Starter'} · HK$1,880/mo
+                  {billingStatus?.plan_label?.en ?? 'Starter'} · {formatPrice(PLAN_CATALOG.starter.monthly)}/mo
                 </p>
                 {subscriptionPeriodEnd && (
                   <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -701,7 +692,7 @@ function SettingsContent() {
             </span>
           ) : (
             <div className="text-right">
-              <span className="text-[18px] font-semibold">HK$1,880</span>
+              <span className="text-[18px] font-semibold">{formatPrice(PLAN_CATALOG.starter.monthly)}</span>
               <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>/mo</span>
             </div>
           )}
@@ -749,11 +740,11 @@ function SettingsContent() {
                 )}
                 <p className="text-[15px] font-semibold">{plan.name}</p>
                 <div className="mt-3 mb-4">
-                  <span className="text-[28px] font-bold">HK${price}</span>
+                  <span className="text-[28px] font-bold">{formatPrice(price)}</span>
                   <span className="text-[13px]" style={{ color: 'var(--text-muted)' }}>/{t('mo', '月')}</span>
                   {annual && (
                     <p className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
-                      HK${plan.price}/mo {t('billed annually', '年付')}
+                      {formatPrice(plan.annualPrice)}/mo {t('billed annually', '年付')}
                     </p>
                   )}
                 </div>
@@ -796,7 +787,10 @@ function SettingsContent() {
         </div>
 
         <p className="text-[12px] text-center mt-4" style={{ color: 'var(--text-muted)' }}>
-          {t('All plans include 14-day free trial. Free self-serve setup (optional done-for-you setup +HK$1,000). Annual billing saves 20%.', '所有方案包含 14 天免費試用。自行設定免費（可選 +HK$1,000 專人設定）。年付可節省 20%。')}
+          {t(
+            `All plans include 14-day free trial. Free self-serve setup (optional done-for-you setup +${formatPrice(SETUP_FEE)}). Annual billing saves 20%.`,
+            `所有方案包含 14 天免費試用。自行設定免費（可選 +${formatPrice(SETUP_FEE)} 專人設定）。年付可節省 20%。`,
+          )}
         </p>
         {billingStatus && !billingStatus.billing.usable && (
           <p className="text-[12px] text-center mt-2" style={{ color: 'var(--text-muted)' }}>

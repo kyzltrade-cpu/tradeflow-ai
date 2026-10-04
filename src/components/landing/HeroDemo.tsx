@@ -48,7 +48,7 @@ function InquiryScene() {
           </div>
           <div className="min-w-0">
             <div className="text-sm font-semibold" style={{ color: '#1B1917' }}>Sarah Chen</div>
-            <div className="text-xs" style={{ color: '#8A8279' }}>Pacific Trading · Shenzhen</div>
+            <div className="text-xs" style={{ color: '#8A8279' }}>Pacific Trading · Rotterdam</div>
           </div>
           <span className="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border" style={{ background: '#F0EDE6', color: '#1B1917', borderColor: '#D8CFC0' }}>
             <Inbox className="w-3 h-3" /> Email
@@ -136,7 +136,7 @@ function ClarifyScene() {
 const PRICE_INPUTS = [
   { label: 'Unit price (your list)', value: 'USD 4.00 / pc', note: 'Product price list' },
   { label: 'Margin applied', value: '+20%', note: 'Bottle margin rule' },
-  { label: 'FX rate', value: '7.82', note: 'USD → HKD' },
+  { label: 'FX rate', value: '0.92', note: 'USD → EUR' },
 ];
 
 function DraftPriceScene() {

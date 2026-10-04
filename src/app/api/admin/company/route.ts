@@ -216,7 +216,7 @@ export async function POST(req: NextRequest) {
     // category is the fallback used by suggest when no product rule matches,
     // so a fresh catalog never auto-quotes at 0% margin. Only applied when
     // pricing is unset or empty — configured rules are never overwritten.
-    const DEFAULT_PRICING = { currency: 'USD', fx_rate: 7.82, fx_pair: 'USD → HKD', margin_rules: [{ name: 'Standard trading margin', margin_pct: 30 }] };
+    const DEFAULT_PRICING = { currency: 'USD', fx_rate: 1, fx_pair: 'USD → USD', margin_rules: [{ name: 'Standard trading margin', margin_pct: 30 }] };
     const { data: existingPricing } = await supabaseAdmin
       .from('company_settings')
       .select('pricing')

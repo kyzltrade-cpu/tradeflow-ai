@@ -5,24 +5,45 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLang } from '@/lib/lang';
 import { supabaseBrowser } from '@/lib/auth';
+import { PLANS, currencySymbol, formatPrice } from '@/lib/billing-plans';
 
-const PLANS = [
-  {
-    id: 'starter',
-    name: 'Starter',
-    monthly: 1880,
-    annual: 1504,
-    features: [
+const SETUP_FEE = 1000;
+const PLAN_ORDER = ['starter', 'growth', 'enterprise'] as const;
+const PLAN_COPY: Record<string, { blurb: [string, string]; features: [string, string][] }> = {
+  starter: {
+    blurb: [
       'Google & Microsoft email inbox (1 account)',
-      'Unlimited AI conversations',
-      'Unlimited products & FAQ rules',
-      'English, Mandarin, Cantonese, Spanish',
-      'Human override & takeover anytime',
-      'Knowledge base & website sync',
-      'Custom AI personality',
+      'Google 或 Microsoft 電郵收件匣（1 個帳戶）',
+    ],
+    features: [
+      ['Unlimited AI conversations', '無限 AI 對話'],
+      ['Unlimited products & FAQ rules', '無限產品與 FAQ 規則'],
+      ['English, Mandarin, Cantonese, Spanish', '英文、普通話、粵語、西班牙文'],
+      ['Human override & takeover anytime', '隨時由真人接手'],
+      ['Knowledge base & website sync', '知識庫與網站同步'],
+      ['Custom AI personality', '自訂 AI 個性'],
     ],
   },
-];
+  growth: {
+    blurb: ['Multiple inboxes, multi-user dashboard, analytics', '多個信箱、多用戶儀表板、分析報表'],
+    features: [
+      ['Everything in Starter', '包含 Starter 全部功能'],
+      ['Multiple email accounts', '多個電郵帳戶'],
+      ['Multi-user dashboard', '多用戶儀表板'],
+      ['Analytics & reporting', '分析與報表'],
+      ['Priority support', '優先支援'],
+    ],
+  },
+  enterprise: {
+    blurb: ['Unlimited AI, dedicated manager, custom integrations', '無限 AI、專屬客戶經理、自訂整合'],
+    features: [
+      ['Everything in Growth', '包含 Growth 全部功能'],
+      ['Automated quote generation', '自動報價生成'],
+      ['Dedicated account manager', '專屬客戶經理'],
+      ['Custom integrations', '自訂整合'],
+    ],
+  },
+};
 
 export default function PricingPage() {
   const { t } = useLang();
@@ -76,7 +97,10 @@ export default function PricingPage() {
             {t('Simple pricing', '簡單定價')}
           </h1>
           <p className="text-[16px] max-w-[600px] mx-auto mb-8" style={{ color: 'var(--text-muted)' }}>
-            {t('Start free, pay HK$1,880/month when ready. Self-serve setup is free (optional done-for-you setup +HK$1,000).', '免費開始，準備好再按每月 HK$1,880 付費。自行設定免費（可選 +HK$1,000 專人設定）。')}
+            {t(
+              `Start free, pay ${formatPrice(PLANS.starter.monthly)}/month when ready. Self-serve setup is free (optional done-for-you setup +${formatPrice(SETUP_FEE)}).`,
+              `免費開始，準備好再按每月 ${formatPrice(PLANS.starter.monthly)} 付費。自行設定免費（可選 +${formatPrice(SETUP_FEE)} 專人設定）。`,
+            )}
           </p>
 
           {/* Billing toggle */}
@@ -105,9 +129,12 @@ export default function PricingPage() {
         </div>
 
         <div className="max-w-[440px] mx-auto">
-          {PLANS.map((plan) => (
+          {PLAN_ORDER.map((planId) => {
+            const plan = PLANS[planId];
+            const copy = PLAN_COPY[planId];
+            return (
               <div
-              key={plan.id}
+              key={planId}
               className="border rounded-[8px] p-8 flex flex-col relative overflow-hidden"
               style={{
                 borderColor: 'var(--accent)',
@@ -120,10 +147,14 @@ export default function PricingPage() {
                 <h2 className="text-[18px] font-semibold">{plan.name}</h2>
               </div>
 
+              <p className="text-[12px] mb-4" style={{ color: 'var(--text-muted)' }}>
+                {copy.blurb[0]}
+              </p>
+
               <div className="mb-6 flex items-baseline gap-1">
-                <span className="text-[14px] font-medium" style={{ color: 'var(--text-muted)' }}>HK$</span>
+                <span className="text-[14px] font-medium" style={{ color: 'var(--text-muted)' }}>{currencySymbol()}</span>
                 <span className="text-[40px] font-semibold tracking-[-1.5px] leading-none">
-                  {annual ? plan.annual : plan.monthly}
+                  {(annual ? plan.annual : plan.monthly).toLocaleString('en-US')}
                 </span>
                 <span className="text-[14px]" style={{ color: 'var(--text-muted)' }}>/mo</span>
               </div>
@@ -133,34 +164,35 @@ export default function PricingPage() {
               </p>
 
               <div className="space-y-3 mb-8 flex-1">
-                {plan.features.map((item) => (
-                  <div key={item} className="flex items-center gap-3">
+                {copy.features.map(([en, zh]) => (
+                  <div key={en} className="flex items-center gap-3">
                     <div className="mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--accent-light)' }}>
                       <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     </div>
-                    <span className="text-[13px]">{item}</span>
+                    <span className="text-[13px]">{t(en, zh)}</span>
                   </div>
                 ))}
               </div>
 
               <button
-                onClick={() => handleCheckout(plan.id)}
-                disabled={loadingTier === plan.id}
+                onClick={() => handleCheckout(planId)}
+                disabled={loadingTier === planId}
                 className="w-full text-center text-[14px] font-medium py-3 rounded-[4px] transition-opacity"
                 style={{
                   background: 'var(--accent)',
                   color: '#fff',
-                  opacity: loadingTier === plan.id ? 0.7 : 1,
+                  opacity: loadingTier === planId ? 0.7 : 1,
                 }}
               >
-                {loadingTier === plan.id
+                {loadingTier === planId
                   ? t('Redirecting…', '跳轉中…')
                   : isLoggedIn
                     ? t('Go to billing', '前往帳單')
                     : t('Get started', '立即開始')}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {error && (
@@ -181,7 +213,7 @@ export default function PricingPage() {
           </p>
           <div className="inline-block p-5 rounded-[4px] border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
             <p className="text-[14px] font-medium mb-1">{t('Done-for-you setup', '代客設定')}</p>
-            <p className="text-[24px] font-semibold mb-2">HK$1,000 <span className="text-[13px] font-normal" style={{ color: 'var(--text-muted)' }}>{t('one-time', '一次性')}</span></p>
+            <p className="text-[24px] font-semibold mb-2">{formatPrice(SETUP_FEE)} <span className="text-[13px] font-normal" style={{ color: 'var(--text-muted)' }}>{t('one-time', '一次性')}</span></p>
             <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
               {t('Contact us to arrange: tradeflow.hk@gmail.com', '聯繫我們安排：tradeflow.hk@gmail.com')}
             </p>

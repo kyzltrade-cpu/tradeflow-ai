@@ -1,15 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { formatPrice } from '@/lib/billing-plans';
 import { useLang } from '@/lib/lang';
 
 type PricingPriceProps = {
   monthly: string;
   annual: string;
+  annualTotal?: number;
   period?: string;
 };
 
-export default function PricingPrice({ monthly, annual, period = '/mo' }: PricingPriceProps) {
+export default function PricingPrice({ monthly, annual, annualTotal, period = '/mo' }: PricingPriceProps) {
   const { t } = useLang();
   const [mode, setMode] = useState<'monthly' | 'annual'>('monthly');
   const price = mode === 'monthly' ? monthly : annual;
@@ -52,7 +54,9 @@ export default function PricingPrice({ monthly, annual, period = '/mo' }: Pricin
           className="text-[12.5px] tabular-nums transition-colors duration-200"
           style={{ color: mode === 'annual' ? 'var(--pine)' : 'var(--ink-3)' }}
         >
-          {mode === 'monthly' ? t('Save 20% with annual', '年繳可慳 20%') : 'HK$3,792 saved / yr'}
+          {mode === 'monthly'
+            ? t('Save 20% with annual', '年繳可慳 20%')
+            : `${formatPrice(annualTotal ?? 0)} saved / yr`}
         </span>
       </div>
     </div>

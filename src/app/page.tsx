@@ -8,6 +8,7 @@ import HeroDemo from '@/components/landing/HeroDemo';
 import Reveal from '@/components/landing/Reveal';
 import PricingPrice from '@/components/landing/PricingPrice';
 import { useLang } from '@/lib/lang';
+import { PLANS as PLANS_CATALOG, formatPrice } from '@/lib/billing-plans';
 import {
   HeroProduct,
   ExtractionMock,
@@ -106,7 +107,7 @@ const GATES: { label: Bi; title: Bi; body: Bi }[] = [
 const PLANS = [
   {
     name: ['Starter', '入門'] as Bi,
-    price: 'HK$1,880',
+    price: formatPrice(PLANS_CATALOG.starter.monthly),
     period: '/mo',
     features: [
       ['Email inbox (Google / Microsoft)', '電郵收件匣（Google / Microsoft）'],
@@ -130,8 +131,8 @@ const FAQS: { q: Bi; a: Bi }[] = [
   {
     q: ['Can it handle Chinese and mixed-language messages?', '能處理中文及混合語言的訊息嗎？'],
     a: [
-      'It reads and replies in English, Traditional and Simplified Chinese, Spanish, and mixed-language threads — common across HK and Shenzhen trade.',
-      '它能閱讀並以英文、繁體及簡體中文、西班牙文回覆，也能處理混合語言的對話——這在香港與深圳貿易中十分常見。',
+      'It reads and replies in English, Traditional and Simplified Chinese, Spanish, and mixed-language threads — common in international trade.',
+      '它能閱讀並以英文、繁體及簡體中文、西班牙文回覆，也能處理混合語言的對話——這在國際貿易中十分常見。',
     ],
   },
   {
@@ -225,7 +226,7 @@ export default function LandingPage() {
       <section className="hero-wash px-6 pt-32 pb-16 md:pt-40 md:pb-20">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="eyebrow">{t('For HK & Shenzhen trading companies', '專為香港及深圳貿易公司而設')}</p>
+            <p className="eyebrow">{t('For trading companies worldwide', '專為全球貿易公司而設')}</p>
             <h1 className="display mt-6 text-[clamp(2.2rem,5.8vw,4rem)]">
               {t('Every inquiry answered.', '每個詢盤都有回覆。')}
               <br />
@@ -546,8 +547,8 @@ export default function LandingPage() {
           />
           <p className="mx-auto mt-5 max-w-md text-[15px] leading-relaxed text-[var(--ink-2)]">
             {t(
-              '14-day free trial, then HK$1,880 per month. Cancel anytime.',
-              '14 天免費試用，其後每月 HK$1,880。隨時取消。'
+              `14-day free trial, then ${formatPrice(PLANS_CATALOG.starter.monthly)} per month. Cancel anytime.`,
+              `14 天免費試用，其後每月 ${formatPrice(PLANS_CATALOG.starter.monthly)}。隨時取消。`
             )}
           </p>
 
@@ -558,7 +559,12 @@ export default function LandingPage() {
                 {t('everything included', '全部包含')}
               </span>
             </div>
-            <PricingPrice monthly={PLANS[0].price} annual="HK$1,504" period={PLANS[0].period} />
+            <PricingPrice
+              monthly={PLANS[0].price}
+              annual={formatPrice(PLANS_CATALOG.starter.annual)}
+              annualTotal={PLANS_CATALOG.starter.monthly * 12 - PLANS_CATALOG.starter.annual * 12}
+              period={PLANS[0].period}
+            />
             <div className="mt-6 mb-6 h-px bg-[var(--hairline)]" />
             <ul className="space-y-3">
               {PLANS[0].features.map((f, i) => (
@@ -583,7 +589,10 @@ export default function LandingPage() {
           </div>
 
           <p className="mx-auto mt-8 max-w-md text-[13.5px] leading-relaxed text-[var(--ink-3)]">
-            {t('Annual billing is HK$1,504/month. Need a bigger team or custom workflows? ', '年繳為每月 HK$1,504。需要更大團隊或自訂流程？')}
+            {t(
+              `Annual billing is ${formatPrice(PLANS_CATALOG.starter.annual)}/month. Need a bigger team or custom workflows? `,
+              `年繳為每月 ${formatPrice(PLANS_CATALOG.starter.annual)}。需要更大團隊或自訂流程？`,
+            )}
             <a
               href="mailto:tradeflow.hk@gmail.com"
               className="text-[var(--pine)] underline underline-offset-4"
@@ -671,8 +680,8 @@ export default function LandingPage() {
             </div>
             <p className="mt-4 max-w-[300px] text-[14px] leading-relaxed text-[var(--ink-2)]">
               {t(
-                'The AI sales assistant for HK and Shenzhen trading companies — from inquiry to sent quote, with you approving every message.',
-                '專為香港及深圳貿易公司而設的 AI 銷售助理——從詢盤到寄出報價，每則訊息都由您批准。'
+                'The AI sales assistant for trading companies worldwide — from inquiry to sent quote, with you approving every message.',
+                '專為全球貿易公司而設的 AI 銷售助理——從詢盤到寄出報價，每則訊息都由您批准。'
               )}
             </p>
             <p className="mt-8 text-[12px] text-[var(--ink-3)]">

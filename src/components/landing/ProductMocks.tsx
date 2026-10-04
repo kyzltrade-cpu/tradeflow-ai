@@ -267,7 +267,7 @@ export function HeroProduct() {
             Can you do FOB to Singapore?
           </Bubble>
           <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
-            FOB Hong Kong: USD 1,825, plus roughly USD 400 air freight. Sending the full
+            FOB Rotterdam: USD 1,825, plus roughly USD 400 air freight. Sending the full
             quote over.
           </Bubble>
           <Bubble scale="lg" side="in" meta="Email · 09:41">
@@ -550,7 +550,7 @@ export function HandoffMock() {
               MOQ for the 500ml one?
             </Bubble>
             <Bubble side="out" tint="#DCF8C6" meta="AI · 10:30">
-              MOQ is 100 units at HKD 28 each.
+              MOQ is 100 units at USD 4.20 each.
             </Bubble>
             <Bubble side="in" meta="Customer · 10:32">
               Can you give me a{' '}

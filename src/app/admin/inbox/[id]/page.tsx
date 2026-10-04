@@ -1718,9 +1718,13 @@ export default function InboxDetailPage() {
           initialTo={replyRecipient}
           initialSubject={detail?.subject || ''}
           initialBody={composePrefill}
-          lockTo={!replyRecipient}
+          lockTo
           requireSubject={false}
           onSend={sendReply}
+          onSent={() => {
+            setComposePrefill('');
+            setComposeOpen(false);
+          }}
           onClose={() => setComposeOpen(false)}
         />
       )}

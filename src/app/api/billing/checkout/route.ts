@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { requireAuth } from '@/lib/api-auth';
 import { supabaseAdmin } from '@/lib/supabase';
 import { getBillingConfig, isPlaceholderSecret, type PlanId } from '@/lib/billing/limits';
+import { BILLING_CURRENCY, PLANS, toMinorUnits } from '@/lib/billing-plans';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let stripeClient: any = null;
@@ -23,28 +24,7 @@ function getStripe() {
   return stripeClient;
 }
 
-const TIERS = {
-  starter: {
-    name: 'Sailwise Starter',
-    description: 'Email-first assistant · Unlimited AI conversations',
-    monthly: 188000,
-    annual: 150400,
-  },
-  growth: {
-    name: 'Sailwise Growth',
-    description: 'Email-first assistant · 5,000 AI conversations/mo',
-    monthly: 248000,
-    annual: 198400,
-  },
-  enterprise: {
-    name: 'Sailwise Enterprise',
-    description: 'Email-first assistant · Unlimited AI · Dedicated manager',
-    monthly: 488000,
-    annual: 390400,
-  },
-} as const;
-
-type Tier = keyof typeof TIERS;
+type Tier = keyof typeof PLANS;
 
 const BILLING_NOT_CONFIGURED =
   'Billing is not configured by the operator yet. Set STRIPE_SECRET_KEY (and STRIPE_WEBHOOK_SECRET) to a real Stripe key, then reload.';
@@ -83,7 +63,7 @@ export async function POST(req: NextRequest) {
     let interval: 'month' | 'year' = 'month';
     try {
       const body = await req.json();
-      if (body.tier && TIERS[body.tier as Tier]) {
+      if (body.tier && PLANS[body.tier as Tier]) {
         tier = body.tier as Tier;
       }
       if (body.interval === 'year') {
@@ -122,20 +102,20 @@ export async function POST(req: NextRequest) {
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-    const tierConfig = TIERS[tier];
+    const tierConfig = PLANS[tier];
     const configuredPriceId = process.env[priceIdEnvKey(tier, interval)];
 
     const lineItem: Record<string, unknown> = configuredPriceId
       ? { price: configuredPriceId, quantity: 1 }
       : {
           price_data: {
-            currency: 'hkd',
+            currency: BILLING_CURRENCY,
             product_data: {
               name: tierConfig.name,
               description: tierConfig.description,
             },
             recurring: { interval },
-            unit_amount: interval === 'year' ? tierConfig.annual : tierConfig.monthly,
+            unit_amount: toMinorUnits(interval === 'year' ? tierConfig.annual : tierConfig.monthly),
           },
           quantity: 1,
         };

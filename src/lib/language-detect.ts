@@ -118,7 +118,7 @@ export function buildLanguageInstruction(detectedLang: SupportedLanguage): strin
 - ALWAYS respond in ${langName}
 - If the input mixes languages, respond in the PRIMARY language (the one with more words)
 - Preserve technical terms (API, webhook, SSO, MOQ, SKU, CSV, Excel) in their original language
-- For Cantonese input, respond in Traditional Chinese (Hong Kong style)
+- For Cantonese input, respond in written Traditional Chinese, not colloquial Cantonese
 - For Spanish input, respond in Spanish
 </language_rules>
 `;
