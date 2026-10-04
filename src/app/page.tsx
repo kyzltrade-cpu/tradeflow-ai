@@ -296,7 +296,7 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="mx-auto mt-20 max-w-5xl md:mt-28">
+          <div className="mx-auto mt-20 max-w-6xl md:mt-28">
             <HeroProduct />
           </div>
         </div>

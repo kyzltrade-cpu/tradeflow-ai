@@ -256,85 +256,90 @@ function Bubble({
   );
 }
 
-/* ── Hero: one conversation, close enough to read ──────────────────────────
-   Deliberately NOT a shrunken copy of the whole app. At hero size a full
-   inbox renders its 9–11px chrome as texture; cropping to a single thread and
-   setting the type at 14.5px makes the one moment that matters — a real reply,
-   drafted and waiting — legible from across the room. */
+/* ── Hero: the dashboard, running ───────────────────────────────────────────
+   Sidebar, inbox and the one thread that matters in a single frame: the buyer
+   writes, Sailwise drafts, and nothing leaves the building until you approve
+   it. The thread pane keeps hero-sized type so the drafted reply is readable at
+   a glance, while the surrounding chrome stays at the density the product
+   actually uses — the same density the app has at 11px. */
 
 export function HeroProduct() {
   return (
     <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
-      <div className="mx-auto flex max-w-3xl flex-col px-5 py-6 sm:px-7 sm:py-7">
-        <div
-          className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 pb-5"
-          style={{ borderBottom: `1px solid ${HAIR}` }}
-        >
-          <div className="flex min-w-0 flex-wrap items-center gap-2.5">
-            <AvatarName name="Sarah Chen" dot />
-            <span className="text-[12.5px]" style={{ color: FAINT }}>
-              sarah@apexretail.sg · English
-            </span>
-            <span
-              className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]"
-              style={{ background: TEAL_SOFT, color: TEAL }}
-            >
-              AI
-            </span>
-          </div>
-          {/* The thread controls as they actually read in the product: AI owns
-              the thread until you pause it, bookmark it, or take it over. */}
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            {['Pause AI', 'Bookmark'].map((label) => (
-              <span
-                key={label}
-                className="rounded-lg border px-3 py-1.5 text-[12px] font-semibold"
-                style={{ borderColor: HAIR, color: MUTED }}
-              >
-                {label}
+      <div className="flex flex-col @min-[560px]:h-[448px] @min-[560px]:flex-row">
+        <Sidebar />
+        <ConvoList selected={0} />
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div
+            className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3"
+            style={{ borderBottom: `1px solid ${HAIR}` }}
+          >
+            <div className="flex min-w-0 flex-wrap items-center gap-2.5">
+              <AvatarName name="Sarah Chen" dot />
+              <span className="text-[12.5px]" style={{ color: FAINT }}>
+                sarah@apexretail.sg · English
               </span>
-            ))}
+              <span
+                className="rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em]"
+                style={{ background: TEAL_SOFT, color: TEAL }}
+              >
+                AI
+              </span>
+            </div>
+            {/* The thread controls as they read in the product: AI owns the
+                thread until you pause it, bookmark it, or take it over. */}
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {['Pause AI', 'Bookmark'].map((label) => (
+                <span
+                  key={label}
+                  className="rounded-lg border px-3 py-1.5 text-[12px] font-semibold"
+                  style={{ borderColor: HAIR, color: MUTED }}
+                >
+                  {label}
+                </span>
+              ))}
+              <span
+                className="rounded-lg px-3.5 py-1.5 text-[12px] font-semibold text-white"
+                style={{ background: TEAL }}
+              >
+                Take over
+              </span>
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-col gap-3.5 px-4 py-5">
+            <Bubble scale="lg" side="in" meta="Email · 09:12">
+              Can you do FOB to Singapore?
+            </Bubble>
+            <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
+              FOB Rotterdam: USD 1,825, plus roughly USD 400 air freight. Sending the full
+              quote over.
+            </Bubble>
+            <Bubble scale="lg" side="in" meta="Email · 09:41">
+              What about certifications?
+            </Bubble>
+            <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
+              We hold ISO 9001, SGS and FDA. I&apos;ll attach the certificates with the quote.
+            </Bubble>
+          </div>
+
+          <div
+            className="flex flex-wrap items-center gap-3 px-4 py-3.5"
+            style={{ borderTop: `1px solid ${HAIR}` }}
+          >
             <span
-              className="rounded-lg px-3.5 py-1.5 text-[12px] font-semibold text-white"
+              className="min-w-[220px] flex-1 rounded-lg px-3.5 py-2.5 text-[13px]"
+              style={{ background: PANEL, color: FAINT, border: `1px solid ${HAIR}` }}
+            >
+              Every reply is a draft until you approve it.
+            </span>
+            <span
+              className="rounded-lg px-4 py-2.5 text-[13px] font-semibold text-white"
               style={{ background: TEAL }}
             >
-              Take over
+              Approve &amp; send
             </span>
           </div>
-        </div>
-
-        <div className="flex flex-col gap-3.5 py-6">
-          <Bubble scale="lg" side="in" meta="Email · 09:12">
-            Can you do FOB to Singapore?
-          </Bubble>
-          <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
-            FOB Rotterdam: USD 1,825, plus roughly USD 400 air freight. Sending the full
-            quote over.
-          </Bubble>
-          <Bubble scale="lg" side="in" meta="Email · 09:41">
-            What about certifications?
-          </Bubble>
-          <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
-            We hold ISO 9001, SGS and FDA. I&apos;ll attach the certificates with the quote.
-          </Bubble>
-        </div>
-
-        <div
-          className="flex flex-wrap items-center gap-3 pt-5"
-          style={{ borderTop: `1px solid ${HAIR}` }}
-        >
-          <span
-            className="min-w-[220px] flex-1 rounded-lg px-3.5 py-2.5 text-[13px]"
-            style={{ background: PANEL, color: FAINT, border: `1px solid ${HAIR}` }}
-          >
-            Every reply is a draft until you approve it.
-          </span>
-          <span
-            className="rounded-lg px-4 py-2.5 text-[13px] font-semibold text-white"
-            style={{ background: TEAL }}
-          >
-            Approve &amp; send
-          </span>
         </div>
       </div>
     </div>
