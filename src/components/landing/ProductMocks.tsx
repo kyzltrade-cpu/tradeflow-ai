@@ -197,17 +197,20 @@ function Bubble({
   side = 'in',
   tint,
   meta,
+  scale = 'sm',
 }: {
   children: ReactNode;
   side?: 'in' | 'out';
   tint?: string;
   meta?: string;
+  scale?: 'sm' | 'lg';
 }) {
   const out = side === 'out';
+  const lg = scale === 'lg';
   return (
     <div className={`flex ${out ? 'justify-end' : 'justify-start'}`}>
       <div
-        className="max-w-[80%] rounded-xl px-3 py-2 text-[11.5px] leading-snug"
+        className={`max-w-[80%] rounded-xl leading-snug ${lg ? 'px-4 py-3 text-[14.5px]' : 'px-3 py-2 text-[11.5px]'}`}
         style={{
           background: tint ?? (out ? TEAL_SOFT : '#F3F4F6'),
           color: INK,
@@ -217,7 +220,7 @@ function Bubble({
       >
         {children}
         {meta && (
-          <div className="mt-1 text-[9px]" style={{ color: FAINT }}>
+          <div className={lg ? 'mt-2 text-[11.5px]' : 'mt-1 text-[9px]'} style={{ color: FAINT }}>
             {meta}
           </div>
         )}
@@ -226,53 +229,71 @@ function Bubble({
   );
 }
 
-/* ── Hero: the inbox at full size ──────────────────────────────────────── */
+/* ── Hero: one conversation, close enough to read ──────────────────────────
+   Deliberately NOT a shrunken copy of the whole app. At hero size a full
+   inbox renders its 9–11px chrome as texture; cropping to a single thread and
+   setting the type at 14.5px makes the one moment that matters — a real reply,
+   drafted and waiting — legible from across the room. */
 
 export function HeroProduct() {
   return (
     <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
-      <div className="flex h-[404px] sm:h-[440px] md:h-[500px]">
-        <Sidebar />
-        <ConvoList selected={0} />
-        <div className="flex flex-1 flex-col">
-          <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: `1px solid ${HAIR}` }}>
-            <div className="flex items-center gap-2.5">
-              <Avatar name="Sarah Chen" size={28} dot />
-              <div>
-                <div className="text-[12.5px] font-semibold" style={{ color: INK }}>
-                  Sarah Chen
-                </div>
-                <div className="text-[10px] font-medium" style={{ color: TEAL }}>
-                  Receiving — AI handling
-                </div>
+      <div className="mx-auto flex max-w-3xl flex-col px-5 py-6 sm:px-7 sm:py-7">
+        <div
+          className="flex items-center justify-between gap-4 pb-5"
+          style={{ borderBottom: `1px solid ${HAIR}` }}
+        >
+          <div className="flex items-center gap-3">
+            <Avatar name="Sarah Chen" size={40} dot />
+            <div>
+              <div className="text-[15px] font-semibold" style={{ color: INK }}>
+                Sarah Chen
+              </div>
+              <div className="text-[12.5px]" style={{ color: FAINT }}>
+                sarah@apexretail.sg · English
               </div>
             </div>
-            <span className="rounded-md px-2.5 py-1 text-[10.5px] font-semibold" style={{ background: TEAL_SOFT, color: TEAL }}>
-              Take over
-            </span>
           </div>
-          <div className="flex flex-1 flex-col gap-2.5 px-4 py-3.5">
-            <Bubble side="in" meta="Email · 09:12">
-              Can you do FOB to Singapore?
-            </Bubble>
-            <Bubble side="out" meta="Draft · AI">
-              FOB HK: USD 1,825. Air freight ~USD 400. Sending the quote now.
-            </Bubble>
-            <Bubble side="in" meta="Email · 09:41">
-              What about certifications?
-            </Bubble>
-            <Bubble side="out" meta="Draft · AI">
-              We hold ISO 9001, SGS, and FDA. I&apos;ll attach the certificates.
-            </Bubble>
-          </div>
-          <div className="flex items-center gap-2 px-4 py-3" style={{ borderTop: `1px solid ${HAIR}` }}>
-            <span className="flex-1 rounded-lg px-3 py-2 text-[11px]" style={{ background: PANEL, color: FAINT, border: `1px solid ${HAIR}` }}>
-              Your reply is a draft until you approve…
-            </span>
-            <span className="rounded-lg px-3.5 py-2 text-[11px] font-semibold text-white" style={{ background: TEAL }}>
-              Approve
-            </span>
-          </div>
+          <span
+            className="shrink-0 rounded-md px-3 py-1.5 text-[12px] font-semibold"
+            style={{ background: TEAL_SOFT, color: TEAL }}
+          >
+            AI handling · take over
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-3.5 py-6">
+          <Bubble scale="lg" side="in" meta="Email · 09:12">
+            Can you do FOB to Singapore?
+          </Bubble>
+          <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
+            FOB Hong Kong: USD 1,825, plus roughly USD 400 air freight. Sending the full
+            quote over.
+          </Bubble>
+          <Bubble scale="lg" side="in" meta="Email · 09:41">
+            What about certifications?
+          </Bubble>
+          <Bubble scale="lg" side="out" meta="Draft · awaiting your approval">
+            We hold ISO 9001, SGS and FDA. I&apos;ll attach the certificates with the quote.
+          </Bubble>
+        </div>
+
+        <div
+          className="flex flex-wrap items-center gap-3 pt-5"
+          style={{ borderTop: `1px solid ${HAIR}` }}
+        >
+          <span
+            className="min-w-[220px] flex-1 rounded-lg px-3.5 py-2.5 text-[13px]"
+            style={{ background: PANEL, color: FAINT, border: `1px solid ${HAIR}` }}
+          >
+            Every reply is a draft until you approve it.
+          </span>
+          <span
+            className="rounded-lg px-4 py-2.5 text-[13px] font-semibold text-white"
+            style={{ background: TEAL }}
+          >
+            Approve &amp; send
+          </span>
         </div>
       </div>
     </div>

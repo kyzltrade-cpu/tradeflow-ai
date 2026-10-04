@@ -21,9 +21,8 @@ type Bi = [en: string, zh: string];
 
 const FACTS: { value: Bi; label: Bi }[] = [
   { value: ['1 click', '一按'], label: ['Connects Gmail or Outlook', '連接 Gmail 或 Outlook'] },
-  { value: ['4', '4'], label: ['Languages, incl. mixed threads', '語言，含混合對話'] },
   { value: ['3 days', '3 天'], label: ['Before a quiet thread is chased', '靜默對話自動跟進'] },
-  { value: ['Every quote', '每份報價'], label: ['Waits for your sign-off', '都待您簽核'] },
+  { value: ['0', '0'], label: ['Emails sent without your approval', '未經您批准就寄出的郵件'] },
 ];
 
 const QUEUE: { label: Bi; tone: string; title: Bi; body: Bi }[] = [
@@ -227,15 +226,16 @@ export default function LandingPage() {
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
             <p className="eyebrow">{t('For HK & Shenzhen trading companies', '專為香港及深圳貿易公司而設')}</p>
-            <h1 className="display mt-6 text-[clamp(2.5rem,6.4vw,4.5rem)]">
-              {t('Chase the specs.', '規格，追到齊。')}
+            <h1 className="display mt-6 text-[clamp(2.2rem,5.8vw,4rem)]">
+              {t('Every inquiry answered.', '每個詢盤都有回覆。')}
               <br />
-              <em>{t('Clear the reply debt.', '回覆債，清零。')}</em>
+              {t('Every quote out ', '每份報價，')}
+              <em>{t('in minutes.', '數分鐘內寄出。')}</em>
             </h1>
             <p className="mx-auto mt-7 max-w-xl text-balance text-[1.0625rem] leading-[1.75] text-[var(--ink-2)]">
               {t(
-                'Sailwise reads every buyer email, pulls out the specs, chases what is still missing, and drafts the reply you owe — so no inquiry sits unanswered. You approve every word before it sends.',
-                'Sailwise 讀遍每封買家來信，擷取規格、追齊缺漏，並草擬您該回的那一封——讓每封詢盤都不再懸而未決。每個字都由您批准後才送出。'
+                'Sailwise reads the mailbox you already use, quotes from your own price list, and holds every reply until you approve it.',
+                'Sailwise 直接讀您現用的信箱，報價取自您自己的價格表，每封回覆都待您批准後才送出。'
               )}
             </p>
             <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -248,7 +248,7 @@ export default function LandingPage() {
               </Link>
             </div>
             <p className="mt-5 text-[13px] text-[var(--ink-3)]">
-              {t('14-day free trial · Card required · Cancel anytime', '14 天免費試用 · 需綁定信用卡 · 隨時取消')}
+              {t('14-day free trial · Cancel anytime', '14 天免費試用 · 隨時取消')}
             </p>
           </div>
 
@@ -260,7 +260,7 @@ export default function LandingPage() {
 
       {/* ── Product facts ── */}
       <section className="border-y border-[var(--hairline)] px-6 py-14">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-4">
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-px overflow-hidden rounded-2xl border border-[var(--hairline)] bg-[var(--hairline)] sm:grid-cols-3">
           {FACTS.map((f, i) => (
             <Reveal key={i} delay={i * 70} className="bg-[var(--paper)] px-5 py-7 text-center">
               <div className="display text-[1.55rem] leading-tight">{t(f.value[0], f.value[1])}</div>
