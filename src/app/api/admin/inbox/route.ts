@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { describeAddressErrors, validateAddressFields } from '@/lib/address-validation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 import { sendEmail } from '@/lib/email';
@@ -70,6 +71,18 @@ export async function POST(req: NextRequest) {
     const ccList = cleanList(cc);
     const bccList = cleanList(bcc);
 
+    const addressErrors = validateAddressFields({
+      to: to.join(', '),
+      cc: cc as string,
+      bcc: bcc as string,
+    });
+    if (Object.keys(addressErrors).length) {
+      return NextResponse.json(
+        { error: `Invalid email address — ${describeAddressErrors(addressErrors)}` },
+        { status: 400 }
+      );
+    }
+
     if (to.length === 0 || !subject || !text?.trim()) {
       return NextResponse.json(
         { error: 'contact_email, subject, and body are required' },
@@ -117,6 +130,8 @@ export async function POST(req: NextRequest) {
         content: text.trim(),
         sender_email: null,
         recipient_email: to.join(', '),
+        cc: ccList,
+        bcc: bccList,
         created_at: now,
       })
       .select('*')
@@ -199,7 +214,7 @@ export async function GET(req: NextRequest) {
     if (ids.length > 0) {
       const { data: msgs } = await supabaseAdmin
         .from('messages')
-        .select('id, conversation_id, role, kind, content, created_at, subject, status')
+        .select('id, conversation_id, role, kind, content, created_at, subject, status, cc, bcc')
         .in('conversation_id', ids)
         .order('created_at', { ascending: true });
       for (const m of msgs || []) {
