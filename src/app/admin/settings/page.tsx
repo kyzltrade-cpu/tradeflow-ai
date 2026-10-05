@@ -10,6 +10,7 @@ import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
 import ComposioConnections from '@/components/ComposioConnections';
 import { extractionSpecKey, MAX_EXTRACTION_SPECS } from '@/lib/extraction-specs';
+import { track } from '@/lib/analytics';
 
 const ADMIN_EMAIL = 'tradeflow.hk@gmail.com';
 
@@ -175,6 +176,9 @@ function SettingsContent() {
 
   const handleCheckout = async (tier: string) => {
     setCheckoutLoading(true);
+    // Intent, not outcome: the user left for Stripe. Whether they complete
+    // payment is only knowable from the webhook, so this measures the click.
+    track('checkout_started', { tier, interval: annual ? 'year' : 'month' });
     try {
       const res = await authFetch('/api/billing/checkout', {
         method: 'POST',

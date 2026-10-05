@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useLang, LangToggle } from '@/lib/lang';
 import { useAuth, supabaseBrowser } from '@/lib/auth';
 import type { WorkBook } from 'xlsx';
+import { track } from '@/lib/analytics';
 
 type Step = 'welcome' | 'company' | 'excel' | 'email' | 'done';
 
@@ -29,6 +30,8 @@ export default function OnboardingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<Step>('welcome');
+  const mailboxWasConnected = useRef<boolean | null>(null);
+  const stepDoneTracked = useRef<boolean | null>(null);
   const [companyName, setCompanyName] = useState('');
   const [industry, setIndustry] = useState('');
   const [saving, setSaving] = useState(false);
@@ -225,6 +228,14 @@ export default function OnboardingPage() {
           throw new Error(prodData.error || 'Failed to import products');
         }
         setImportResult(prodData);
+        // The company was just created, so this is the one import that can be
+        // attributed to a company id without waiting for CompanyProvider.
+        track('catalog_imported', {
+          source: 'onboarding',
+          imported: prodData.imported ?? 0,
+          updated: prodData.updated ?? 0,
+          skipped: prodData.skipped ?? 0,
+        });
       }
 
       setStep('email');
@@ -244,7 +255,15 @@ export default function OnboardingPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load');
       setEmailConfigured(data.configured !== false);
-      setMailbox(data.mailbox ?? { connected: false, address: null, provider: null });
+      const mailbox = data.mailbox ?? { connected: false, address: null, provider: null };
+      // Fire only on the transition. refreshMailbox runs on mount and on a timer
+      // after the OAuth popup, so a plain "is connected" check would re-report an
+      // inbox that was connected before this page was ever opened.
+      if (mailbox.connected && mailboxWasConnected.current === false) {
+        track('mailbox_connected', { provider: mailbox.provider ?? 'unknown', source: 'onboarding' });
+      }
+      mailboxWasConnected.current = mailbox.connected === true;
+      setMailbox(mailbox);
     } catch {
       setMailbox({ connected: false, address: null, provider: null });
     }
@@ -533,7 +552,16 @@ export default function OnboardingPage() {
               )}
 
               <button
-                onClick={() => setStep('done')}
+                onClick={() => {
+                  if (stepDoneTracked.current === false) {
+                    track('onboarding_completed', {
+                      catalog: (importResult?.imported ?? 0) > 0,
+                      mailbox: mailbox?.connected === true,
+                    });
+                    stepDoneTracked.current = true;
+                  }
+                  setStep('done');
+                }}
                 className="w-full text-[14px] font-medium py-3 rounded-[4px] text-white"
                 style={{ background: 'var(--accent)' }}
               >

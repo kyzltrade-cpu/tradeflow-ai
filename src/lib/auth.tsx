@@ -2,6 +2,7 @@
 
 import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { track } from './analytics';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -41,6 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabaseBrowser.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser({ id: session.user.id, email: session.user.email || '' });
+        maybeTrackSignup(session.user);
       }
       setLoading(false);
     });
@@ -48,6 +50,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabaseBrowser.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser({ id: session.user.id, email: session.user.email || '' });
+        maybeTrackSignup(session.user);
       } else {
         setUser(null);
       }
@@ -99,6 +102,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
+}
+
+
+// A session existing does not mean someone signed up: sign-ins, token refreshes
+// and reloads all produce one. The distinguishing signal is an account created
+// moments ago whose email is now confirmed, which is what an email-confirmation
+// click or an OAuth first-time login produces and a returning login does not.
+// Guarded per user id so a reload cannot double-count the funnel.
+const trackedSignups = new Set<string>();
+const SIGNUP_WINDOW_MS = 15 * 60 * 1000;
+
+type AuthUserLike = {
+  id: string;
+  created_at?: string;
+  email_confirmed_at?: string | null;
+  confirmed_at?: string | null;
+};
+
+function maybeTrackSignup(u: AuthUserLike): void {
+  if (trackedSignups.has(u.id)) return;
+
+  const createdAt = u.created_at ? Date.parse(u.created_at) : NaN;
+  if (!Number.isFinite(createdAt)) return;
+
+  const confirmedAt = Date.parse(u.email_confirmed_at || u.confirmed_at || '');
+  const age = Date.now() - createdAt;
+  if (age < 0 || age > SIGNUP_WINDOW_MS) return;
+
+  // An unconfirmed account with a session is a pending signup, not a completed
+  // one. Only fire once the email is actually confirmed.
+  if (Number.isFinite(confirmedAt) && confirmedAt > createdAt) {
+    trackedSignups.add(u.id);
+    track('signup_completed', { method: 'email' });
+  }
 }
 
 export function useAuth() {

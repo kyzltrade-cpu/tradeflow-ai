@@ -5,6 +5,7 @@ import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
+import { track } from '@/lib/analytics';
 
 interface Product {
   id: string;
@@ -197,6 +198,12 @@ export default function ProductsPage() {
         return;
       }
       setImportResult(data);
+      track('catalog_imported', {
+        source: 'admin_products',
+        imported: data.imported ?? 0,
+        updated: data.updated ?? 0,
+        skipped: data.skipped ?? 0,
+      });
       showToast(`${t('Products imported', '已匯入產品')}: ${data.imported || 0}`, 'success');
       // Reload the list
       setLoading(true);
