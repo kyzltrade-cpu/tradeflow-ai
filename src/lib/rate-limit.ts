@@ -24,11 +24,14 @@ export function checkRateLimit(
   config: RateLimitConfig = { windowMs: 60000, maxRequests: 100 }
 ): { allowed: boolean; remaining: number; resetTime: number } {
   const now = Date.now();
-  const windowStart = now - config.windowMs;
 
   const record = rateLimitMap.get(key);
 
-  if (!record || record.resetTime < windowStart) {
+  // Compare against `now`, not `now - windowMs`: resetTime is already an
+  // absolute timestamp one window into the future, so testing it against a
+  // window *start* left the record live for twice its intended window (a
+  // 20/minute limit silently behaved as 20 per 2 minutes).
+  if (!record || record.resetTime <= now) {
     // New window or expired record
     rateLimitMap.set(key, { count: 1, resetTime: now + config.windowMs });
     return { allowed: true, remaining: config.maxRequests - 1, resetTime: now + config.windowMs };
@@ -53,7 +56,9 @@ export function getClientIp(req: Request): string {
 }
 
 export function createRateLimitResponse(resetTime: number): Response {
-  const retryAfter = Math.ceil((resetTime - Date.now()) / 1000);
+  // Clamped at zero: an already-elapsed window would otherwise emit a negative
+  // Retry-After, which is not a valid header value.
+  const retryAfter = Math.max(0, Math.ceil((resetTime - Date.now()) / 1000));
   return new Response(
     JSON.stringify({ error: 'Too many requests. Please try again later.' }),
     {

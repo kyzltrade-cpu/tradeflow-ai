@@ -1,20 +1,26 @@
-// API tests for Sailwise
-// Run with: npm test
+import { GET as healthGet } from '@/app/api/health/route'
+import { supabaseAdmin } from '@/lib/supabase'
 
+jest.mock('@/lib/supabase')
+
+// This previously issued a real fetch to http://localhost:3000, so it passed
+// or failed depending on whether a dev server happened to be running — which
+// makes it useless as a gate. The handler is called directly instead; the
+// richer cases live in api/health.test.ts.
 describe('Health Check', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    ;(supabaseAdmin.from as jest.Mock).mockReturnValue({
+      select: jest.fn().mockResolvedValue({ data: null, error: null }),
+    })
+  })
+
   it('should return health status', async () => {
-    const response = await fetch('http://localhost:3000/api/health');
-    const data = await response.json();
+    const response = await healthGet()
+    const data = await response.json()
 
-    expect(response.status).toBe(200);
-    expect(data).toHaveProperty('status');
-  });
-});
-
-describe('Database Schema', () => {
-  it('should have required tables', () => {
-    // This is a placeholder test
-    // In production, you would use a test database
-    expect(true).toBe(true);
-  });
-});
+    expect(response.status).toBe(200)
+    expect(data).toHaveProperty('status')
+    expect(data.status).toBe('ok')
+  })
+})
