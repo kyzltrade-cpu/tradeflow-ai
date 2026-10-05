@@ -5,7 +5,6 @@ import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
-import * as XLSX from 'xlsx';
 import mammoth from 'mammoth';
 import { DEFAULT_NOTIFICATIONS, type NotificationConfig } from '@/lib/notifications';
 
@@ -163,7 +162,13 @@ export default function KnowledgeBasePage() {
   const { companyId } = useCompany();
   const { showToast } = useToast();
   const [documents, setDocuments] = useState<KbDocument[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Derived rather than assigned: setting `loading` from inside the effect body
+  // triggered a cascading render on every company change, and a separate
+  // "have we finished the load for the company we are showing" sentinel is what
+  // the state was actually tracking. `undefined` means "no load attempted yet",
+  // so the first paint is loading even before companyId resolves from null.
+  const [loadedFor, setLoadedFor] = useState<string | null | undefined>(undefined);
+  const loading = loadedFor !== companyId;
   const [dragOver, setDragOver] = useState(false);
   const [parsing, setParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
@@ -201,7 +206,6 @@ export default function KnowledgeBasePage() {
 
   useEffect(() => {
     if (!companyId) return;
-    setLoading(true);
     Promise.all([
       authFetch(`/api/admin/knowledge?company_id=${companyId}`).then(r => r.json()),
       authFetch(`/api/admin/goals?company_id=${companyId}`).then(r => r.json()),
@@ -252,13 +256,17 @@ export default function KnowledgeBasePage() {
         }
       }
     }).catch((e) => { console.error('[knowledge] fetch error', e); })
-      .finally(() => setLoading(false));
+      .finally(() => setLoadedFor(companyId));
   }, [companyId]);
 
   const parseFile = async (file: File): Promise<{ content: string; type: string }> => {
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
 
     if (['xlsx', 'xls', 'csv'].includes(ext)) {
+      // Same reasoning as onboarding: SheetJS is a large parser, and this
+      // knowledge-base page loads for customers who mostly paste text. Fetch
+      // the parser only when a spreadsheet actually arrives.
+      const XLSX = await import('xlsx');
       const buffer = await file.arrayBuffer();
       const workbook = XLSX.read(buffer, { type: 'buffer' });
       let allText = '';

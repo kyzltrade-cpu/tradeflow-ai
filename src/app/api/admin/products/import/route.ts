@@ -3,8 +3,29 @@ import * as XLSX from 'xlsx';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 
-// POST /api/admin/products/import — bulk import products from an .xlsx / .csv history
+// POST /api/admin/products/import — bulk import products.
+//
+// Two accepted shapes, both landing in the same normalize/dedupe/insert path:
+//
+//   1. multipart/form-data with a `file` — the raw .xlsx/.csv. Used by the
+//      dashboard importer (src/app/admin/products/page.tsx).
+//   2. application/json `{ products: [...] }` — rows the browser already
+//      parsed and the user has reviewed. Used by onboarding, which previews
+//      every parsed row and lets the user delete individual rows before
+//      continuing, so re-uploading the original file there would silently
+//      re-add the rows the user just removed.
+//
 // Flexible header mapping: any common column naming is accepted and normalized.
+type NormalizedProduct = {
+  name: string;
+  price_range?: string | null;
+  category?: string | null;
+  moq?: string | null;
+  lead_time?: string | null;
+  description?: string | null;
+  specs?: string | null;
+};
+
 export async function POST(req: NextRequest) {
   try {
     const auth = await requireAuth(req);
@@ -13,26 +34,68 @@ export async function POST(req: NextRequest) {
     }
     const companyId = auth.companyId;
 
-    const formData = await req.formData();
-    const file = formData.get('file');
-    if (!(file instanceof File)) {
-      return NextResponse.json({ error: 'file required' }, { status: 400 });
-    }
+    let candidates: NormalizedProduct[] = [];
 
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    if (!sheet) {
-      return NextResponse.json({ error: 'Spreadsheet is empty' }, { status: 400 });
-    }
+    const contentType = req.headers.get('content-type') || '';
+    if (contentType.includes('application/json')) {
+      const body = (await req.json()) as { products?: unknown };
+      if (!Array.isArray(body.products)) {
+        return NextResponse.json({ error: 'products array required' }, { status: 400 });
+      }
+      // Tenant is taken from the session only; a company_id in the body is never
+      // consulted, so this cannot be pointed at another tenant.
+      if (body.products.length > MAX_IMPORT_ROWS) {
+        return NextResponse.json(
+          { error: `Too many rows (max ${MAX_IMPORT_ROWS} per import)` },
+          { status: 400 }
+        );
+      }
+      candidates = body.products.map((row) => {
+        const r = (row ?? {}) as Record<string, unknown>;
+        return {
+          name: String(r.name ?? '').trim(),
+          price_range: r.price_range == null ? null : String(r.price_range),
+          category: r.category == null ? null : String(r.category),
+          moq: r.moq == null ? null : String(r.moq),
+          lead_time: r.lead_time == null ? null : String(r.lead_time),
+          description: r.description == null ? null : String(r.description),
+          specs: r.specs == null ? null : String(r.specs),
+        };
+      });
+    } else {
+      const formData = await req.formData();
+      const file = formData.get('file');
+      if (!(file instanceof File)) {
+        return NextResponse.json({ error: 'file required' }, { status: 400 });
+      }
 
-    const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' });
-    if (!rows.length) {
-      return NextResponse.json({ error: 'Spreadsheet has no data rows' }, { status: 400 });
-    }
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const workbook = XLSX.read(buffer, { type: 'buffer' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      if (!sheet) {
+        return NextResponse.json({ error: 'Spreadsheet is empty' }, { status: 400 });
+      }
 
-    const headerRow = rows[0];
-    const colMap = resolveColumns(Object.keys(headerRow));
+      const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: '' });
+      if (!rows.length) {
+        return NextResponse.json({ error: 'Spreadsheet has no data rows' }, { status: 400 });
+      }
+
+      const colMap = resolveColumns(Object.keys(rows[0]));
+      candidates = rows.map((raw) => {
+        const row = raw as Record<string, unknown>;
+        const price = pick(row, colMap.price) || pick(row, colMap.price_range);
+        return {
+          name: String(pick(row, colMap.name) ?? '').trim(),
+          price_range: price ? String(price) : null,
+          category: str(pick(row, colMap.category)),
+          moq: str(pick(row, colMap.moq)),
+          lead_time: str(pick(row, colMap.lead_time)),
+          description: str(pick(row, colMap.description)),
+          specs: str(pick(row, colMap.specs)),
+        };
+      });
+    }
 
     const insertBatch: Array<Record<string, unknown>> = [];
     const upsertOps: Array<Promise<unknown>> = [];
@@ -50,39 +113,26 @@ export async function POST(req: NextRequest) {
       byNormalized.set(normalizeName(p.name), p.id);
     }
 
-    for (const raw of rows) {
-      const row = raw as Record<string, unknown>;
-      const name = pick(row, colMap.name);
-      if (!name) {
-        skipped.push(inspect(row));
-        continue;
-      }
-      const productName = String(name).trim();
+    for (const candidate of candidates) {
+      const productName = (candidate.name ?? '').trim();
       const normalized = normalizeName(productName);
       if (!normalized) {
-        skipped.push(inspect(row));
+        skipped.push(productName || inspect(candidate));
         continue;
       }
 
-      const price = pick(row, colMap.price) || pick(row, colMap.price_range);
-      const category = pick(row, colMap.category);
-      const moq = pick(row, colMap.moq);
-      const leadTime = pick(row, colMap.lead_time);
-      const description = pick(row, colMap.description);
-      const specs = pick(row, colMap.specs);
-
-      const priceRange = normalizePriceRange(price);
+      const priceRange = normalizePriceRange(candidate.price_range);
 
       const payload: Record<string, unknown> = {
         company_id: companyId,
         name: productName,
-        description: description ? String(description) : null,
-        category: category ? String(category) : null,
-        moq: moq ? String(moq) : null,
-        lead_time: leadTime ? String(leadTime) : null,
+        description: candidate.description ? String(candidate.description) : null,
+        category: candidate.category ? String(candidate.category) : null,
+        moq: candidate.moq ? String(candidate.moq) : null,
+        lead_time: candidate.lead_time ? String(candidate.lead_time) : null,
         price_range: priceRange || null,
       };
-      if (specs) payload.specs = parseSpecs(specs);
+      if (candidate.specs) payload.specs = parseSpecs(candidate.specs);
 
       const existingId = byNormalized.get(normalized);
       if (existingId) {
@@ -178,6 +228,10 @@ function resolveColumns(headers: string[]): Record<string, string> {
   return colMap;
 }
 
+function str(v: unknown): string | null {
+  return v === null || v === undefined || v === '' ? null : String(v);
+}
+
 function pick(row: Record<string, unknown>, key?: string): unknown {
   if (!key) return '';
   const cell = row[key];
@@ -233,3 +287,6 @@ function inspect(row: Record<string, unknown>): string {
   const first = row[Object.keys(row)[0]];
   return String(first ?? '').slice(0, 80);
 }
+
+/** Bound the per-row work one request can ask the server to do. */
+const MAX_IMPORT_ROWS = 2000;
