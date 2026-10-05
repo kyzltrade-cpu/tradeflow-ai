@@ -7,6 +7,7 @@ import { useLang } from '@/lib/lang'
 import { useCompany } from '@/lib/company'
 import { authFetch } from '@/lib/auth-fetch'
 import { isClearedToSend } from '@/lib/quote-approval'
+import { track } from '@/lib/analytics';
 
 type LineItem = {
   id: string
@@ -195,6 +196,14 @@ export default function QuoteDetailPage() {
         const json = await res.json().catch(() => ({}))
         throw new Error(json.error || 'Failed to send quote')
       }
+      // Only after a 2xx, so the funnel counts quotes that actually went out.
+      // Deliberately omitted: quote id, opportunity title, customer name, contact
+      // name and contact email. Only commercial shape goes to analytics.
+      track('quote_sent', {
+        currency: quote?.currency ?? 'unknown',
+        incoterm: quote?.incoterm ?? 'unknown',
+        margin_percent: quote?.margin_percent ?? 0,
+      })
       await fetchQuote()
     } catch (err: any) {
       alert(err.message || 'Failed to send quote')

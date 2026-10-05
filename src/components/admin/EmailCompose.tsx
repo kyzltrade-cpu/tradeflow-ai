@@ -4,6 +4,11 @@ import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, Send, Trash2, X } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useToast } from '@/components/Toast';
+import {
+  describeAddressErrors,
+  splitAddresses,
+  validateAddressFields,
+} from '@/lib/address-validation';
 
 export type ComposePayload = {
   to: string[];
@@ -57,12 +62,38 @@ export default function EmailCompose({
   const [sending, setSending] = useState(false);
   const toRef = useRef<HTMLInputElement>(null);
 
-  const split = (s: string) => s.split(/[,;]/).map((x) => x.trim()).filter(Boolean);
+  const split = splitAddresses;
+
+  // Typing in Cc/Bcc is the whole point of those fields, so a malformed entry
+  // has to be reported against the field that owns it — not as a toast after
+  // the send was already attempted.
+  const [addressErrors, setAddressErrors] = useState<Partial<Record<'to' | 'cc' | 'bcc', string[]>>>({});
+
+  const validateAddresses = (next: { to?: string; cc?: string; bcc?: string }) => {
+    const errors = validateAddressFields({
+      to: next.to ?? to,
+      cc: next.cc ?? cc,
+      bcc: next.bcc ?? bcc,
+    });
+    setAddressErrors(errors);
+    return errors;
+  };
 
   const send = async () => {
     const toList = split(to);
     if (toList.length === 0 || !body.trim() || (requireSubject && !subject.trim())) {
       showToast(t('Recipient, subject, and message are required', '請填寫收件人、主旨和內容'), 'error');
+      return;
+    }
+    const addressErrors = validateAddressFields({ to, cc, bcc });
+    if (Object.keys(addressErrors).length) {
+      showToast(
+        t(
+          `Not a valid email address — ${describeAddressErrors(addressErrors)}`,
+          `電郵地址無效 — ${describeAddressErrors(addressErrors)}`
+        ),
+        'error'
+      );
       return;
     }
     setSending(true);
@@ -176,7 +207,7 @@ export default function EmailCompose({
             <input
               ref={toRef}
               value={to}
-              onChange={(e) => setTo(e.target.value)}
+              onChange={(e) => { setTo(e.target.value); validateAddresses({ to: e.target.value }); }}
               readOnly={lockTo}
               placeholder={lockTo ? undefined : t('name@company.com, second@company.com', '名稱@公司.com，第二位@公司.com')}
               className="flex-1 text-[13px] focus:outline-none min-w-0 disabled:opacity-100 read-only:cursor-default"
@@ -190,30 +221,48 @@ export default function EmailCompose({
                 <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>Cc</span>
                 <input
                   value={cc}
-                  onChange={(e) => setCc(e.target.value)}
+                  onChange={(e) => { setCc(e.target.value); validateAddresses({ cc: e.target.value }); }}
+                  placeholder={t('name@company.com', '名稱@公司.com')}
+                  aria-invalid={Boolean(addressErrors.cc)}
                   className="flex-1 text-[13px] focus:outline-none min-w-0"
-                  style={fieldStyle}
+                  style={{ ...fieldStyle, ...(addressErrors.cc ? { borderColor: 'var(--error)' } : null) }}
                 />
               </div>
               <div className="flex items-center gap-3 px-4 py-2.5 border-b" style={fieldStyle}>
                 <span className="w-12 flex-shrink-0 text-[12px]" style={{ color: 'var(--text-muted)' }}>Bcc</span>
                 <input
                   value={bcc}
-                  onChange={(e) => setBcc(e.target.value)}
+                  onChange={(e) => { setBcc(e.target.value); validateAddresses({ bcc: e.target.value }); }}
+                  placeholder={t('name@company.com', '名稱@公司.com')}
+                  aria-invalid={Boolean(addressErrors.bcc)}
                   className="flex-1 text-[13px] focus:outline-none min-w-0"
-                  style={fieldStyle}
+                  style={{ ...fieldStyle, ...(addressErrors.bcc ? { borderColor: 'var(--error)' } : null) }}
                 />
               </div>
             </>
           ) : (
             <div className="flex items-center px-4 py-1.5" style={fieldStyle}>
               <button
+                type="button"
                 onClick={() => setShowCc(true)}
-                className="text-[12px] hover:underline"
+                className="rounded-md px-2 py-1 text-[12px] font-medium transition-colors hover:bg-black/[0.04]"
                 style={{ color: 'var(--text-muted)' }}
               >
-                Cc / Bcc
+                + Cc / Bcc
               </button>
+            </div>
+          )}
+
+          {Object.keys(addressErrors).length > 0 && (
+            <div
+              role="alert"
+              className="px-4 py-2 text-[12px]"
+              style={{ background: '#FEE8EA', color: 'var(--error)' }}
+            >
+              {t(
+                `Check the highlighted address — ${describeAddressErrors(addressErrors)}`,
+                `請檢查標示的地址 — ${describeAddressErrors(addressErrors)}`
+              )}
             </div>
           )}
 

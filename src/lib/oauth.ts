@@ -69,13 +69,27 @@ export function buildAuthorizeUrl(provider: OAuthProvider, redirectUri: string, 
 
 const INSECURE_STATE_DEFAULT = 'changeme-insecure-state-secret';
 
+/** OAuth state is a short-lived CSRF token: a stale one is never useful. */
+export const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
 function stateSecret(): string {
-  const secret = process.env.OAUTH_STATE_SECRET || process.env.SUPABASE_SECRET_KEY;
   // Fail closed. A guessable state secret lets anyone forge OAuth callbacks,
-  // and it is also the token-encryption key.
+  // and it is also the token-encryption key that protects stored mailbox
+  // tokens, so it must never degrade to a shared secret.
+  //
+  // In production OAUTH_STATE_SECRET is mandatory: falling back to
+  // SUPABASE_SECRET_KEY would silently rotate the mailbox-token encryption key
+  // whenever that service key is rotated, invalidating every stored token, and
+  // it couples two secrets that have no reason to be equal (audit C5 / rec 5).
+  // Local development keeps the fallback so the feature works without setup.
+  const secret =
+    process.env.NODE_ENV === 'production'
+      ? process.env.OAUTH_STATE_SECRET
+      : process.env.OAUTH_STATE_SECRET || process.env.SUPABASE_SECRET_KEY;
+
   if (!secret || secret === INSECURE_STATE_DEFAULT || secret.length < 32) {
     throw new Error(
-      'OAUTH_STATE_SECRET is missing or too weak. Refusing to sign OAuth state / encrypt provider tokens.'
+      'OAUTH_STATE_SECRET is missing or too weak (min 32 chars). Refusing to sign OAuth state / encrypt provider tokens.'
     );
   }
   return secret;
@@ -85,8 +99,14 @@ function encryptionKey(): Buffer {
   return crypto.createHash('sha256').update(stateSecret()).digest();
 }
 
+type StatePayload = { companyId: string; provider: OAuthProvider; ts: number };
+
 export function createState(data: { companyId: string; provider: OAuthProvider }): string {
-  const payload = Buffer.from(JSON.stringify(data)).toString('base64url');
+  // The signature stops forgery; `ts` stops replay. Without it a captured state
+  // stays valid forever, so an intercepted callback URL could be re-submitted
+  // at any later point (audit M3).
+  const body: StatePayload = { ...data, ts: Date.now() };
+  const payload = Buffer.from(JSON.stringify(body)).toString('base64url');
   const sig = crypto.createHmac('sha256', stateSecret()).update(payload).digest('hex');
   return `${payload}.${sig}`;
 }
@@ -98,8 +118,13 @@ export function verifyState(state: string): { companyId: string; provider: OAuth
     const expected = crypto.createHmac('sha256', stateSecret()).update(payload).digest();
     const given = Buffer.from(sig, 'hex');
     if (expected.length !== given.length || !crypto.timingSafeEqual(expected, given)) return null;
-    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Partial<StatePayload>;
     if (typeof data.companyId !== 'string' || !PROVIDERS[data.provider as OAuthProvider]) return null;
+    // A state minted before this change has no `ts`; treat it as expired rather
+    // than as valid-forever, so the fix applies to in-flight links immediately.
+    if (typeof data.ts !== 'number' || !Number.isFinite(data.ts)) return null;
+    const age = Date.now() - data.ts;
+    if (age < 0 || age > STATE_TTL_MS) return null;
     return { companyId: data.companyId, provider: data.provider as OAuthProvider };
   } catch {
     return null;

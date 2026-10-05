@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLang, LangToggle } from '@/lib/lang';
 import { useAuth, supabaseBrowser } from '@/lib/auth';
-import * as XLSX from 'xlsx';
+import type { WorkBook } from 'xlsx';
+import { track } from '@/lib/analytics';
 
 type Step = 'welcome' | 'company' | 'excel' | 'email' | 'done';
 
@@ -29,6 +30,8 @@ export default function OnboardingPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [step, setStep] = useState<Step>('welcome');
+  const mailboxWasConnected = useRef<boolean | null>(null);
+  const stepDoneTracked = useRef<boolean | null>(null);
   const [companyName, setCompanyName] = useState('');
   const [industry, setIndustry] = useState('');
   const [saving, setSaving] = useState(false);
@@ -47,6 +50,9 @@ export default function OnboardingPage() {
   const [parsedProducts, setParsedProducts] = useState<ParsedProduct[]>([]);
   const [csvDragOver, setCsvDragOver] = useState(false);
   const [csvParsing, setCsvParsing] = useState(false);
+  // What the server actually committed, as opposed to what we parsed client-side.
+  const [importResult, setImportResult] = useState<{ imported?: number; updated?: number; skipped?: number } | null>(null);
+  const [csvError, setCsvError] = useState<string | null>(null);
   const csvInputRef = useRef<HTMLInputElement>(null);
 
   // Email connect
@@ -61,8 +67,14 @@ export default function OnboardingPage() {
   const parseCsvFile = async (file: File): Promise<ParsedProduct[]> => {
     const ext = file.name.split('.').pop()?.toLowerCase() || '';
     if (!['xlsx', 'xls', 'csv'].includes(ext)) return [];
+    // Loaded on demand, not at module scope: SheetJS is ~400kB of parser and
+    // the visitor sees the welcome and company steps before ever touching the
+    // catalog step, so shipping it in the entry chunk slowed the first paint
+    // for a parser most sessions never use. `xlsx` is split into its own async
+    // chunk and fetched only once a file is actually dropped in.
+    const XLSX = await import('xlsx');
     const buffer = await file.arrayBuffer();
-    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    const workbook: WorkBook = XLSX.read(buffer, { type: 'buffer' });
     const products: ParsedProduct[] = [];
     for (const sheetName of workbook.SheetNames) {
       const sheet = workbook.Sheets[sheetName];
@@ -94,10 +106,35 @@ export default function OnboardingPage() {
   };
 
   const handleCsvFile = async (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    if (!['xlsx', 'xls', 'csv'].includes(ext)) {
+      setCsvError(t('Unsupported file type. Upload an .xlsx, .xls or .csv file.', '不支援的檔案類型。請上載 .xlsx、.xls 或 .csv 檔案。'));
+      return;
+    }
+    setCsvError(null);
     setCsvParsing(true);
-    const products = await parseCsvFile(file);
-    setParsedProducts(products);
-    setCsvParsing(false);
+    try {
+      const products = await parseCsvFile(file);
+      setParsedProducts(products);
+      // Zero recognized rows is the usual symptom of a header the matcher does
+      // not know. Say so, instead of leaving an empty preview that reads as
+      // "still loading".
+      if (!products.length) {
+        setCsvError(t(
+          'No product rows found. Check that a column is headed product name, 產品 or 品名.',
+          '找不到產品資料。請確認其中一欄的標題為 product name、產品 或 品名。'
+        ));
+      }
+    } catch (err) {
+      console.error('[onboarding] catalog parse error:', err);
+      setCsvError(t(
+        "That file couldn't be read. If it's an old .xls, re-save it as .xlsx and try again.",
+        '無法讀取該檔案。若為舊版 .xls，請另存為 .xlsx 後再試。'
+      ));
+    } finally {
+      setCsvParsing(false);
+      if (csvInputRef.current) csvInputRef.current.value = '';
+    }
   };
 
   const removeParsedProduct = (index: number) => {
@@ -106,6 +143,25 @@ export default function OnboardingPage() {
 
   const getSystemPrompt = (): string =>
     `You are a helpful sales assistant for ${companyName}${industry ? `, a ${industry.toLowerCase()} company` : ''}. You reply professionally, concisely, and in the same language the customer uses. You know all products, pricing, MOQ, shipping terms, and certifications. If a question is beyond your knowledge, say you will connect them with a human agent.`;
+
+  // Reports what the server committed. The old copy printed parsedProducts.length,
+  // so a sheet whose rows were rejected as unreadable still claimed a full
+  // catalog was imported and the customer only found out in the dashboard.
+  const catalogSummary = (): string => {
+    if (!importResult) {
+      return parsedProducts.length
+        ? t(`${parsedProducts.length} imported`, `已匯入 ${parsedProducts.length} 個`)
+        : t('None yet', '尚未匯入');
+    }
+    const imported = importResult.imported ?? 0;
+    const updated = importResult.updated ?? 0;
+    const skipped = importResult.skipped ?? 0;
+    const parts: string[] = [];
+    if (imported) parts.push(t(`${imported} imported`, `已匯入 ${imported} 個`));
+    if (updated) parts.push(t(`${updated} updated`, `已更新 ${updated} 個`));
+    if (skipped) parts.push(t(`${skipped} skipped`, `已略過 ${skipped} 個`));
+    return parts.join(' · ') || t('None yet', '尚未匯入');
+  };
 
   const authHeaders = async (): Promise<Record<string, string>> => {
     const { data: { session } } = await supabaseBrowser.auth.getSession();
@@ -157,23 +213,29 @@ export default function OnboardingPage() {
         throw new Error(settingsData.error || 'Failed to save settings');
       }
 
-      for (const product of parsedProducts) {
-        const prodRes = await fetch('/api/admin/products', {
+      // One request for the whole reviewed catalog. This used to POST a product
+      // per row in sequence, so a 50-row sheet meant 50 sequential round trips:
+      // onboarding crawled, and a failure halfway through left a partial
+      // catalog with no way to tell which rows landed.
+      if (parsedProducts.length) {
+        const prodRes = await fetch('/api/admin/products/import', {
           method: 'POST',
           headers,
-          body: JSON.stringify({
-            company_id: newCompanyId,
-            name: product.name,
-            description: product.description || null,
-            moq: product.moq || null,
-            price_range: product.price_range || null,
-            category: product.category || null,
-          }),
+          body: JSON.stringify({ products: parsedProducts }),
         });
+        const prodData = await prodRes.json().catch(() => ({}));
         if (!prodRes.ok) {
-          const prodData = await prodRes.json().catch(() => ({}));
           throw new Error(prodData.error || 'Failed to import products');
         }
+        setImportResult(prodData);
+        // The company was just created, so this is the one import that can be
+        // attributed to a company id without waiting for CompanyProvider.
+        track('catalog_imported', {
+          source: 'onboarding',
+          imported: prodData.imported ?? 0,
+          updated: prodData.updated ?? 0,
+          skipped: prodData.skipped ?? 0,
+        });
       }
 
       setStep('email');
@@ -193,7 +255,15 @@ export default function OnboardingPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to load');
       setEmailConfigured(data.configured !== false);
-      setMailbox(data.mailbox ?? { connected: false, address: null, provider: null });
+      const mailbox = data.mailbox ?? { connected: false, address: null, provider: null };
+      // Fire only on the transition. refreshMailbox runs on mount and on a timer
+      // after the OAuth popup, so a plain "is connected" check would re-report an
+      // inbox that was connected before this page was ever opened.
+      if (mailbox.connected && mailboxWasConnected.current === false) {
+        track('mailbox_connected', { provider: mailbox.provider ?? 'unknown', source: 'onboarding' });
+      }
+      mailboxWasConnected.current = mailbox.connected === true;
+      setMailbox(mailbox);
     } catch {
       setMailbox({ connected: false, address: null, provider: null });
     }
@@ -377,6 +447,12 @@ export default function OnboardingPage() {
                 </p>
               </div>
 
+              {csvError && (
+                <div className="mb-4 text-[13px] px-4 py-3 rounded-[4px]" style={{ background: '#FEE8EA', color: 'var(--error)' }}>
+                  {csvError}
+                </div>
+              )}
+
               {parsedProducts.length > 0 && (
                 <div className="mb-6">
                   <p className="text-[13px] font-medium mb-2" style={{ color: 'var(--text-muted)' }}>
@@ -476,7 +552,16 @@ export default function OnboardingPage() {
               )}
 
               <button
-                onClick={() => setStep('done')}
+                onClick={() => {
+                  if (stepDoneTracked.current === false) {
+                    track('onboarding_completed', {
+                      catalog: (importResult?.imported ?? 0) > 0,
+                      mailbox: mailbox?.connected === true,
+                    });
+                    stepDoneTracked.current = true;
+                  }
+                  setStep('done');
+                }}
                 className="w-full text-[14px] font-medium py-3 rounded-[4px] text-white"
                 style={{ background: 'var(--accent)' }}
               >
@@ -508,7 +593,7 @@ export default function OnboardingPage() {
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span style={{ color: 'var(--success)' }}>✓</span>
-                    <span className="text-[13px]">{t('Catalog', '產品目錄')}：<span className="font-medium">{parsedProducts.length} {t('imported', '已匯入')}</span></span>
+                    <span className="text-[13px]">{t('Catalog', '產品目錄')}：<span className="font-medium">{catalogSummary()}</span></span>
                   </div>
                   <div className="flex items-center gap-2.5">
                     <span style={{ color: 'var(--success)' }}>✓</span>

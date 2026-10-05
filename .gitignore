@@ -33,6 +33,11 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# The templates are the deployment contract: they list every variable the app
+# reads, and nothing else in the repo does. Without these exceptions a new
+# deployment has no documented way to configure itself.
+!.env.example
+!.env.local.example
 
 # vercel
 .vercel

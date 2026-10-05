@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { describeAddressErrors, validateAddressFields } from '@/lib/address-validation';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
 import { sendEmail } from '@/lib/email';
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const { data: messages } = await supabaseAdmin
       .from('messages')
-      .select('id, role, content, tokens_used, created_at, kind, status, subject, sender_email, recipient_email, attachments')
+      .select('id, role, content, tokens_used, created_at, kind, status, subject, sender_email, recipient_email, cc, bcc, attachments')
       .eq('conversation_id', id)
       .order('created_at', { ascending: true });
 
@@ -467,6 +468,22 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     const ccList = cleanList(body.cc);
     const bccList = cleanList(body.bcc);
 
+    // Authoritative check. The composer catches this inline, but it is a client
+    // component and the endpoint is directly reachable — a malformed address
+    // makes Resend reject the whole send, so it must never be the thing that
+    // decides whether a quote goes out.
+    const addressErrors = validateAddressFields({
+      to: recipientEmail || '',
+      cc: body.cc as string,
+      bcc: body.bcc as string,
+    });
+    if (Object.keys(addressErrors).length) {
+      return NextResponse.json(
+        { error: `Invalid email address — ${describeAddressErrors(addressErrors)}` },
+        { status: 400 }
+      );
+    }
+
     // Replies carry a proper "Re:" subject line so the thread reads correctly
     // in the buyer's mail client. Forwards keep whatever the operator typed.
     const rawSubject =
@@ -521,6 +538,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         content,
         sender_email: null,
         recipient_email: recipientEmail,
+        cc: ccList,
+        bcc: bccList,
         created_at: now,
       })
       .select('*')

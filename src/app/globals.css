@@ -709,6 +709,38 @@ section[id] { scroll-margin-top: 84px; }
   }
 }
 
+/* ── Auth surfaces ───────────────────────────────────────────────────────
+   The app shell is monochrome on white, so a login page painted in --bg just
+   merges the form into the viewport. A cool-tinted grey plus two very faint
+   brand radials gives the white card an edge to sit against without the page
+   looking decorative. Deliberately far quieter than the landing wash. */
+.auth-bg {
+  background-color: #F1F2F4;
+  background-image:
+    radial-gradient(58% 42% at 12% 2%, rgba(180, 85, 45, 0.07), transparent 70%),
+    radial-gradient(52% 40% at 92% 98%, rgba(20, 52, 43, 0.07), transparent 70%);
+}
+
+.auth-card {
+  background: #FFFFFF;
+  border: 1px solid rgba(16, 24, 40, 0.07);
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(16, 24, 40, 0.04),
+    0 16px 36px -20px rgba(16, 24, 40, 0.20);
+}
+
+.auth-input {
+  background: #FFFFFF;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+.auth-input:focus {
+  outline: none;
+  border-color: #9CA3AF;
+  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.07);
+}
+
 /* ── Paper texture + ambient life ──────────────────────────────────────────
    A fine 12px grid over the whole page, plus two wash blobs that drift for the
    better part of a minute. Both live in one fixed, click-through overlay: at

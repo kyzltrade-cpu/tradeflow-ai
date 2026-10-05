@@ -4,6 +4,7 @@ import { useState, useEffect, createContext, useContext, ReactNode } from 'react
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { authFetch } from '@/lib/auth-fetch';
+import { identifyCompany } from './analytics';
 
 interface CompanyContextType {
   companyId: string | null;
@@ -68,6 +69,9 @@ export function CompanyProvider({ children }: { children: ReactNode }) {
 
       const data = res.ok ? await res.json() : null;
       if (data?.id) {
+        // First moment a company identity exists for this session. Correlates the
+        // funnel events that follow without attaching the user's email or id.
+        identifyCompany(data.id);
         setCompanyId(data.id);
         setCompanyStatus(data.status || 'approved');
         localStorage.setItem('tradeflow_company_id', data.id);

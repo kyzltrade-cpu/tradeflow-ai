@@ -29,7 +29,7 @@ export default function PrivacyPage() {
       <div className="max-w-[640px] mx-auto px-6 py-16">
         <h1 className="text-[32px] font-semibold tracking-[-0.8px] mb-2">{t('Privacy Policy', '私隱政策')}</h1>
         <p className="text-[13px] mb-10" style={{ color: 'var(--text-muted)' }}>
-          {t('Last updated: September 2026', '最後更新：2026 年 9 月')}
+          {t('Last updated: October 2026', '最後更新：2026 年 10 月')}
         </p>
 
         <div className="space-y-8">
@@ -71,8 +71,14 @@ export default function PrivacyPage() {
             <h2 className="text-[18px] font-semibold mb-3">{t('Third parties', '第三方服務')}</h2>
             <p className="text-[14px] leading-[1.7]" style={{ color: 'var(--text-muted)' }}>
               {t(
-                'We share data with the following third-party processors as necessary to provide our service: Google and Microsoft for your connected email inboxes, OpenAI for AI-generated responses, and Supabase for data storage. Each processor is bound by their respective data processing agreements.',
-                '我們會根據提供服務的需要，與以下第三方處理者共享資料：Google 和 Microsoft 用於連接您的電郵收件匣，OpenAI 用於 AI 生成回覆，Supabase 用於資料儲存。每個處理者均受其各自的資料處理協議約束。'
+                'We share data with the following third-party processors as necessary to provide our service: Google and Microsoft for your connected email inboxes, OpenAI for AI-generated responses, Supabase for data storage, and PostHog for product analytics. Each processor is bound by their respective data processing agreements.',
+                '我們會根據提供服務的需要，與以下第三方處理者共享資料：Google 和 Microsoft 用於連接您的電郵收件匣，OpenAI 用於 AI 生成回覆，Supabase 用於資料儲存，PostHog 用於產品分析。每個處理者均受其各自的資料處理協議約束。'
+              )}
+            </p>
+            <p className="mt-3 text-[14px] leading-[1.7]" style={{ color: 'var(--text-muted)' }}>
+              {t(
+                'Product analytics: we record which steps of setup you complete (account created, catalog imported, inbox connected, checkout started, quote sent) so we can find where setup breaks. Analytics records no cookies, keeps no visitor identifier between visits, and sends no message content, customer names or email addresses. It stores your company id and the numeric outcome of each step.',
+                '產品分析：我們記錄您完成了設定的哪些步驟（建立帳戶、匯入產品目錄、連接收件匣、開始結帳、已寄出報價），以便找出設定在哪一步失敗。分析功能不使用 Cookie、不保留跨造訪的訪客識別碼，亦不會傳送訊息內容、客戶名稱或電郵地址，只會儲存您的公司編號及各步驟的數值結果。'
               )}
             </p>
           </section>

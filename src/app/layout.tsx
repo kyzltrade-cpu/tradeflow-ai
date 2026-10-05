@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import { Fraunces, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { rootMetadata } from "@/lib/site-metadata";
 import { LangProvider } from "@/lib/lang";
 import { AuthProvider } from "@/lib/auth";
 import { ToastProvider } from "@/components/Toast";
 import SupportChat from "@/components/landing/SupportChat";
+import AnalyticsLoader from "@/components/AnalyticsLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,15 +37,7 @@ export const viewport: Viewport = {
   themeColor: "#faf7f2",
 };
 
-export const metadata: Metadata = {
-  title: "Sailwise — Inquiry to Quote, End to End",
-  description: "Sailwise watches for buyer inquiries, pulls the specs out of the message and its attachments, fetches whatever is still missing, and drafts the reply. The whole spec, from one email.",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "black-translucent",
-    title: "Sailwise",
-  },
-};
+export const metadata: Metadata = rootMetadata();
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -53,10 +47,6 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       style={{ background: '#FFFFFF' }}
     >
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="theme-color" content="#000000" />
         <style dangerouslySetInnerHTML={{ __html: `
           html { background: #FFFFFF !important; }
           body { background: #FFFFFF !important; }
@@ -72,6 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
               {children}
             </ToastProvider>
             <SupportChat />
+            <AnalyticsLoader />
           </AuthProvider>
         </LangProvider>
       </body>

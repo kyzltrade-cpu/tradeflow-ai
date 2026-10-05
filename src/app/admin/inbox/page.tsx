@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import {
   Mail, Search, RefreshCw, Star, Plus, Archive, Trash2, Inbox,
-  Inbox as InboxIcon, Check, Sparkles, Pause, Play,
+  Inbox as InboxIcon, Check, Pause, Play,
 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
@@ -137,7 +138,6 @@ export default function AdminInboxPage() {
   const [error, setError] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showCompose, setShowCompose] = useState(false);
-  const [seeding, setSeeding] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   const folderParam = searchParams.get('folder');
@@ -228,25 +228,6 @@ export default function AdminInboxPage() {
       return false;
     }
   }, [fetchInbox, showToast]);
-
-  const loadDemoData = async () => {
-    setSeeding(true);
-    try {
-      const res = await authFetch('/api/admin/demo-data', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to load demo data');
-      showToast(
-        t('Demo data loaded', '示範資料已載入'),
-        'success'
-      );
-      console.log('[demo-data] seeded', JSON.stringify(data));
-      await fetchInbox();
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to load demo data', 'error');
-    } finally {
-      setSeeding(false);
-    }
-  };
 
   const toggleStar = async (row: InboxRow) => {
     try {
@@ -539,23 +520,24 @@ export default function AdminInboxPage() {
             <p className="text-[14px] font-medium mb-1">
               {error || t('Nothing here', '這裡沒有內容')}
             </p>
-            <p className="text-[12px] mb-4" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
               {error
                 ? t('Check your connection and try again.', '請檢查連線後再試。')
                 : folder === 'inbox' && !qParam && counts.total === 0
-                  ? t('Load sample conversations and products to explore the workspace.', '載入示範對話與產品，先看看工作區。')
+                  ? t(
+                      'Connect a mailbox in Settings, or import your catalog to get started.',
+                      '請先在設定中連接收件匣，或匯入產品目錄即可開始。',
+                    )
                   : t('Incoming mail will show here', '來信會顯示在這裡')}
             </p>
             {!error && folder === 'inbox' && !qParam && counts.total === 0 && (
-              <button
-                onClick={loadDemoData}
-                disabled={seeding}
-                className="inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+              <Link
+                href="/admin/settings"
+                className="mt-4 inline-flex items-center gap-1.5 rounded-[10px] px-3.5 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ background: 'var(--accent)' }}
               >
-                <Sparkles width="14" height="14" />
-                {seeding ? t('Loading…', '載入中…') : t('Load demo data', '載入示範資料')}
-              </button>
+                {t('Connect your inbox', '連接您的收件匣')}
+              </Link>
             )}
           </div>
         ) : (
