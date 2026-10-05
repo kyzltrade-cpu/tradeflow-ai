@@ -672,15 +672,40 @@ section[id] { scroll-margin-top: 84px; }
      the same 0.34/0.24 that reads as a tint on desktop floods the whole fold
      instead of sitting behind it. Desktop keeps the full-strength wash. */
   background:
-    radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.15), transparent 76%),
-    radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.1), transparent 76%);
+    radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.2), transparent 76%),
+    radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.14), transparent 76%);
 }
 
 @media (min-width: 768px) {
   .hero-wash {
     background:
-      radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.34), transparent 82%),
-      radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.24), transparent 82%);
+      radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.22), transparent 82%),
+      radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.18), transparent 82%);
+  }
+}
+
+.hero-banner {
+  --hero-banner-opacity: 0.26;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  /* The section is already a stacking context via .landing > section, so -1
+     keeps the photo above .hero-wash's own background but below every line of
+     copy — it can never escape and paint over the headline. */
+  object-fit: cover;
+  object-position: 50% 32%;
+  opacity: var(--hero-banner-opacity);
+  /* Density peaks behind the centred headline and dies off well before the
+     product mock, so the photo reads as atmosphere rather than as a picture
+     fighting the type. Masked symmetrically because the headline is centred. */
+  -webkit-mask-image: radial-gradient(128% 96% at 50% 6%, #000 0%, rgba(0, 0, 0, 0.55) 44%, transparent 76%);
+  mask-image: radial-gradient(128% 96% at 50% 6%, #000 0%, rgba(0, 0, 0, 0.55) 44%, transparent 76%);
+  pointer-events: none;
+}
+
+@media (max-width: 767px) {
+  .hero-banner {
+    --hero-banner-opacity: 0.16;
   }
 }
 
@@ -745,7 +770,7 @@ section[id] { scroll-margin-top: 84px; }
   height: 46vw;
   min-width: 340px;
   min-height: 340px;
-  background: radial-gradient(circle, rgba(201, 106, 68, 0.13), transparent 68%);
+  background: radial-gradient(circle, rgba(201, 106, 68, 0.09), transparent 68%);
 }
 .landing-blob-pine {
   right: -12vw;

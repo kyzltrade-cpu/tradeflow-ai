@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
@@ -346,6 +347,15 @@ export default function LandingPage() {
 
       {/* ── Hero ── */}
       <section className="hero-wash px-6 pt-32 pb-16 md:pt-40 md:pb-20">
+        <Image
+          src="/hero/hero-banner.jpg"
+          alt=""
+          aria-hidden="true"
+          fill
+          priority
+          sizes="100vw"
+          className="hero-banner"
+        />
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
             <p className="eyebrow">{t('Every inquiry arrives half-finished', '每封詢盤都不完整')}</p>
