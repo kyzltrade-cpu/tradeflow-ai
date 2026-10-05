@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
@@ -89,7 +90,14 @@ export default function LoginPage() {
         <div className="auth-card px-7 py-8 sm:px-8">
           <div className="text-center">
             <Link href="/" className="inline-flex items-center gap-1.5 group">
-              <img src="/brand/sailwise-logo.png" alt="" aria-hidden="true" className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105" />
+              <Image
+                src="/brand/sailwise-logo.png"
+                alt=""
+                aria-hidden="true"
+                width={552}
+                height={452}
+                className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+              />
               <span className="text-[24px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
                 Sailwise
               </span>
@@ -127,7 +135,16 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-[13px] font-medium mb-1.5">{t('Password', '密碼')}</label>
+              <div className="flex items-baseline justify-between mb-1.5">
+                <label htmlFor="password" className="block text-[13px] font-medium">{t('Password', '密碼')}</label>
+                <Link
+                  href="/forgot-password"
+                  className="text-[12px] font-medium hover:underline"
+                  style={{ color: 'var(--accent)' }}
+                >
+                  {t('Forgot password?', '忘記密碼？')}
+                </Link>
+              </div>
               <input
                 id="password"
                 name="password"
