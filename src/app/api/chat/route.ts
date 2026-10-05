@@ -5,6 +5,7 @@ import { supabaseAdmin } from '@/lib/supabase';
 import { webSearch, needsWebSearch } from '@/lib/web-search';
 import { DEMO_COMPANY_ID, buildInquiryContext } from '@/lib/inquiry-context';
 import { requireAuth } from '@/lib/api-auth';
+import { checkRateLimit, createRateLimitResponse, getClientIp } from '@/lib/rate-limit';
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || 'https://integrate.api.nvidia.com/v1';
 const NIM_API_KEY = process.env.NIM_API_KEY!;
@@ -33,25 +34,58 @@ async function resolveChatCompanyId(req: NextRequest, demoMode: unknown): Promis
   return demoMode ? DEMO_COMPANY_ID : null;
 }
 
-const CORS_HEADERS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Max-Age': '86400',
-};
+/**
+ * CORS: allow exactly one origin, and only when it is configured.
+ *
+ * This used to send `Access-Control-Allow-Origin: *`, which let any website
+ * script the endpoint from a visitor's browser. Combined with the anonymous
+ * tenant read below, a malicious page could use a logged-in visitor's session
+ * to read a company's knowledge base and business snapshot from their own
+ * browser (audit H3).
+ *
+ * The widget is served from the same origin (`src/components/landing/SupportChat.tsx`),
+ * so it never needed a cross-origin grant. When NEXT_PUBLIC_APP_URL is unset we
+ * send no origin header at all, which makes the browser fall back to normal
+ * same-origin rules.
+ */
+const ALLOWED_ORIGIN = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '');
 
-export async function OPTIONS() {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
+function corsHeaders(req: Request): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+    // The response varies by request Origin now that it is echoed conditionally.
+    Vary: 'Origin',
+  };
+  const origin = req.headers.get('origin');
+  if (ALLOWED_ORIGIN && origin === ALLOWED_ORIGIN) {
+    headers['Access-Control-Allow-Origin'] = ALLOWED_ORIGIN;
+  }
+  return headers;
+}
+
+export async function OPTIONS(req: NextRequest) {
+  return new Response(null, { status: 204, headers: corsHeaders(req) });
 }
 
 export async function POST(req: NextRequest) {
+  // Anonymous and unmetered upstream: each request opens a NIM stream that
+  // costs real tokens. Two ceilings, because the minute cap alone would still
+  // allow ~28k calls/day from one IP.
+  const ip = getClientIp(req);
+  const perMinute = checkRateLimit(`chat:min:${ip}`, { windowMs: 60_000, maxRequests: 20 });
+  if (!perMinute.allowed) return createRateLimitResponse(perMinute.resetTime);
+  const perDay = checkRateLimit(`chat:day:${ip}`, { windowMs: 86_400_000, maxRequests: 200 });
+  if (!perDay.allowed) return createRateLimitResponse(perDay.resetTime);
+
   try {
     const { message, history = [], systemContext, demoMode } = await req.json();
 
     if (!message || typeof message !== 'string') {
       return new Response(JSON.stringify({ error: 'Message is required' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
       });
     }
 
@@ -197,7 +231,7 @@ export async function POST(req: NextRequest) {
       console.error('[chat] NIM API error:', response.status, err);
       return new Response(JSON.stringify({ error: 'AI service unavailable' }), {
         status: 502,
-        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
       });
     }
 
@@ -254,14 +288,14 @@ export async function POST(req: NextRequest) {
         'Content-Type': 'text/plain; charset=utf-8',
         'Cache-Control': 'no-cache',
         'X-Content-Language': detectedLang,
-        ...CORS_HEADERS,
+        ...corsHeaders(req),
       },
     });
   } catch (err) {
     console.error('[chat] Unexpected error:', err);
     return new Response(JSON.stringify({ error: 'Internal server error' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders(req) },
     });
   }
 }

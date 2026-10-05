@@ -47,13 +47,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'name required' }, { status: 400 });
     }
 
-    // During onboarding, company_id is passed in body (auth.companyId may be null yet)
-    const companyId = company_id || auth.companyId;
+    // Tenant comes from the verified session only. `company_id` in the body is
+    // accepted for onboarding payload compatibility but can never select the
+    // tenant: requireAuth guarantees a non-null company, so the old
+    // `company_id || auth.companyId` fallback was dead code that only made a
+    // future loosening of requireAuth exploitable (audit L4 / rec 2).
+    const companyId = auth.companyId;
     if (!companyId) {
       return NextResponse.json({ error: 'No company associated with this account' }, { status: 400 });
     }
-    // Verify ownership if both exist
-    if (auth.companyId && companyId !== auth.companyId) {
+    if (company_id && company_id !== companyId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

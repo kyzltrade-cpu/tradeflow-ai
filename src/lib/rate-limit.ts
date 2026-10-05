@@ -1,6 +1,17 @@
 // Simple in-memory rate limiter
-// For production, consider using Redis-based rate limiting
-
+//
+// STOPGAP, with a known weakness: this Map lives in one Node process, so on
+// serverless (Vercel) every cold start / new instance begins with an empty map
+// and every warm instance counts independently. The effective limit is
+// therefore "per instance", not "per customer" — a determined caller spreads
+// requests across instances to multiply their budget. This is still a large
+// improvement over no limit (it stops the casual single-instance flood) and it
+// needs no infrastructure, so it is intentionally kept as-is here.
+//
+// When the endpoints get real traffic, swap the storage behind
+// checkRateLimit for a shared counter — Upstash/Redis via @upstash/ratelimit,
+// or the Vercel KV equivalent — keeping this module's exported interface
+// identical so call sites do not change.
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 export interface RateLimitConfig {
