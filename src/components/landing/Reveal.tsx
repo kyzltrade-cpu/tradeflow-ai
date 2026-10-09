@@ -1,83 +1,33 @@
 'use client';
 
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type ReactNode,
-} from 'react';
-
-// useLayoutEffect warns during the server pass, so fall back there.
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+import type { ReactNode } from 'react';
 
 type RevealProps = {
   children: ReactNode;
   className?: string;
+  /** Retained for call-site compatibility. No longer affects rendering. */
   delay?: number;
-  /** How far, in px, the element travels on entry. */
+  /** Retained for call-site compatibility. No longer affects rendering. */
   distance?: number;
 };
 
 /**
- * Fades + lifts its children the first time they scroll into view.
+ * Renders children VISIBLE and never hides them.
  *
- * Deliberately rendered VISIBLE by the server: the markup never ships as
- * `opacity: 0`, so crawlers and JS-less visitors get the whole page. On the
- * client we hide it in a layout effect (before first paint, so there is no
- * flash) and let an IntersectionObserver bring it back. Elements already on
- * screen at mount are left alone — animating in what the visitor never
- * scrolled to reads as a glitch. Reduced-motion users are skipped entirely.
+ * This used to fade sections in on scroll: visible in the server HTML, hidden
+ * again in a layout effect, then restored by an IntersectionObserver. The idea
+ * was that hiding happens before first paint, so there is no flash.
+ *
+ * On a slow phone that assumption breaks. Hydration lands late, so the server
+ * HTML paints first and the visitor sees content appear, then get yanked back
+ * to `opacity: 0`, then fill in — whole screens of blank page. It also meant
+ * that if the observer never fired (JS error, dropped update, unsupported
+ * environment) the content stayed invisible permanently.
+ *
+ * A marketing page whose failure mode is "blank screen" is worse than one that
+ * does not animate, so the animation is gone. `delay` and `distance` stay on the
+ * props so the existing landing-page call sites keep compiling.
  */
-export default function Reveal({
-  children,
-  className,
-  delay = 0,
-  distance = 22,
-}: RevealProps) {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const [state, setState] = useState<'static' | 'hidden' | 'shown'>('static');
-
-  useIsomorphicLayoutEffect(() => {
-    const node = ref.current;
-    if (!node) return;
-    if (typeof window === 'undefined') return;
-    if (!('IntersectionObserver' in window)) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-
-    if (node.getBoundingClientRect().top < window.innerHeight * 0.9) return;
-
-    setState('hidden');
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setState('shown');
-            observer.disconnect();
-          }
-        }
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
-    );
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, []);
-
-  const style: CSSProperties =
-    state === 'static'
-      ? {}
-      : {
-          opacity: state === 'shown' ? 1 : 0,
-          transform: state === 'shown' ? 'none' : `translateY(${distance}px)`,
-          transition: `opacity 700ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms, transform 700ms cubic-bezier(0.16, 1, 0.3, 1) ${delay}ms`,
-          willChange: 'opacity, transform',
-        };
-
-  return (
-    <div ref={ref} className={className} style={style}>
-      {children}
-    </div>
-  );
+export default function Reveal({ children, className }: RevealProps) {
+  return <div className={className}>{children}</div>;
 }

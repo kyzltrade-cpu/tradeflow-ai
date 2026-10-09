@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase';
 import { requireAuth } from '@/lib/api-auth';
+import { sanitizeDeliveryLocations } from '@/lib/delivery-locations';
 
 // GET /api/admin/opportunities/[id]
 export async function GET(
@@ -212,6 +213,7 @@ export async function PUT(
       lost_reason,
       notes,
       quote_status,
+      delivery_locations,
     } = body;
 
     const updates: Record<string, unknown> = {
@@ -237,6 +239,12 @@ export async function PUT(
     if (lost_reason !== undefined) updates.lost_reason = lost_reason;
     if (notes !== undefined) updates.notes = notes;
     if (quote_status !== undefined) updates.quote_status = quote_status;
+    // delivery_locations lives in migration 031. When the column is absent
+    // (deployment has not run it) writing would fail the whole update, so only
+    // touch it when the existing row actually carries the column.
+    if (delivery_locations !== undefined && 'delivery_locations' in existing) {
+      updates.delivery_locations = sanitizeDeliveryLocations(delivery_locations);
+    }
 
     // Detect stage change for audit log
     const stageChanged = stage !== undefined && stage !== existing.stage;

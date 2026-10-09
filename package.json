@@ -19,6 +19,7 @@
     "@supabase/supabase-js": "^2.116.0",
     "clsx": "^2.1.1",
     "exa-js": "^2.21.0",
+    "framer-motion": "^11.15.0",
     "lucide-react": "^1.46.0",
     "mammoth": "^1.12.3",
     "next": "16.3.5",

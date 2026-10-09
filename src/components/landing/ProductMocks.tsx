@@ -41,6 +41,8 @@ const CARD = {
   boxShadow: '0 1px 2px rgba(27,25,23,0.04), 0 32px 64px -48px rgba(27,25,23,0.50)',
 } as const;
 
+const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
+
 function Logo() {
   return (
     <img
@@ -64,20 +66,26 @@ const NAV_ICONS = {
   book: 'M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25',
   users: 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z',
   cog: 'M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.37-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.99a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z',
+  dashboard: 'M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z',
 };
 
 interface NavEntry {
   en: string;
   icon: keyof typeof NAV_ICONS;
-  active?: boolean;
   count?: number;
 }
 
 const NAV: { label: string; items: NavEntry[] }[] = [
   {
+    label: 'Overview',
+    items: [
+      { en: 'Dashboard', icon: 'dashboard' },
+    ],
+  },
+  {
     label: 'Inbox',
     items: [
-      { en: 'Inbox', icon: 'inbox', active: true },
+      { en: 'Inbox', icon: 'inbox' },
       { en: 'Needs specs', icon: 'mail', count: 4 },
       { en: 'Owed replies', icon: 'mail', count: 7 },
       { en: 'Needs you', icon: 'sparkles', count: 2 },
@@ -116,7 +124,7 @@ function NavIcon({ d, active }: { d: string; active?: boolean }) {
   );
 }
 
-function Sidebar() {
+function Sidebar({ active = 'Inbox' }: { active?: string } = {}) {
   return (
     <div
       className="hidden w-[186px] shrink-0 flex-col @min-[820px]:flex"
@@ -148,23 +156,24 @@ function Sidebar() {
             <div className="space-y-0.5">
               {group.items.map((item) => {
                 const count = item.count;
+                const isActive = item.en === active;
                 return (
                   <div
                     key={item.en}
                     className="flex h-[30px] items-center gap-2 rounded-[7px] px-2.5"
                     style={{
-                      background: item.active ? SB_ACTIVE_BG : 'transparent',
-                      color: item.active ? SB_ACTIVE_TEXT : SB_IDLE,
-                      fontWeight: item.active ? 600 : 500,
+                      background: isActive ? SB_ACTIVE_BG : 'transparent',
+                      color: isActive ? SB_ACTIVE_TEXT : SB_IDLE,
+                      fontWeight: isActive ? 600 : 500,
                     }}
                   >
-                    <NavIcon d={NAV_ICONS[item.icon]} active={item.active} />
+                    <NavIcon d={NAV_ICONS[item.icon]} active={isActive} />
                     <span className="min-w-0 flex-1 truncate text-[12px]">{item.en}</span>
                     {count !== undefined && (
                       <span
                         className="flex h-[17px] min-w-[19px] items-center justify-center rounded-full px-1.5 text-[10px] font-semibold tabular-nums leading-none"
                         style={{
-                          background: item.active ? SB_ACTIVE_TEXT : SB_BADGE,
+                          background: isActive ? SB_ACTIVE_TEXT : SB_BADGE,
                           color: '#FFFFFF',
                         }}
                       >
@@ -470,26 +479,31 @@ type MailRole = 'buyer' | 'ai';
 function MailBubble({
   role,
   time,
+  reveal = 1,
   children,
 }: {
   role: MailRole;
   time: string;
+  reveal?: number;
   children: ReactNode;
 }) {
   const buyer = role === 'buyer';
   return (
-    <div className={`flex ${buyer ? 'justify-end' : 'justify-start'}`}>
-      <div
-        className="max-w-[86%] rounded-[4px] px-3.5 py-2.5 text-[12.5px] leading-[1.45]"
+    <div
+      className={`flex ${buyer ? 'justify-start' : 'justify-end'}`}
+      style={{ opacity: reveal, transform: `translateY(${(1 - reveal) * 14}px)` }}
+    >
+<div
+        className="max-w-[86%] rounded-[4px] px-3.5 py-2 text-[12.5px] leading-[1.45]"
         style={{
-          background: buyer ? '#EAF3F0' : '#FFFFFF',
-          border: `1px solid ${buyer ? 'transparent' : HAIR}`,
+          background: buyer ? '#FFFFFF' : '#DCF1E6',
+          border: `1px solid ${buyer ? HAIR : '#BFE6D2'}`,
         }}
       >
         <p className="whitespace-pre-wrap" style={{ color: INK }}>
           {children}
         </p>
-        <p className="mt-1.5 flex items-center gap-2 text-[10.5px]" style={{ color: FAINT }}>
+        <p className="mt-1 flex items-center gap-2 text-[10.5px]" style={{ color: FAINT }}>
           {time}
         </p>
       </div>
@@ -497,39 +511,59 @@ function MailBubble({
   );
 }
 
-export function HeroProduct() {
+export function HeroProduct({ p }: { p?: number } = {}) {
   /* The real thread screen is nav | thread | buyer rail. There is no email
      list on this screen — the list is its own page — so the rail carries the
      buyer, and the thread carries the conversation. Provenance is the point:
-     a tick means Sailwise read it out of the email or its attachment, an amber
-     tag means it was missing and got filled automatically. */
+     a tick means Sailwise read it out of the email or its attachment, and an
+     amber dot marks a field that was missing from the email and is still
+     waiting on the buyer. */
   const SPECS: {
     label: string;
     value: string | null;
     fetched?: boolean;
+    /* Where the value comes from — drives what animates in during extraction. */
+    origin: 'email' | 'fetched' | 'reply' | 'open';
   }[] = [
-    { label: 'Quantity', value: '5,000 pcs' },
-    { label: 'Product', value: '500 ml double-wall flask' },
-    { label: 'Material / size', value: '304 steel, double-wall' },
-    { label: 'Logo / printing', value: 'Laser, 1 colour' },
-    { label: 'Incoterm', value: 'FOB Rotterdam' },
-    { label: 'Target price', value: null },
-    { label: 'Destination port', value: 'Singapore' },
-    { label: 'Timeline', value: '30 days post-sample', fetched: true },
-    { label: 'Certification', value: 'EN 4210, LFGB', fetched: true },
+    { label: 'Quantity', value: '5,000 pcs', origin: 'email' },
+    { label: 'Product', value: '500 ml double-wall flask', origin: 'email' },
+    { label: 'Material / size', value: '304 steel, double-wall', origin: 'email' },
+    { label: 'Logo / printing', value: 'Laser, 1 colour', origin: 'reply' },
+    { label: 'Incoterm', value: 'FOB Rotterdam', origin: 'email' },
+    { label: 'Target price', value: 'USD 4.60–4.90', fetched: true, origin: 'fetched' },
+    { label: 'Destination port', value: 'Singapore', origin: 'reply' },
+    { label: 'Timeline', value: '30 days post-sample', fetched: true, origin: 'fetched' },
+    { label: 'Certification', value: 'EN 4210, LFGB', fetched: true, origin: 'fetched' },
   ];
-  const fetchedCount = SPECS.filter((r) => r.fetched).length;
+  const emailCount = SPECS.filter((r) => r.origin === 'email').length;
+  const fetchedCount = SPECS.filter((r) => r.origin === 'fetched').length;
+  const replyCount = SPECS.filter((r) => r.origin === 'reply').length;
+  const openCount = SPECS.filter((r) => !r.value).length;
+
+  /* Scroll progress (0→1) when this is the animated first-scroll demo. When
+     undefined everything renders in its finished state — the hero uses that,
+     so the two copies can never drift. */
+  const R = (a: number, b: number) => (p === undefined ? 1 : clamp01((p - a) / (b - a)));
+
+  // All specs are in once the last reply-sourced row finishes filling
+  // (reply fills start at 0.84–0.89 and take 0.07 to complete).
+  const specsDone = R(0.9, 1);
+
+  // The buyer panel's frame (labels, rows, grid, tag slots) is on screen from
+  // the first scroll so the layout never pops in. Only the *values* — who the
+  // buyer is and what they've done before — fade in once the email lands.
+  const buyerValues = R(0.14, 0.26);
 
   return (
     <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
-      <div className="flex flex-col @min-[620px]:h-[660px] @min-[620px]:flex-row">
+      <div className="flex flex-col @min-[620px]:h-[620px] @min-[620px]:flex-row">
         <Sidebar />
 
         {/* Thread */}
         <div className="flex min-w-0 flex-1 flex-col bg-white">
           {/* Mail header — back link, contact, subject, thread controls. */}
           <div
-            className="flex flex-nowrap items-center justify-between gap-3 border-b px-4 py-3"
+            className="flex flex-nowrap items-center justify-between gap-3 border-b px-4 py-2.5"
             style={{ borderColor: EDGE, background: '#FFFFFF' }}
           >
             <div className="flex min-w-0 flex-1 items-center gap-2.5">
@@ -571,8 +605,8 @@ export function HeroProduct() {
             </div>
           </div>
 
-          <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto overflow-x-hidden px-4 py-4">
-            <MailBubble role="buyer" time="Email · 09:12">
+          <div className="flex flex-1 flex-col gap-3.5 overflow-hidden px-4 py-3">
+            <MailBubble role="buyer" time="Email · 09:12" reveal={R(0.14, 0.26)}>
               Hi — we’re looking at 5,000 double-wall flasks for our Q4 range. Last
               year’s spec sheet is attached. Can you quote FOB Rotterdam?
               <span
@@ -586,32 +620,29 @@ export function HeroProduct() {
               </span>
             </MailBubble>
 
-            <MailBubble role="ai" time="AI · 09:13">
-              Thank you for the inquiry, and for the spec sheet — it answered most of it.
-              {'\n\n'}Confirmed from your documents: 5,000 pcs, 500 ml double-wall flask,
-              304 stainless steel, FOB Rotterdam. Added from our own records: EN 4210 and
-              LFGB certification, and 30 days after sample approval.
-              {'\n\n'}So that we can firm up the quotation, could you confirm the
-              destination port, the logo method, and your target price per unit?
-              {'\n\n'}Indicatively we are at USD 4.60–4.90 per unit — USD 23,000–24,500
-              for 5,000 pcs — freight excluded.
+            <MailBubble role="ai" time="AI · 09:13" reveal={R(0.50, 0.60)}>
+              Thanks for the spec sheet — it answered most of it. Confirmed: 5,000 pcs, 500 ml
+              double-wall flask, 304 stainless steel, FOB Rotterdam; added from our records
+              EN 4210 + LFGB and 30 days post-sample. Could you confirm the destination port
+              and the logo method? Indicatively USD 4.60–4.90/unit — USD 23,000–24,500 for
+              5,000 pcs, freight excluded.
             </MailBubble>
 
-            <MailBubble role="buyer" time="Email · 09:41">
+            <MailBubble role="buyer" time="Email · 09:41" reveal={R(0.80, 0.90)}>
               Destination is Singapore. Logo needs to be laser-etched, one colour.
             </MailBubble>
 
-            <MailBubble role="ai" time="AI · 09:42">
-              Thank you — Singapore and laser-etched in one colour, noted. The range holds
-              at USD 4.60–4.90 per unit; laser is a tooling-free pass. Certificates
-              attached, and the draft reply is ready below.
+            <MailBubble role="ai" time="AI · 09:42" reveal={R(0.94, 1)}>
+              Noted — Singapore, laser-etched in one colour. The range holds at USD 4.60–4.90
+              per unit; laser is a tooling-free pass. Certificates attached and the draft
+              reply is ready below.
             </MailBubble>
           </div>
 
           {/* Composer — one bar, no field rows. The product's compose dialog
               still has To / Cc / Bcc / Subject; the demo keeps the thread. */}
           <div
-            className="flex shrink-0 items-center gap-2 border-t px-4 py-3"
+            className="flex shrink-0 items-center gap-2 border-t px-4 py-2.5"
             style={{ borderColor: EDGE }}
           >
             <span
@@ -630,10 +661,16 @@ export function HeroProduct() {
         </div>
 
         {/* Buyer rail — the right-hand panel in the app: who they are, what
-            they asked for, and which fields Sailwise had to go fetch. Hidden on
-            narrow viewports so the thread never gets squeezed. */}
+            they asked for, and which fields Sailwise had to go fetch. This is
+            the product's best feature, so it must not vanish on a phone.
+
+            It used to be `hidden` under 1000px, which meant every phone visitor
+            never saw the spec extraction at all. Now it stacks under the thread
+            at full width below 620px, stays hidden in the 620–1000px band where
+            a side-by-side layout would squeeze the thread, and becomes the
+            288px right rail at 1000px and up. */}
         <div
-          className="hidden min-h-0 w-[288px] shrink-0 flex-col overflow-y-auto overflow-x-hidden border-l @min-[1000px]:flex"
+          className="flex min-h-0 w-full shrink-0 flex-col overflow-y-auto overflow-x-hidden border-t @min-[620px]:hidden @min-[1000px]:flex @min-[1000px]:w-[288px] @min-[1000px]:shrink-0 @min-[1000px]:border-t-0 @min-[1000px]:border-l"
           style={{ borderColor: EDGE, background: RAIL_SURFACE }}
         >
           {/* Buyer */}
@@ -647,18 +684,35 @@ export function HeroProduct() {
               </span>
             </div>
             <div className="flex items-center gap-2.5">
-              <span
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[13px] font-semibold text-white"
-                style={{ background: '#6366F1' }}
-              >
-                SC
+              <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
+                <span
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: '#EDE7DE' }}
+                />
+                <span
+                  className="absolute inset-0 flex items-center justify-center rounded-full text-[13px] font-semibold text-white"
+                  style={{ background: '#6366F1', opacity: buyerValues }}
+                >
+                  SC
+                </span>
               </span>
-              <div className="min-w-0">
-                <div className="truncate text-[13px] font-semibold" style={{ color: INK }}>
-                  Sarah Chen
+              <div className="relative min-w-0 flex-1">
+                {/* Empty slots — the frame is here from the start; the values
+                    fill in once the email lands. */}
+                <div
+                  className="space-y-[7px] py-[3px]"
+                  style={{ opacity: buyerValues < 1 ? 1 - buyerValues : 0 }}
+                >
+                  <div className="h-[12px] w-24 rounded-[3px]" style={{ background: '#EDE7DE' }} />
+                  <div className="h-[10px] w-32 rounded-[3px]" style={{ background: '#F2ECE3' }} />
                 </div>
-                <div className="truncate text-[11px]" style={{ color: FAINT }}>
-                  sarah@apexretail.sg
+                <div className="absolute inset-0" style={{ opacity: buyerValues }}>
+                  <div className="truncate text-[13px] font-semibold" style={{ color: INK }}>
+                    Sarah Chen
+                  </div>
+                  <div className="truncate text-[11px]" style={{ color: FAINT }}>
+                    sarah@apexretail.sg
+                  </div>
                 </div>
               </div>
             </div>
@@ -683,7 +737,10 @@ export function HeroProduct() {
                   >
                     {k}
                   </dt>
-                  <dd className="min-w-0 truncate text-right text-[11.5px] font-medium" style={{ color: INK }}>
+                  <dd
+                    className="min-w-0 truncate text-right text-[11.5px] font-medium"
+                    style={{ color: INK, opacity: buyerValues }}
+                  >
                     {v}
                   </dd>
                 </div>
@@ -702,13 +759,16 @@ export function HeroProduct() {
                   <p className="text-[10px] uppercase tracking-[0.06em]" style={{ color: FAINT }}>
                     {k}
                   </p>
-                  <p className="mt-0.5 text-[14px] font-semibold leading-none" style={{ color: INK }}>
+                  <p
+                    className="mt-0.5 text-[14px] font-semibold leading-none"
+                    style={{ color: INK, opacity: buyerValues }}
+                  >
                     {v}
                   </p>
                 </div>
               ))}
             </div>
-            <div className="mt-2.5 flex flex-wrap gap-1.5">
+            <div className="mt-2.5 flex flex-wrap gap-1.5" style={{ opacity: buyerValues }}>
               {['email', 'EN', '4 Oct'].map((tag) => (
                 <span
                   key={tag}
@@ -722,7 +782,10 @@ export function HeroProduct() {
           </div>
 
           {/* Specs — the extraction, with provenance on every row. */}
-          <div className="border-b px-4 py-4" style={{ borderColor: EDGE }}>
+          <div
+            className={`border-b px-4 py-4 ${specsDone > 0 ? 'btk-spec-glow' : ''}`}
+            style={{ borderColor: EDGE }}
+          >
             <div className="mb-3 flex items-center gap-2">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
@@ -730,31 +793,62 @@ export function HeroProduct() {
               <span className="text-[12.5px] font-semibold" style={{ color: INK }}>
                 Specs
               </span>
-              <span
-                className="ml-auto rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.06em]"
-                style={{ background: '#E8F5F1', color: '#038153' }}
-              >
-                Extracted
-              </span>
+              {specsDone > 0 ? (
+                <span
+                  className="ml-auto flex items-center gap-1 text-[10.5px] font-medium"
+                  style={{ color: '#0B7A4B' }}
+                >
+                  <svg
+                    className="btk-spec-check"
+                    width="11"
+                    height="11"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="M5 13l4 4L19 7" />
+                  </svg>
+                  {SPECS.length}/{SPECS.length} captured
+                </span>
+              ) : (
+                <span className="ml-auto text-[10.5px] font-medium" style={{ color: FAINT }}>
+                  Extracting…
+                </span>
+              )}
             </div>
             <div className="space-y-2">
-              {SPECS.map((r) => (
-                <div key={r.label} className="flex items-start gap-2">
-                  <span
-                    className="flex w-[92px] shrink-0 items-center gap-1 text-[10.5px] leading-[1.35]"
-                    style={{ color: FAINT }}
-                  >
-                    <span className="min-w-0 truncate">{r.label}</span>
-                    {r.fetched && (
-                      <span
-                        title="Filled automatically"
-                        className="h-1.5 w-1.5 shrink-0 rounded-full"
-                        style={{ background: '#D97706' }}
-                      />
-                    )}
-                  </span>
-                  {r.value ? (
-                    <span className="flex min-w-0 flex-1 items-start gap-1">
+              {SPECS.map((r, i) => {
+                // The checklist is on screen from the first scroll: every label
+                // shows immediately, with empty values. Once the enquiry lands
+                // the values fill in, source by source (email, our records, the
+                // buyer's reply).
+                const groupIdx = SPECS.slice(0, i).filter((s) => s.origin === r.origin).length;
+                const fillAt =
+                  r.origin === 'email'
+                    ? 0.3 + groupIdx * 0.05
+                    : r.origin === 'fetched'
+                      ? 0.48 + groupIdx * 0.05
+                      : 0.84 + groupIdx * 0.05;
+                const fill = R(fillAt, fillAt + 0.07);
+                return (
+                  <div key={r.label} className="flex items-start gap-2">
+                    <span
+                      className="flex w-[92px] shrink-0 items-center gap-1 text-[10.5px] leading-[1.35]"
+                      style={{ color: FAINT }}
+                    >
+                      <span className="min-w-0 truncate">{r.label}</span>
+                      {r.origin === 'reply' && (
+                        <span
+                          title="Missing from the email — waiting on the buyer"
+                          className="h-1.5 w-1.5 shrink-0 rounded-full"
+                          style={{ background: '#D97706', opacity: 1 - fill }}
+                        />
+                      )}
+                    </span>
+                    <span className="flex min-w-0 flex-1 items-start gap-1" style={{ opacity: fill }}>
                       <svg
                         width="11"
                         height="11"
@@ -770,24 +864,21 @@ export function HeroProduct() {
                         {r.value}
                       </span>
                     </span>
-                  ) : (
-                    <span className="min-w-0 flex-1 text-[11.5px] leading-[1.35]" style={{ color: '#C2410C' }}>
-                      missing
-                    </span>
-                  )}
-                </div>
-              ))}
+                  </div>
+                );
+              })}
             </div>
             <p
               className="mt-3 border-t pt-2.5 text-[10.5px] leading-snug"
-              style={{ borderColor: HAIR, color: FAINT }}
+              style={{ borderColor: HAIR, color: FAINT, opacity: R(0.96, 1) }}
             >
+              {emailCount} read from the email · {fetchedCount} from our records ·{' '}
               <span
                 className="mr-1 inline-block h-1.5 w-1.5 rounded-full align-middle"
                 style={{ background: '#D97706' }}
               />
-              {SPECS.length - fetchedCount - 1} read from the email · {fetchedCount} filled
-              automatically · 1 still open
+              {replyCount} missing
+              {openCount > 0 ? ` · ${openCount} still open` : ' · no gaps left'}
             </p>
           </div>
         </div>
@@ -823,7 +914,7 @@ export function InboxMock() {
           </div>
           <div className="flex flex-1 flex-col gap-2.5 px-4 py-3.5">
             <Bubble side="in" meta="Email · 09:12">
-              Hi, we need 10,000 pcs of 500ml stainless steel bottles. Please quote with logo printing.
+              Hi, we need 5,000 double-wall flasks, 500ml, 304 steel. Logo to be laser-etched.
             </Bubble>
             <div className="flex justify-start">
               <div className="rounded-xl px-3.5 py-2.5 text-[11px]" style={{ background: PANEL, border: `1px solid ${HAIR}`, color: MUTED }}>
@@ -831,7 +922,7 @@ export function InboxMock() {
                   Extracted
                 </div>
                 <ul className="space-y-1" style={{ color: INK }}>
-                  <li>10,000 pcs · 500ml · double-wall 304</li>
+                  <li>5,000 pcs · 500ml · double-wall 304</li>
                   <li>Logo printing · sample required</li>
                 </ul>
               </div>
@@ -871,12 +962,12 @@ export function InboxMock() {
    turns into a drafted question in the buyer's own language. */
 
 const EXTRACT_FIELDS = [
-  { label: 'Quantity', value: '10,000 pcs', conf: 0.98, status: 'Confirmed', cite: 'line 12' },
+  { label: 'Quantity', value: '5,000 pcs', conf: 0.98, status: 'Confirmed', cite: 'line 12' },
   { label: 'Specification', value: '500ml · double-wall 304', conf: 0.94, status: 'Confirmed', cite: 'line 12' },
   { label: 'Branding', value: 'Logo printing · sample required', conf: 0.81, status: 'Needs check', cite: 'line 12' },
 ] as const;
 
-const GAP_LANGS = ['English', '简体中文', 'Español'];
+const GAP_LANGS = ['English', '繁體中文'];
 const FLAGGED = ['Target price', 'Incoterm', 'Destination & date'];
 
 function ConfBar({ value, delay }: { value: number; delay: number }) {
@@ -919,8 +1010,8 @@ export function ExtractionMock() {
           className="mt-2 border-l-2 pl-3 text-[11.5px] leading-relaxed"
           style={{ borderColor: PEACH, color: INK }}
         >
-          &ldquo;Hi, we need 10,000 pcs of 500ml stainless steel bottles. Please quote with logo
-          printing.&rdquo;
+          &ldquo;Hi, we need 5,000 double-wall flasks, 500ml, 304 steel. Logo to be
+          laser-etched.&rdquo;
         </blockquote>
       </div>
 
@@ -1083,8 +1174,8 @@ export function HandoffMock() {
 
 export function QuoteMock() {
   const lines = [
-    { qty: '10,000 pcs', desc: '500ml Vacuum Bottle · Double-wall 304', price: 'USD 5.00' },
-    { qty: '10,000 pcs', desc: 'Logo printing · single-colour laser', price: 'USD 0.35' },
+    { qty: '5,000 pcs', desc: '500ml Double-wall Flask · 304 steel', price: 'USD 4.60' },
+    { qty: '5,000 pcs', desc: 'Logo · single-colour laser etch', price: 'USD 0.30' },
     { qty: '1 pc', desc: 'Pre-production sample · air freight', price: 'USD 25.00' },
   ];
   return (
@@ -1095,7 +1186,7 @@ export function QuoteMock() {
             Quote draft · Q-2091
           </div>
           <div className="text-[14px] font-semibold" style={{ color: INK }}>
-            Pacific Trading · Sarah Chen
+            Apex Retail · Sarah Chen
           </div>
         </div>
         <span className="rounded-full px-2.5 py-1 text-[10.5px] font-semibold" style={{ background: PEACH_SOFT, color: TERRA }}>
@@ -1123,7 +1214,7 @@ export function QuoteMock() {
             Subtotal
           </span>
           <span className="text-[16px] font-bold" style={{ color: TEAL }}>
-            USD 53,525
+            USD 24,500
           </span>
         </div>
         <div className="mt-4 flex items-center gap-2">
@@ -1259,9 +1350,9 @@ export function WhatsAppMock() {
                     Needs you
                   </span>
                 </div>
-                <div className="font-semibold">Sarah Chen · Pacific Trading</div>
+                <div className="font-semibold">Sarah Chen · Apex Retail</div>
                 <div>500ml vacuum bottle · 304</div>
-                <div>10,000 pcs · specs ready to price</div>
+                <div>5,000 pcs · specs ready to price</div>
                 <div className="mt-1.5 border-t pt-1.5 text-[12px] font-medium" style={{ borderColor: '#E9EDEF', color: '#008069' }}>
                   Review the draft ›
                 </div>
@@ -1298,7 +1389,7 @@ export function WhatsAppMock() {
                   </span>
                 </div>
                 <div className="font-semibold">Ah Wei · 九龍貿易</div>
-                <div>報價單 Q-2091 · USD 53,525</div>
+                <div>報價單 Q-2091 · USD 24,500</div>
                 <div className="mt-1 text-right text-[10.5px]" style={{ color: '#667781' }}>
                   9:41 AM
                 </div>
@@ -1350,6 +1441,396 @@ export function WhatsAppMock() {
 
           {/* Home indicator */}
           <div className="pointer-events-none absolute bottom-[7px] left-1/2 z-30 h-[5px] w-[116px] -translate-x-1/2 rounded-full bg-black/30" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Opportunities ──────────────────────────────────────────────────────────
+   The pipeline page, rendered to match the real app screen (title, subtitle,
+   create button, search, and the Title / Product / Stage / Value / Priority /
+   Updated table) rather than the landing's own card language. The thread the
+   dashboard just finished shows up as the newest row, so the motion reads as
+   "the inquiry became an opportunity" without any copy saying so. */
+
+interface OppStage {
+  label: string;
+  color: string;
+  bg: string;
+}
+
+const OPP_STAGES: Record<string, OppStage> = {
+  needs: { label: 'Needs specs', color: '#B45309', bg: '#FEF3C7' },
+  quoted: { label: 'Quoted', color: '#0891B2', bg: '#ECFEFF' },
+  negotiation: { label: 'Negotiation', color: '#7C3AED', bg: '#F5F3FF' },
+  sample: { label: 'Sample sent', color: '#2563EB', bg: '#EFF6FF' },
+};
+
+const OPP_PRIORITIES: Record<string, OppStage> = {
+  high: { label: 'High', color: '#B45309', bg: '#FEF3C7' },
+  medium: { label: 'Medium', color: '#4B5563', bg: '#F3F4F6' },
+  low: { label: 'Low', color: '#6B7280', bg: '#F3F4F6' },
+};
+
+const OPP_ROWS: {
+  title: string;
+  product: string;
+  stage: string;
+  priority: string;
+  value: string;
+  updated: string;
+  fresh?: boolean;
+}[] = [
+  {
+    title: '5,000 × 500 ml flask',
+    product: '500ml Double-wall Flask',
+    stage: 'needs',
+    priority: 'high',
+    value: 'USD 23,000',
+    updated: 'Just now',
+    fresh: true,
+  },
+  {
+    title: 'Ceramic mug set restock',
+    product: 'Ceramic Mug Set',
+    stage: 'quoted',
+    priority: 'medium',
+    value: 'USD 12,400',
+    updated: '2h ago',
+  },
+  {
+    title: 'Insulated tumblers — Q1',
+    product: 'Stainless Tumbler',
+    stage: 'negotiation',
+    priority: 'high',
+    value: 'USD 41,800',
+    updated: 'Yesterday',
+  },
+  {
+    title: 'Bamboo lid sample run',
+    product: 'Bamboo Lid',
+    stage: 'sample',
+    priority: 'low',
+    value: 'USD 6,900',
+    updated: '3d ago',
+  },
+];
+
+export function OpportunitiesPageMock({ highlight = 1 }: { highlight?: number } = {}) {
+  const h = clamp01(highlight);
+  return (
+    <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
+      <div className="flex @min-[620px]:h-[620px] @min-[620px]:flex-row flex-col">
+        {/* Keep the product nav, only switching the active item — the same
+            object the inbox mock showed, so the swap reads as one app. */}
+        <Sidebar active="Opportunities" />
+
+        <div className="flex min-w-0 flex-1 flex-col bg-white">
+          {/* Page header */}
+          <div
+            className="flex items-center justify-between gap-3 border-b px-4 py-3.5"
+            style={{ borderColor: EDGE }}
+          >
+            <div className="min-w-0">
+              <div className="text-[16px] font-semibold tracking-[-0.2px]" style={{ color: INK }}>
+                Opportunities
+              </div>
+              <div className="mt-0.5 truncate text-[11.5px]" style={{ color: FAINT }}>
+                Threads with every spec collected — ready to quote.
+              </div>
+            </div>
+            <span
+              className="shrink-0 rounded px-3 py-2 text-[11.5px] font-medium text-white"
+              style={{ background: '#038153' }}
+            >
+              Create Opportunity
+            </span>
+          </div>
+
+          {/* Search */}
+          <div className="px-4 pt-3.5">
+            <div
+              className="flex items-center gap-2 rounded border px-2.5 py-2 text-[11.5px]"
+              style={{ borderColor: HAIR, background: '#FBFBFB', color: FAINT }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="7" />
+                <path strokeLinecap="round" d="M20 20l-3.5-3.5" />
+              </svg>
+              Search opportunities…
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="min-h-0 flex-1 overflow-hidden px-4 pb-4 pt-3">
+            <div className="overflow-hidden rounded border" style={{ borderColor: EDGE }}>
+              <div
+                className="grid grid-cols-[1.6fr_1.1fr_0.85fr_0.7fr_0.6fr_0.6fr] gap-3 border-b px-3 py-2 text-[10px] font-medium uppercase tracking-[0.05em]"
+                style={{ borderColor: EDGE, background: LIST_SURFACE, color: FAINT }}
+              >
+                <span>Title</span>
+                <span>Product</span>
+                <span>Stage</span>
+                <span>Value</span>
+                <span>Priority</span>
+                <span>Updated</span>
+              </div>
+              {OPP_ROWS.map((row) => {
+                const stage = OPP_STAGES[row.stage];
+                const prio = OPP_PRIORITIES[row.priority];
+                const fresh = row.fresh ? h : 1;
+                return (
+                  <div
+                    key={row.title}
+                    className="relative grid grid-cols-[1.6fr_1.1fr_0.8fr_0.7fr_0.6fr_0.6fr] items-center gap-3 border-b px-3 py-2.5 last:border-b-0"
+                    style={{
+                      borderColor: HAIR,
+                      background: row.fresh ? `rgba(3,129,83,${0.06 * h})` : '#FFFFFF',
+                      opacity: row.fresh ? 0.25 + 0.75 * fresh : 1,
+                      transform: `translateY(${(1 - fresh) * -6}px)`,
+                    }}
+                  >
+                    {row.fresh && (
+                      <span
+                        className="absolute left-0 top-0 h-full w-[3px]"
+                        style={{ background: '#038153', opacity: h }}
+                      />
+                    )}
+                    <span className="min-w-0 truncate text-[12px] font-medium" style={{ color: INK }}>
+                      {row.title}
+                      {row.fresh && (
+                        <span
+                          className="ml-2 rounded px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.05em] align-middle"
+                          style={{ background: '#E8F5F1', color: '#038153', opacity: h }}
+                        >
+                          New
+                        </span>
+                      )}
+                    </span>
+                    <span className="min-w-0 truncate text-[11.5px]" style={{ color: MUTED }}>
+                      {row.product}
+                    </span>
+                    <span>
+                      <span
+                        className="whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium"
+                        style={{ color: stage.color, background: stage.bg }}
+                      >
+                        {stage.label}
+                      </span>
+                    </span>
+                    <span className="text-[11.5px] tabular-nums" style={{ color: INK }}>
+                      {row.value}
+                    </span>
+                    <span>
+                      <span
+                        className="whitespace-nowrap rounded px-1.5 py-0.5 text-[10px] font-medium"
+                        style={{ color: prio.color, background: prio.bg }}
+                      >
+                        {prio.label}
+                      </span>
+                    </span>
+                    <span className="truncate text-[11px]" style={{ color: FAINT }}>
+                      {row.updated}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="mt-2.5 text-[10.5px]" style={{ color: FAINT }}>
+              4 opportunities · {OPP_ROWS.length} rows
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── Dashboard ────────────────────────────────────────────────────────────
+   The landing's "morning briefing". Reads as the same app the inbox/opps
+   mocks show — same sidebar (active item switched to Dashboard), same card
+   frame — so a visitor sees the tool they'd open first thing. Data mirrors
+   the Opportunities mock so the story stays consistent (USD 23,000 flask,
+   the negotiating tumbler, etc.). */
+const DASH_ATTENTION: { label: string; count: number; tone: string }[] = [
+  { label: 'Needs your confirmation', count: 3, tone: '#038153' },
+  { label: 'Owed replies', count: 5, tone: '#B45309' },
+  { label: 'Missing specs', count: 4, tone: '#B45309' },
+  { label: 'Follow-ups due', count: 2, tone: '#6B7280' },
+];
+
+const DASH_KPIS: [string, string][] = [
+  ['Needs you', '3'],
+  ['Owed replies', '5'],
+  ['Missing specs', '4'],
+  ['Ready to quote', '6'],
+  ['Open opportunities', '18'],
+  ['Won this month', '4'],
+];
+
+const DASH_PIPELINE: [string, number, string][] = [
+  ['New', 5, '#6B7280'],
+  ['Qualified', 4, '#2563EB'],
+  ['Sourcing', 3, '#7C3AED'],
+  ['Quote draft', 3, '#D97706'],
+  ['Pending approval', 2, '#D97706'],
+  ['Sent', 6, '#2563EB'],
+  ['Negotiating', 3, '#7C3AED'],
+];
+
+export function DashboardPageMock() {
+  const maxPipeline = Math.max(...DASH_PIPELINE.map(([, n]) => n));
+  return (
+    <div className="@container overflow-hidden rounded-2xl border bg-white" style={CARD}>
+      <div className="flex @min-[620px]:h-[620px] @min-[620px]:flex-row flex-col">
+        <Sidebar active="Dashboard" />
+
+        <div className="flex min-w-0 flex-1 flex-col bg-white">
+          {/* Page header */}
+          <div
+            className="flex items-center justify-between gap-3 border-b px-4 py-3.5"
+            style={{ borderColor: EDGE }}
+          >
+            <div className="min-w-0">
+              <div className="text-[16px] font-semibold tracking-[-0.2px]" style={{ color: INK }}>
+                Dashboard
+              </div>
+              <div className="text-[11.5px]" style={{ color: FAINT }}>
+                What needs you right now, at a glance.
+              </div>
+            </div>
+            <span className="hidden text-[11px] @min-[460px]:block" style={{ color: FAINT }}>
+              Mon, 6 Oct
+            </span>
+          </div>
+
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-3.5 overflow-hidden px-4 py-4 @min-[620px]:grid-cols-2">
+            {/* Left column: needs attention + pipeline */}
+            <div className="flex min-w-0 flex-col gap-3.5">
+              <div className="rounded-lg border" style={{ borderColor: HAIR }}>
+                <div
+                  className="flex items-center justify-between border-b px-3 py-2"
+                  style={{ borderColor: HAIR }}
+                >
+                  <span className="text-[12px] font-semibold" style={{ color: INK }}>
+                    Needs attention
+                  </span>
+                  <span className="text-[10.5px]" style={{ color: FAINT }}>
+                    24 conversations
+                  </span>
+                </div>
+                {DASH_ATTENTION.map((row, i) => (
+                  <div
+                    key={row.label}
+                    className="flex items-center gap-2.5 px-3 py-2"
+                    style={{ borderTop: i === 0 ? 'none' : `1px solid ${HAIR}` }}
+                  >
+                    <span
+                      className="flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-1 text-[10px] font-semibold tabular-nums leading-none text-white"
+                      style={{ background: row.tone }}
+                    >
+                      {row.count}
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-[11.5px]" style={{ color: MUTED }}>
+                      {row.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-lg border" style={{ borderColor: HAIR }}>
+                <div className="flex items-center justify-between border-b px-3 py-2" style={{ borderColor: HAIR }}>
+                  <span className="text-[12px] font-semibold" style={{ color: INK }}>
+                    Pipeline
+                  </span>
+                  <span className="text-[10.5px]" style={{ color: FAINT }}>
+                    USD 84,100 open
+                  </span>
+                </div>
+                <div className="space-y-1.5 px-3 py-2.5">
+                  {DASH_PIPELINE.map(([label, n, color]) => (
+                    <div key={label} className="flex items-center gap-2">
+                      <span className="w-[86px] shrink-0 truncate text-[10.5px]" style={{ color: MUTED }}>
+                        {label}
+                      </span>
+                      <span className="h-3 flex-1 overflow-hidden rounded-[3px]" style={{ background: PANEL }}>
+                        <span
+                          className="block h-full rounded-[3px]"
+                          style={{ width: `${(n / maxPipeline) * 100}%`, background: color, opacity: 0.85 }}
+                        />
+                      </span>
+                      <span className="w-4 text-right text-[10.5px] tabular-nums" style={{ color: INK }}>
+                        {n}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right column: KPIs + recent */}
+            <div className="flex min-w-0 flex-col gap-3.5">
+              <div className="grid grid-cols-3 gap-2">
+                {DASH_KPIS.map(([label, value], i) => (
+                  <div
+                    key={label}
+                    className="rounded-lg border px-2.5 py-2"
+                    style={{ borderColor: HAIR, background: i === 0 ? TEAL_SOFT : '#FFFFFF' }}
+                  >
+                    <div
+                      className="text-[17px] font-semibold leading-none tabular-nums"
+                      style={{ color: i === 0 ? TEAL : INK }}
+                    >
+                      {value}
+                    </div>
+                    <div className="mt-1 text-[9.5px] leading-tight" style={{ color: MUTED }}>
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-lg border" style={{ borderColor: HAIR }}>
+                <div className="flex items-center justify-between border-b px-3 py-2" style={{ borderColor: HAIR }}>
+                  <span className="text-[12px] font-semibold" style={{ color: INK }}>
+                    Recent opportunities
+                  </span>
+                  <span className="text-[10.5px]" style={{ color: '#038153' }}>
+                    View all
+                  </span>
+                </div>
+                {OPP_ROWS.map((row, i) => {
+                  const stage = OPP_STAGES[row.stage];
+                  return (
+                    <div
+                      key={row.title}
+                      className="flex items-center gap-2 px-3 py-2"
+                      style={{ borderTop: i === 0 ? 'none' : `1px solid ${HAIR}` }}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[11.5px] font-medium" style={{ color: INK }}>
+                          {row.title}
+                        </span>
+                        <span className="block truncate text-[10px]" style={{ color: FAINT }}>
+                          {row.product}
+                        </span>
+                      </span>
+                      <span className="text-[10.5px] tabular-nums" style={{ color: INK }}>
+                        {row.value}
+                      </span>
+                      <span
+                        className="whitespace-nowrap rounded px-1.5 py-0.5 text-[9px] font-medium"
+                        style={{ color: stage.color, background: stage.bg }}
+                      >
+                        {stage.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

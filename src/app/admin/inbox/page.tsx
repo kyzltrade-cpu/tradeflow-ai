@@ -12,6 +12,8 @@ import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
 import EmailCompose from '@/components/admin/EmailCompose';
+import InboxSummaryPanel, { type SummaryAction } from '@/components/admin/InboxSummary';
+import type { InboxSummary } from '@/lib/inbox-summary';
 
 interface ThreadView {
   state: 'needs_specs' | 'waiting_on_buyer' | 'ready_to_quote' | 'cold' | 'closed';
@@ -133,6 +135,7 @@ export default function AdminInboxPage() {
 
   const [rows, setRows] = useState<InboxRow[]>([]);
   const [counts, setCounts] = useState<InboxCounts>(EMPTY_COUNTS);
+  const [summary, setSummary] = useState<InboxSummary | null>(null);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -171,6 +174,16 @@ export default function AdminInboxPage() {
     router.replace(params.toString() ? `/admin/inbox?${params.toString()}` : '/admin/inbox', { scroll: false });
   };
 
+  const selectSummary = (action: SummaryAction) => {
+    // Follow-ups graduated out of the inbox into their own surface, so that
+    // card navigates instead of applying a lens.
+    if (action === 'follow_ups') {
+      router.push('/admin/follow-ups');
+      return;
+    }
+    selectNav('inbox', action);
+  };
+
   const fetchInbox = useCallback(async (opts?: { silent?: boolean }) => {
     if (companyLoading || !companyId) return;
     try {
@@ -187,6 +200,7 @@ export default function AdminInboxPage() {
       const data = await res.json();
       setRows(data.conversations || []);
       setCounts(data.counts || EMPTY_COUNTS);
+      setSummary(data.summary ?? null);
     } catch (err) {
       if (opts?.silent) return;
       console.error('[inbox] fetch error:', err);
@@ -342,6 +356,9 @@ export default function AdminInboxPage() {
 
   return (
     <div className="flex h-full flex-col" style={{ background: 'var(--bg)' }}>
+      {/* Summary strip — what needs a human, what it is worth, what is due. */}
+      <InboxSummaryPanel summary={summary} loading={loading} active={filter} onSelect={selectSummary} />
+
       {/* Toolbar */}
       <div
         className="flex items-center gap-2 border-b px-3 py-2 flex-shrink-0 md:px-5"

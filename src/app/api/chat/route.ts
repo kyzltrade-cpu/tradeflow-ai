@@ -4,6 +4,7 @@ import { detectLanguage, buildLanguageInstruction } from '@/lib/language-detect'
 import { supabaseAdmin } from '@/lib/supabase';
 import { webSearch, needsWebSearch } from '@/lib/web-search';
 import { DEMO_COMPANY_ID, buildInquiryContext } from '@/lib/inquiry-context';
+import { buildDemoInboxContext } from '@/lib/demo-inbox-seeds';
 import { requireAuth } from '@/lib/api-auth';
 import { checkRateLimit, createRateLimitResponse, getClientIp } from '@/lib/rate-limit';
 
@@ -192,6 +193,13 @@ export async function POST(req: NextRequest) {
       } catch (err) {
         console.error('[chat] Failed to fetch inquiry context:', err);
       }
+    }
+
+    // The public demo chat must always be able to answer buyer questions
+    // (e.g. "what did Hans Müller order?"). Guarantee the sample inbox is in
+    // context even when the DB is unreachable or not seeded.
+    if (demoMode) {
+      inquiryContext = `${inquiryContext}\n${buildDemoInboxContext()}`.trim();
     }
 
     // Build system prompt with full context + language rules

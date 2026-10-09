@@ -19,14 +19,23 @@ describe('sanitizeExtractionSpecs', () => {
       { key: 'incoterm', label: 'Incoterm', hint: '' },
     ])
     expect(out).toEqual([
-      { key: 'packaging', label: 'Packaging', hint: 'gift box' },
-      { key: 'incoterm', label: 'Incoterm', hint: '' },
+      { key: 'packaging', label: 'Packaging', hint: 'gift box', required: false },
+      { key: 'incoterm', label: 'Incoterm', hint: '', required: false },
     ])
   })
 
   it('drops entries with no label so they never render a blank row', () => {
-    const out = sanitizeExtractionSpecs([{ label: '   ', hint: 'orphan' }, { label: 'MOQ' }])
-    expect(out).toEqual([{ key: 'moq', label: 'MOQ', hint: '' }])
+    const out = sanitizeExtractionSpecs([{ label: '   ', hint: 'orphan' }, { label: 'MOQ', required: true }])
+    expect(out).toEqual([{ key: 'moq', label: 'MOQ', hint: '', required: true }])
+  })
+
+  it('treats any non-true required flag as optional', () => {
+    const out = sanitizeExtractionSpecs([
+      { label: 'A', required: 'yes' },
+      { label: 'B', required: 1 },
+      { label: 'C', required: false },
+    ])
+    expect(out.map((f) => f.required)).toEqual([false, false, false])
   })
 
   it('de-duplicates keys produced by different labels', () => {

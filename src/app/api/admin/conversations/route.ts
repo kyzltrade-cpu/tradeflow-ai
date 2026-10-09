@@ -25,30 +25,43 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // Get last message for each conversation
-    const conversationsWithMessages = await Promise.all(
+    // Last message + count for every conversation, in one query. This used to
+    // issue two queries per row -- up to 100 round-trips for a 50-row page.
+    const convIds = (conversations || [])
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (conversations || []).map(async (conv: any) => {
-        const { data: lastMessage } = await supabaseAdmin
-          .from('messages')
-          .select('content, role, created_at')
-          .eq('conversation_id', conv.id)
-          .order('created_at', { ascending: false })
-          .limit(1)
-          .single();
+      .map((conv: any) => conv.id as string)
+      .filter(Boolean);
 
-        const { count: messageCount } = await supabaseAdmin
-          .from('messages')
-          .select('*', { count: 'exact', head: true })
-          .eq('conversation_id', conv.id);
+    const lastByConv = new Map<string, { content: string; role: string; created_at: string }>();
+    const countByConv = new Map<string, number>();
 
-        return {
-          ...conv,
-          last_message: lastMessage || null,
-          message_count: messageCount || 0,
-        };
-      })
-    );
+    if (convIds.length > 0) {
+      const { data: msgs } = await supabaseAdmin
+        .from('messages')
+        .select('conversation_id, content, role, created_at')
+        .in('conversation_id', convIds)
+        // Newest first, so the first row seen for a conversation is its latest.
+        .order('created_at', { ascending: false });
+
+      for (const m of msgs || []) {
+        const convId = m.conversation_id as string;
+        countByConv.set(convId, (countByConv.get(convId) || 0) + 1);
+        if (!lastByConv.has(convId)) {
+          lastByConv.set(convId, {
+            content: m.content as string,
+            role: m.role as string,
+            created_at: m.created_at as string,
+          });
+        }
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const conversationsWithMessages = (conversations || []).map((conv: any) => ({
+      ...conv,
+      last_message: lastByConv.get(conv.id as string) || null,
+      message_count: countByConv.get(conv.id as string) || 0,
+    }));
 
     return NextResponse.json({ conversations: conversationsWithMessages });
   } catch (err) {

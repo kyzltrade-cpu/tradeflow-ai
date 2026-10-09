@@ -99,7 +99,7 @@ export default function SignupPage() {
           </Link>
           <h1 className="text-[24px] font-semibold tracking-[-0.5px] mb-2 mt-5">{t('Create account', '建立帳戶')}</h1>
           <p className="text-[14px]" style={{ color: 'var(--text-muted)' }}>
-            {t('Start your free trial', '開始免費試用')}
+            {t('Start your free pilot', '開始免費試用')}
           </p>
         </div>
 

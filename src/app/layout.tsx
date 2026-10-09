@@ -19,8 +19,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Display face for the landing page: a warm, high-contrast serif with an
-// optical-size axis, set light rather than bold so it reads editorial.
 const fraunces = Fraunces({
   variable: "--font-display",
   subsets: ["latin"],
@@ -34,7 +32,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   viewportFit: "cover",
-  themeColor: "#faf7f2",
+  themeColor: "#171b18",
 };
 
 export const metadata: Metadata = rootMetadata();
@@ -44,18 +42,18 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable} h-full antialiased`}
-      style={{ background: '#FFFFFF' }}
+      style={{ background: '#171b18' }}
     >
       <head>
         <style dangerouslySetInnerHTML={{ __html: `
-          html { background: #FFFFFF !important; }
-          body { background: #FFFFFF !important; }
+          html { background: #171b18 !important; }
+          body { background: #171b18 !important; }
           @supports (padding: env(safe-area-inset-top)) {
             body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
           }
         `}} />
       </head>
-      <body className="min-h-full flex flex-col" style={{ background: '#FFFFFF' }}>
+      <body className="min-h-full flex flex-col" style={{ background: '#171b18' }}>
         <LangProvider>
           <AuthProvider>
             <ToastProvider>

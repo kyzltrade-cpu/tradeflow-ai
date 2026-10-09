@@ -56,6 +56,15 @@ describe('resolveAlerts', () => {
     const res = resolveAlerts({ config: config({ pricingQuestion: false }), text: 'price?' });
     expect(res.shouldAlert).toBe(false);
   });
+  it('alerts when a full spec is extracted and the toggle is on', () => {
+    const res = resolveAlerts({ config: config(), specExtracted: true });
+    expect(res.shouldAlert).toBe(true);
+    expect(res.reasons).toContain('Full spec extracted');
+  });
+  it('stays silent for a partial spec or when the toggle is off', () => {
+    expect(resolveAlerts({ config: config(), specExtracted: false }).shouldAlert).toBe(false);
+    expect(resolveAlerts({ config: config({ specExtracted: false }), specExtracted: true }).shouldAlert).toBe(false);
+  });
   it('collects multiple reasons', () => {
     const res = resolveAlerts({
       config: config({ newInquiry: true, bigDealMinValue: 1000 }),

@@ -215,8 +215,7 @@ const statusBadge = (status: string) => {
 };
 
 const STAGE_TRANSITIONS: Record<string, string[]> = {
-  NEW: ['NEEDS_INFORMATION', 'QUALIFIED'],
-  NEEDS_INFORMATION: ['QUALIFIED'],
+  NEW: ['QUALIFIED'],
   QUALIFIED: ['SOURCING'],
   SOURCING: ['QUOTE_DRAFT'],
   QUOTE_DRAFT: ['PENDING_APPROVAL'],
@@ -230,7 +229,6 @@ const STAGE_TRANSITIONS: Record<string, string[]> = {
 
 const STAGE_META: Record<string, { en: string; zh: string; color: string; bg: string }> = {
   NEW: { en: 'New', zh: '新', color: '#6B7280', bg: '#F3F4F6' },
-  NEEDS_INFORMATION: { en: 'Needs info', zh: '待補資料', color: '#D97706', bg: '#FEF3C7' },
   QUALIFIED: { en: 'Qualified', zh: '已確認', color: '#2563EB', bg: '#EFF6FF' },
   SOURCING: { en: 'Sourcing', zh: '採購中', color: '#7C3AED', bg: '#F5F3FF' },
   QUOTE_DRAFT: { en: 'Quote draft', zh: '報價草擬', color: '#D97706', bg: '#FEF3C7' },
@@ -754,7 +752,7 @@ export default function InboxDetailPage() {
     [...new Set(vals.map((v) => (v || '').trim()).filter(Boolean))];
   const incotermMatch = specText.match(/\b(FOB|CIF|CFR|EXW|FCA|CPT|CIP|DAP|DPU|DDP)\b[^.]{0,24}/i);
   const timelineMatch = specText.match(/(?:lead time|delivery|timeline|within \d+ days?|\d+[- ]?day lead|by (?:the )?(?:end of )?\w+)[^.]{0,32}/i);
-  const specRows: Array<{ key: string; label: string; value: string | null }> = [
+  const specRows: Array<{ key: string; label: string; value: string | null; required?: boolean }> = [
     {
       key: 'quantity',
       label: t('Quantity', '數量'),
@@ -787,11 +785,11 @@ export default function InboxDetailPage() {
   // render after the built-ins, in the order the user set them up, and fall
   // back to an empty object when the tenant has configured none.
   const customSpecFields = ((
-    suggestion?.extraction?.specs_fields as Array<{ key: string; label: string; hint?: string }> | undefined
+    suggestion?.extraction?.specs_fields as Array<{ key: string; label: string; hint?: string; required?: boolean }> | undefined
   ) || []).filter((f) => f?.key && f?.label);
   const customSpecValues = (suggestion?.extraction?.custom_specs as Record<string, string> | undefined) || {};
   for (const field of customSpecFields) {
-    specRows.push({ key: `custom_${field.key}`, label: field.label, value: customSpecValues[field.key] || null });
+    specRows.push({ key: `custom_${field.key}`, label: field.label, value: customSpecValues[field.key] || null, required: field.required === true });
   }
   const specsLoading = loadingSuggest && !suggestion;
 
@@ -835,6 +833,7 @@ export default function InboxDetailPage() {
               <div key={r.key} className="flex items-start gap-2">
                 <span className="w-[104px] shrink-0 text-[11px]" style={{ color: 'var(--text-muted)' }}>
                   {r.label}
+                  {r.required && <span style={{ color: 'var(--error)' }}> *</span>}
                 </span>
                 <span
                   className="flex-1 min-w-0 text-[11.5px] flex items-start gap-1"
@@ -846,7 +845,9 @@ export default function InboxDetailPage() {
                       <span className="min-w-0">{r.value}</span>
                     </>
                   ) : (
-                    <span style={{ opacity: 0.75 }}>{t('missing', '未提供')}</span>
+                    <span style={{ opacity: 0.75 }}>
+                      {r.required ? t('missing · required', '未提供 · 必填') : t('missing', '未提供')}
+                    </span>
                   )}
                 </span>
               </div>
@@ -1085,7 +1086,7 @@ export default function InboxDetailPage() {
       <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
         <div className="flex items-center gap-2 mb-3">
           <Clock width="14" height="14" style={{ color: 'var(--accent)' }} />
-          <h3 className="text-[13px] font-semibold">{t('Status', '狀態')}</h3>
+          <h3 className="text-[13px] font-semibold">{t('Thread', '對話')}</h3>
           {thread && (
             <span
               className="text-[10px] px-1.5 py-0.5 rounded font-medium ml-auto"
@@ -1476,7 +1477,7 @@ export default function InboxDetailPage() {
           <div className="border-b p-4" style={{ borderColor: 'var(--border)' }}>
             <div className="flex items-center gap-2 mb-3">
               <Flag width="14" height="14" style={{ color: 'var(--accent)' }} />
-              <h3 className="text-[13px] font-semibold">{t('Stage', '階段')}</h3>
+              <h3 className="text-[13px] font-semibold">{t('Opportunity', '商機')}</h3>
             </div>
             {detail.opportunities.map((opp) => {
                 const meta = STAGE_META[opp.stage] || STAGE_META.NEW;
@@ -1671,7 +1672,7 @@ export default function InboxDetailPage() {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Flag width="14" height="14" style={{ color: 'var(--accent)' }} />
-              <h3 className="text-[13px] font-semibold">{t('Stage', '階段')}</h3>
+              <h3 className="text-[13px] font-semibold">{t('Opportunity', '商機')}</h3>
             </div>
             {detail.opportunities.map((opp) => {
               const meta = STAGE_META[opp.stage] || STAGE_META.NEW;

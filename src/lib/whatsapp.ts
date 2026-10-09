@@ -21,6 +21,8 @@ export interface OwnerAlert {
   stage?: string | null;
   /** Inbound text used for keyword-based triggers (pricing / escalation). */
   text?: string | null;
+  /** True when AI extraction produced a complete spec and opened an opportunity. */
+  specExtracted?: boolean;
 }
 
 export interface PingResult {
@@ -74,6 +76,7 @@ export async function notifyOwner(ping: OwnerAlert): Promise<PingResult> {
     text: ping.text,
     value: ping.value,
     priority: ping.priority,
+    specExtracted: ping.specExtracted,
   });
   if (!shouldAlert) return { ok: false, skipped: 'no_trigger' };
   if (!ownerNumber) return { ok: false, skipped: 'no_owner_number', reasons };

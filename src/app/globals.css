@@ -1,18 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  /* Landing: paper white + mono ink */
-  --bg: #FFFFFF;
-  --surface: #FFFFFF;
-  --text: #0A0A0A;
-  --text-muted: #555555;
-  --border: #E5E5E5;
-  --accent: #000000;
-  --accent-hover: #1A1A1A;
-  --accent-light: #F4F4F4;
-  --success: #1C7A4D;
-  --error: #B42318;
-  --warning: #B54708;
+  /* NoHorn-inspired dark theme */
+  --bg: #171b18;
+  --surface: #1f2420;
+  --text: #f2f0e6;
+  --text-muted: #a9aca3;
+  --border: rgba(242, 240, 230, 0.08);
+  --accent: #f2f0e6;
+  --accent-hover: #ffffff;
+  --accent-light: rgba(242, 240, 230, 0.08);
+  --success: #4ade80;
+  --error: #f87171;
+  --warning: #f59e0b;
 
   /* Motion */
   --dur-instant: 100ms;
@@ -23,15 +23,25 @@
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-snappy: cubic-bezier(0.5, 0, 0, 1);
 
-  /* Brand-tinted hairline + neutral data panels */
-  --hairline: #EDEDED;
-  --panel-bg: #FAFAFA;
-  --panel-border: #ECECEC;
-  --panel-text: #555555;
+  /* Hairline + panels */
+  --hairline: rgba(242, 240, 230, 0.08);
+  --panel-bg: rgba(242, 240, 230, 0.04);
+  --panel-border: rgba(242, 240, 230, 0.08);
+  --panel-text: #a9aca3;
 
-  /* Refined layered shadows */
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 16px 40px -32px rgba(0, 0, 0, 0.10);
-  --shadow-float: 0 24px 60px -28px rgba(0, 0, 0, 0.28);
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 24px 80px -40px rgba(0, 0, 0, 0.5);
+  --shadow-float: 0 40px 120px -40px rgba(0, 0, 0, 0.6);
+
+  /* Legacy pine vars (keep for existing components) */
+  --pine: #f2f0e6;
+  --pine-deep: #ffffff;
+  --pine-wash: rgba(242, 240, 230, 0.04);
+  --paper: #1f2420;
+  --paper-2: #202621;
+  --ink: #f2f0e6;
+  --ink-2: #d9d7ce;
+  --ink-3: #a9aca3;
 }
 
 @theme inline {
@@ -48,10 +58,9 @@
   --color-text-muted: var(--text-muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
 }
 
-/* Extra breakpoint for large / ultrawide displays so the landing page keeps
-   filling the viewport instead of collapsing to a narrow centred column. */
 @theme {
   --breakpoint-3xl: 1800px;
 }
@@ -63,6 +72,7 @@
 
 html {
   background: var(--bg);
+  color-scheme: dark;
 }
 
 body {
@@ -71,1013 +81,182 @@ body {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* Dashboard mode */
 .dashboard-mode {
-  --bg: #FFFFFF;
-  --surface: #FFFFFF;
-  --text: #0A0A0A;
-  --text-muted: #555555;
-  --border: #E7E7E7;
-  --accent: #000000;
-  --accent-hover: #1A1A1A;
-  --accent-light: #F4F4F4;
+  --bg: #171b18;
+  --surface: #1f2420;
+  --text: #f2f0e6;
+  --text-muted: #a9aca3;
+  --border: rgba(242, 240, 230, 0.08);
+  --accent: #f2f0e6;
+  --accent-hover: #ffffff;
+  --accent-light: rgba(242, 240, 230, 0.08);
 }
 
-/* Sidebar scope — dark rail on the left; light content stays untouched.
-   The sidebar redeclares the shared vars it inherits, so children like
-   LangToggle adapt automatically without touching their own CSS. */
 .sidebar {
-  --surface: #FFFFFF;
-  --text: #0A0A0A;
-  --text-muted: #555555;
-  --border: #E7E7E7;
-  --accent: #111111;
-  --accent-light: #F1F1F1;
-
-  --sb-active-bg: #F1F1F1;
-  --sb-active-text: #0A0A0A;
-  --sb-idle-text: #6B6B6B;
-  --sb-faint: #8A8A8A;
-  --sb-hover: rgba(0, 0, 0, 0.05);
-  --sb-badge-active-bg: #111111;
-  --sb-badge-active-text: #FFFFFF;
-  --sb-badge-bg: #EFEFEF;
-  --sb-badge-text: #0A0A0A;
-  --sb-avatar-bg: #111111;
-  --sb-avatar-text: #FFFFFF;
+  --surface: #1f2420;
+  --text: #f2f0e6;
+  --text-muted: #a9aca3;
+  --border: rgba(242, 240, 230, 0.08);
+  --accent: #f2f0e6;
+  --accent-light: rgba(242, 240, 230, 0.08);
+  --sb-active-bg: rgba(242, 240, 230, 0.12);
+  --sb-active-text: #f2f0e6;
+  --sb-idle-text: #a9aca3;
+  --sb-faint: #8f918a;
+  --sb-hover: rgba(242, 240, 230, 0.08);
+  --sb-badge-active-bg: #f2f0e6;
+  --sb-badge-active-text: #171b18;
+  --sb-badge-bg: rgba(242, 240, 230, 0.12);
+  --sb-badge-text: #f2f0e6;
+  --sb-avatar-bg: #f2f0e6;
+  --sb-avatar-text: #171b18;
 }
 
 .sidebar.sidebar-dark {
-  --surface: #101216;
-  --text: #F4F4F5;
-  --text-muted: #A1A1AA;
-  --border: #1E2026;
-  --accent: #3A3B40;
-  --accent-light: rgba(255, 255, 255, 0.10);
-
-  --sb-active-bg: #FFFFFF;
-  --sb-active-text: #0A0A0A;
-  --sb-idle-text: #C9C9CE;
-  --sb-faint: #9CA0A8;
-  --sb-hover: rgba(255, 255, 255, 0.07);
-  --sb-badge-active-bg: #0A0A0A;
-  --sb-badge-active-text: #FFFFFF;
-  --sb-badge-bg: rgba(255, 255, 255, 0.16);
-  --sb-badge-text: #FFFFFF;
-  --sb-avatar-bg: #FFFFFF;
-  --sb-avatar-text: #0A0A0A;
+  --surface: #141814;
+  --text: #f2f0e6;
+  --text-muted: #a9aca3;
+  --border: rgba(242, 240, 230, 0.08);
+  --accent: #f2f0e6;
+  --accent-light: rgba(242, 240, 230, 0.08);
+  --sb-active-bg: rgba(242, 240, 230, 0.14);
+  --sb-active-text: #f2f0e6;
+  --sb-idle-text: #b9b7ae;
+  --sb-faint: #9f9d93;
+  --sb-hover: rgba(242, 240, 230, 0.08);
+  --sb-badge-active-bg: #f2f0e6;
+  --sb-badge-active-text: #141814;
+  --sb-badge-bg: rgba(242, 240, 230, 0.12);
+  --sb-badge-text: #f2f0e6;
+  --sb-avatar-bg: #f2f0e6;
+  --sb-avatar-text: #141814;
 }
 
-/* Dashboard utility classes */
 .surface-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.03);
+  box-shadow: var(--shadow-card);
 }
 
 .surface-elevated {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  box-shadow:
-    0 1px 2px rgba(17, 17, 17, 0.03),
-    0 6px 16px -8px rgba(6, 27, 49, 0.05),
-    0 20px 44px -28px rgba(6, 27, 49, 0.08);
+  box-shadow: var(--shadow-float);
 }
 
 .accent-btn {
-  background-image: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 45%, var(--accent-hover) 100%);
-  color: #fff;
-  border-radius: 8px;
+  background: linear-gradient(180deg, rgba(242, 240, 230, 0.96) 0%, rgba(242, 240, 230, 0.92) 100%);
+  color: #171b18;
+  border-radius: 10px;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
-  border: none;
+  border: 1px solid rgba(242, 240, 230, 0.16);
   cursor: pointer;
-  box-shadow:
-    inset 0 1px 0 0 color-mix(in srgb, #fff 22%, transparent),
-    inset 0 -2px 0 0 color-mix(in srgb, #000 18%, transparent),
-    0 1px 2px rgba(17, 17, 17, 0.06);
-  transition:
-    transform var(--dur-fast) var(--ease-snappy),
-    box-shadow var(--dur-normal) var(--ease-out),
-    filter var(--dur-normal) var(--ease-out);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2), 0 24px 80px -40px rgba(0, 0, 0, 0.5);
+  transition: transform 120ms var(--ease-out), box-shadow 120ms var(--ease-out), background 120ms var(--ease-out);
 }
+
 .accent-btn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
-  box-shadow:
-    inset 0 1px 0 0 color-mix(in srgb, #fff 28%, transparent),
-    inset 0 -2px 0 0 color-mix(in srgb, #000 20%, transparent),
-    0 8px 20px -10px color-mix(in srgb, var(--accent) 45%, transparent);
+  background: linear-gradient(180deg, rgba(242, 240, 230, 1) 0%, rgba(242, 240, 230, 0.96) 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.25), 0 40px 120px -40px rgba(0, 0, 0, 0.6);
 }
+
 .accent-btn:active {
-  transform: translateY(0) scale(0.99);
-  filter: brightness(0.98);
-  transition-duration: var(--dur-instant);
-  box-shadow:
-    inset 0 1px 0 0 color-mix(in srgb, #fff 16%, transparent),
-    inset 0 -1px 0 0 color-mix(in srgb, #000 22%, transparent);
-}
-.accent-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+  transform: translateY(0);
 }
 
-.secondary-btn {
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-snappy);
-}
-.secondary-btn:hover {
-  background: var(--accent-light);
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
-}
-.secondary-btn:active {
-  transform: translateY(0.5px) scale(0.99);
-  transition-duration: var(--dur-instant);
-}
-
-/* Landing: crafted primary CTA (black + inset bevel + lift) */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
-  background-image: linear-gradient(180deg, #1A1A1A 0%, #000 55%, #000 100%);
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
-    inset 0 -2px 0 0 rgba(0, 0, 0, 0.8),
-    0 1px 2px rgba(0, 0, 0, 0.10);
-  transition:
-    transform var(--dur-fast) var(--ease-snappy),
-    box-shadow var(--dur-normal) var(--ease-out),
-    filter var(--dur-normal) var(--ease-out);
-}
-.btn-primary:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.15);
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.18),
-    inset 0 -2px 0 0 rgba(0, 0, 0, 0.8),
-    0 10px 24px -12px rgba(0, 0, 0, 0.5);
-}
-.btn-primary:active {
-  transform: translateY(0) scale(0.99);
-  filter: brightness(0.95);
-  transition-duration: var(--dur-instant);
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1px 0 0 rgba(0, 0, 0, 0.8);
-}
-
-/* Landing: quiet hairline secondary */
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #111;
-  border: 1px solid #DFDFDF;
-  background: #fff;
-  transition:
-    background-color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-snappy),
-    box-shadow var(--dur-normal) var(--ease-out);
-}
-.btn-ghost:hover {
-  background: #F6F6F6;
-  border-color: #C9C9C9;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px -10px rgba(0, 0, 0, 0.20);
-}
-.btn-ghost:active {
-  transform: translateY(0) scale(0.99);
-  transition-duration: var(--dur-instant);
-}
-
-.text-muted {
-  color: var(--text-muted);
-}
-
-.badge-success {
-  background: #F2F7F4;
-  color: var(--success);
-  border: 1px solid #CFDFD5;
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.badge-error {
-  background: #FBF1F0;
-  color: var(--error);
-  border: 1px solid #F0D5D2;
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.badge-warning {
-  background: #FBF6ED;
-  color: var(--warning);
-  border: 1px solid #EFE3CC;
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-/* Ops-data mono chip (de-templated industrial texture) */
-.btk-mono {
-  font-family: var(--font-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  tab-size: 4;
-}
-
-/* Focus rings */
-:focus-visible {
-  outline: 2px solid var(--accent);
+.accent-btn:focus-visible {
+  outline: 2px solid rgba(242, 240, 230, 0.4);
   outline-offset: 2px;
 }
 
-/* Inputs: consistent focus ring + hover border across every form in the app */
-input:focus, select:focus, textarea:focus {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 16%, transparent);
-  border-color: var(--accent) !important;
-  outline: none;
-}
-input:hover:not(:focus):not(:disabled), select:hover:not(:focus):not(:disabled), textarea:hover:not(:focus):not(:disabled) {
-  border-color: color-mix(in srgb, var(--accent) 40%, var(--border)) !important;
-}
-
-/* Mobile: kill tap flash on interactive elements, no double-tap zoom delay */
-button, a, input, select, textarea, summary, [role="button"] {
-  -webkit-tap-highlight-color: transparent;
-}
-a, button, [role="button"], summary {
-  touch-action: manipulation;
-}
-
-/* Smooth transitions on interactive elements */
-button, a, input, select, textarea {
-  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
-}
-
-/* Prevent iOS zoom on inputs */
-@media screen and (max-width: 768px) {
-  input[type="text"],
-  input[type="email"],
-  input[type="number"],
-  input[type="tel"],
-  input[type="url"],
-  input[type="password"],
-  select,
-  textarea {
-    font-size: 16px !important;
-  }
-}
-
-/* Toast animation */
-@keyframes slide-in {
-  from { opacity: 0; transform: translateX(20px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-.animate-slide-in {
-  animation: slide-in 0.2s ease-out;
-}
-
-/* Hide scrollbar */
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-html {
-  scrollbar-width: none;
-}
-
-/* ── Landing animation keyframes ────────────────────────────────────────── */
-@keyframes btk-rise {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes btk-rise-sm {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes btk-trace {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-
-@keyframes btk-progress {
-  from { width: 0%; }
-  to { width: 100%; }
-}
-
-.btk-anim-rise { animation: btk-rise 0.6s var(--ease-out) backwards; }
-.btk-anim-rise-sm { animation: btk-rise-sm 0.5s var(--ease-out) backwards; }
-.btk-marquee { animation: btk-marquee 28s linear infinite; }
-
-@keyframes btk-marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-@keyframes btk-fade-down {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes btk-blob-a {
-  0%, 100% { transform: translate(-10%, -6%) scale(1); }
-  50% { transform: translate(6%, 8%) scale(1.12); }
-}
-
-@keyframes btk-blob-b {
-  0%, 100% { transform: translate(8%, 10%) scale(1.05); }
-  50% { transform: translate(-8%, -4%) scale(0.95); }
-}
-
-.btk-anim-fade-down { animation: btk-fade-down 0.5s var(--ease-out) backwards; }
-
-/* Support chat: typing indicator */
-@keyframes btk-chat-dot {
-  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
-  30% { transform: translateY(-3px); opacity: 1; }
-}
-.btk-chat-dot {
-  animation: btk-chat-dot 1.2s var(--ease-out) infinite;
-}
-
-/* Appshell: slim progress bar shown at the very top of the viewport */
-.btk-scroll-progress {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  z-index: 60;
-  pointer-events: none;
-}
-
-/* Smooth animated scrolling for in-page anchor nav (fixed-header offset) */
-html { scroll-behavior: smooth; }
-section[id] { scroll-margin-top: 84px; }
-
-/* Pricing card: resting shadow lifts + deepens on hover */
-.btk-card-hover {
-  box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.35), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
-  transition: box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out);
-}
-.btk-card-hover:hover {
-  box-shadow: 0 44px 96px -30px rgba(0, 0, 0, 0.55), 0 16px 40px -18px rgba(0, 0, 0, 0.3), inset 0 1px 0 0 rgba(255, 255, 255, 0.9);
-}
-
-.btk-nav-link {
-  position: relative;
-  transition: color 0.15s ease;
-}
-.btk-nav-link::after {
-  content: "";
-  position: absolute;
-  left: 0; right: 0; bottom: -5px;
-  height: 2px;
-  border-radius: 999px;
-  background: #000;
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 0.25s var(--ease-out);
-}
-.btk-nav-link:hover::after,
-.btk-nav-link.is-active::after {
-  transform: scaleX(1);
-}
-
-/* Section kicker (numbered narrative, Linear-style) */
-.btk-kicker {
+.btn-primary {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: #000;
-}
-.btk-kicker::before,
-.btk-kicker::after {
-  content: "";
-  width: 1.75rem;
-  height: 1px;
-  background: #C9C9C9;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  background: linear-gradient(180deg, rgba(242, 240, 230, 0.98) 0%, rgba(242, 240, 230, 0.92) 100%);
+  color: #171b18;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: 1px solid rgba(242, 240, 230, 0.16);
+  cursor: pointer;
+  transition: all 120ms var(--ease-out);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2), 0 24px 80px -40px rgba(0, 0, 0, 0.5);
 }
 
-/* ── Landing: warm editorial system ───────────────────────────────────────
-   Scoped under `.landing` so the dashboard, admin and auth surfaces keep their
-   existing primitives. A warm paper canvas, ink type, a pine primary and a
-   terracotta accent; a Fraunces display face set against a neutral grotesk. */
-.landing {
-  --paper: #faf7f2;
-  --paper-2: #f3eee6;
-  --paper-3: #ece5da;
-  --ink: #1b1917;
-  --ink-2: #46423d;
-  --ink-3: #7a736a;
-  --hairline: #e6dfd4;
-  --hairline-2: #d8cfc0;
-  --pine: #14342b;
-  --pine-deep: #0e251e;
-  --pine-wash: #e8efea;
-  --terra: #b4552d;
-  --terra-wash: #f7ede6;
-  /* Re-point the shared accent so focus rings and accent-tinted controls on
-     the landing pick up the brand pine without touching other pages. */
-  --accent: #14342b;
-  --accent-hover: #0e251e;
-  background: var(--paper);
-  color: var(--ink);
+.btn-primary:hover {
+  background: linear-gradient(180deg, rgba(242, 240, 230, 1) 0%, rgba(242, 240, 230, 0.96) 100%);
+  transform: translateY(-1px);
 }
 
-/* ── Display type ──────────────────────────────────────────────────────── */
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: rgba(242, 240, 230, 0.04);
+  backdrop-filter: blur(8px);
+  transition: all 120ms var(--ease-out);
+}
+
+.btn-secondary:hover {
+  background: rgba(242, 240, 230, 0.08);
+}
+
 .display {
-  font-family: var(--font-display), Georgia, "Times New Roman", serif;
-  font-weight: 400;
-  font-optical-sizing: auto;
-  letter-spacing: -0.018em;
-  line-height: 1.04;
-}
-.display em {
-  font-style: italic;
-  color: var(--pine);
+  font-family: var(--font-display), Georgia, 'Times New Roman', serif;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
 }
 
-/* Hero display size needs its own metrics. At 4rem the 1.04 body line-height
-   lets descenders collide with the line below, the -0.018em tracking is too
-   tight once an italic accent joins the line, and if the italic face ever
-   fails to load the browser fakes an oblique — which reads as broken. */
-.display-hero {
-  line-height: 1.08;
-  letter-spacing: -0.022em;
-  padding-bottom: 0.08em;
-  font-synthesis-style: none;
-  font-synthesis-weight: none;
-  text-wrap: balance;
-}
-.display-hero em {
-  letter-spacing: -0.01em;
-  padding-right: 0.03em;
+.serif {
+  font-family: Georgia, 'Times New Roman', serif;
 }
 
 .eyebrow {
-  font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--ink-3);
-}
-
-/* Hairline rule that runs out from a short label */
-.rule-label {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-.rule-label::after {
-  content: "";
-  flex: 1;
-  height: 1px;
-  background: var(--hairline);
-}
-
-/* ── Buttons ───────────────────────────────────────────────────────────── */
-.landing .btn-primary {
-  border-radius: 9px;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  background-image: none;
-  background: var(--ink);
-  box-shadow: 0 1px 2px rgba(27, 25, 23, 0.22);
-}
-.landing .btn-primary:hover {
-  transform: translateY(-1px);
-  filter: none;
-  background: #2b2724;
-  box-shadow: 0 10px 24px -12px rgba(27, 25, 23, 0.55);
-}
-.landing .btn-primary:active {
-  transform: translateY(0);
-  filter: none;
-  box-shadow: 0 1px 2px rgba(27, 25, 23, 0.3);
-}
-
-.landing .btn-ghost {
-  border-radius: 9px;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-  color: var(--ink);
-  border: 1px solid var(--hairline-2);
-  background: transparent;
-  box-shadow: none;
-}
-.landing .btn-ghost:hover {
-  background: #ffffff;
-  border-color: var(--ink-3);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px -14px rgba(27, 25, 23, 0.4);
-}
-
-/* ── Surfaces ──────────────────────────────────────────────────────────── */
-.ecard {
-  background: #ffffff;
-  border: 1px solid var(--hairline);
-  border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(27, 25, 23, 0.03), 0 20px 44px -36px rgba(27, 25, 23, 0.35);
-}
-
-/* Pricing card: layered, warm, green-tinted shadow that lifts on hover */
-.plan-card {
-  background: #ffffff;
-  border: 1px solid var(--hairline);
-  border-radius: 16px;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.9),
-    0 1px 2px rgba(27, 25, 23, 0.05),
-    0 14px 26px -18px rgba(27, 25, 23, 0.22),
-    0 44px 84px -50px rgba(20, 52, 43, 0.55);
-  transition: box-shadow 0.4s var(--ease-out), transform 0.4s var(--ease-out);
-}
-.plan-card:hover {
-  transform: translateY(-3px);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.95),
-    0 2px 4px rgba(27, 25, 23, 0.06),
-    0 24px 40px -20px rgba(27, 25, 23, 0.28),
-    0 64px 116px -52px rgba(20, 52, 43, 0.7);
-}
-
-/* Terracotta band. Three dark-green bands in a row read as one repeated
-   texture; this gives the pull-quote its own temperature. */
-.band-terra {
-  background: var(--terra);
-  color: #fdf4ee;
-}
-.band-terra .display,
-.band-terra .display em {
-  color: #fdf4ee;
-}
-.band-terra p:not(.display) {
-  color: rgba(253, 244, 238, 0.8);
+  color: var(--text-muted);
 }
 
 .band-dark {
-  background: var(--pine-deep);
-  color: #f4f1ec;
-}
-.band-dark .display,
-.band-dark .display em {
-  color: #f7f4ef;
-}
-.band-dark .eyebrow {
-  color: rgba(244, 241, 236, 0.55);
+  background: radial-gradient(120% 120% at 50% 0%, rgba(242, 240, 230, 0.02) 0%, rgba(23, 27, 24, 1) 100%);
 }
 
-/* Soft warm wash behind the hero */
-.hero-wash {
-  /* Dimmed on phones only. These are percentage radii, so on a narrow viewport
-     the same 0.34/0.24 that reads as a tint on desktop floods the whole fold
-     instead of sitting behind it. Desktop keeps the full-strength wash. */
-  background:
-    radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.2), transparent 76%),
-    radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.14), transparent 76%);
+.plan-card {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(31, 36, 32, 0.96) 0%, rgba(31, 36, 32, 0.92) 100%);
+  box-shadow: var(--shadow-card);
+  backdrop-filter: blur(8px);
 }
 
-@media (min-width: 768px) {
-  .hero-wash {
-    background:
-      radial-gradient(74% 62% at 26% 0%, rgba(180, 85, 45, 0.22), transparent 82%),
-      radial-gradient(58% 50% at 90% 6%, rgba(20, 52, 43, 0.18), transparent 82%);
-  }
-}
-
-.hero-banner {
-  --hero-banner-opacity: 0.26;
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  /* The section is already a stacking context via .landing > section, so -1
-     keeps the photo above .hero-wash's own background but below every line of
-     copy — it can never escape and paint over the headline. */
-  object-fit: cover;
-  object-position: 50% 32%;
-  opacity: var(--hero-banner-opacity);
-  /* Density peaks behind the centred headline and dies off well before the
-     product mock, so the photo reads as atmosphere rather than as a picture
-     fighting the type. Masked symmetrically because the headline is centred. */
-  -webkit-mask-image: radial-gradient(128% 96% at 50% 6%, #000 0%, rgba(0, 0, 0, 0.55) 44%, transparent 76%);
-  mask-image: radial-gradient(128% 96% at 50% 6%, #000 0%, rgba(0, 0, 0, 0.55) 44%, transparent 76%);
-  pointer-events: none;
-}
-
-@media (max-width: 767px) {
-  .hero-banner {
-    --hero-banner-opacity: 0.16;
-  }
-}
-
-/* ── Auth surfaces ───────────────────────────────────────────────────────
-   The app shell is monochrome on white, so a login page painted in --bg just
-   merges the form into the viewport. A cool-tinted grey plus two very faint
-   brand radials gives the white card an edge to sit against without the page
-   looking decorative. Deliberately far quieter than the landing wash. */
-.auth-bg {
-  background-color: #F1F2F4;
-  background-image:
-    radial-gradient(58% 42% at 12% 2%, rgba(180, 85, 45, 0.07), transparent 70%),
-    radial-gradient(52% 40% at 92% 98%, rgba(20, 52, 43, 0.07), transparent 70%);
-}
-
-.auth-card {
-  background: #FFFFFF;
-  border: 1px solid rgba(16, 24, 40, 0.07);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 2px rgba(16, 24, 40, 0.04),
-    0 16px 36px -20px rgba(16, 24, 40, 0.20);
-}
-
-.auth-input {
-  background: #FFFFFF;
-  transition: border-color var(--dur-fast) var(--ease-out),
-    box-shadow var(--dur-fast) var(--ease-out);
-}
-.auth-input:focus {
-  outline: none;
-  border-color: #9CA3AF;
-  box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.07);
-}
-
-/* ── Paper texture + ambient life ──────────────────────────────────────────
-   A fine 12px grid over the whole page, plus two wash blobs that drift for the
-   better part of a minute. Both live in one fixed, click-through overlay: at
-   ~3% the grid reads as paper tooth rather than as a pattern, and because the
-   blobs animate transform/opacity only they never trigger layout or paint.
-   Sections with their own background stay legible — the grid is too faint to
-   muddy them. The prefers-reduced-motion block at the end of this file kills
-   all of it. */
-.landing-ambience {
-  position: fixed;
-  inset: 0;
-  /* Sits ABOVE the page background but BELOW every content block. It used to
-     be z-index: 60, which painted the paper tooth and the two washes over the
-     product cards (and over the nav) — the cards read as translucent because
-     you could see the grid through them. */
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-/* Lift the content above the ambience. The nav is already z-50. Safe to add a
-   containing block here: nothing in these sections is absolutely positioned,
-   and every absolute element inside the mocks has its own positioned parent. */
-.landing > section,
-.landing > footer {
-  position: relative;
-  z-index: 1;
-}
-.landing-ambience::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  /* Lifted on phones only. At 3x DPR a 1.9% hairline lands below what most
-     screens resolve, so the grid reads on desktop and all but vanishes on
-     mobile. 5% below 768px, untouched above it. */
-  background-image:
-    linear-gradient(to right, rgba(27, 25, 23, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(27, 25, 23, 0.05) 1px, transparent 1px);
-  background-size: 12px 12px;
-  background-position: -1px -1px;
-}
-
-@media (min-width: 768px) {
-  .landing-ambience::before {
-    background-image:
-      linear-gradient(to right, rgba(27, 25, 23, 0.019) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(27, 25, 23, 0.019) 1px, transparent 1px);
-  }
-}
-.landing-blob {
-  position: absolute;
-  border-radius: 9999px;
-  filter: blur(80px);
-}
-.landing-blob-peach {
-  top: -14vh;
-  left: -8vw;
-  width: 46vw;
-  height: 46vw;
-  min-width: 340px;
-  min-height: 340px;
-  background: radial-gradient(circle, rgba(201, 106, 68, 0.09), transparent 68%);
-}
-.landing-blob-pine {
-  right: -12vw;
-  bottom: -18vh;
-  width: 52vw;
-  height: 52vw;
-  min-width: 380px;
-  min-height: 380px;
-  background: radial-gradient(circle, rgba(10, 110, 92, 0.11), transparent 68%);
-}
-
-@keyframes sail-drift {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(2.5%, -3.5%, 0) scale(1.09); }
-}
-@keyframes sail-drift-alt {
-  0%, 100% { transform: translate3d(0, 0, 0) scale(1.06); }
-  50% { transform: translate3d(-3%, 2.5%, 0) scale(1); }
-}
-.landing-blob-peach { animation: sail-drift 38s var(--ease-out) infinite; }
-.landing-blob-pine { animation: sail-drift-alt 52s var(--ease-out) infinite; }
-
-/* Extraction confidence bars fill once on entry, staggered per field. */
-@keyframes sail-fill {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-.sail-bar-fill {
-  transform-origin: left center;
-  animation: sail-fill 900ms var(--ease-out) backwards;
-}
-
-/* ── Nav ───────────────────────────────────────────────────────────────── */
-.landing .btk-nav-link::after {
-  background: var(--pine);
-}
-
-/* ── Editorial numbered rows (How it works) ────────────────────────────── */
-.step-row {
-  display: grid;
-  gap: 8px 32px;
-  grid-template-columns: 1fr;
-  padding: 32px 0;
-  border-top: 1px solid var(--hairline);
-}
-@media (min-width: 768px) {
-  .step-row {
-    grid-template-columns: 64px 240px 1fr;
-    align-items: baseline;
-    gap: 32px;
-    padding: 40px 0;
-  }
-}
-.step-row:last-child {
-  border-bottom: 1px solid var(--hairline);
-}
-.step-num {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  color: var(--ink-3);
-}
-
-/* ── FAQ ───────────────────────────────────────────────────────────────── */
 .faq-item {
-  border-top: 1px solid var(--hairline);
-}
-.faq-item:last-child {
   border-bottom: 1px solid var(--hairline);
 }
+
 .faq-item summary::-webkit-details-marker {
   display: none;
 }
 
-/* ── Footer ────────────────────────────────────────────────────────────── */
 .footer-link {
-  color: var(--ink-2);
-  transition: color 160ms var(--ease-out);
+  color: var(--text-muted);
+  transition: color 120ms var(--ease-out);
 }
+
 .footer-link:hover {
-  color: var(--ink);
-}
-
-/* Landing: breathing radial backdrops (hero + pricing ambient glows) */
-@keyframes btk-breathe {
-  0%, 100% { transform: scale(1); opacity: 0.8; }
-  50% { transform: scale(1.06); opacity: 1; }
-}
-.btk-breathe {
-  animation: btk-breathe 9s var(--ease-out) infinite;
-}
-
-/* Landing: drifting ghost numerals / ghost word (keeps the centered -translate-y-1/2) */
-@keyframes btk-drift {
-  0%, 100% { transform: translateY(-50%) translateX(0); }
-  50% { transform: translateY(-50%) translateX(12px); }
-}
-.btk-drift {
-  animation: btk-drift 12s var(--ease-out) infinite;
-}
-
-/* Landing: pipeline flow dot (how-it-works connector) */
-@keyframes btk-flow {
-  0% { left: 0%; opacity: 0; }
-  8% { opacity: 1; }
-  92% { opacity: 1; }
-  100% { left: 100%; opacity: 0; }
-}
-.btk-flow-track {
-  animation: btk-flow 5.5s var(--ease-out) infinite;
-}
-
-/* ── Liquid glass ────────────────────────────────────────────────────────
-   Floating surfaces get a translucent material rather than an opaque fill:
-   a blurred, saturated base wash, a specular sheen across the top-left, a
-   hairline inner ring that reads as a lit edge, and a tinted drop shadow so
-   the panel sits above the page. Colours come from vars so the material
-   flips with the dashboard theme. */
-:root {
-  /* A glass panel reads as glass through depth, not through a tint: the fill
-     stays mostly clear so the page visibly frosts behind it, brightness keeps
-     the panel lighter than what it covers, and saturation gives the glass
-     the subtle colour-stained feel of Liquid Glass. The wash is kept solid
-     enough that controls and text on the panel stay legible over a busy
-     mailbox — glassy, but never see-through. */
-  --glass-fill: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.78) 0%,
-    rgba(255, 255, 255, 0.62) 55%,
-    rgba(255, 255, 255, 0.72) 100%
-  );
-  --glass-blur: 38px;
-  --glass-saturate: 200%;
-  --glass-brighten: 1.06;
-  /* Specular sweep: crams most of the light into a soft-edged diagonal band
-     that slowly glides across the glass so it reads as a living surface. */
-  --glass-sheen: linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0) 12%,
-    rgba(255, 255, 255, 0.72) 27%,
-    rgba(255, 255, 255, 0.14) 42%,
-    rgba(255, 255, 255, 0) 63%
-  );
-  /* Top rim reads as a lit curved edge: bright hairline, then a blush that
-     fades down a short band. */
-  --glass-rim: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.65) 0%,
-    rgba(255, 255, 255, 0.16) 22%,
-    rgba(255, 255, 255, 0) 46%
-  );
-  --glass-ring: rgba(255, 255, 255, 0.65);
-  --glass-edge: rgba(15, 22, 50, 0.16);
-  --glass-shadow: 0 1px 2px rgba(20, 30, 70, 0.08), 0 24px 64px -24px rgba(20, 30, 70, 0.45);
-}
-
-.glass {
-  position: relative;
-  background: var(--glass-fill);
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brighten));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) brightness(var(--glass-brighten));
-  box-shadow:
-    inset 0 1px 0 var(--glass-ring),
-    inset 0 0 0 1px var(--glass-ring),
-    inset 0 -1px 0 var(--glass-edge),
-    var(--glass-shadow);
-}
-
-/* Fields sitting on glass get a soft white wash so text stays readable and
-   the field you're editing reads as clearly distinct from the surface. */
-.glass input,
-.glass textarea {
-  background: rgba(255, 255, 255, 0.55);
-  border-radius: 8px;
-  transition: background-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out);
-}
-.glass input:focus,
-.glass textarea:focus {
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
-}
-
-/* Top rim light — reads as the curved lit edge of the pane. */
-.glass::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: var(--glass-rim);
-}
-
-/* Specular sweep: crams most of the light into a soft-edged diagonal band
-   that slowly glides across the glass so it reads as a living surface. */
-.glass::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background: var(--glass-sheen);
-  background-size: 260% 100%;
-  background-position: 120% 0%;
-  animation: glass-sweep 9s var(--ease-out) infinite;
-}
-
-@keyframes glass-sweep {
-  0% { background-position: 120% 0%; }
-  12% { background-position: -40% 0%; }
-  100% { background-position: -40% 0%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .glass::before {
-    animation: none;
-    background-position: 8% 0%;
-  }
-}
-
-/* Interactive glass: only for controls that actually respond. */
-.glass-press {
-  transition: transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast) var(--ease-out),
-    background-color var(--dur-fast) var(--ease-out);
-}
-.glass-press:active {
-  transform: scale(0.97);
-  opacity: 0.9;
-}
-
-@keyframes glass-in {
-  from {
-    opacity: 0;
-    transform: translateY(18px) scale(0.94);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-.glass-anim-in {
-  animation: glass-in 460ms var(--ease-out) backwards;
-}
-
-/* ── Landing: living details ───────────────────────────────────────────────
-   Small, continuous motion so the product mocks read as running software
-   rather than a screenshot. Both are killed by the global
-   prefers-reduced-motion block at the end of this file. */
-@keyframes sail-pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.45); opacity: 0.5; }
-}
-.sail-pulse {
-  animation: sail-pulse 2.4s var(--ease-out) infinite;
-}
-.sail-typing {
-  animation: btk-chat-dot 1.25s var(--ease-out) infinite;
-}
-
-/* Respect reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
-  .btk-marquee, .btk-anim-rise, .btk-anim-rise-sm, .btk-anim-fade-down, .btk-chat-dot,
-  .btk-breathe, .btk-drift, .btk-flow-track,
-  .landing-blob-peach, .landing-blob-pine, .sail-bar-fill {
-    animation: none;
-  }
-  .sail-bar-fill {
-    transform: none;
-  }
-  .glass-anim-in {
-    animation: none;
-  }
+  color: var(--text);
 }

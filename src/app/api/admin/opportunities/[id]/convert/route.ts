@@ -79,15 +79,6 @@ export async function POST(
       updates.currency = conversation.currency || 'USD';
     }
 
-    // Use conversation's missing_info to suggest stage
-    if (
-      opportunity.stage === 'NEW' &&
-      conversation.missing_info &&
-      conversation.missing_info.length > 0
-    ) {
-      updates.stage = 'NEEDS_INFORMATION';
-    }
-
     // Use conversation's owner if opportunity has no owner
     if (!opportunity.owner_id && conversation.owner_id) {
       updates.owner_id = conversation.owner_id;

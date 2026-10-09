@@ -6,6 +6,7 @@ import { useLang } from '@/lib/lang';
 import { useCompany } from '@/lib/company';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
+import { MAX_DELIVERY_LOCATIONS, type DeliveryLocation } from '@/lib/delivery-locations';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -23,6 +24,7 @@ interface Opportunity {
   expected_margin_pct: number | null;
   country: string | null;
   destination: string | null;
+  delivery_locations: DeliveryLocation[] | null;
   required_delivery_date: string | null;
   owner_id: string | null;
   priority: string;
@@ -168,7 +170,6 @@ interface OpportunityData {
 
 const STAGES = [
   { key: 'NEW', en: 'New', zh: '新建', color: '#6B7280', bg: '#F3F4F6' },
-  { key: 'NEEDS_INFORMATION', en: 'Needs Info', zh: '待補資訊', color: '#D97706', bg: '#FEF3C7' },
   { key: 'QUALIFIED', en: 'Qualified', zh: '已確認', color: '#2563EB', bg: '#EFF6FF' },
   { key: 'SOURCING', en: 'Sourcing', zh: '採購中', color: '#7C3AED', bg: '#F5F3FF' },
   { key: 'QUOTE_DRAFT', en: 'Quote Draft', zh: '報價草稿', color: '#D97706', bg: '#FEF3C7' },
@@ -181,8 +182,7 @@ const STAGES = [
 ];
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  NEW: ['NEEDS_INFORMATION', 'QUALIFIED'],
-  NEEDS_INFORMATION: ['QUALIFIED'],
+  NEW: ['QUALIFIED'],
   QUALIFIED: ['SOURCING'],
   SOURCING: ['QUOTE_DRAFT'],
   QUOTE_DRAFT: ['PENDING_APPROVAL'],
@@ -430,6 +430,210 @@ function TimelineItem({ event, isLast }: { event: AuditEvent; isLast: boolean })
 // ---------------------------------------------------------------------------
 // Tab: Overview
 // ---------------------------------------------------------------------------
+
+function DeliveryLocationsCard({
+  opp,
+  t,
+  onFieldChange,
+}: {
+  opp: Opportunity;
+  t: (en: string, zh: string) => string;
+  onFieldChange: (field: string, value: unknown) => void;
+}) {
+  const { showToast } = useToast();
+  const { companyId } = useCompany();
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [rows, setRows] = useState<DeliveryLocation[]>([]);
+
+  const startEditing = () => {
+    setRows(
+      (opp.delivery_locations || []).map((l) => ({
+        label: l.label || '',
+        address: l.address || '',
+        quantity: l.quantity || '',
+        note: l.note || '',
+      }))
+    );
+    setEditing(true);
+  };
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      const clean = rows
+        .map((r) => ({
+          label: r.label.trim(),
+          address: r.address.trim(),
+          quantity: r.quantity.trim(),
+          note: r.note.trim(),
+        }))
+        .filter((r) => r.label || r.address);
+      const res = await authFetch(`/api/admin/opportunities/${opp.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ delivery_locations: clean, company_id: companyId }),
+      });
+      if (!res.ok) throw new Error('Failed to save delivery locations');
+      const json = await res.json();
+      const updated = json.opportunity || json;
+      if (updated && 'delivery_locations' in updated) {
+        onFieldChange('delivery_locations', updated.delivery_locations);
+      } else {
+        onFieldChange('delivery_locations', clean);
+      }
+      setEditing(false);
+      showToast(t('Delivery locations saved', '送貨地點已儲存'), 'success');
+    } catch {
+      showToast(t('Failed to save delivery locations', '儲存送貨地點失敗'), 'error');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const locations = opp.delivery_locations || [];
+
+  return (
+    <SectionCard
+      title={t('Delivery / Ship-to', '送貨地點')}
+      actions={
+        !editing ? (
+          <button
+            onClick={startEditing}
+            className="text-[11px] font-medium px-2.5 py-1 rounded-[4px] border"
+            style={{ borderColor: 'var(--border)', color: 'var(--accent)' }}
+          >
+            {locations.length > 0 ? t('Edit', '編輯') : t('Add location', '新增地點')}
+          </button>
+        ) : (
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => setEditing(false)}
+              disabled={saving}
+              className="text-[11px] px-2.5 py-1 rounded-[4px] border"
+              style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
+            >
+              {t('Cancel', '取消')}
+            </button>
+            <button
+              onClick={save}
+              disabled={saving}
+              className="text-[11px] font-medium px-2.5 py-1 rounded-[4px] text-white disabled:opacity-50"
+              style={{ background: 'var(--accent)' }}
+            >
+              {saving ? '...' : t('Save', '儲存')}
+            </button>
+          </div>
+        )
+      }
+    >
+      <p className="text-[12px] mb-3" style={{ color: 'var(--text-muted)' }}>
+        {t(
+          'Where the goods actually ship. Add one row per place when an order is split across several destinations.',
+          '貨物實際送達的地點。若一張訂單分送至多個地點，請為每個地點新增一列。'
+        )}
+      </p>
+
+      {editing ? (
+        <div className="space-y-3">
+          {rows.map((row, i) => (
+            <div
+              key={i}
+              className="border rounded-[4px] p-3 space-y-2"
+              style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+            >
+              <div className="flex gap-2 items-start">
+                <input
+                  value={row.label}
+                  onChange={(e) => setRows((prev) => prev.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
+                  placeholder={t('Consignee / place (e.g. Apex 3PL, Singapore)', '收貨人／地點（例如：Apex 3PL, 新加坡）')}
+                  className="flex-1 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                  style={{ borderColor: 'var(--border)' }}
+                />
+                <input
+                  value={row.quantity}
+                  onChange={(e) => setRows((prev) => prev.map((x, j) => (j === i ? { ...x, quantity: e.target.value } : x)))}
+                  placeholder={t('Qty (e.g. 2,000 pcs)', '數量（例如：2,000 件）')}
+                  className="w-40 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                  style={{ borderColor: 'var(--border)' }}
+                />
+                <button
+                  onClick={() => setRows((prev) => prev.filter((_, j) => j !== i))}
+                  className="text-[12px] px-2 py-2 rounded-[4px] border shrink-0"
+                  style={{ borderColor: 'var(--border)', color: 'var(--error)' }}
+                >
+                  {t('Remove', '移除')}
+                </button>
+              </div>
+              <input
+                value={row.address}
+                onChange={(e) => setRows((prev) => prev.map((x, j) => (j === i ? { ...x, address: e.target.value } : x)))}
+                placeholder={t('Full delivery address', '完整送貨地址')}
+                className="w-full border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                style={{ borderColor: 'var(--border)' }}
+              />
+              <input
+                value={row.note}
+                onChange={(e) => setRows((prev) => prev.map((x, j) => (j === i ? { ...x, note: e.target.value } : x)))}
+                placeholder={t('Note (marks on cartons, contact, delivery window…)', '備註（外箱標記、聯絡人、送貨時段…）')}
+                className="w-full border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                style={{ borderColor: 'var(--border)' }}
+              />
+            </div>
+          ))}
+          <button
+            onClick={() => {
+              if (rows.length >= MAX_DELIVERY_LOCATIONS) return;
+              setRows((prev) => [...prev, { label: '', address: '', quantity: '', note: '' }]);
+            }}
+            disabled={rows.length >= MAX_DELIVERY_LOCATIONS}
+            className="text-[12px] font-medium px-3 py-1.5 rounded-[4px] border"
+            style={{
+              borderColor: 'var(--border)',
+              color: rows.length >= MAX_DELIVERY_LOCATIONS ? 'var(--text-muted)' : 'var(--text)',
+            }}
+          >
+            + {t('Add another location', '新增另一個地點')}
+          </button>
+        </div>
+      ) : locations.length > 0 ? (
+        <div className="space-y-2">
+          {locations.map((loc, i) => (
+            <div
+              key={i}
+              className="border rounded-[4px] px-3 py-2.5"
+              style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <span className="text-[13px] font-medium" style={{ color: 'var(--text)' }}>
+                  {loc.label || t('Delivery location', '送貨地點')}
+                </span>
+                {loc.quantity && (
+                  <span className="text-[12px] shrink-0" style={{ color: 'var(--text-muted)' }}>{loc.quantity}</span>
+                )}
+              </div>
+              {loc.address && (
+                <p className="text-[12px] mt-1 whitespace-pre-wrap" style={{ color: 'var(--text-muted)' }}>{loc.address}</p>
+              )}
+              {loc.note && (
+                <p className="text-[12px] mt-1" style={{ color: 'var(--text-muted)' }}>{loc.note}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          title={t('No delivery locations yet', '尚未設定送貨地點')}
+          subtitle={
+            opp.destination
+              ? t(`Currently shipping to: ${opp.destination}`, `目前送達：${opp.destination}`)
+              : t('Add a location when the order ships somewhere other than the buyer’s country.', '當訂單送往買家所在國家以外的地方時，請新增地點。')
+          }
+        />
+      )}
+    </SectionCard>
+  );
+}
 
 function TabOverview({
   opp,
@@ -806,6 +1010,9 @@ function TabOverview({
           />
         )}
       </SectionCard>
+
+      {/* Delivery / Ship-to */}
+      <DeliveryLocationsCard opp={opp} t={t} onFieldChange={onFieldChange} />
 
       {/* Notes */}
       <SectionCard

@@ -8,6 +8,7 @@ import SiteHeader from '@/components/landing/SiteHeader';
 import HeroDemo from '@/components/landing/HeroDemo';
 import Reveal from '@/components/landing/Reveal';
 import PricingPrice from '@/components/landing/PricingPrice';
+import PilotCTA, { PILOT_WHATSAPP_HREF } from '@/components/landing/PilotCTA';
 import { useLang } from '@/lib/lang';
 import { PLANS as PLANS_CATALOG, formatPrice } from '@/lib/billing-plans';
 import {
@@ -346,46 +347,58 @@ export default function LandingPage() {
       <SiteHeader />
 
       {/* ── Hero ── */}
-      <section className="hero-wash px-6 pt-32 pb-16 md:pt-40 md:pb-20">
-        <Image
-          src="/hero/hero-banner.jpg"
-          alt=""
-          aria-hidden="true"
-          fill
-          priority
-          sizes="100vw"
-          className="hero-banner"
-        />
+            <section className="relative px-6 pt-32 pb-16 md:pt-40 md:pb-20">
         <div className="mx-auto max-w-6xl">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="eyebrow">{t('Every inquiry arrives half-finished', '每封詢盤都不完整')}</p>
-            <h1 className="display display-hero mt-6 text-[clamp(2.2rem,5.8vw,4rem)]">
-              {t('One email in.', '一封郵件進來，')}
+            <p className="eyebrow">{t('AI for trade operations', '貿易營運 AI')}</p>
+            <h1 className="display mt-6 text-[clamp(2.4rem,6vw,4.4rem)] leading-[1.08]">
+              The autonomous back office
               <br />
-              <em>{t('every spec out.', '完整規格出去。')}</em>
+              <em>for trading companies.</em>
             </h1>
-            <p className="mx-auto mt-7 max-w-xl text-balance text-[1.0625rem] leading-[1.75] text-[var(--ink-2)]">
+            <p className="mx-auto mt-7 max-w-2xl text-balance text-[1.0625rem] leading-[1.8] text-[var(--ink-2)]">
               {t(
-                'A buyer writes asking for 5,000 units. Sailwise pulls the specs from the message and its attachments, fetches what is missing, and drafts the reply.',
-                '買方來信要 5,000 件。Sailwise 從郵件與附件中擷取規格，自動補齊缺項，並草擬回覆。'
+                'Sailwise works across your email, documents and knowledge to turn every inbound inquiry into a complete, cited quote draft. Recover time, avoid missed specs, and keep full control over every send.',
+                'Sailwise 貫通電郵、文件與知識庫，將每封詢盤轉化為完整且有據的報價草稿。省時省力、不漏規格，並完整掌控每一次發送。'
               )}
             </p>
-            <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/signup" className="group btn-primary w-full px-6 py-3 sm:w-auto">
-                {t('Start free trial', '開始免費試用')}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </Link>
-              <Link href="#product" className="btn-ghost w-full px-6 py-3 sm:w-auto">
-                {t('See the product', '查看產品')}
-              </Link>
+            <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <PilotCTA className="btn-primary px-6 py-3" />
+              <a
+                href={PILOT_WHATSAPP_HREF}
+                className="inline-flex items-center gap-2 rounded-[10px] border border-[var(--border)] bg-[rgba(242,240,230,0.04)] px-6 py-3 text-[14px] text-[var(--text)] transition-colors hover:bg-[rgba(242,240,230,0.08)]"
+              >
+                {t('Talk to us', '聯絡我們')}
+                <ArrowRight className="h-4 w-4" />
+              </a>
             </div>
-            <p className="mt-5 text-[13px] text-[var(--ink-3)]">
-              {t('14-day free trial · Cancel anytime', '14 天免費試用 · 隨時取消')}
-            </p>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-[13px] text-[var(--ink-3)]">
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--pine)]" />
+                {t('Hosted on AWS', '託管於 AWS')}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--pine)]" />
+                {t('No access to your inbox', '無法存取您的信箱')}
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--pine)]" />
+                {t('Human approval required', '須人手核准')}
+              </span>
+            </div>
           </div>
 
-          <div className="mx-auto mt-16 max-w-5xl md:mt-24">
-            <HeroProduct />
+          <div className="mt-16 overflow-hidden rounded-[24px] border border-[var(--border)] bg-[linear-gradient(180deg,rgba(31,36,32,0.98)_0%,rgba(23,27,24,0.98)_100%)] shadow-[var(--shadow-float)]">
+            <div className="relative aspect-[16/9] w-full">
+              <Image
+                src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1600&q=80"
+                alt="Logistics operations dashboard"
+                fill
+                className="object-cover opacity-90 mix-blend-luminosity"
+                priority
+              />
+              <div className="absolute inset-0 bg-[radial-gradient(120%_120%_at_50%_0%,rgba(23,27,24,0)_0%,rgba(23,27,24,0.9)_100%)]" />
+            </div>
           </div>
         </div>
       </section>

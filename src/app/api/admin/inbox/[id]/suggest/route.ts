@@ -166,7 +166,7 @@ async function extractRequest(
   // key so the Specs pod can match them back to the configured label.
   const specsBlock = customSpecs.length > 0
     ? `\n\nALSO FILL "custom_specs" — these fields were configured by this company, so extract them the same way (exact value if stated, null if the buyer never mentioned it):\n${customSpecs
-        .map((f) => `- "${f.key}" (${f.label})${f.hint ? ` — look for: ${f.hint}` : ''}`)
+        .map((f) => `- "${f.key}" (${f.label})${f.required ? ' [REQUIRED — always attempt this]' : ''}${f.hint ? ` — look for: ${f.hint}` : ''}`)
         .join('\n')}\n`
     : '';
 
@@ -200,7 +200,7 @@ Rules:
   tiers", "10,000 vs 25,000"), put "pricing tiers requested" in the spec of the relevant item.
 - Keep product names in the customer's own words.${
   customSpecs.length > 0
-    ? `\n- "custom_specs" must contain EVERY configured key, with the exact value from the email or null. Never guess, never leave a key out, and copy units, tolerances and codes verbatim.`
+    ? `\n- "custom_specs" must contain EVERY configured key, with the exact value from the email or null. Never guess, never leave a key out, and copy units, tolerances and codes verbatim. Fields marked [REQUIRED] matter most — search the whole email carefully before returning null for one.`
     : ''
 }
 

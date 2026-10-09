@@ -4,8 +4,7 @@ import { requireAuth } from '@/lib/api-auth';
 
 /** Valid stage transitions for the opportunity pipeline */
 const VALID_TRANSITIONS: Record<string, string[]> = {
-  NEW: ['NEEDS_INFORMATION', 'QUALIFIED'],
-  NEEDS_INFORMATION: ['QUALIFIED'],
+  NEW: ['QUALIFIED'],
   QUALIFIED: ['SOURCING'],
   SOURCING: ['QUOTE_DRAFT'],
   QUOTE_DRAFT: ['PENDING_APPROVAL'],
@@ -14,6 +13,21 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   NEGOTIATING: ['WON', 'LOST', 'EXPIRED'],
   // Terminal states: WON, LOST, EXPIRED — no outgoing transitions
 };
+
+/**
+ * NEEDS_INFORMATION was removed from the pipeline. "What is still missing from
+ * the inquiry" is the email thread's status, not a stage in a sales funnel —
+ * having it as both meant the same fact appeared twice on one screen, in the
+ * same amber, under two different pod headings.
+ *
+ * Opportunities written before the split still carry the old value, so it is
+ * read as NEW instead of becoming an un-advanceable dead end.
+ */
+const LEGACY_STAGE_ALIAS: Record<string, string> = { NEEDS_INFORMATION: 'NEW' };
+
+function normalizeStage(stage: string): string {
+  return LEGACY_STAGE_ALIAS[stage] ?? stage;
+}
 
 /**
  * Check if a stage transition is valid.
@@ -30,7 +44,7 @@ function isValidTransition(from: string, to: string): boolean {
     return true;
   }
 
-  const allowed = VALID_TRANSITIONS[from];
+  const allowed = VALID_TRANSITIONS[normalizeStage(from)];
   return allowed ? allowed.includes(to) : false;
 }
 
@@ -54,7 +68,7 @@ export async function POST(
     }
 
     const validStages = [
-      'NEW', 'NEEDS_INFORMATION', 'QUALIFIED', 'SOURCING',
+      'NEW', 'QUALIFIED', 'SOURCING',
       'QUOTE_DRAFT', 'PENDING_APPROVAL', 'SENT', 'NEGOTIATING',
       'WON', 'LOST', 'EXPIRED',
     ];
@@ -91,7 +105,7 @@ export async function POST(
       return NextResponse.json(
         {
           error: `Invalid transition from ${currentStage} to ${stage}`,
-          valid_transitions: VALID_TRANSITIONS[currentStage] || [],
+          valid_transitions: VALID_TRANSITIONS[normalizeStage(currentStage)] || [],
         },
         { status: 400 }
       );

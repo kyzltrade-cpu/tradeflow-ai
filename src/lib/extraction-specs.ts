@@ -13,6 +13,12 @@ export interface ExtractionSpec {
   key: string;
   label: string;
   hint: string;
+  /**
+   * When true the field is a hard requirement: Sailwise must always try to
+   * pull it out of every inbound email, and a thread that is still missing it
+   * is flagged as incomplete even if every other field is present.
+   */
+  required: boolean;
 }
 
 export const MAX_EXTRACTION_SPECS = 20;
@@ -58,6 +64,7 @@ export function sanitizeExtractionSpecs(input: unknown): ExtractionSpec[] {
       key,
       label,
       hint: String(entry.hint ?? '').trim().slice(0, 160),
+      required: entry.required === true,
     });
   }
 

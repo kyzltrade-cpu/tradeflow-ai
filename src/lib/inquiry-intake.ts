@@ -463,6 +463,7 @@ export async function runInquiryIntake(params: {
         priority: opportunityValue(extraction) != null && opportunityValue(extraction)! >= BIG_DEAL_MIN_VALUE ? 'high' : 'normal',
         stage: 'NEW',
         text: `${inquiry.subject ?? ''} ${inquiry.original_message ?? ''}`.trim() || null,
+        specExtracted: missing.length === 0,
       });
       steps.push(`whatsapp: ${ping.ok ? 'sent' : ping.skipped || ping.error || 'skipped'}${ping.reasons?.length ? ` (${ping.reasons.join(', ')})` : ''}`);
     } catch (err) {

@@ -46,21 +46,21 @@ export default function LoginPage() {
               return;
             }
             if (!res.ok) {
-              router.push('/admin/inbox');
+              router.push('/admin');
               return;
             }
 
             const data = await res.json();
             if (data?.id) {
-              router.push('/admin/inbox');
+              router.push('/admin');
             } else {
               router.push('/onboarding');
             }
           } catch {
-            router.push('/admin/inbox');
+            router.push('/admin');
           }
         } else {
-          router.push('/admin/inbox');
+          router.push('/admin');
         }
       }
     } catch {
@@ -71,44 +71,60 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-bg min-h-screen flex flex-col items-center justify-center px-5 py-10 sm:px-6">
-      <div className="w-full max-w-[420px]">
-        {/* Back to home */}
-        <div className="mb-6">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-[13px] transition-opacity hover:opacity-70"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M19 12H5M12 19l-7-7 7-7" />
-            </svg>
-            {t('Back to home', '返回首頁')}
-          </Link>
-        </div>
-
-        <div className="auth-card px-7 py-8 sm:px-8">
-          <div className="text-center">
-            <Link href="/" className="inline-flex items-center gap-1.5 group">
+    <div className="auth-bg min-h-screen lg:flex">
+      <main className="flex w-full flex-col px-6 py-10 sm:px-10 lg:w-[56%] lg:justify-center lg:px-16 lg:py-16">
+        <div className="mx-auto w-full max-w-[400px]">
+          <div className="auth-rise mb-10 flex items-center justify-between">
+            <Link href="/" className="inline-flex items-center gap-2">
               <Image
-                src="/brand/sailwise-logo.png"
+                src="/brand/sailwise-mark.png"
                 alt=""
                 aria-hidden="true"
-                width={552}
-                height={452}
-                className="h-10 w-auto object-contain transition-transform duration-200 group-hover:scale-105"
+                width={360}
+                height={378}
+                className="h-6 w-auto object-contain"
               />
-              <span className="text-[24px] font-semibold tracking-[-0.3px]" style={{ color: 'var(--accent)' }}>
+              <span className="text-[15px] font-semibold tracking-[-0.2px]" style={{ color: 'var(--accent)' }}>
                 Sailwise
               </span>
             </Link>
-            <h1 className="text-[22px] font-semibold tracking-[-0.4px] mb-1.5 mt-5">{t('Sign in', '登入')}</h1>
-            <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
-              {t('Access your dashboard', '存取您的控制台')}
-            </p>
+            <Link
+              href="/"
+              className="auth-press -mr-2 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[13.5px] font-medium transition-colors hover:bg-[#EFE9DE]"
+              style={{ color: 'var(--text)' }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.25"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+              {t('Back to site', '返回網站')}
+            </Link>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4 mt-7">
+          <h1
+            className="auth-rise text-[28px] font-semibold leading-[1.15] tracking-[-0.02em] sm:text-[32px]"
+            style={{ animationDelay: '70ms' }}
+          >
+            {t('Welcome back', '歡迎回來')}
+          </h1>
+          <p className="mt-2 text-[14px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            {t('Sign in to pick up where your last inquiry left off.', '登入以繼續處理上一封詢盤。')}
+          </p>
+
+          <form
+          onSubmit={handleSubmit}
+          className="auth-rise mt-8 space-y-4"
+          style={{ animationDelay: '140ms' }}
+        >
             {error && (
               <div
                 role="alert"
@@ -129,7 +145,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="auth-input w-full border rounded-lg px-3 py-2.5 text-[14px]"
+                className="auth-input w-full border rounded-lg px-3 h-11 text-[14px]"
                 style={{ borderColor: 'var(--border)' }}
               />
             </div>
@@ -139,7 +155,7 @@ export default function LoginPage() {
                 <label htmlFor="password" className="block text-[13px] font-medium">{t('Password', '密碼')}</label>
                 <Link
                   href="/forgot-password"
-                  className="text-[12px] font-medium hover:underline"
+                  className="text-[12.5px] font-medium hover:underline"
                   style={{ color: 'var(--accent)' }}
                 >
                   {t('Forgot password?', '忘記密碼？')}
@@ -153,7 +169,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="auth-input w-full border rounded-lg px-3 py-2.5 text-[14px]"
+                className="auth-input w-full border rounded-lg px-3 h-11 text-[14px]"
                 style={{ borderColor: 'var(--border)' }}
               />
             </div>
@@ -161,8 +177,8 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full text-[14px] font-medium py-2.5 rounded-lg text-white disabled:opacity-50 transition-all hover:-translate-y-px active:translate-y-0 active:scale-[0.99]"
-              style={{ background: 'var(--accent)', boxShadow: 'inset 0 -2px 0 0 rgba(0,0,0,0.18)' }}
+              className="auth-press w-full text-[14px] font-medium h-11 rounded-lg text-white disabled:opacity-60 transition-opacity hover:opacity-90"
+              style={{ background: 'var(--accent)' }}
             >
               {loading ? t('Signing in...', '登入中...') : t('Sign in', '登入')}
             </button>
@@ -173,10 +189,8 @@ export default function LoginPage() {
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t" style={{ borderColor: 'var(--border)' }} />
               </div>
-              {/* Must mask the rule with the card colour, not --bg — the page
-                  behind it is now grey, so a --bg chip showed as a notch. */}
               <div className="relative flex justify-center text-[12px]">
-                <span className="px-3" style={{ background: '#FFFFFF', color: 'var(--text-muted)' }}>
+                <span className="px-3" style={{ background: 'var(--paper)', color: 'var(--text-muted)' }}>
                   {t('or continue with', '或使用')}
                 </span>
               </div>
@@ -189,10 +203,10 @@ export default function LoginPage() {
                   const result = await signInWithGoogle();
                   if (result.error) setError(result.error);
                 }}
-                className="flex items-center justify-center gap-2 border rounded-lg py-2.5 text-[13px] font-medium transition-all hover:-translate-y-px active:translate-y-0 hover:opacity-90"
+                className="auth-press flex h-11 items-center justify-center gap-2 border rounded-lg text-[13px] font-medium transition-colors hover:bg-[#F7F5F1]"
                 style={{ borderColor: 'var(--border)', color: 'var(--text)', background: '#FFFFFF' }}
               >
-                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -206,10 +220,10 @@ export default function LoginPage() {
                   const result = await signInWithMicrosoft();
                   if (result.error) setError(result.error);
                 }}
-                className="flex items-center justify-center gap-2 border rounded-lg py-2.5 text-[13px] font-medium transition-all hover:-translate-y-px active:translate-y-0 hover:opacity-90"
+                className="auth-press flex h-11 items-center justify-center gap-2 border rounded-lg text-[13px] font-medium transition-colors hover:bg-[#F7F5F1]"
                 style={{ borderColor: 'var(--border)', color: 'var(--text)', background: '#FFFFFF' }}
               >
-                <svg width="18" height="18" viewBox="0 0 23 23" aria-hidden="true">
+                <svg width="17" height="17" viewBox="0 0 23 23" aria-hidden="true">
                   <path fill="#F35325" d="M1 1h10v10H1z"/>
                   <path fill="#81BC06" d="M12 1h10v10H12z"/>
                   <path fill="#05A6F0" d="M1 12h10v10H1z"/>
@@ -220,14 +234,45 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <p className="text-[13px] text-center mt-6 pt-5" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
+          <p className="text-[13px] mt-8" style={{ color: 'var(--text-muted)' }}>
             {t("Don't have an account?", '沒有帳戶？')}{' '}
             <Link href="/signup" className="font-medium hover:underline" style={{ color: 'var(--accent)' }}>
               {t('Sign up', '註冊')}
             </Link>
           </p>
         </div>
-      </div>
+      </main>
+
+      <aside className="auth-split-panel hidden lg:flex lg:w-[44%] flex-col justify-center px-14 xl:px-20">
+        <div className="max-w-[380px]">
+          <div className="auth-rise" style={{ animationDelay: '90ms' }}>
+          <p
+            className="font-mono text-[10px] uppercase tracking-[0.18em]"
+            style={{ color: 'rgba(250, 247, 242, 0.5)' }}
+          >
+            {t('Why Sailwise', '為什麼選擇 Sailwise')}
+          </p>
+          <p className="mt-5 text-[26px] font-medium leading-[1.25] tracking-[-0.015em] xl:text-[29px]" style={{ color: '#FAF7F2' }}>
+            {t('One email in. Every spec out.', '一封郵件進來，完整規格出去。')}
+          </p>
+          <ul className="mt-8 space-y-4">
+            {[
+              ['Specifications pulled from the email and every attachment.', '從郵件與所有附件中擷取規格。'],
+              ['Notifies you when something important arrives and tracks your follow-ups.', '重要訊息抵達時立即通知，並自動追蹤待辦後續。'],
+              ['Replies drafted in your voice, ready to review.', '以您的語氣草擬回覆，隨時可審閱。'],
+            ].map(([en, zh]) => (
+              <li key={en} className="flex gap-3 text-[14px] leading-relaxed" style={{ color: 'rgba(250, 247, 242, 0.72)' }}>
+                <span
+                  className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{ background: '#C96A44' }}
+                />
+                <span>{t(en, zh)}</span>
+              </li>
+            ))}
+          </ul>
+          </div>
+        </div>
+      </aside>
     </div>
   );
 }

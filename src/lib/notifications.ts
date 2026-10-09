@@ -11,6 +11,8 @@ export interface NotificationConfig {
   enabled: boolean;
   newInquiry: boolean;
   pricingQuestion: boolean;
+  /** AI extracted a complete spec and opened an opportunity (ready to quote). */
+  specExtracted: boolean;
   bigDeal: boolean;
   escalation: boolean;
   bigDealMinValue: number;
@@ -20,6 +22,7 @@ export const DEFAULT_NOTIFICATIONS: NotificationConfig = {
   enabled: true,
   newInquiry: false,
   pricingQuestion: true,
+  specExtracted: true,
   bigDeal: true,
   escalation: true,
   bigDealMinValue: 50_000,
@@ -32,6 +35,7 @@ export function normaliseNotifications(input: unknown): NotificationConfig {
     enabled: raw.enabled !== false,
     newInquiry: raw.newInquiry === true,
     pricingQuestion: raw.pricingQuestion !== false,
+    specExtracted: raw.specExtracted !== false,
     bigDeal: raw.bigDeal !== false,
     escalation: raw.escalation !== false,
     bigDealMinValue: Number.isFinite(num) && num > 0 ? num : DEFAULT_NOTIFICATIONS.bigDealMinValue,
@@ -77,6 +81,8 @@ export function resolveAlerts(params: {
   text?: string | null;
   value?: number | null;
   priority?: string | null;
+  /** True when extraction produced a complete spec and an opportunity was opened. */
+  specExtracted?: boolean;
 }): ResolvedAlert {
   const { config } = params;
   if (!config.enabled) return { shouldAlert: false, reasons: [] };
@@ -84,6 +90,7 @@ export function resolveAlerts(params: {
   const reasons: string[] = [];
 
   if (config.newInquiry) reasons.push('New enquiry');
+  if (config.specExtracted && params.specExtracted) reasons.push('Full spec extracted');
 
   const detected = detectTextTriggers(params.text);
   if (config.pricingQuestion && detected.pricingQuestion) reasons.push('Pricing question');

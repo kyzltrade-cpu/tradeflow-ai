@@ -35,7 +35,6 @@ export type SourceChannel =
 /** Opportunity lifecycle stage */
 export type OpportunityStage =
   | "NEW"
-  | "NEEDS_INFORMATION"
   | "QUALIFIED"
   | "SOURCING"
   | "QUOTE_DRAFT"

@@ -7,6 +7,7 @@ import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
 import mammoth from 'mammoth';
 import { DEFAULT_NOTIFICATIONS, type NotificationConfig } from '@/lib/notifications';
+import { extractionSpecKey, MAX_EXTRACTION_SPECS } from '@/lib/extraction-specs';
 
 async function parsePdf(file: File): Promise<{ text: string; pageCount: number }> {
   const pdfjsLib = await import('pdfjs-dist');
@@ -177,6 +178,11 @@ export default function KnowledgeBasePage() {
   const [sections, setSections] = useState<InstructionSection[]>(INSTRUCTION_SECTIONS);
   const [newSection, setNewSection] = useState('');
   const [alerts, setAlerts] = useState<NotificationConfig>(DEFAULT_NOTIFICATIONS);
+  const [extractionSpecs, setExtractionSpecs] = useState<Array<{ key: string; label: string; hint: string; required: boolean }>>([]);
+  // Null until the first load resolves. A deployment that has not run
+  // migration 027 omits the column; the editor then stays inert instead of
+  // failing every save with a migration warning.
+  const [extractionSpecsSupported, setExtractionSpecsSupported] = useState<boolean | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const saveSectionsToServer = async (toSave: InstructionSection[]) => {
@@ -204,13 +210,41 @@ export default function KnowledgeBasePage() {
     }
   };
 
+  const saveExtractionSpecs = async (next: Array<{ key: string; label: string; hint: string; required: boolean }>) => {
+    if (!companyId) return;
+    try {
+      const res = await authFetch('/api/admin/extraction-specs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extraction_specs: next }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || 'Failed to save');
+      if (data?.extraction_specs_saved === false) {
+        showToast(
+          t(
+            'Not stored — run migration 027_extraction_specs.sql in Supabase.',
+            '未儲存 — 請在 Supabase 執行 027_extraction_specs.sql。'
+          ),
+          'error'
+        );
+      } else {
+        showToast(t('Extraction fields saved', '提取欄位已儲存'), 'success');
+      }
+    } catch (e) {
+      console.error('[extraction-fields] save error:', e);
+      showToast(t('Failed to save extraction fields', '儲存提取欄位失敗'), 'error');
+    }
+  };
+
   useEffect(() => {
     if (!companyId) return;
     Promise.all([
       authFetch(`/api/admin/knowledge?company_id=${companyId}`).then(r => r.json()),
       authFetch(`/api/admin/goals?company_id=${companyId}`).then(r => r.json()),
       authFetch(`/api/admin/notifications?company_id=${companyId}`).then(r => r.json()),
-    ]).then(([kbData, goalsData, alertsData]) => {
+      authFetch(`/api/admin/extraction-specs`).then(r => r.json()).catch(() => ({})),
+    ]).then(([kbData, goalsData, alertsData, specsData]) => {
       if (Array.isArray(kbData)) {
         setDocuments(kbData.map(d => ({
           id: d.id,
@@ -223,6 +257,16 @@ export default function KnowledgeBasePage() {
       }
       if (alertsData?.notifications) {
         setAlerts({ ...DEFAULT_NOTIFICATIONS, ...alertsData.notifications });
+      }
+      if (specsData && typeof specsData === 'object') {
+        setExtractionSpecsSupported(specsData.supported !== false);
+        if (Array.isArray(specsData.extraction_specs)) {
+          setExtractionSpecs(
+            (specsData.extraction_specs as Array<{ key: string; label: string; hint?: string; required?: boolean }>)
+              .filter((f) => f?.label)
+              .map((f) => ({ key: f.key || extractionSpecKey(f.label), label: f.label, hint: f.hint || '', required: f.required === true }))
+          );
+        }
       }
       if (goalsData.goals) {
         const goals = goalsData.goals as Array<{ id: string; title?: string; description?: string; enabled?: boolean }>;
@@ -448,7 +492,7 @@ export default function KnowledgeBasePage() {
     }
   };
 
-  type AlertFlag = 'enabled' | 'newInquiry' | 'pricingQuestion' | 'bigDeal' | 'escalation';
+  type AlertFlag = 'enabled' | 'newInquiry' | 'pricingQuestion' | 'specExtracted' | 'bigDeal' | 'escalation';
   const toggleAlert = (key: AlertFlag) => saveAlerts({ ...alerts, [key]: !alerts[key] });
 
   if (loading) {
@@ -632,6 +676,119 @@ export default function KnowledgeBasePage() {
         </div>
       </div>
 
+      {/* AI Extraction Fields */}
+      <div className="border rounded-[4px] p-5 mb-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 7V4h16v3"/>
+              <path d="M9 20h6"/>
+              <path d="M12 4v16"/>
+            </svg>
+            <div>
+              <p className="text-[14px] font-medium">{t('AI Extraction Fields', 'AI 提取欄位')}</p>
+              <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
+                {t(
+                  'Every spec you need the AI to pull out of each buyer email. Configured fields appear as extra rows in the Specs panel of every inbox thread. Mark a field Required to make Sailwise always extract it — a thread that is still missing a required field stays flagged as incomplete.',
+                  '您需要 AI 從每封買家郵件中提取的每項規格。已設定的欄位會在每個收件匣對話的「規格」面板中顯示為額外行。將欄位標記為「必填」可讓 Sailwise 一律提取——若對話仍缺少必填欄位，會持續標記為未完成。'
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {extractionSpecsSupported === false && (
+          <p className="text-[12px] mb-3" style={{ color: 'var(--error)' }}>
+            {t(
+              'Extraction fields are unavailable — run migration 027_extraction_specs.sql in Supabase.',
+              '提取欄位無法使用 — 請在 Supabase 執行 027_extraction_specs.sql。'
+            )}
+          </p>
+        )}
+
+        {extractionSpecs.length > 0 && (
+          <div className="space-y-2 mb-3">
+            {extractionSpecs.map((f, i) => (
+              <div key={i} className="flex gap-2 items-center">
+                <input
+                  value={f.label}
+                  onChange={(e) => setExtractionSpecs((prev) => prev.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
+                  onBlur={() => saveExtractionSpecs(extractionSpecs)}
+                  placeholder={t('Field name (e.g. Packaging)', '欄位名稱（例如：包裝方式）')}
+                  className="flex-1 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                  style={{ borderColor: 'var(--border)' }}
+                  disabled={loading || extractionSpecsSupported === false}
+                />
+                <input
+                  value={f.hint}
+                  onChange={(e) => setExtractionSpecs((prev) => prev.map((x, j) => (j === i ? { ...x, hint: e.target.value } : x)))}
+                  onBlur={() => saveExtractionSpecs(extractionSpecs)}
+                  placeholder={t('What to look for (optional)', '尋找線索（選填）')}
+                  className="flex-1 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
+                  style={{ borderColor: 'var(--border)' }}
+                  disabled={loading}
+                />
+                <label
+                  className="flex items-center gap-1.5 shrink-0 text-[12px] font-medium cursor-pointer select-none"
+                  style={{ color: f.required ? 'var(--text)' : 'var(--text-muted)' }}
+                  title={t('Sailwise must always extract this field', 'Sailwise 必須一律提取此欄位')}
+                >
+                  <input
+                    type="checkbox"
+                    checked={f.required}
+                    onChange={(e) => {
+                      const next = extractionSpecs.map((x, j) => (j === i ? { ...x, required: e.target.checked } : x));
+                      setExtractionSpecs(next);
+                      saveExtractionSpecs(next);
+                    }}
+                    className="accent-[var(--text)]"
+                    disabled={loading}
+                  />
+                  {t('Required', '必填')}
+                </label>
+                <button
+                  onClick={() => {
+                    const next = extractionSpecs.filter((_, j) => j !== i);
+                    setExtractionSpecs(next);
+                    saveExtractionSpecs(next);
+                  }}
+                  className="text-[12px] px-2 py-1 rounded-[4px] border shrink-0"
+                  style={{ borderColor: 'var(--border)', color: 'var(--error)' }}
+                  disabled={loading}
+                >
+                  {t('Remove', '移除')}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={() =>
+            setExtractionSpecs((prev) =>
+              prev.length >= MAX_EXTRACTION_SPECS
+                ? prev
+                : [...prev, { key: extractionSpecKey(`field_${prev.length + 1}`), label: '', hint: '', required: false }]
+            )
+          }
+          className="text-[12px] font-medium px-3 py-1.5 rounded-[4px] border"
+          style={{
+            borderColor: 'var(--border)',
+            color: extractionSpecs.length >= MAX_EXTRACTION_SPECS ? 'var(--text-muted)' : 'var(--text)',
+          }}
+          disabled={loading || extractionSpecsSupported === false || extractionSpecs.length >= MAX_EXTRACTION_SPECS}
+        >
+          + {t('Add field', '新增欄位')}
+        </button>
+
+        <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
+          {t(
+            `Leave the field name blank to drop it. Up to ${MAX_EXTRACTION_SPECS} fields. Built-in specs (quantity, product, material/size, logo/printing, incoterm, target price, timeline) are always extracted. Fields the buyer never mentions are shown as "missing"; fields marked Required keep the thread flagged as incomplete until they are found.`,
+            `欄位名稱留空即不會儲存。最多 ${MAX_EXTRACTION_SPECS} 個欄位。內建規格（數量、產品、材質／尺寸、商標／印刷、貿易條件、目標價、交期）一律提取。買家從未提及的欄位會顯示為「未提供」。`
+          )}
+        </p>
+      </div>
+
       {/* WhatsApp alerts */}
       <div className="border rounded-[4px] p-5 mb-6" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -661,6 +818,7 @@ export default function KnowledgeBasePage() {
         <div className={`space-y-1 ${alerts.enabled ? '' : 'opacity-40 pointer-events-none'}`}>
           {([
             { key: 'newInquiry' as const, label: t('New enquiry arrives', '有新的查詢'), hint: t('Alert on every new inbound enquiry.', '每則新進查詢都通知。') },
+            { key: 'specExtracted' as const, label: t('Full spec extracted / new opportunity', '規格完整提取／新商機'), hint: t('AI pulled every spec and opened an opportunity — ready to quote.', 'AI 已提取完整規格並建立商機——可開始報價。') },
             { key: 'pricingQuestion' as const, label: t('Customer asks about price', '客戶詢問價格'), hint: t('Message mentions pricing, quotes, cost, MOQ, or discounts.', '訊息提及價格、報價、成本、MOQ 或折扣。') },
             { key: 'escalation' as const, label: t('Needs your attention', '需要您處理'), hint: t('Customer asks for a person, or sounds frustrated or urgent.', '客戶要求真人協助，或語氣不滿、緊急。') },
           ]).map((row) => (

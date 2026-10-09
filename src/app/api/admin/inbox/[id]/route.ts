@@ -7,6 +7,33 @@ import { deriveThread, type ThreadMessage } from '@/lib/thread-state';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
+const MESSAGE_COLUMNS_BASE =
+  'id, role, content, tokens_used, created_at, kind, status, subject, sender_email, recipient_email';
+const MESSAGE_COLUMNS_CC_BCC = `${MESSAGE_COLUMNS_BASE}, cc, bcc, attachments`;
+const MESSAGE_COLUMNS_NO_CC_BCC = `${MESSAGE_COLUMNS_BASE}, attachments`;
+
+let ccColumnsChecked = false;
+let ccColumnsReady = false;
+
+/** `messages.cc`/`bcc` arrive with migration 029. Probed once, then cached, so a
+ *  database that has not run 029 still serves threads — it just omits the
+ *  recipient fields instead of 400-ing on an unknown column. */
+async function messageSelect(): Promise<string> {
+  if (ccColumnsChecked) {
+    return ccColumnsReady ? MESSAGE_COLUMNS_CC_BCC : MESSAGE_COLUMNS_NO_CC_BCC;
+  }
+  const { error } = await supabaseAdmin
+    .from('messages')
+    .select(MESSAGE_COLUMNS_CC_BCC)
+    .limit(1);
+  ccColumnsChecked = true;
+  ccColumnsReady = !error;
+  if (error) {
+    console.warn('[inbox] migration 029 cc/bcc columns unavailable, reading threads without recipients:', error.message);
+  }
+  return ccColumnsReady ? MESSAGE_COLUMNS_CC_BCC : MESSAGE_COLUMNS_NO_CC_BCC;
+}
+
 // GET /api/admin/inbox/[id] — full workspace: conversation + messages + related inquiries/opportunities
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
@@ -29,7 +56,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const { data: messages } = await supabaseAdmin
       .from('messages')
-      .select('id, role, content, tokens_used, created_at, kind, status, subject, sender_email, recipient_email, cc, bcc, attachments')
+      .select(await messageSelect())
       .eq('conversation_id', id)
       .order('created_at', { ascending: true });
 

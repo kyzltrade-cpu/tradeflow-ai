@@ -9,7 +9,6 @@ import { useAuth } from '@/lib/auth';
 import { useToast } from '@/components/Toast';
 import { authFetch } from '@/lib/auth-fetch';
 import ComposioConnections from '@/components/ComposioConnections';
-import { extractionSpecKey, MAX_EXTRACTION_SPECS } from '@/lib/extraction-specs';
 import { track } from '@/lib/analytics';
 
 const ADMIN_EMAIL = 'tradeflow.hk@gmail.com';
@@ -100,11 +99,6 @@ function SettingsContent() {
   const [fxRate, setFxRate] = useState('1');
   const [fxPair, setFxPair] = useState('USD → USD');
   const [marginRules, setMarginRules] = useState<Array<{ name: string; product_category: string; margin_pct: string }>>([]);
-  const [extractionSpecs, setExtractionSpecs] = useState<Array<{ key: string; label: string; hint: string }>>([]);
-  // Null until the first load resolves. A deployment that has not run
-  // migration 027 simply omits the column, and the section then stays inert
-  // instead of throwing a migration warning on every save.
-  const [extractionSpecsSupported, setExtractionSpecsSupported] = useState<boolean | null>(null);
 
   useEffect(() => {
     const billing = searchParams.get('billing');
@@ -142,14 +136,6 @@ function SettingsContent() {
                 }))
               );
             }
-          }
-          setExtractionSpecsSupported('extraction_specs' in data.settings);
-          if (Array.isArray(data.settings.extraction_specs)) {
-            setExtractionSpecs(
-              (data.settings.extraction_specs as Array<{ key: string; label: string; hint?: string }>)
-                .filter((f) => f?.label)
-                .map((f) => ({ key: f.key || extractionSpecKey(f.label), label: f.label, hint: f.hint || '' }))
-            );
           }
         }
         if (data.company) {
@@ -265,7 +251,6 @@ function SettingsContent() {
           chat_widget_enabled: chatWidgetEnabled,
           image_response_prompt: imageResponsePrompt,
           company_name: companyName,
-          ...(extractionSpecsSupported === false ? {} : { extraction_specs: extractionSpecs }),
           pricing: {
             currency,
             fx_rate: parseFloat(fxRate) || 7.82,
@@ -281,20 +266,7 @@ function SettingsContent() {
         throw new Error(data.error ?? 'Failed to save');
       }
       setSaved(true);
-      // extraction_specs needs migration 027. If the deployment has not run it,
-      // everything else still saved — say so instead of silently dropping the
-      // field list.
-      if (data?.extraction_specs_saved === false) {
-        showToast(
-          t(
-            'Saved. AI extraction fields were not stored — run migration 027_extraction_specs.sql in Supabase.',
-            '已儲存。AI 提取欄位未儲存 — 請在 Supabase 執行 027_extraction_specs.sql。'
-          ),
-          'error'
-        );
-      } else {
-        showToast(t('Settings saved', '設定已儲存'), 'success');
-      }
+      showToast(t('Settings saved', '設定已儲存'), 'success');
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {
       console.error('[settings] save error:', e);
@@ -504,75 +476,6 @@ function SettingsContent() {
         </button>
         <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
           {t('Example: 20% on bottles, 10% on accessories — products without a matching rule are flagged for your review and never automatically quoted.', '例如：瓶類 20%、配件 10%——沒有匹配規則的產品會標記為待審閱，絕不會自動報價。')}
-        </p>
-      </section>
-
-      {/* AI Extraction Fields */}
-      <section className="border rounded-[4px] p-5 mb-4" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-        <h2 className="text-[15px] font-semibold mb-1">{t('AI Extraction Fields', 'AI 提取欄位')}</h2>
-        <p className="text-[13px] mb-4" style={{ color: 'var(--text-muted)' }}>
-          {t(
-            'Every spec you need the AI to pull out of each buyer email. Configured fields appear as extra rows in the Specs panel of every inbox thread.',
-            '您需要 AI 從每封買家郵件中提取的每項規格。已設定的欄位會在每個收件匣對話的「規格」面板中顯示為額外行。'
-          )}
-        </p>
-
-        {extractionSpecs.length > 0 && (
-          <div className="space-y-2 mb-3">
-            {extractionSpecs.map((f, i) => (
-              <div key={i} className="flex gap-2 items-center">
-                <input
-                  value={f.label}
-                  onChange={(e) => setExtractionSpecs((prev) => prev.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
-                  placeholder={t('Field name (e.g. Packaging)', '欄位名稱（例如：包裝方式）')}
-                  className="flex-1 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
-                  style={{ borderColor: 'var(--border)' }}
-                  disabled={loading}
-                />
-                <input
-                  value={f.hint}
-                  onChange={(e) => setExtractionSpecs((prev) => prev.map((x, j) => (j === i ? { ...x, hint: e.target.value } : x)))}
-                  placeholder={t('What to look for (optional)', '尋找線索（選填）')}
-                  className="flex-1 border rounded-[4px] px-3 py-2 text-[13px] focus:outline-none"
-                  style={{ borderColor: 'var(--border)' }}
-                  disabled={loading}
-                />
-                <button
-                  onClick={() => setExtractionSpecs((prev) => prev.filter((_, j) => j !== i))}
-                  className="text-[12px] px-2 py-1 rounded-[4px] border shrink-0"
-                  style={{ borderColor: 'var(--border)', color: 'var(--error)' }}
-                  disabled={loading}
-                >
-                  {t('Remove', '移除')}
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <button
-          onClick={() =>
-            setExtractionSpecs((prev) =>
-              prev.length >= MAX_EXTRACTION_SPECS
-                ? prev
-                : [...prev, { key: extractionSpecKey(`field_${prev.length + 1}`), label: '', hint: '' }]
-            )
-          }
-          className="text-[12px] font-medium px-3 py-1.5 rounded-[4px] border"
-          style={{
-            borderColor: 'var(--border)',
-            color: extractionSpecs.length >= MAX_EXTRACTION_SPECS ? 'var(--text-muted)' : 'var(--text)',
-          }}
-          disabled={loading || extractionSpecs.length >= MAX_EXTRACTION_SPECS}
-        >
-          + {t('Add field', '新增欄位')}
-        </button>
-
-        <p className="text-[12px] mt-3" style={{ color: 'var(--text-muted)' }}>
-          {t(
-            `Leave the field name blank to drop it. Up to ${MAX_EXTRACTION_SPECS} fields. Built-in specs (quantity, product, material/size, logo/printing, incoterm, target price, timeline) are always extracted. Fields the buyer never mentions are shown as "missing".`,
-            `欄位名稱留空即不會儲存。最多 ${MAX_EXTRACTION_SPECS} 個欄位。內建規格（數量、產品、材質／尺寸、商標／印刷、貿易條件、目標價、交期）一律提取。買家從未提及的欄位會顯示為「未提供」。`
-          )}
         </p>
       </section>
 
