@@ -9,6 +9,8 @@ import MiniCalendar from '@/components/landing/booking/MiniCalendar';
 import {
   HORIZON_DAYS,
   atHour,
+  LOCALE_EN,
+  LOCALE_ZH,
   longDate,
   slotsFor,
   startOfDay,
@@ -33,6 +35,7 @@ const VOLUMES: [string, string][] = [
 export default function BookPage() {
   const { t, lang } = useLang();
   const zh = lang === 'zh';
+  const locale = zh ? LOCALE_ZH : LOCALE_EN;
 
   const min = useMemo(() => startOfDay(new Date()), []);
   const max = useMemo(() => {
@@ -61,7 +64,7 @@ export default function BookPage() {
   const [fail, setFail] = useState('');
 
   const chosen = day ? new Date(`${day}T00:00:00`) : null;
-  const slots = chosen ? slotsFor(chosen) : [];
+  const slots = chosen ? slotsFor(chosen, locale) : [];
   const when = chosen && hour !== null ? atHour(chosen, hour) : null;
   const tz = typeof Intl !== 'undefined' ? Intl.DateTimeFormat().resolvedOptions().timeZone : '';
 
@@ -87,7 +90,7 @@ export default function BookPage() {
           volume,
           note: problems,
           whenIso: when.toISOString(),
-          whenLabel: `${longDate(when)} · ${slotsFor(when).find((s) => s.hour === hour)?.label ?? ''}`,
+          whenLabel: `${longDate(when, locale)} · ${slotsFor(when, locale).find((s) => s.hour === hour)?.label ?? ''}`,
           tz,
         }),
       });
@@ -105,7 +108,7 @@ export default function BookPage() {
     }
   };
 
-  const slotLabel = when && hour !== null ? slotsFor(when).find((s) => s.hour === hour)?.label : null;
+  const slotLabel = when && hour !== null ? slotsFor(when, locale).find((s) => s.hour === hour)?.label : null;
 
   return (
     <div className="landing min-h-screen">
@@ -130,7 +133,7 @@ export default function BookPage() {
       </section>
 
       {/* ── Pick a time, then tell us about it ───────────────────────────── */}
-      <section className="band">
+      <section className="band-dark band-glow">
         <div className="shell">
           {sent ? (
             <div className="card mx-auto max-w-2xl p-8 text-center md:p-12" style={{ background: 'var(--paper-2)' }}>
@@ -138,8 +141,8 @@ export default function BookPage() {
               <h2 className="display text-[1.75rem] mt-5">{t('That is booked.', '已預約完成。')}</h2>
               <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
                 {t(
-                  `We have you down for ${longDate(when as Date)}${slotLabel ? ` at ${slotLabel}` : ''}. A confirmation is on its way to ${email}.`,
-                  `我們已為您保留 ${longDate(when as Date)}${slotLabel ? ` ${slotLabel}` : ''}。確認信正寄往 ${email}。`
+                  `We have you down for ${longDate(when as Date, locale)}${slotLabel ? ` at ${slotLabel}` : ''}. A confirmation is on its way to ${email}.`,
+                  `我們已為您保留 ${longDate(when as Date, locale)}${slotLabel ? ` ${slotLabel}` : ''}。確認信正寄往 ${email}。`
                 )}
               </p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
@@ -175,7 +178,7 @@ export default function BookPage() {
 
                 {chosen && (
                   <div className="mt-8">
-                    <p className="eyebrow">{longDate(chosen)}</p>
+                    <p className="eyebrow">{longDate(chosen, locale)}</p>
                     <div className="mt-4 flex flex-wrap gap-2">
                       {slots.map((s) => {
                         const on = hour === s.hour;
@@ -371,7 +374,7 @@ export default function BookPage() {
                   </button>
                   <p className="text-[12.5px]" style={{ color: 'var(--ink-3)' }}>
                     {when && slotLabel
-                      ? `${longDate(when)} · ${slotLabel}`
+                      ? `${longDate(when, locale)} · ${slotLabel}`
                       : t('No time selected yet', '尚未選擇時間')}
                   </p>
                 </div>

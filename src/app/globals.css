@@ -404,9 +404,25 @@ body {
 /* On a dark band the frame's hairline resolves to a light line, and
    `.mock-frame::after` paints a 1px white highlight along the top edge. Against
    near-black those two read as a white border around the screenshot — the white
-   card already has its own edge, so both come off here. */
+   card already has its own edge, so both come off here.
+
+   Making the border transparent is not enough on its own: an element paints its
+   background under its own border box, so 1px of the frame's white leaked out
+   along every edge, and 1px more leaked from the child whose border
+   `.mock-frame > *` also neutralises. The result was a 2px white ring around
+   the screenshot. Clipping both backgrounds to the padding box closes it. */
+.band-dark .mock-frame,
+.band-dark .mock-frame > * {
+  background-clip: padding-box;
+}
+
 .band-dark .mock-frame {
   border-color: transparent;
+  /* The frame's own fill is the last place the white can leak from: the child
+     inside it also has a transparent 1px border, and whatever the frame paints
+     under that border shows straight through as a hairline. The child covers
+     the frame completely, so the frame has nothing to paint anyway. */
+  background: transparent;
 }
 
 .band-dark .mock-frame::after {
@@ -571,6 +587,23 @@ body {
   color: var(--ink-3);
 }
 
+/* Fields on a dark band. The white fill above is right on cream and wrong on
+   near-black, so the input takes the band's own raised surface. It is a solid
+   token rather than a translucent wash because the autofill shadow below has to
+   paint exactly the same colour to stay invisible. */
+.band-dark .field-input {
+  background: var(--paper-2);
+  border-color: var(--hairline-2);
+}
+
+.band-dark .field-input:-webkit-autofill,
+.band-dark .field-input:-webkit-autofill:hover,
+.band-dark .field-input:-webkit-autofill:focus,
+.band-dark .field-input:autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--paper-2) inset;
+  box-shadow: 0 0 0 1000px var(--paper-2) inset;
+}
+
 .field-error {
   border-radius: 4px;
   border: 1px solid rgba(180, 85, 45, 0.28);
@@ -585,6 +618,14 @@ body {
   font-size: 12.5px;
   line-height: 1.5;
   color: var(--ink-3);
+}
+
+/* The error panel is a tint on a light surface; on ink the same tint blows out,
+   so the band gets a translucent wash and a lighter text colour instead. */
+.band-dark .field-error {
+  background: rgba(180, 85, 45, 0.16);
+  border-color: rgba(180, 85, 45, 0.42);
+  color: #f0b394;
 }
 
 /* A text button that reads as a link but keeps a 44px touch target. */

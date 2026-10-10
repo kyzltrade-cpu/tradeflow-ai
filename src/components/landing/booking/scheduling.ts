@@ -1,5 +1,12 @@
 /* Availability: Mon/Wed/Fri 4–10pm, Tue/Thu only after 7pm. Half-hour starts,
    and the last one is 9:30 so a 30-minute call finishes by ten. */
+
+/* Dates are formatted against an explicit locale rather than the browser's.
+   The page is statically prerendered, so the default locale would make the
+   server's output and the client's disagree and rewrite the month on hydrate —
+   and a Chinese reader should not be shown "Monday, October 12". */
+export const LOCALE_EN = 'en-GB';
+export const LOCALE_ZH = 'zh-HK';
 export const SLOT_HOURS_MON_WED_FRI = [16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5];
 export const SLOT_HOURS_TUE_THU = [19, 19.5, 20, 20.5, 21, 21.5];
 export const HORIZON_DAYS = 60;
@@ -26,17 +33,17 @@ export const atHour = (date: Date, hour: number): Date => {
   return d;
 };
 
-export const slotsFor = (date: Date): Slot[] => {
+export const slotsFor = (date: Date, locale: string = LOCALE_EN): Slot[] => {
   const w = date.getDay(); // 0 Sun 1 Mon ...
   const hours = w === 2 || w === 4 ? SLOT_HOURS_TUE_THU : SLOT_HOURS_MON_WED_FRI;
   return hours.map((hour) => ({
     hour,
-    label: atHour(date, hour).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
+    label: atHour(date, hour).toLocaleTimeString(locale, { hour: 'numeric', minute: '2-digit' }),
   }));
 };
 
-export const longDate = (d: Date): string =>
-  d.toLocaleDateString([], { weekday: 'long', day: 'numeric', month: 'long' });
+export const longDate = (d: Date, locale: string = LOCALE_EN): string =>
+  d.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
 
 export const sameMonth = (a: Date, b: Date): boolean =>
   a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
