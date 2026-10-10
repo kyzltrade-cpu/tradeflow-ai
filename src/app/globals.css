@@ -301,15 +301,24 @@ body {
   border-radius: 0 !important;
 }
 
-/* Hides a scrollbar without disabling the scroll. Used on rails where the bar
-   is parked against a border and reads as a rendering fault rather than as
-   chrome — the content is still reachable by wheel, trackpad and keyboard. */
-.no-scrollbar {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* ── Scrollbars ───────────────────────────────────────────────────────────── */
+
+/* No visible scrollbars anywhere. Every pane still scrolls — wheel, trackpad,
+   keyboard, touch — but the bar itself is gone. Against this layout it reads as
+   chrome borrowed from another design system, and on the admin screen there are
+   a dozen of them, most parked directly against a hairline that was already
+   doing the job of separating one pane from the next.
+
+   Deliberately global rather than a class per scroll container: the containers
+   that needed it were the ones nobody remembered to annotate. The one place
+   this had been handled by hand is the inbox thread's right rail, which is
+   where the rule came from. */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge and IE */
 }
 
-.no-scrollbar::-webkit-scrollbar {
+*::-webkit-scrollbar {
   width: 0;
   height: 0;
   display: none;
@@ -454,24 +463,6 @@ body {
 }
 
 .band-dark .mock-frame::after {
-  display: none;
-}
-
-/* The mocks are pictures, not scrollable windows. Their panes do scroll
-   internally by design, and at a few sizes the buyer rail overflows by ~40px —
-   which paints an OS scrollbar across a product screenshot and reads as a
-   rendering bug rather than as chrome. Everything is reachable by scrolling the
-   page, so the affordance is noise. */
-[role='img'] *,
-.mock-frame * {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-[role='img'] *::-webkit-scrollbar,
-.mock-frame *::-webkit-scrollbar {
-  width: 0;
-  height: 0;
   display: none;
 }
 
