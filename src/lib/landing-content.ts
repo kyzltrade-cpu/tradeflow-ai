@@ -296,6 +296,13 @@ export const FAQS: { q: Bi; a: Bi }[] = [
     ],
   },
   {
+    q: ['Can it send from my own email address?', '會以我自己的電郵地址寄出嗎？'],
+    a: [
+      'Yes. Replies and quotes send as ordinary email from the mailbox you already use, so your buyers see the address they already write to. Nothing goes out from an address of ours.',
+      '是。回覆與報價一律以您現用的信箱、以一般電郵寄出，買方看到的仍是他們熟悉的地址。不會從我們的地址寄出。',
+    ],
+  },
+  {
     q: ['What happens if it gets something wrong?', '如果它出錯了怎麼辦？'],
     a: [
       'You would see it before your buyer does. Every reply is a draft you approve, and every figure is cited to the line or list it came from — so a wrong number is visible against its source rather than hidden inside a finished answer. Correct the draft, take the thread over, or tell us which rule to fix and it stops happening.',

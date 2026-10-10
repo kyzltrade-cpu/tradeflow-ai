@@ -877,6 +877,29 @@ body {
   color: var(--text);
 }
 
+/* ── The floating AI chat ─────────────────────────────────────────────────── */
+
+/* The chat is its own surface, not part of the working area it floats over.
+   Inheriting the light admin made it white-on-white: the streaming reply, the
+   composer well and the quick questions all lost their edges against the page
+   behind them. It carries the product's dark palette whatever band it happens
+   to be opened over.
+
+   `--accent-ink` is the colour of text that sits *on* the accent — near-black
+   on mint, where a cream-on-dark accent would have needed white. */
+.chat-dark {
+  --bg: #141815;
+  --surface: #1f2420;
+  --text: #f2f0e6;
+  --text-muted: #a9aca3;
+  --border: rgba(242, 240, 230, 0.1);
+  --accent: #7fd1b9;
+  --accent-hover: #9adcc8;
+  --accent-light: rgba(127, 209, 185, 0.14);
+  --accent-ink: #0a0d0b;
+  --hover: rgba(242, 240, 230, 0.08);
+}
+
 /* The product shell is dark; this rail is not. A light rail against dark content
    keeps the navigation calm while the working area carries the data. Its tokens
    are the marketing palette, so the product and the site read as one system. */

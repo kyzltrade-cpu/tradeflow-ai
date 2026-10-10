@@ -579,7 +579,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div>
-            {FAQS.slice(0, 3).map((f, i) => (
+            {FAQS.slice(0, 4).map((f, i) => (
               <details key={i} className="faq-item group">
                 <summary className="flex list-none items-center justify-between gap-6 py-6 text-left">
                   <span className="display text-[1.1rem] md:text-[1.2rem]">{t(f.q[0], f.q[1])}</span>

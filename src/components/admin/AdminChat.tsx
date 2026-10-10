@@ -148,7 +148,7 @@ export default function AdminChat() {
 <div
             role="dialog"
             aria-label="Business AI chat"
-            className="fixed flex flex-col rounded-[16px] border z-40 overflow-hidden btk-anim-rise"
+            className="chat-dark fixed flex flex-col rounded-[16px] border z-40 overflow-hidden btk-anim-rise"
             style={{
               right: 'max(1.25rem, env(safe-area-inset-right))',
               bottom: 'calc(max(1.25rem, env(safe-area-inset-bottom)) + 5rem)',
@@ -161,7 +161,7 @@ export default function AdminChat() {
           >
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3.5 border-b shrink-0" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-            <span className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0" style={{ background: 'var(--accent)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.18)' }}>
+            <span className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--accent)', color: 'var(--accent-ink, #fff)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.18)' }}>
               <Sparkles className="w-5 h-5" />
             </span>
             <div className="min-w-0">
@@ -194,7 +194,7 @@ export default function AdminChat() {
             {messages.map((m, i) =>
               m.role === 'user' ? (
                 <div key={i} className="flex justify-end">
-                  <div className="max-w-[85%] px-3.5 py-2.5 text-sm leading-relaxed text-white whitespace-pre-wrap break-words rounded-2xl rounded-br-md" style={{ background: 'var(--accent)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.15)' }}>
+                  <div className="max-w-[85%] px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap break-words rounded-2xl rounded-br-md" style={{ background: 'var(--accent)', color: 'var(--accent-ink, #fff)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.15)' }}>
                     {m.content}
                   </div>
                 </div>
@@ -217,9 +217,9 @@ export default function AdminChat() {
 
             {error && !streaming && (
               <div className="flex justify-start">
-                <div className="max-w-[90%] px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl rounded-bl-md" style={{ background: '#FBF1F0', color: '#B42318', border: '1px solid #F0D5D2' }}>
+                <div className="max-w-[90%] px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl rounded-bl-md" style={{ background: 'rgba(180, 35, 24, 0.18)', color: '#f2a9a1', border: '1px solid rgba(180, 35, 24, 0.42)' }}>
                   <div className="whitespace-pre-wrap break-words">{error}</div>
-                  <button type="button" onClick={() => void send(lastPromptRef.current)} className="mt-2 text-xs font-semibold underline underline-offset-2" style={{ color: '#B42318' }}>
+                  <button type="button" onClick={() => void send(lastPromptRef.current)} className="mt-2 text-xs font-semibold underline underline-offset-2" style={{ color: '#f2a9a1' }}>
                     {t('Try again', '重試')}
                   </button>
                 </div>
@@ -233,9 +233,9 @@ export default function AdminChat() {
                     key={q}
                     type="button"
                     onClick={() => void send(q)}
-                    className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors duration-150 hover:text-white"
+                    className="text-xs font-medium px-3 py-1.5 rounded-full border transition-colors duration-150"
                     style={{ background: 'var(--surface)', color: 'var(--text-muted)', borderColor: 'var(--border)' }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--accent)'; e.currentTarget.style.color = 'var(--accent-ink, #fff)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--surface)'; e.currentTarget.style.color = 'var(--text-muted)'; }}
                   >
                     {q}
@@ -265,8 +265,8 @@ export default function AdminChat() {
                 type="submit"
                 disabled={streaming || !input.trim()}
                 aria-label={t('Send message', '送出訊息')}
-                className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center text-white transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ background: 'var(--accent)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.12)' }}
+                className="w-10 h-10 shrink-0 rounded-xl flex items-center justify-center transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{ background: 'var(--accent)', color: 'var(--accent-ink, #fff)', boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.12)' }}
                 onMouseEnter={(e) => {
                   if (!e.currentTarget.disabled) {
                     e.currentTarget.style.filter = 'brightness(1.05)';
@@ -295,7 +295,7 @@ export default function AdminChat() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? t('Close AI chat', '關閉 AI 對話') : t('Open AI chat', '開啟 AI 對話')}
         aria-expanded={open}
-        className="fixed flex items-center justify-center z-40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+        className="chat-dark fixed flex items-center justify-center z-40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
         style={{
           right: 'max(1.25rem, env(safe-area-inset-right))',
           bottom: 'max(1.25rem, env(safe-area-inset-bottom))',
@@ -303,13 +303,14 @@ export default function AdminChat() {
           height: 56,
           borderRadius: '999px',
           background: 'var(--accent)',
+          color: 'var(--accent-ink, #fff)',
           boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.16), 0 20px 40px -16px rgba(0,0,0,0.45)',
         }}
         onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.06)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
         title={t('Business AI', '業務 AI')}
       >
-        {open ? <X className="w-6 h-6 text-white" /> : <Sparkles className="w-6 h-6 text-white" />}
+        {open ? <X className="w-6 h-6" /> : <Sparkles className="w-6 h-6" />}
       </button>
     </>
   );
