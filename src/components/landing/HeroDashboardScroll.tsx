@@ -75,27 +75,10 @@ export default function HeroDashboardScroll() {
 
   return (
     <>
-      {/* Phones and tablets — the finished dashboard, static. */}
-      <div className="mx-auto mt-10 max-w-5xl px-6 md:mt-12 lg:hidden">
-        {/* A phone gets a preview, not the whole screen. The mock stacks into a
-            single column down here and runs for four viewports, so it is cropped
-            to the part that tells the story — the thread and the drafted reply —
-            and faded out rather than cut, so it reads as continuing. */}
-        <div
-          className="relative overflow-hidden"
-          style={{ maxHeight: 460 }}
-          role="img"
-          aria-label="A product walkthrough: an enquiry is read, the spec rail fills from the email and from prior records, the reply is drafted, and the thread resolves into a quote-ready opportunity."
-          data-nosnippet
-          translate="no"
-        >
-          <HeroProduct />
-          <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-28"
-            style={{ background: 'linear-gradient(180deg, rgba(10,13,11,0) 0%, rgba(10,13,11,0.92) 100%)' }}
-          />
-        </div>
-      </div>
+      {/* No phone fallback. The mock only stacks into a single column down
+          here, running for four viewports, and a cropped version of it read as
+          a broken screenshot rather than as a preview — so phones get the
+          explanation on its own and the demo is desktop-only. */}
 
       {/* Desktop — the preview is the motion. Restored to the authored length:
           this is the demo from the live site, and shortening the track only
