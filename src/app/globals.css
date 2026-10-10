@@ -401,6 +401,18 @@ body {
   border-radius: 0 !important;
 }
 
+/* On a dark band the frame's hairline resolves to a light line, and
+   `.mock-frame::after` paints a 1px white highlight along the top edge. Against
+   near-black those two read as a white border around the screenshot — the white
+   card already has its own edge, so both come off here. */
+.band-dark .mock-frame {
+  border-color: transparent;
+}
+
+.band-dark .mock-frame::after {
+  display: none;
+}
+
 /* The mocks are pictures, not scrollable windows. Their panes do scroll
    internally by design, and at a few sizes the buyer rail overflows by ~40px —
    which paints an OS scrollbar across a product screenshot and reads as a
