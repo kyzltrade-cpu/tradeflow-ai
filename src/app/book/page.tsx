@@ -206,7 +206,8 @@ export default function BookPage() {
               </div>
             </div>
           ) : (
-            <div className="grid gap-12 lg:grid-cols-[0.94fr_1.06fr] lg:gap-16">
+            <>
+              <div className="grid gap-12 lg:grid-cols-[0.94fr_1.06fr] lg:gap-16">
                 {/* ── Step 1 · the picker ──────────────────────────────── */}
                 <div>
                   <StepHead n="01" title={t('Pick a time', '選擇時間')} />
@@ -293,32 +294,12 @@ export default function BookPage() {
                     </p>
                   )}
 
-                  {/* Answers the two questions a booking page always raises:
-                      what happens on the call, and who am I talking to. It sits
-                      under the calendar so it is read after a time is chosen,
-                      and answers the question you have at that point. */}
+                  {/* Who you will actually be talking to, so the answer sits
+                      with the calendar. The steps the call follows are a
+                      full-width strip under both columns — three of them need
+                      more room than this column has. */}
                   <div className="mt-10 border-t pt-8" style={{ borderColor: 'var(--hairline)' }}>
-                    <p className="eyebrow" style={{ color: 'var(--accent)' }}>
-                      {t('What happens on the call', '通話會發生什麼')}
-                    </p>
-
-                    <ol className="mt-6 space-y-5">
-                      {CALL_STEPS.map(([en, zhh], i) => (
-                        <li key={en} className="grid grid-cols-[1.6rem_1fr] gap-x-4">
-                          <span
-                            className="pt-[3px] font-mono text-[11px] tabular-nums tracking-[0.14em]"
-                            style={{ color: 'var(--ink-3)' }}
-                          >
-                            {`0${i + 1}`}
-                          </span>
-                          <p className="text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-                            {t(en, zhh)}
-                          </p>
-                        </li>
-                      ))}
-                    </ol>
-
-                    <div className="mt-8 flex items-center gap-4">
+                    <div className="flex items-center gap-4">
                       <span className="flex shrink-0 gap-2">
                         {['/founders/kyle.jpg', '/founders/neel.jpg'].map((src) => (
                           <img
@@ -490,6 +471,33 @@ export default function BookPage() {
                 </form>
               </div>
 
+              {/* The steps the call itself follows, under both columns rather
+                  than stacked in the rail: at ~400px each they get room to
+                  breathe, and the numbers line up across the page. */}
+              <div
+                className="mt-16 border-t pt-10 lg:mt-20 lg:pt-12"
+                style={{ borderColor: 'var(--hairline)' }}
+              >
+                <p className="eyebrow" style={{ color: 'var(--accent)' }}>
+                  {t('What happens on the call', '通話會發生什麼')}
+                </p>
+                <ol className="mt-8 grid gap-8 sm:grid-cols-3 sm:gap-10">
+                  {CALL_STEPS.map(([en, zhh], i) => (
+                    <li key={en}>
+                      <span
+                        className="font-mono text-[11px] tabular-nums tracking-[0.2em]"
+                        style={{ color: 'var(--ink-3)' }}
+                      >
+                        {`0${i + 1}`}
+                      </span>
+                      <p className="mt-3 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+                        {t(en, zhh)}
+                      </p>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            </>
           )}
         </div>
       </section>
