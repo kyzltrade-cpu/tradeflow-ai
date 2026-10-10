@@ -284,14 +284,35 @@ body {
 }
 
 /* ── Square corners ───────────────────────────────────────────────────────
-   No rounded corners anywhere on the site. A global rule rather than a class
-   list: radii were reaching the layout through Tailwind utilities, inline
-   styles and the mocks at once, and anything less than this kept leaving round
-   edges behind. */
-*,
-*::before,
-*::after {
+   No rounded corners on the marketing surface. A single sweeping rule rather
+   than a class list: radii were reaching the layout through Tailwind
+   utilities, inline styles and the mocks at once, and anything less than this
+   kept leaving round edges behind.
+
+   It is deliberately scoped away from the product shell. As a bare `*` rule it
+   also squared off the admin, whose whole interface is built out of `rounded-*`
+   utilities — panels, avatars, status pills — so the app lost its shape along
+   with the site. `:not(.dashboard-mode *)` leaves that subtree alone. This has
+   to stay `!important` and keep out-ranking the utilities, so nothing less
+   specific than this will do. */
+*:not(.dashboard-mode):not(.dashboard-mode *),
+*:not(.dashboard-mode):not(.dashboard-mode *)::before,
+*:not(.dashboard-mode):not(.dashboard-mode *)::after {
   border-radius: 0 !important;
+}
+
+/* Hides a scrollbar without disabling the scroll. Used on rails where the bar
+   is parked against a border and reads as a rendering fault rather than as
+   chrome — the content is still reachable by wheel, trackpad and keyboard. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
@@ -581,6 +602,9 @@ body {
   --cal-ink: #0a0d0b;
   --cal-ink-off: #a3a8a0;
   background: var(--cal-surface);
+  /* Lifts the white card off the dark cyan band so it reads as an object you
+     are picking from rather than as a hole cut in the section. */
+  box-shadow: 0 26px 60px -38px rgba(0, 0, 0, 0.9);
 }
 
 /* ── The cyan band ────────────────────────────────────────────────────────── */

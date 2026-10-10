@@ -1422,7 +1422,7 @@ export default function InboxDetailPage() {
         </div>
 
         {/* Right rail */}
-        <div className="hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 flex-col border-l overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
+        <div className="no-scrollbar hidden lg:flex w-[360px] xl:w-[400px] flex-shrink-0 flex-col border-l overflow-y-auto" style={{ borderColor: 'var(--border)' }}>
           {/* ── Pod: Buyer ─────────────────────────────────────── */}
           {renderBuyerCard()}
 

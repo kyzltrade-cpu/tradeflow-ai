@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, CircleCheck } from 'lucide-react';
+import { ArrowRight, CalendarDays, CircleCheck } from 'lucide-react';
 import SiteHeader from '@/components/landing/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
 import MiniCalendar from '@/components/landing/booking/MiniCalendar';
@@ -23,7 +23,13 @@ import { useLang } from '@/lib/lang';
    Replaces a modal that was never mounted — every "Book a pilot call" on the
    site fired an event with no listener, so the buttons did nothing. A page also
    gives the questions room: the point of the call is to hear what is actually
-   costing the owner time, so the form asks for it in their words. */
+   costing the owner time, so the form asks for it in their words.
+
+   Layout is two steps side by side on desktop and stacked on a phone, with one
+   numbered header style announcing both. The two halves are deliberately not
+   the same object: the month is a white card because it is the thing you look
+   at, the form is drawn straight onto the band because it is the thing you fill
+   in. Running a border around both made them compete. */
 
 const VOLUMES: [string, string][] = [
   ['Fewer than 50 a month', '每月少於 50 封'],
@@ -31,6 +37,47 @@ const VOLUMES: [string, string][] = [
   ['200–500 a month', '每月 200–500 封'],
   ['More than 500 a month', '每月超過 500 封'],
 ];
+
+const CALL_STEPS: [string, string][] = [
+  [
+    'We open a real inquiry from your inbox — or one of ours, if you would rather watch first.',
+    '我們打開一封您信箱中的真實詢盤——如果您想先看，也可以用我們的。',
+  ],
+  [
+    'You watch the specs get extracted, the gaps flagged and the quote drafted, live.',
+    '您會看到規格被擷取、缺漏被標示、報價被草擬的整個過程。',
+  ],
+  [
+    'We tell you plainly whether it is a fit. No deck, no sales script.',
+    '我們會直說它是否適合您。沒有簡報，沒有推銷話術。',
+  ],
+];
+
+/* Both steps are announced the same way — counter, title, rule — so the two
+   columns read as one flow rather than as two unrelated panels. */
+function StepHead({ n, title }: { n: string; title: string }) {
+  return (
+    <div className="flex items-center gap-4">
+      <span
+        className="grid h-7 w-7 shrink-0 place-items-center border font-mono text-[11px] tabular-nums"
+        style={{ borderColor: 'var(--dark-hairline-2)', color: 'var(--accent)' }}
+      >
+        {n}
+      </span>
+      <h2
+        className="font-mono text-[12px] font-medium uppercase tracking-[0.18em]"
+        style={{ color: 'var(--ink)' }}
+      >
+        {title}
+      </h2>
+      <span
+        aria-hidden="true"
+        className="h-px flex-1"
+        style={{ background: 'var(--dark-hairline)' }}
+      />
+    </div>
+  );
+}
 
 export default function BookPage() {
   const { t, lang } = useLang();
@@ -134,9 +181,8 @@ export default function BookPage() {
 
       {/* ── Pick a time, then tell us about it ───────────────────────────── */}
       {/* `band` carries the vertical rhythm and `band-dark` flips the tokens;
-          `band-cyan` is the dark cyan surface, and it is the band that is
-          tinted rather than the calendar sitting on it. No `band-glow` here —
-          the ambience wash muddies the one colour on the page. */}
+          `band-cyan` is the dark cyan surface. No `band-glow` here — the
+          ambience wash muddies the one colour on the page. */}
       <section className="band band-dark band-cyan">
         <div className="shell">
           {sent ? (
@@ -160,237 +206,295 @@ export default function BookPage() {
               </div>
             </div>
           ) : (
-            <div className="grid gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16">
-              {/* ── Calendar ─────────────────────────────────────────────── */}
-              <div>
-                <p className="eyebrow">{t('Step 1 · Pick a time', '第一步 · 選擇時間')}</p>
-                <div className="mt-6">
-                  <MiniCalendar
-                    month={month}
-                    onMonth={setMonth}
-                    selected={day}
-                    onSelect={(iso) => {
-                      setDay(iso);
-                      setHour(null);
-                      setFail('');
-                    }}
-                    min={min}
-                    max={max}
-                    zh={zh}
-                  />
-                </div>
+            <>
+              <div className="grid gap-12 lg:grid-cols-[0.94fr_1.06fr] lg:gap-16">
+                {/* ── Step 1 · the picker ──────────────────────────────── */}
+                <div>
+                  <StepHead n="01" title={t('Pick a time', '選擇時間')} />
 
-                {chosen && (
                   <div className="mt-8">
-                    <p className="eyebrow">{longDate(chosen, locale)}</p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {slots.map((s) => {
-                        const on = hour === s.hour;
-                        return (
-                          <button
-                            key={s.hour}
-                            type="button"
-                            onClick={() => {
-                              setHour(s.hour);
-                              setFail('');
-                            }}
-                            aria-pressed={on}
-                            className="cursor-pointer rounded-[4px] border px-3.5 py-2 text-[13.5px] tabular-nums transition-colors"
-                            style={{
-                              borderColor: on ? 'var(--pine)' : 'var(--hairline-2)',
-                              background: on ? 'var(--accent-light)' : 'transparent',
-                              color: on ? 'var(--pine)' : 'var(--ink-2)',
-                              fontWeight: on ? 600 : 400,
-                            }}
-                          >
-                            {s.label}
-                          </button>
-                        );
-                      })}
+                    <MiniCalendar
+                      month={month}
+                      onMonth={setMonth}
+                      selected={day}
+                      onSelect={(iso) => {
+                        setDay(iso);
+                        setHour(null);
+                        setFail('');
+                      }}
+                      min={min}
+                      max={max}
+                      zh={zh}
+                    />
+                  </div>
+
+                  {chosen ? (
+                    <div className="mt-9">
+                      <div className="flex items-baseline justify-between gap-4">
+                        <p className="eyebrow" style={{ color: 'var(--accent)' }}>
+                          {longDate(chosen, locale)}
+                        </p>
+                        <p className="text-[12px] tabular-nums" style={{ color: 'var(--on-dark-3)' }}>
+                          {t(`${slots.length} times`, `${slots.length} 個時段`)}
+                        </p>
+                      </div>
+
+                      {/* A hairline grid rather than loose pills: the times read
+                          as one block you pick a cell out of, and the count on
+                          the right says at a glance how much of the day is
+                          still free. */}
+                      <div
+                        className="mt-4 grid grid-cols-3 gap-px border"
+                        style={{ background: 'var(--dark-hairline)', borderColor: 'var(--dark-hairline)' }}
+                      >
+                        {slots.map((s) => {
+                          const on = hour === s.hour;
+                          return (
+                            <button
+                              key={s.hour}
+                              type="button"
+                              onClick={() => {
+                                setHour(s.hour);
+                                setFail('');
+                              }}
+                              aria-pressed={on}
+                              className={`cursor-pointer py-2.5 text-[13.5px] tabular-nums transition-colors ${
+                                on ? '' : 'bg-[var(--paper)] hover:bg-[var(--paper-2)]'
+                              }`}
+                              style={
+                                on
+                                  ? { background: 'var(--cyan)', color: 'var(--dark)', fontWeight: 600 }
+                                  : { color: 'var(--ink-2)' }
+                              }
+                            >
+                              {s.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <p className="mt-4 text-[12.5px] leading-relaxed" style={{ color: 'var(--on-dark-3)' }}>
+                        {t(
+                          `Times shown in ${tz}. Mon, Wed and Fri afternoons and evenings; Tue and Thu after 7pm.`,
+                          `時間以 ${tz} 顯示。週一、三、五下午至晚上；週二、四晚上 7 時後。`
+                        )}
+                      </p>
                     </div>
-                    <p className="mt-4 text-[12.5px]" style={{ color: 'var(--ink-3)' }}>
-                      {t(
-                        `Times shown in ${tz}. Mon, Wed and Fri afternoons and evenings; Tue and Thu after 7pm.`,
-                        `時間以 ${tz} 顯示。週一、三、五下午至晚上；週二、四晚上 7 時後。`
-                      )}
+                  ) : (
+                    /* The empty state says what to do rather than leaving the
+                       column trailing off after the calendar. */
+                    <p
+                      className="mt-9 flex items-center gap-3 border-t pt-6 text-[13.5px] leading-relaxed"
+                      style={{ borderColor: 'var(--dark-hairline)', color: 'var(--on-dark-2)' }}
+                    >
+                      <CalendarDays className="h-4 w-4 shrink-0" style={{ color: 'var(--accent)' }} />
+                      {t('Pick a day to see the times we have open.', '選擇日期以查看可預約時間。')}
                     </p>
-                  </div>
-                )}
-
-                {/* Fills the column under the calendar, and answers the two
-                    questions a booking page always raises: what happens, and
-                    who am I talking to. */}
-                <div className="mt-10 border-t pt-8" style={{ borderColor: 'var(--hairline)' }}>
-                  <p className="eyebrow">{t('What happens on the call', '通話會發生什麼')}</p>
-                  <ul className="mt-5 space-y-3">
-                    {[
-                      t(
-                        'We open a real inquiry from your inbox — or one of ours, if you would rather watch first.',
-                        '我們打開一封您信箱中的真實詢盤——如果您想先看，也可以用我們的。'
-                      ),
-                      t(
-                        'You watch the specs get extracted, the gaps flagged and the quote drafted, live.',
-                        '您會看到規格被擷取、缺漏被標示、報價被草擬的整個過程。'
-                      ),
-                      t(
-                        'We tell you plainly whether it is a fit. No deck, no sales script.',
-                        '我們會直說它是否適合您。沒有簡報，沒有推銷話術。'
-                      ),
-                    ].map((line) => (
-                      <li key={line} className="flex items-start gap-3 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-                        <CircleCheck className="mt-[3px] h-4 w-4 shrink-0" style={{ color: 'var(--pine)' }} />
-                        {line}
-                      </li>
-                    ))}
-                  </ul>
-
-                  <div className="mt-8 flex items-center gap-4">
-                    <span className="flex shrink-0 gap-2">
-                      {['/founders/kyle.jpg', '/founders/neel.jpg'].map((src) => (
-                        <img
-                          key={src}
-                          src={src}
-                          alt=""
-                          aria-hidden="true"
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 object-cover"
-                        />
-                      ))}
-                    </span>
-                    <p className="text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-                      {t(
-                        'You will speak to Kyle or Neel — the two people who built it.',
-                        '與您通話的是 Kyle 或 Neel——打造這個產品的兩個人。'
-                      )}
-                    </p>
-                  </div>
+                  )}
                 </div>
+
+                {/* ── Step 2 · the form ────────────────────────────────── */}
+                <form onSubmit={submit}>
+                  <StepHead n="02" title={t('Who we are speaking to', '與誰通話')} />
+
+                  <div className="mt-8 space-y-5">
+                    <div className="grid gap-5 sm:grid-cols-2">
+                      <div>
+                        <label htmlFor="name" className="field-label">
+                          {t('Your name', '您的姓名')}
+                        </label>
+                        <input
+                          id="name"
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          autoComplete="name"
+                          className="field-input"
+                          aria-invalid={!!errs.name}
+                        />
+                        {errs.name && <p className="field-hint mt-1.5" style={{ color: 'var(--peach)' }}>{t('Required', '必填')}</p>}
+                      </div>
+                      <div>
+                        <label htmlFor="company" className="field-label">
+                          {t('Company', '公司')}
+                        </label>
+                        <input
+                          id="company"
+                          value={company}
+                          onChange={(e) => setCompany(e.target.value)}
+                          autoComplete="organization"
+                          className="field-input"
+                          aria-invalid={!!errs.company}
+                        />
+                        {errs.company && <p className="field-hint mt-1.5" style={{ color: 'var(--peach)' }}>{t('Required', '必填')}</p>}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label htmlFor="email" className="field-label">
+                        {t('Work email', '公司電郵')}
+                      </label>
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        autoComplete="email"
+                        className="field-input"
+                        aria-invalid={!!errs.email}
+                      />
+                      {errs.email && <p className="field-hint mt-1.5" style={{ color: 'var(--peach)' }}>{t('A valid email, so we can send the invite', '請填有效電郵，以便寄送邀請')}</p>}
+                    </div>
+
+                    {/* The first three fields are about the person; the last two
+                        are about the inbox. A rule marks the change of subject
+                        so the form does not read as one undifferentiated stack
+                        of inputs. */}
+                    <div className="grid gap-5 border-t pt-7" style={{ borderColor: 'var(--dark-hairline)' }}>
+                      <div>
+                        <label htmlFor="volume" className="field-label">
+                          {t('Roughly how many inquiries a month?', '每月大約多少封詢盤？')}
+                        </label>
+                        <select
+                          id="volume"
+                          value={volume}
+                          onChange={(e) => setVolume(e.target.value)}
+                          className="field-input"
+                          style={{ height: 44 }}
+                        >
+                          <option value="">{t('Prefer not to say', '不願透露')}</option>
+                          {VOLUMES.map(([en, zhh]) => (
+                            <option key={en} value={en}>
+                              {t(en, zhh)}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label htmlFor="problems" className="field-label">
+                          {t('What is costing you the most time right now?', '目前最耗費您時間的是什麼？')}
+                        </label>
+                        <textarea
+                          id="problems"
+                          value={problems}
+                          onChange={(e) => setProblems(e.target.value)}
+                          rows={5}
+                          placeholder={t(
+                            'Chasing specs, rebuilding quotes, missing follow-ups — in your words.',
+                            '追規格、重做報價、漏掉跟進——用您自己的話說。'
+                          )}
+                          className="field-input"
+                          style={{ height: 'auto', padding: '0.7rem 0.75rem', lineHeight: 1.6, resize: 'vertical' }}
+                        />
+                        <p className="field-hint mt-1.5">
+                          {t(
+                            'This is the part we care about most — it decides what we show you.',
+                            '這是我們最在意的部分——它決定我們向您示範什麼。'
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {fail && (
+                    <div role="alert" className="field-error mt-6">
+                      {fail}
+                    </div>
+                  )}
+
+                  {/* The chosen slot is repeated next to the button that commits
+                      to it: by the time you reach the bottom of the form on a
+                      phone, the calendar is a full screen away. */}
+                  <div
+                    className="mt-9 flex flex-wrap items-end justify-between gap-x-8 gap-y-5 border-t pt-7"
+                    style={{ borderColor: 'var(--dark-hairline)' }}
+                  >
+                    <div>
+                      <p className="eyebrow">{t('Your call', '您的通話')}</p>
+                      <p
+                        id="call-summary"
+                        className="mt-2 text-[15px]"
+                        style={{ color: slotLabel ? 'var(--ink)' : 'var(--on-dark-3)' }}
+                      >
+                        {slotLabel && when
+                          ? `${longDate(when, locale)} · ${slotLabel}`
+                          : t('No time selected yet', '尚未選擇時間')}
+                      </p>
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={sending || !when}
+                      aria-describedby="call-summary"
+                      className="btn btn-primary disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      {sending ? t('Sending…', '傳送中…') : t('Request the call', '預約通話')}
+                      {!sending && <ArrowRight className="h-4 w-4" />}
+                    </button>
+                  </div>
+
+                  <p className="mt-5 text-[12.5px] leading-relaxed" style={{ color: 'var(--on-dark-3)' }}>
+                    {t(
+                      'We reply to every request ourselves. Your details are used to arrange this call and nothing else.',
+                      '每一封請求都由我們親自回覆。您的資料只會用於安排這次通話。'
+                    )}
+                  </p>
+                </form>
               </div>
 
-              {/* ── Form ─────────────────────────────────────────────────── */}
-              <form onSubmit={submit}>
-                <p className="eyebrow">{t('Step 2 · Who we are speaking to', '第二步 · 與誰通話')}</p>
-
-                <div className="mt-6 space-y-5">
-                  <div className="grid gap-5 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="name" className="field-label">
-                        {t('Your name', '您的姓名')}
-                      </label>
-                      <input
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        autoComplete="name"
-                        className="field-input"
-                        aria-invalid={!!errs.name}
-                      />
-                      {errs.name && <p className="field-hint mt-1.5" style={{ color: 'var(--peach)' }}>{t('Required', '必填')}</p>}
-                    </div>
-                    <div>
-                      <label htmlFor="company" className="field-label">
-                        {t('Company', '公司')}
-                      </label>
-                      <input
-                        id="company"
-                        value={company}
-                        onChange={(e) => setCompany(e.target.value)}
-                        autoComplete="organization"
-                        className="field-input"
-                        aria-invalid={!!errs.company}
-                      />
-                      {errs.company && <p className="field-hint mt-1.5" style={{ color: 'var(--peach)' }}>{t('Required', '必填')}</p>}
-                    </div>
-                  </div>
-
+              {/* ── What happens on the call ─────────────────────────────── */}
+              {/* Moved out of the left column: in the rail it competed with the
+                  calendar, and it is an answer to a question you ask after you
+                  have picked a time, not before. */}
+              <div
+                className="mt-16 border-t pt-10 lg:mt-20 lg:pt-12"
+                style={{ borderColor: 'var(--dark-hairline)' }}
+              >
+                <div className="grid gap-10 lg:grid-cols-[0.75fr_2.25fr] lg:gap-16">
                   <div>
-                    <label htmlFor="email" className="field-label">
-                      {t('Work email', '公司電郵')}
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      autoComplete="email"
-                      className="field-input"
-                      aria-invalid={!!errs.email}
-                    />
-                    {errs.email && <p className="field-hint mt-1.5" style={{ color: 'var(--peach)' }}>{t('A valid email, so we can send the invite', '請填有效電郵，以便寄送邀請')}</p>}
-                  </div>
-
-                  <div>
-                    <label htmlFor="volume" className="field-label">
-                      {t('Roughly how many inquiries a month?', '每月大約多少封詢盤？')}
-                    </label>
-                    <select
-                      id="volume"
-                      value={volume}
-                      onChange={(e) => setVolume(e.target.value)}
-                      className="field-input"
-                      style={{ height: 44 }}
-                    >
-                      <option value="">{t('Prefer not to say', '不願透露')}</option>
-                      {VOLUMES.map(([en, zhh]) => (
-                        <option key={en} value={en}>
-                          {t(en, zhh)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="problems" className="field-label">
-                      {t('What is costing you the most time right now?', '目前最耗費您時間的是什麼？')}
-                    </label>
-                    <textarea
-                      id="problems"
-                      value={problems}
-                      onChange={(e) => setProblems(e.target.value)}
-                      rows={5}
-                      placeholder={t(
-                        'Chasing specs, rebuilding quotes, missing follow-ups — in your words.',
-                        '追規格、重做報價、漏掉跟進——用您自己的話說。'
-                      )}
-                      className="field-input"
-                      style={{ height: 'auto', padding: '0.7rem 0.75rem', lineHeight: 1.6, resize: 'vertical' }}
-                    />
-                    <p className="field-hint mt-1.5">
-                      {t(
-                        'This is the part we care about most — it decides what we show you.',
-                        '這是我們最在意的部分——它決定我們向您示範什麼。'
-                      )}
+                    <p className="eyebrow" style={{ color: 'var(--accent)' }}>
+                      {t('What happens on the call', '通話會發生什麼')}
                     </p>
+                    <div className="mt-6 flex items-center gap-4">
+                      <span className="flex shrink-0 gap-2">
+                        {['/founders/kyle.jpg', '/founders/neel.jpg'].map((src) => (
+                          <img
+                            key={src}
+                            src={src}
+                            alt=""
+                            aria-hidden="true"
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 object-cover"
+                          />
+                        ))}
+                      </span>
+                      <p className="text-[13.5px] leading-relaxed" style={{ color: 'var(--on-dark-2)' }}>
+                        {t(
+                          'You will speak to Kyle or Neel — the two people who built it.',
+                          '與您通話的是 Kyle 或 Neel——打造這個產品的兩個人。'
+                        )}
+                      </p>
+                    </div>
                   </div>
+
+                  <ol className="grid gap-8 sm:grid-cols-3 sm:gap-6">
+                    {CALL_STEPS.map(([en, zhh], i) => (
+                      <li key={en}>
+                        <span
+                          className="font-mono text-[11px] tabular-nums tracking-[0.2em]"
+                          style={{ color: 'var(--on-dark-3)' }}
+                        >
+                          {`0${i + 1}`}
+                        </span>
+                        <p className="mt-3 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+                          {t(en, zhh)}
+                        </p>
+                      </li>
+                    ))}
+                  </ol>
                 </div>
-
-                {fail && (
-                  <div role="alert" className="field-error mt-6">
-                    {fail}
-                  </div>
-                )}
-
-                <div className="mt-7 flex flex-wrap items-center gap-4">
-                  <button type="submit" disabled={sending} className="btn btn-primary">
-                    {sending ? t('Sending…', '傳送中…') : t('Request the call', '預約通話')}
-                    {!sending && <ArrowRight className="h-4 w-4" />}
-                  </button>
-                  <p className="text-[12.5px]" style={{ color: 'var(--ink-3)' }}>
-                    {when && slotLabel
-                      ? `${longDate(when, locale)} · ${slotLabel}`
-                      : t('No time selected yet', '尚未選擇時間')}
-                  </p>
-                </div>
-
-                <p className="mt-5 text-[12.5px] leading-relaxed" style={{ color: 'var(--ink-3)' }}>
-                  {t(
-                    'We reply to every request ourselves. Your details are used to arrange this call and nothing else.',
-                    '每一封請求都由我們親自回覆。您的資料只會用於安排這次通話。'
-                  )}
-                </p>
-              </form>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </section>
