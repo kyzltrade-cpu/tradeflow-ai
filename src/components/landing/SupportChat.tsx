@@ -303,15 +303,12 @@ export default function SupportChat() {
         aria-expanded={open}
         /* A 58px black circle on a page that is itself near-black at the top and
            cream at the bottom was easy to miss entirely. This is the brand accent
-           instead, and on anything wider than a phone it carries a label, so it
-           reads as "ask us something" rather than as an unlabelled icon. The
-           label is dropped on small screens, where the pill would sit over
-           content and the icon alone is enough. */
-        className="fixed z-40 flex h-14 items-center justify-center gap-2.5 rounded-full px-0 text-[14px] font-medium transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 sm:px-5"
+           instead, which is what makes it read at both ends of the page — no
+           label, just the icon. */
+        className="fixed z-40 flex h-14 w-14 items-center justify-center rounded-full transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
         style={{
           right: 'max(1.25rem, env(safe-area-inset-right))',
           bottom: 'max(1.25rem, env(safe-area-inset-bottom))',
-          minWidth: 56,
           background: open
             ? '#0A0D0B'
             : 'linear-gradient(180deg, #0F8A70 0%, #0A6E5C 55%, #085A4B 100%)',
@@ -323,12 +320,7 @@ export default function SupportChat() {
         onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.07)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
       >
-        {open ? (
-          <X className="h-5 w-5" />
-        ) : (
-          <MessageCircleQuestion className="h-5 w-5" />
-        )}
-        <span className="hidden sm:inline">{open ? 'Close chat' : 'Chat with us'}</span>
+        {open ? <X className="h-6 w-6" /> : <MessageCircleQuestion className="h-6 w-6" />}
       </button>
     </div>
   );
