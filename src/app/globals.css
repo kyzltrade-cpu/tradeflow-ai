@@ -597,8 +597,21 @@ body {
   --cal-wash: rgba(10, 110, 92, 0.10);
   --cal-ink: #0a0d0b;
   --cal-ink-off: #a3a8a0;
+  /* Days you cannot book — weekends, and anything past the horizon. Shading
+     them out is what makes the open columns legible at a glance instead of
+     only after you have clicked a Saturday to find out. */
+  --cal-closed: rgba(10, 13, 11, 0.055);
   background: var(--cal-surface);
   box-shadow: 0 20px 44px -32px rgba(10, 13, 11, 0.5);
+}
+
+/* Today is marked by colour, keyboard focus by an inset ring. They are kept
+   apart deliberately: a ring on today sat exactly where the focus ring wants to
+   go, so the two were indistinguishable on the day you happened to be looking
+   at the calendar. */
+.cal [data-day]:focus-visible {
+  outline: 2px solid var(--cal-signal);
+  outline-offset: -2px;
 }
 
 /* ── The white band ───────────────────────────────────────────────────────── */
