@@ -60,7 +60,7 @@ function StepHead({ n, title }: { n: string; title: string }) {
     <div className="flex items-center gap-4">
       <span
         className="grid h-7 w-7 shrink-0 place-items-center border font-mono text-[11px] tabular-nums"
-        style={{ borderColor: 'var(--dark-hairline-2)', color: 'var(--accent)' }}
+        style={{ borderColor: 'var(--hairline-2)', color: 'var(--accent)' }}
       >
         {n}
       </span>
@@ -73,7 +73,7 @@ function StepHead({ n, title }: { n: string; title: string }) {
       <span
         aria-hidden="true"
         className="h-px flex-1"
-        style={{ background: 'var(--dark-hairline)' }}
+        style={{ background: 'var(--hairline)' }}
       />
     </div>
   );
@@ -180,13 +180,13 @@ export default function BookPage() {
       </section>
 
       {/* ── Pick a time, then tell us about it ───────────────────────────── */}
-      {/* `band` carries the vertical rhythm and `band-dark` flips the tokens;
-          `band-cyan` is the dark cyan surface. No `band-glow` here — the
-          ambience wash muddies the one colour on the page. */}
-      <section className="band band-dark band-cyan">
+      {/* `band` carries the vertical rhythm; `band-white` is the plain white
+          ground this desk sits on. No `band-glow` — the ambience wash is the
+          same colour as the shadow the calendar casts. */}
+      <section className="band band-white">
         <div className="shell">
           {sent ? (
-            <div className="card mx-auto max-w-2xl p-8 text-center md:p-12" style={{ background: 'var(--paper-2)' }}>
+            <div className="card mx-auto max-w-2xl bg-white p-8 text-center md:p-12">
               <CircleCheck className="mx-auto h-10 w-10" style={{ color: 'var(--pine)' }} />
               <h2 className="display text-[1.75rem] mt-5">{t('That is booked.', '已預約完成。')}</h2>
               <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
@@ -234,7 +234,7 @@ export default function BookPage() {
                         <p className="eyebrow" style={{ color: 'var(--accent)' }}>
                           {longDate(chosen, locale)}
                         </p>
-                        <p className="text-[12px] tabular-nums" style={{ color: 'var(--on-dark-3)' }}>
+                        <p className="text-[12px] tabular-nums" style={{ color: 'var(--ink-3)' }}>
                           {t(`${slots.length} times`, `${slots.length} 個時段`)}
                         </p>
                       </div>
@@ -245,7 +245,7 @@ export default function BookPage() {
                           still free. */}
                       <div
                         className="mt-4 grid grid-cols-3 gap-px border"
-                        style={{ background: 'var(--dark-hairline)', borderColor: 'var(--dark-hairline)' }}
+                        style={{ background: 'var(--hairline)', borderColor: 'var(--hairline)' }}
                       >
                         {slots.map((s) => {
                           const on = hour === s.hour;
@@ -259,11 +259,11 @@ export default function BookPage() {
                               }}
                               aria-pressed={on}
                               className={`cursor-pointer py-2.5 text-[13.5px] tabular-nums transition-colors ${
-                                on ? '' : 'bg-[var(--paper)] hover:bg-[var(--paper-2)]'
+                                on ? '' : 'bg-white hover:bg-black/[0.035]'
                               }`}
                               style={
                                 on
-                                  ? { background: 'var(--cyan)', color: 'var(--dark)', fontWeight: 600 }
+                                  ? { background: 'var(--pine)', color: '#ffffff', fontWeight: 600 }
                                   : { color: 'var(--ink-2)' }
                               }
                             >
@@ -273,7 +273,7 @@ export default function BookPage() {
                         })}
                       </div>
 
-                      <p className="mt-4 text-[12.5px] leading-relaxed" style={{ color: 'var(--on-dark-3)' }}>
+                      <p className="mt-4 text-[12.5px] leading-relaxed" style={{ color: 'var(--ink-3)' }}>
                         {t(
                           `Times shown in ${tz}. Mon, Wed and Fri afternoons and evenings; Tue and Thu after 7pm.`,
                           `時間以 ${tz} 顯示。週一、三、五下午至晚上；週二、四晚上 7 時後。`
@@ -285,7 +285,7 @@ export default function BookPage() {
                        column trailing off after the calendar. */
                     <p
                       className="mt-9 flex items-center gap-3 border-t pt-6 text-[13.5px] leading-relaxed"
-                      style={{ borderColor: 'var(--dark-hairline)', color: 'var(--on-dark-2)' }}
+                      style={{ borderColor: 'var(--hairline)', color: 'var(--ink-2)' }}
                     >
                       <CalendarDays className="h-4 w-4 shrink-0" style={{ color: 'var(--accent)' }} />
                       {t('Pick a day to see the times we have open.', '選擇日期以查看可預約時間。')}
@@ -349,7 +349,7 @@ export default function BookPage() {
                         are about the inbox. A rule marks the change of subject
                         so the form does not read as one undifferentiated stack
                         of inputs. */}
-                    <div className="grid gap-5 border-t pt-7" style={{ borderColor: 'var(--dark-hairline)' }}>
+                    <div className="grid gap-5 border-t pt-7" style={{ borderColor: 'var(--hairline)' }}>
                       <div>
                         <label htmlFor="volume" className="field-label">
                           {t('Roughly how many inquiries a month?', '每月大約多少封詢盤？')}
@@ -407,14 +407,14 @@ export default function BookPage() {
                       phone, the calendar is a full screen away. */}
                   <div
                     className="mt-9 flex flex-wrap items-end justify-between gap-x-8 gap-y-5 border-t pt-7"
-                    style={{ borderColor: 'var(--dark-hairline)' }}
+                    style={{ borderColor: 'var(--hairline)' }}
                   >
                     <div>
                       <p className="eyebrow">{t('Your call', '您的通話')}</p>
                       <p
                         id="call-summary"
                         className="mt-2 text-[15px]"
-                        style={{ color: slotLabel ? 'var(--ink)' : 'var(--on-dark-3)' }}
+                        style={{ color: slotLabel ? 'var(--ink)' : 'var(--ink-3)' }}
                       >
                         {slotLabel && when
                           ? `${longDate(when, locale)} · ${slotLabel}`
@@ -432,7 +432,7 @@ export default function BookPage() {
                     </button>
                   </div>
 
-                  <p className="mt-5 text-[12.5px] leading-relaxed" style={{ color: 'var(--on-dark-3)' }}>
+                  <p className="mt-5 text-[12.5px] leading-relaxed" style={{ color: 'var(--ink-3)' }}>
                     {t(
                       'We reply to every request ourselves. Your details are used to arrange this call and nothing else.',
                       '每一封請求都由我們親自回覆。您的資料只會用於安排這次通話。'
@@ -447,7 +447,7 @@ export default function BookPage() {
                   have picked a time, not before. */}
               <div
                 className="mt-16 border-t pt-10 lg:mt-20 lg:pt-12"
-                style={{ borderColor: 'var(--dark-hairline)' }}
+                style={{ borderColor: 'var(--hairline)' }}
               >
                 <div className="grid gap-10 lg:grid-cols-[0.75fr_2.25fr] lg:gap-16">
                   <div>
@@ -468,7 +468,7 @@ export default function BookPage() {
                           />
                         ))}
                       </span>
-                      <p className="text-[13.5px] leading-relaxed" style={{ color: 'var(--on-dark-2)' }}>
+                      <p className="text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
                         {t(
                           'You will speak to Kyle or Neel — the two people who built it.',
                           '與您通話的是 Kyle 或 Neel——打造這個產品的兩個人。'
@@ -482,7 +482,7 @@ export default function BookPage() {
                       <li key={en}>
                         <span
                           className="font-mono text-[11px] tabular-nums tracking-[0.2em]"
-                          style={{ color: 'var(--on-dark-3)' }}
+                          style={{ color: 'var(--ink-3)' }}
                         >
                           {`0${i + 1}`}
                         </span>

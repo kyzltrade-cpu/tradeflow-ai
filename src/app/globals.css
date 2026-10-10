@@ -584,14 +584,10 @@ body {
 
 /* ── The booking calendar ─────────────────────────────────────────────────── */
 
-/* The band behind the month is what carries the cyan (see `.band-cyan`); the
-   calendar itself is a plain white card, so the one thing you actually have to
-   read and click stays the brightest object on the page.
-
-   It cannot use `--ink` / `--hairline` for that: those invert inside
-   `.band-dark`, which would put cream text on the white card. The light-surface
-   values are therefore re-declared here rather than inherited. Declared in one
-   place so the whole treatment stays tunable. */
+/* The month is a white card on a white band, so all of its structure comes from
+   the ruled grid and a soft drop shadow rather than from a change of fill. Its
+   tokens cannot come from `--ink` / `--hairline` — those invert inside a
+   `.band-dark`, and the same component has to survive being dropped on one. */
 .cal {
   --cal-surface: #ffffff;
   --cal-line: rgba(10, 13, 11, 0.14);
@@ -602,18 +598,37 @@ body {
   --cal-ink: #0a0d0b;
   --cal-ink-off: #a3a8a0;
   background: var(--cal-surface);
-  /* Lifts the white card off the dark cyan band so it reads as an object you
-     are picking from rather than as a hole cut in the section. */
-  box-shadow: 0 26px 60px -38px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 20px 44px -32px rgba(10, 13, 11, 0.5);
 }
 
-/* ── The cyan band ────────────────────────────────────────────────────────── */
+/* ── The white band ───────────────────────────────────────────────────────── */
 
-/* One section on the site carries cyan: the booking band on /book. The accent
-   is mixed down into the band's near black so a full-width section reads as
-   dark cyan rather than as a bright colour block. */
-.landing .band-dark.band-cyan {
-  background: color-mix(in srgb, var(--cyan) 20%, var(--dark));
+/* The ground the booking desk sits on. The marketing surface is cream and the
+   product is dark; this one section is plain white, between a dark hero and a
+   dark footer. Cards and fields on it are separated by rules and shadow rather
+   than by a change of fill, which is why the calendar keeps a hairline. */
+.landing .band-white {
+  background: #ffffff;
+}
+
+/* A white box on a white ground is only an outline, and that outline is the
+   same weight as every rule around it. A near-white neutral keeps the fields
+   reading as wells without pulling the cream back in. */
+.band-white .field-input {
+  background: #f6f6f5;
+  border-color: rgba(10, 13, 11, 0.16);
+}
+
+.band-white .field-input:focus {
+  background: #ffffff;
+}
+
+.band-white .field-input:-webkit-autofill,
+.band-white .field-input:-webkit-autofill:hover,
+.band-white .field-input:-webkit-autofill:focus,
+.band-white .field-input:autofill {
+  -webkit-box-shadow: 0 0 0 1000px #f6f6f5 inset;
+  box-shadow: 0 0 0 1000px #f6f6f5 inset;
 }
 
 /* ── Forms ────────────────────────────────────────────────────────────────── */
