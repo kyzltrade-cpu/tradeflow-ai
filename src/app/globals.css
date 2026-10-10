@@ -1,7 +1,11 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   App shell tokens (dashboard, auth, admin).
+   The product surfaces stay dark; the marketing page opts into its own
+   cream-and-ink palette under `.landing` below.
+   ───────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* NoHorn-inspired dark theme */
   --bg: #171b18;
   --surface: #1f2420;
   --text: #f2f0e6;
@@ -23,17 +27,15 @@
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --ease-snappy: cubic-bezier(0.5, 0, 0, 1);
 
-  /* Hairline + panels */
   --hairline: rgba(242, 240, 230, 0.08);
   --panel-bg: rgba(242, 240, 230, 0.04);
   --panel-border: rgba(242, 240, 230, 0.08);
   --panel-text: #a9aca3;
 
-  /* Shadows */
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 24px 80px -40px rgba(0, 0, 0, 0.5);
   --shadow-float: 0 40px 120px -40px rgba(0, 0, 0, 0.6);
 
-  /* Legacy pine vars (keep for existing components) */
+  /* Legacy aliases still referenced by in-product components. */
   --pine: #f2f0e6;
   --pine-deep: #ffffff;
   --pine-wash: rgba(242, 240, 230, 0.04);
@@ -81,6 +83,588 @@ body {
   font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   Marketing surface.
+
+   The reference design is a cream / near-black editorial system: flat bands,
+   hairline rules instead of shadows, one saturated accent, and type that does
+   the work. Everything below is scoped so the product shell is untouched.
+   ───────────────────────────────────────────────────────────────────────────── */
+.landing {
+  --paper: #f7f4ed;
+  --paper-2: #f1ede2;
+  --paper-3: #e9e4d7;
+  --ink: #0a0d0b;
+  --ink-2: #4d534c;
+  --ink-3: #7e847c;
+  --hairline: rgba(10, 13, 11, 0.13);
+  --hairline-2: rgba(10, 13, 11, 0.22);
+  --pine: #0a6e5c;
+  --pine-deep: #06463a;
+  --pine-wash: #e4efe9;
+  --accent: #0a6e5c;
+  --accent-hover: #085a4b;
+  --accent-light: rgba(10, 110, 92, 0.09);
+  /* A mid cyan for the one band that carries it. Derived from the same family
+     as --accent on dark, but deep enough to read as a colour rather than a
+     washed tint. */
+  --cyan: #8ad3c0;
+  --peach: #b4552d;
+  --peach-soft: #f6e7dd;
+  --amber: #b7791f;
+  --dark: #0a0d0b;
+  --dark-2: #141815;
+  --on-dark: #f7f4ed;
+  --on-dark-2: #a9aea7;
+  --on-dark-3: #767b74;
+  --dark-hairline: rgba(247, 244, 237, 0.13);
+  --dark-hairline-2: rgba(247, 244, 237, 0.24);
+
+  /* Aliases for markup written against the older app-shell token names. Within
+     a marketing surface these all resolve to the cream palette, and inside a
+     `.band-dark` descendant they invert along with everything else — so legacy
+     inline styles land on the right colours instead of the dark dashboard set. */
+  --bg: var(--paper);
+  --surface: var(--paper);
+  --border: var(--hairline-2);
+  --text: var(--ink);
+  --text-muted: var(--ink-3);
+  --success: var(--pine);
+  --error: var(--peach);
+  --warning: var(--amber);
+
+  background: var(--paper);
+  color: var(--ink);
+  /* `<html>` declares `color-scheme: dark` for the product shell, which makes
+     the browser render form controls in dark mode. Everything on the marketing
+     surface is light, so opt back in here. */
+  color-scheme: light;
+}
+
+/* Dark band inverts the same tokens, so every component below works unchanged
+   whether it sits on cream or on near-black. */
+.landing .band-dark {
+  --paper: #0a0d0b;
+  --paper-2: #141815;
+  --paper-3: #1b201c;
+  --ink: #f7f4ed;
+  --ink-2: #b6bbb4;
+  --ink-3: #83887f;
+  --hairline: rgba(247, 244, 237, 0.13);
+  --hairline-2: rgba(247, 244, 237, 0.26);
+  --pine: #7fd1b9;
+  --pine-deep: #a8e3d1;
+  --pine-wash: rgba(127, 209, 185, 0.08);
+  --accent: #7fd1b9;
+  --accent-hover: #9adcc8;
+  --accent-light: rgba(127, 209, 185, 0.12);
+  /* Re-declared rather than inherited: a custom property resolves its own
+     var() references on the element that declares it, so the `.landing`
+     aliases would otherwise keep the light values inside a dark band. */
+  --bg: var(--paper);
+  --surface: var(--paper);
+  --border: var(--hairline-2);
+  --text: var(--ink);
+  --text-muted: var(--ink-3);
+  --success: var(--pine);
+  --error: var(--peach);
+  background: var(--dark);
+  color: var(--on-dark);
+}
+
+/* ── Type ─────────────────────────────────────────────────────────────────── */
+
+.display {
+  font-family: var(--font-display), 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.03;
+}
+
+/* Mirror of the reference type ramp: 68 / 64 / 26 / 24. */
+.h-hero {
+  font-size: clamp(2.5rem, 5vw, 4.25rem);
+  line-height: 0.98;
+  letter-spacing: -0.038em;
+}
+
+.h-section {
+  font-size: clamp(2.1rem, 4.3vw, 3.9rem);
+  line-height: 1.02;
+  letter-spacing: -0.036em;
+}
+
+.h-sub {
+  font-size: clamp(1.35rem, 1.9vw, 1.625rem);
+  line-height: 1.12;
+  letter-spacing: -0.026em;
+}
+
+.h-card {
+  font-size: 1.5rem;
+  line-height: 1.1;
+  letter-spacing: -0.028em;
+}
+
+.eyebrow {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.lede {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--ink-2);
+}
+
+/* ── Layout ───────────────────────────────────────────────────────────────── */
+
+.band {
+  padding-block: clamp(4.5rem, 8vw, 7.5rem);
+}
+
+/* The dark statement bands. At the standard rhythm they read as cramped — a
+   dark band needs more air than a light one to feel deliberate rather than
+   like a strip of colour. */
+.band-xl {
+  padding-block: clamp(6.5rem, 12vw, 11rem);
+}
+
+.shell {
+  width: 100%;
+  max-width: 84rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .shell {
+    padding-inline: 2.5rem;
+  }
+}
+
+/* Hairline that separates bands without a shadow. */
+.rule {
+  border-top: 1px solid var(--hairline);
+}
+
+/* Lets the hero photo run to the viewport edge on wide screens while the text
+   column stays on the page grid — the reference does the same, and it is what
+   makes the hero read as full-bleed rather than as a framed image.
+   `100vw` can exceed the client width by the scrollbar, so the section that
+   contains this clips the overshoot (`overflow: hidden`). */
+@media (min-width: 1024px) {
+  .hero-bleed {
+    margin-right: calc(-1 * (max(0px, (100vw - 84rem) / 2) + 2.5rem));
+  }
+
+  /* A product panel that runs off the right edge reads as "there is more
+     product here" — but only if the trailing corner is square. */
+  .hero-bleed .mock-frame {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 0;
+  }
+
+  /* Same idea for a panel that is not a `.mock-frame` — the demo stage player
+     draws its own browser chrome, so it squares and un-borders itself. */
+  .bleed-right {
+    margin-right: calc(-1 * (max(0px, (100vw - 84rem) / 2) + 2.5rem));
+  }
+
+  .bleed-right > * {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right-width: 0;
+  }
+}
+
+/* ── Square corners ───────────────────────────────────────────────────────
+   No rounded corners anywhere on the site. A global rule rather than a class
+   list: radii were reaching the layout through Tailwind utilities, inline
+   styles and the mocks at once, and anything less than this kept leaving round
+   edges behind. */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 3px;
+  padding: 0.72rem 1.35rem;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* Solid ink on cream, solid cream on ink — one class, both bands. */
+.btn-primary {
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+}
+
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--ink) 84%, var(--paper));
+  border-color: color-mix(in srgb, var(--ink) 84%, var(--paper));
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--hairline-2);
+}
+
+.btn-outline:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  border-color: var(--ink);
+}
+
+/* The header sits over the dark hero but outside `.band-dark`, so it cannot
+   rely on the token flip. This is the one place the inversion is explicit. */
+.btn-invert {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--paper);
+}
+
+.btn-invert:hover {
+  background: rgba(247, 244, 237, 0.86);
+  border-color: rgba(247, 244, 237, 0.86);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--pine);
+  outline-offset: 2px;
+}
+
+/* ── Product frame ────────────────────────────────────────────────────────── */
+
+/* The mocks ship as bare white cards. Framing them here means the reference
+   chrome (hairline, radius, lift, light sweep) lives in one place instead of
+   being re-drawn inside every mock. */
+.mock-frame {
+  position: relative;
+  border-radius: 6px;
+  border: 1px solid var(--hairline-2);
+  background: #ffffff;
+  overflow: hidden;
+  box-shadow:
+    0 1px 1px rgba(10, 13, 11, 0.04),
+    0 24px 60px -32px rgba(10, 13, 11, 0.4);
+}
+
+.mock-frame::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* The mocks ship with their own 16px radius, hairline and drop shadow. The
+   frame already draws all three, so the child's are neutralised to stop the
+   borders doubling into a 2px line. */
+.mock-frame > * {
+  border-radius: 6px !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* The scroll-driven demo sits flush in the section, so its screen is squared
+   off: rounded corners make it read as a card floating on the page rather than
+   as an app window. Only the mock roots carry `rounded-2xl` — the UI chrome
+   inside them keeps its own radii. */
+.demo-square .rounded-2xl {
+  border-radius: 0 !important;
+}
+
+/* The mocks are pictures, not scrollable windows. Their panes do scroll
+   internally by design, and at a few sizes the buyer rail overflows by ~40px —
+   which paints an OS scrollbar across a product screenshot and reads as a
+   rendering bug rather than as chrome. Everything is reachable by scrolling the
+   page, so the affordance is noise. */
+[role='img'] *,
+.mock-frame * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+[role='img'] *::-webkit-scrollbar,
+.mock-frame *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+/* ── Cards ────────────────────────────────────────────────────────────────── */
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+}
+
+.card-flat {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  border-radius: 6px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  background: var(--paper);
+}
+
+/* ── FAQ ──────────────────────────────────────────────────────────────────── */
+
+.faq-item {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-item summary {
+  cursor: pointer;
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────────── */
+
+.footer-link {
+  color: var(--ink-2);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.footer-link:hover {
+  color: var(--ink);
+}
+
+/* Oversized closing wordmark, clipped to the viewport like the reference. */
+.wordmark-giant {
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.05em;
+  line-height: 0.74;
+  font-size: clamp(4rem, 18vw, 17rem);
+  white-space: nowrap;
+}
+
+/* ── Dark-band ambience ───────────────────────────────────────────────────── */
+
+/* Two slow, blurred colour washes. Fixed positioning is deliberately avoided:
+   the reference composites these per-band so they never bleed over the cream.
+   Kept faint — a dark band is meant to read as near-black, and a stronger glow
+   lifts it into grey. */
+.band-glow {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.band-glow::before {
+  content: '';
+  position: absolute;
+  inset: -30% -10% auto -10%;
+  height: 70%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(42% 60% at 18% 40%, rgba(127, 209, 185, 0.10) 0%, transparent 70%),
+    radial-gradient(38% 55% at 82% 12%, rgba(180, 85, 45, 0.09) 0%, transparent 72%);
+  filter: blur(28px);
+}
+
+/* ── Forms ────────────────────────────────────────────────────────────────── */
+
+.field-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 0.4rem;
+}
+
+.field-input {
+  width: 100%;
+  height: 44px;
+  border-radius: 4px;
+  border: 1px solid var(--hairline-2);
+  background: #ffffff;
+  color: var(--ink);
+  padding: 0 0.75rem;
+  font-size: 14px;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.field-input::placeholder {
+  color: var(--ink-3);
+}
+
+.field-input:focus {
+  outline: none;
+  border-color: var(--pine);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* Chrome paints autofilled fields with its own colour and refuses to let
+   `background` override it — with a dark color-scheme that colour is grey, so a
+   field visibly changed shade the moment the browser filled it. An inset shadow
+   is the only thing that wins, and the long transition stops Chrome repainting
+   the background on interaction. */
+.field-input:-webkit-autofill,
+.field-input:-webkit-autofill:hover,
+.field-input:-webkit-autofill:focus,
+.field-input:autofill {
+  -webkit-text-fill-color: var(--ink);
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset;
+  box-shadow: 0 0 0 1000px #ffffff inset;
+  caret-color: var(--ink);
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+.field-input:disabled {
+  background: var(--paper-2);
+  color: var(--ink-3);
+}
+
+.field-error {
+  border-radius: 4px;
+  border: 1px solid rgba(180, 85, 45, 0.28);
+  background: var(--peach-soft);
+  color: #8f3f1f;
+  padding: 0.7rem 0.85rem;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.field-hint {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--ink-3);
+}
+
+/* A text button that reads as a link but keeps a 44px touch target. */
+.link-quiet {
+  color: var(--pine);
+  font-weight: 500;
+}
+
+.link-quiet:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Auth shell ───────────────────────────────────────────────────────────── */
+
+/* The brand panel is decorative, so it is hidden on phones rather than stacked:
+   a returning customer on a phone wants the form, not the pitch. */
+.auth-panel {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .auth-panel {
+    display: flex;
+  }
+}
+
+.oauth-btn {
+  display: flex;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--hairline-2);
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.oauth-btn:hover {
+  background: var(--paper-2);
+  border-color: var(--ink-3);
+}
+
+.oauth-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ── Long-form legal copy ─────────────────────────────────────────────────── */
+
+.prose-legal h2 {
+  font-family: var(--font-display), 'Space Grotesk', sans-serif;
+  font-weight: 500;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.prose-legal p {
+  margin-top: 0.75rem;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink-2);
+}
+
+.prose-legal a {
+  color: var(--pine);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ── Nav ──────────────────────────────────────────────────────────────────── */
+
+.nav-link {
+  font-size: 14px;
+  color: var(--ink-2);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.nav-link:hover,
+.nav-link.is-active {
+  color: var(--ink);
+}
+
+/* ── In-product surfaces (unchanged) ──────────────────────────────────────── */
+
 .dashboard-mode {
   --bg: #171b18;
   --surface: #1f2420;
@@ -110,6 +694,48 @@ body {
   --sb-badge-text: #f2f0e6;
   --sb-avatar-bg: #f2f0e6;
   --sb-avatar-text: #171b18;
+}
+
+/* The content half of the product shell is light while the rail stays dark.
+   Redefining the tokens on the wrapper rather than restyling each page means
+   every admin surface inherits it, and it uses the marketing palette so the
+   product and the site read as one system. */
+.admin-light {
+  --bg: #f7f4ed;
+  --surface: #ffffff;
+  --text: #0a0d0b;
+  --text-muted: #4d534c;
+  --border: rgba(10, 13, 11, 0.13);
+  --accent: #0a6e5c;
+  --accent-light: rgba(10, 110, 92, 0.10);
+  --panel-bg: rgba(10, 13, 11, 0.03);
+  --panel-border: rgba(10, 13, 11, 0.13);
+  --panel-text: #4d534c;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* The product shell is dark; this rail is not. A light rail against dark content
+   keeps the navigation calm while the working area carries the data. Its tokens
+   are the marketing palette, so the product and the site read as one system. */
+.sidebar.sidebar-light {
+  --surface: #f7f4ed;
+  --text: #0a0d0b;
+  --text-muted: #4d534c;
+  --border: rgba(10, 13, 11, 0.13);
+  --accent: #0a6e5c;
+  --accent-light: rgba(10, 110, 92, 0.10);
+  --sb-active-bg: #ffffff;
+  --sb-active-text: #0a0d0b;
+  --sb-idle-text: #4d534c;
+  --sb-faint: #7e847c;
+  --sb-hover: rgba(10, 13, 11, 0.05);
+  --sb-badge-active-bg: #0a6e5c;
+  --sb-badge-active-text: #ffffff;
+  --sb-badge-bg: rgba(10, 13, 11, 0.08);
+  --sb-badge-text: #0a0d0b;
+  --sb-avatar-bg: #0a6e5c;
+  --sb-avatar-text: #ffffff;
 }
 
 .sidebar.sidebar-dark {
@@ -162,7 +788,6 @@ body {
 .accent-btn:hover {
   transform: translateY(-1px);
   background: linear-gradient(180deg, rgba(242, 240, 230, 1) 0%, rgba(242, 240, 230, 0.96) 100%);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3), 0 1px 2px rgba(0, 0, 0, 0.25), 0 40px 120px -40px rgba(0, 0, 0, 0.6);
 }
 
 .accent-btn:active {
@@ -172,31 +797,6 @@ body {
 .accent-btn:focus-visible {
   outline: 2px solid rgba(242, 240, 230, 0.4);
   outline-offset: 2px;
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  background: linear-gradient(180deg, rgba(242, 240, 230, 0.98) 0%, rgba(242, 240, 230, 0.92) 100%);
-  color: #171b18;
-  padding: 12px 24px;
-  border-radius: 10px;
-  border: 1px solid rgba(242, 240, 230, 0.16);
-  cursor: pointer;
-  transition: all 120ms var(--ease-out);
-  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.25), 0 1px 2px rgba(0, 0, 0, 0.2), 0 24px 80px -40px rgba(0, 0, 0, 0.5);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(180deg, rgba(242, 240, 230, 1) 0%, rgba(242, 240, 230, 0.96) 100%);
-  transform: translateY(-1px);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
 }
 
 .btn-secondary {
@@ -215,25 +815,8 @@ body {
   background: rgba(242, 240, 230, 0.08);
 }
 
-.display {
-  font-family: var(--font-display), Georgia, 'Times New Roman', serif;
-  letter-spacing: -0.02em;
-  line-height: 1.08;
-}
-
 .serif {
   font-family: Georgia, 'Times New Roman', serif;
-}
-
-.eyebrow {
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.band-dark {
-  background: radial-gradient(120% 120% at 50% 0%, rgba(242, 240, 230, 0.02) 0%, rgba(23, 27, 24, 1) 100%);
 }
 
 .plan-card {
@@ -244,19 +827,56 @@ body {
   backdrop-filter: blur(8px);
 }
 
-.faq-item {
-  border-bottom: 1px solid var(--hairline);
+/* ── Motion ───────────────────────────────────────────────────────────────── */
+
+/* Drives the active stage's progress rail in the product demo. The element is
+   remounted on every stage change so the fill restarts from zero, and paused
+   (not removed) while the visitor is holding the demo. */
+@keyframes stage-fill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
 }
 
-.faq-item summary::-webkit-details-marker {
-  display: none;
+@keyframes btk-rise-sm {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-.footer-link {
-  color: var(--text-muted);
-  transition: color 120ms var(--ease-out);
+.btk-anim-rise-sm {
+  animation: btk-rise-sm 420ms var(--ease-out) both;
 }
 
-.footer-link:hover {
-  color: var(--text);
+@keyframes btk-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.btk-pulse {
+  animation: btk-pulse 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

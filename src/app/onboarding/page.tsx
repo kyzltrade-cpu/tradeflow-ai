@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLang, LangToggle } from '@/lib/lang';
+import { ExtractionMock } from '@/components/landing/ProductMocks';
 import { useAuth, supabaseBrowser } from '@/lib/auth';
 import type { WorkBook } from 'xlsx';
 import { track } from '@/lib/analytics';
@@ -292,33 +293,43 @@ export default function OnboardingPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6" style={{ background: 'var(--bg)' }}>
-      <div className="w-full max-w-[480px]">
+    <div className="landing flex min-h-screen flex-col items-center justify-center px-6 py-12">
+      <div className="w-full max-w-[560px]">
+        <div className="mb-9 flex items-center justify-between">
+          <Link href="/" className="inline-flex items-center gap-2.5">
+            <img
+              src="/brand/sailwise-mark.png"
+              alt=""
+              aria-hidden="true"
+              className="h-6 w-auto object-contain"
+            />
+            <span className="display text-[1.15rem]">Sailwise</span>
+          </Link>
+          <LangToggle variant="quiet" />
+        </div>
+
         {/* Progress */}
-        <p className="text-[13px] mb-2 text-center" style={{ color: 'var(--text-muted)' }}>
+        <p className="eyebrow">
           {t(`Step ${currentStepIndex + 1} of ${STEPS.length}`, `第 ${currentStepIndex + 1} 步，共 ${STEPS.length} 步`)}
         </p>
-        <div className="flex gap-1.5 mb-10">
+        <div className="mt-3 mb-8 flex gap-1.5">
           {STEPS.map((s, i) => (
             <div
               key={s}
-              className="h-[3px] flex-1 rounded-full"
+              className="h-[3px] flex-1"
               style={{
-                background: currentStepIndex >= i ? 'var(--accent)' : 'var(--border)',
+                background: currentStepIndex >= i ? 'var(--pine)' : 'var(--hairline)',
               }}
             />
           ))}
         </div>
 
-        <div className="border rounded-[4px] p-8" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-          <div className="flex justify-end mb-2">
-            <LangToggle />
-          </div>
+        <div className="card p-7 sm:p-8" style={{ background: 'var(--paper-2)' }}>
 
           {/* WELCOME */}
           {step === 'welcome' && (
             <div>
-              <h1 className="text-[28px] font-semibold tracking-[-0.8px] mb-3">
+              <h1 className="display text-[2rem] leading-[1.1] mb-3">
                 {t('Get started with Sailwise', '開始使用 Sailwise')}
               </h1>
               <p className="text-[15px] leading-[1.6] mb-8" style={{ color: 'var(--text-muted)' }}>
@@ -338,10 +349,22 @@ export default function OnboardingPage() {
                   <span>{t('A cited quote draft you approve before it is sent', '附引用的報價草稿，發送前由您審批')}</span>
                 </div>
               </div>
+              {/* What they are about to set up, cropped so it teases rather
+                  than explains: the specs and the source lines they came from. */}
+              <div
+                className="mb-8 overflow-hidden rounded-[6px] border"
+                style={{ borderColor: 'var(--hairline-2)', maxHeight: 240 }}
+                role="img"
+                aria-label="The extraction panel: every spec shown with the source line it was read from."
+                data-nosnippet
+                translate="no"
+              >
+                <ExtractionMock />
+              </div>
+
               <button
                 onClick={() => setStep('company')}
-                className="w-full text-[14px] font-medium py-3 rounded-[4px] text-white"
-                style={{ background: 'var(--accent)' }}
+                className="btn btn-primary w-full"
               >
                 {t('Get started', '開始使用')}
               </button>
@@ -355,7 +378,7 @@ export default function OnboardingPage() {
           {/* COMPANY */}
           {step === 'company' && (
             <div>
-              <h2 className="text-[22px] font-semibold tracking-[-0.5px] mb-2">{t('About your company', '關於您的公司')}</h2>
+              <h2 className="display text-[1.6rem] leading-[1.15] mb-2">{t('About your company', '關於您的公司')}</h2>
               <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
                 {t('Tell us about your trading business.', '請告訴我們您的貿易業務。')}
               </p>
@@ -399,8 +422,7 @@ export default function OnboardingPage() {
                 <button
                   onClick={() => setStep('excel')}
                   disabled={!companyName}
-                  className="flex-1 text-[14px] font-medium py-3 rounded-[4px] text-white disabled:opacity-40"
-                  style={{ background: 'var(--accent)' }}
+                  className="btn btn-primary flex-1"
                 >
                   {t('Continue', '繼續')}
                 </button>
@@ -411,7 +433,7 @@ export default function OnboardingPage() {
           {/* EXCEL */}
           {step === 'excel' && (
             <div>
-              <h2 className="text-[22px] font-semibold tracking-[-0.5px] mb-2">{t('Connect your catalog', '連接您的產品目錄')}</h2>
+              <h2 className="display text-[1.6rem] leading-[1.15] mb-2">{t('Connect your catalog', '連接您的產品目錄')}</h2>
               <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
                 {t('Drop your product list — Excel or CSV. Sailwise quotes straight from it.', '拖放您的產品清單 — Excel 或 CSV。Sailwise 會直接依它報價。')}
               </p>
@@ -497,8 +519,7 @@ export default function OnboardingPage() {
                 <button
                   onClick={finalizeSetup}
                   disabled={saving}
-                  className="flex-1 text-[14px] font-medium py-3 rounded-[4px] text-white disabled:opacity-40"
-                  style={{ background: 'var(--accent)' }}
+                  className="btn btn-primary flex-1"
                 >
                   {saving ? t('Saving...', '儲存中...') : t('Continue', '繼續')}
                 </button>
@@ -509,7 +530,7 @@ export default function OnboardingPage() {
           {/* EMAIL */}
           {step === 'email' && (
             <div>
-              <h2 className="text-[22px] font-semibold tracking-[-0.5px] mb-2">{t('Connect your email', '連接您的電郵')}</h2>
+              <h2 className="display text-[1.6rem] leading-[1.15] mb-2">{t('Connect your email', '連接您的電郵')}</h2>
               <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
                 {t('So real inquiries land in your inbox and replies send from your own address.', '讓真實詢盤進入收件匣，並以您自己的地址回覆。')}
               </p>
@@ -562,8 +583,7 @@ export default function OnboardingPage() {
                   }
                   setStep('done');
                 }}
-                className="w-full text-[14px] font-medium py-3 rounded-[4px] text-white"
-                style={{ background: 'var(--accent)' }}
+                className="btn btn-primary w-full"
               >
                 {mailbox?.connected ? t('Continue', '繼續') : t('Skip for now', '暫時略過')}
               </button>
@@ -578,7 +598,7 @@ export default function OnboardingPage() {
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
               </div>
-              <h2 className="text-[22px] font-semibold tracking-[-0.5px] mb-2">{t("You're all set!", '設定完成！')}</h2>
+              <h2 className="display text-[1.6rem] leading-[1.15] mb-2">{t("You're all set!", '設定完成！')}</h2>
               <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
                 {t('Your AI assistant is ready to handle customer inquiries.', '您的 AI 助手已準備好處理客戶查詢。')}
               </p>
@@ -641,8 +661,7 @@ export default function OnboardingPage() {
                 )}
                 <Link
                   href="/admin/inbox"
-                  className="block w-full text-center text-[14px] font-medium py-3 rounded-[4px] text-white"
-                  style={{ background: 'var(--accent)' }}
+                  className="btn btn-primary w-full"
                 >
                   {t('Go to Inbox', '前往收件匣')}
                 </Link>

@@ -4,82 +4,63 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { ArrowRight } from 'lucide-react';
 import { useLang, LangToggle } from '@/lib/lang';
 
 export default function NotFound() {
   const { t } = useLang();
 
   return (
-    <div className="auth-bg min-h-screen flex flex-col items-center justify-center px-5 py-10 sm:px-6">
-      <div className="w-full max-w-[420px]">
-        <div className="mb-6">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-[13px] transition-opacity hover:opacity-70"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-              <path
-                d="M10 3.5 5.5 8l4.5 4.5"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-            {t('Back to home', '返回首頁')}
+    <div className="landing band-dark band-glow flex min-h-screen flex-col">
+      <header className="shell flex items-center justify-between py-6">
+        <Link href="/" className="inline-flex items-center gap-2.5">
+          <img
+            src="/brand/sailwise-mark.png"
+            alt=""
+            aria-hidden="true"
+            className="h-6 w-auto object-contain"
+            style={{ filter: 'brightness(0) invert(1)' }}
+          />
+          <span className="display text-[1.15rem]" style={{ color: 'var(--on-dark)' }}>
+            Sailwise
+          </span>
+        </Link>
+        {/* LangToggle reads --ink / --ink-2, so the wrapper re-points them. */}
+        <div
+          style={
+            {
+              '--ink': 'var(--on-dark)',
+              '--ink-2': 'rgba(247,244,237,0.72)',
+            } as React.CSSProperties
+          }
+        >
+          <LangToggle variant="quiet" />
+        </div>
+      </header>
+
+      <main className="shell flex flex-1 flex-col justify-center py-16">
+        <p className="eyebrow" style={{ color: 'var(--accent)' }}>
+          404
+        </p>
+        <h1 className="display h-hero mt-6 max-w-3xl text-balance">
+          {t('This page does not exist.', '此頁面不存在。')}
+        </h1>
+        <p className="lede mt-6 max-w-xl">
+          {t(
+            'The link may be out of date, or the page may have moved.',
+            '連結可能已過期，或頁面已移動。'
+          )}
+        </p>
+        <div className="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">
+          <Link href="/" className="btn btn-primary">
+            {t('Go to homepage', '前往首頁')}
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link href="/pricing" className="btn btn-outline">
+            {t('See pricing', '查看定價')}
           </Link>
         </div>
-
-        <div
-          className="rounded-[12px] border p-7 sm:p-8"
-          style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}
-        >
-          <Image
-            src="/brand/sailwise-logo.png"
-            alt="Sailwise"
-            width={132}
-            height={108}
-            priority
-            className="mb-5 h-auto w-auto"
-          />
-
-          <h1 className="mb-2 text-[26px] font-semibold tracking-[-0.5px]">
-            {t('This page does not exist', '此頁面不存在')}
-          </h1>
-          <p
-            className="mb-7 text-[15px] leading-relaxed"
-            style={{ color: 'var(--text-muted)' }}
-          >
-            {t(
-              'The link may be out of date, or the page may have moved.',
-              '連結可能已過期，或頁面已移動。',
-            )}
-          </p>
-
-          <div className="flex flex-col gap-2.5 sm:flex-row">
-            <Link
-              href="/"
-              className="inline-flex flex-1 items-center justify-center rounded-[8px] px-4 py-2.5 text-[15px] font-medium transition-opacity hover:opacity-90"
-              style={{ background: 'var(--accent)', color: '#FFFFFF' }}
-            >
-              {t('Go to homepage', '前往首頁')}
-            </Link>
-            <Link
-              href="/pricing"
-              className="inline-flex flex-1 items-center justify-center rounded-[8px] border px-4 py-2.5 text-[15px] font-medium transition-opacity hover:opacity-70"
-              style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-            >
-              {t('See pricing', '查看定價')}
-            </Link>
-          </div>
-        </div>
-
-        <div className="mt-5 flex justify-center">
-          <LangToggle />
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

@@ -19,15 +19,15 @@ export function siteUrl(): URL {
 
 const SITE_NAME = 'Sailwise';
 
-const HOME_TITLE = 'Sailwise — Inquiry to Quote, End to End';
+const HOME_TITLE = 'Sailwise — The Autonomous Back Office for Trading Companies';
 const HOME_DESCRIPTION =
-  'Sailwise watches for buyer inquiries, pulls the specs out of the message and its attachments, fetches whatever is still missing, and drafts the reply. The whole spec, from one email.';
+  'Sailwise turns every buyer inquiry into a complete, sourced quote draft — specs pulled from the email, gaps filled from your own catalogue, priced from your own list, sent from your own address.';
 
 const IMAGE = {
   url: '/og-image.png',
   width: 1200,
   height: 630,
-  alt: 'Sailwise — Inquiry to quote, end to end',
+  alt: 'Sailwise — the autonomous back office for trading companies',
 } as const;
 
 function absolute(path: string): string {

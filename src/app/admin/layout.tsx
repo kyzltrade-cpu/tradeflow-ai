@@ -607,9 +607,10 @@ function AdminShell({ children }: { children: ReactNode }) {
       <div className="flex flex-1 flex-col overflow-hidden">
         <main
           className={
-            isEmailSurface
+            (isEmailSurface
               ? 'flex-1 overflow-hidden'
-              : 'flex-1 overflow-y-auto p-4 pt-14 pb-24 md:p-6 md:pt-6 md:pb-24 lg:pt-6'
+              : 'flex-1 overflow-y-auto p-4 pt-14 pb-24 md:p-6 md:pt-6 md:pb-24 lg:pt-6') +
+            ' admin-light'
           }
         >
           <div

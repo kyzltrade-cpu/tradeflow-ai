@@ -586,7 +586,9 @@ export function HeroProduct({ p }: { p?: number } = {}) {
                 </div>
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            {/* Hidden in a narrow container: at phone width these collide with
+                the back link and the contact name. */}
+            <div className="hidden shrink-0 items-center gap-2 @min-[560px]:flex">
               {['Pause AI', 'Bookmark'].map((label) => (
                 <span
                   key={label}
@@ -670,11 +672,11 @@ export function HeroProduct({ p }: { p?: number } = {}) {
             a side-by-side layout would squeeze the thread, and becomes the
             288px right rail at 1000px and up. */}
         <div
-          className="flex min-h-0 w-full shrink-0 flex-col overflow-y-auto overflow-x-hidden border-t @min-[620px]:hidden @min-[1000px]:flex @min-[1000px]:w-[288px] @min-[1000px]:shrink-0 @min-[1000px]:border-t-0 @min-[1000px]:border-l"
+          className="flex min-h-0 w-full shrink-0 flex-col overflow-hidden border-t @min-[620px]:hidden @min-[1000px]:flex @min-[1000px]:w-[288px] @min-[1000px]:shrink-0 @min-[1000px]:border-t-0 @min-[1000px]:border-l"
           style={{ borderColor: EDGE, background: RAIL_SURFACE }}
         >
           {/* Buyer */}
-          <div className="border-b px-4 py-4" style={{ borderColor: EDGE }}>
+          <div className="border-b px-4 py-3" style={{ borderColor: EDGE }}>
             <div className="mb-3 flex items-center gap-2">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={TEAL} strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
@@ -819,7 +821,7 @@ export function HeroProduct({ p }: { p?: number } = {}) {
                 </span>
               )}
             </div>
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               {SPECS.map((r, i) => {
                 // The checklist is on screen from the first scroll: every label
                 // shows immediately, with empty values. Once the enquiry lands
@@ -869,7 +871,7 @@ export function HeroProduct({ p }: { p?: number } = {}) {
               })}
             </div>
             <p
-              className="mt-3 border-t pt-2.5 text-[10.5px] leading-snug"
+              className="mt-2.5 border-t pt-2 text-[10.5px] leading-snug"
               style={{ borderColor: HAIR, color: FAINT, opacity: R(0.96, 1) }}
             >
               {emailCount} read from the email · {fetchedCount} from our records ·{' '}

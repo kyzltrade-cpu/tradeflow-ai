@@ -2,27 +2,24 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
 import { useLang, LangToggle } from '@/lib/lang';
 import PilotCTA from '@/components/landing/PilotCTA';
 
-/* Same funnel as every CTA on the page: one mailto to the founder, no
-   self-serve signup while the pilot is manual. Declared here rather than
-   imported because the header renders before the page. */
-
-/* Follows the page's five movements rather than a feature list, so the nav
-   doubles as a table of contents for the story. */
+/* The site is a set of routes, not one long page, so these are real links. */
 const LINKS = [
-  { href: '#trust', label: ['Trust', '信任'] },
-  { href: '#setup', label: ['Setup', '設定'] },
-  { href: '#pricing', label: ['Pricing', '價格'] },
-  { href: '#faq', label: ['FAQ', '常見問題'] },
+  { href: '/product', label: ['Product', '產品'] },
+  { href: '/trust', label: ['Trust', '信任'] },
+  { href: '/pricing', label: ['Pricing', '價格'] },
+  { href: '/faq', label: ['FAQ', '常見問題'] },
+  { href: '/founders', label: ['Founders', '創辦人'] },
 ];
 
 export default function SiteHeader() {
   const { t } = useLang();
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
-  const [active, setActive] = useState<string>('');
   const [menuOpen, setMenuOpen] = useState(false);
   const menuId = 'site-header-mobile-menu';
   const toggleRef = useRef<HTMLButtonElement>(null);
@@ -37,7 +34,7 @@ export default function SiteHeader() {
       setMenuOpen(false);
       toggleRef.current?.focus();
     };
-    const mq = window.matchMedia('(min-width: 1024px)');
+    const mq = window.matchMedia('(min-width: 1280px)');
     const onWide = () => setMenuOpen(false);
     document.addEventListener('keydown', onKey);
     mq.addEventListener('change', onWide);
@@ -48,100 +45,100 @@ export default function SiteHeader() {
   }, [menuOpen]);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  // Close the panel whenever the route changes.
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) setActive(`#${entry.target.id}`);
-        }
-      },
-      { rootMargin: '-40% 0px -55% 0px' }
-    );
-    for (const link of LINKS) {
-      const el = document.querySelector(link.href);
-      if (el) observer.observe(el);
-    }
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollTo = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    const el = document.querySelector(href);
-    if (!el) return;
-    e.preventDefault();
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    history.replaceState(null, '', href);
-    setActive(href);
     setMenuOpen(false);
-  };
+  }, [pathname]);
+
+  // Light type only while the dark hero is behind the bar. A subpage has no
+  // dark hero, so it is solid from the first pixel.
+  /* Every page that mounts this header opens on a dark band, so the bar always
+     starts transparent and settles into cream once the page scrolls. */
+  const solid = scrolled;
+  const onDark = !scrolled;
+  const fg = onDark ? 'var(--on-dark)' : 'var(--ink)';
+  const fgMuted = onDark ? 'rgba(247,244,237,0.72)' : 'var(--ink-2)';
+
+  const isActive = (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 
   return (
-    /* At the top it is a full-bleed bar. Once you scroll, it detaches into a
-       floating island: inset from the viewport edges, rounded, bordered and
-       lifted off the page, so it reads as an object over the content instead
-       of a strip glued to it. */
     <nav
-      className={`fixed z-50 backdrop-blur-md transition-all duration-300 ${
-        scrolled
-          ? 'inset-x-3 top-3 rounded-2xl border shadow-[0_12px_32px_-14px_rgba(27,25,23,0.30)] sm:inset-x-6 sm:top-4'
-          : 'inset-x-0 top-0 border-b border-transparent'
-      }`}
+      className="fixed inset-x-0 top-0 z-50 transition-colors duration-300"
       style={{
-        background: scrolled ? 'rgba(250,247,242,0.68)' : 'rgba(250,247,242,0.34)',
-        borderColor: scrolled ? 'var(--hairline)' : 'transparent',
+        background: solid ? 'rgba(247,244,237,0.92)' : 'transparent',
+        backdropFilter: solid ? 'saturate(180%) blur(12px)' : 'none',
+        borderBottom: `1px solid ${solid ? 'var(--hairline)' : 'transparent'}`,
       }}
     >
-      <div
-        className="mx-auto flex max-w-7xl items-center justify-between px-5 transition-all duration-300 sm:px-6 lg:grid lg:grid-cols-[1fr_auto_1fr] 3xl:max-w-[90rem]"
-        style={{ height: scrolled ? 60 : 80 }}
-      >
+      <div className="shell flex items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr]" style={{ height: 68 }}>
         <Link href="/" className="group flex shrink-0 items-center gap-2.5 justify-self-start">
           <img
-            src="/brand/sailwise-logo.png"
+            src="/brand/sailwise-mark.png"
             alt=""
             aria-hidden="true"
-            className="h-[28px] w-auto object-contain transition-transform duration-300 group-hover:scale-105"
+            className="h-[26px] w-auto object-contain"
+            style={onDark ? { filter: 'brightness(0) invert(1)' } : undefined}
           />
-          <span className="display text-[1.3rem]">Sailwise</span>
+          <span className="display text-[1.2rem]" style={{ color: fg }}>
+            Sailwise
+          </span>
         </Link>
 
-        <div className="hidden items-center justify-center gap-9 lg:flex">
+        {/* Four route links plus the language toggle fit from `xl`; below that
+            the bar keeps the mark, the CTA and the menu, which carries the same
+            links. */}
+        <div className="hidden items-center justify-center gap-8 xl:flex">
           {LINKS.map((l) => (
-            <a
+            <Link
               key={l.href}
               href={l.href}
-              onClick={(e) => scrollTo(e, l.href)}
-              className={`btk-nav-link text-[14px] whitespace-nowrap ${active === l.href ? 'is-active' : ''}`}
-              style={{ color: active === l.href ? 'var(--ink)' : 'var(--ink-2)' }}
+              aria-current={isActive(l.href) ? 'page' : undefined}
+              className="nav-link whitespace-nowrap"
+              style={{ color: isActive(l.href) ? fg : fgMuted }}
             >
               {t(l.label[0], l.label[1])}
-            </a>
+            </Link>
           ))}
         </div>
 
         <div className="flex shrink-0 items-center gap-2 justify-self-end sm:gap-3">
-          {/* Measured, and it does not fit. At 375px the bar has ~335px of
-              content width: the wordmark takes ~126px, "Book a pilot call" plus
-              its button padding ~140px, and the menu trigger 36px — 302px
-              before the toggle's own ~58px. So below lg the toggle moves into
-              the menu panel rather than being dropped, which keeps phones able
-              to switch language without crowding the bar. */}
-          <div className="hidden lg:block">
+          {/* LangToggle reads --ink / --ink-2 directly, so the wrapper re-points
+              them while the dark hero is behind the bar. */}
+          <div
+            className="hidden xl:block"
+            style={
+              onDark
+                ? ({
+                    '--ink': 'var(--on-dark)',
+                    '--ink-2': 'rgba(247,244,237,0.72)',
+                  } as React.CSSProperties)
+                : undefined
+            }
+          >
             <LangToggle variant="quiet" />
           </div>
           <Link
             href="/login"
-            className="hidden rounded-lg px-3 py-2 text-[14px] transition-colors hover:text-[var(--ink)] sm:block"
-            style={{ color: 'var(--ink-2)' }}
+            className="hidden px-2 text-[14px] transition-colors sm:block"
+            style={{ color: fgMuted }}
           >
             {t('Log in', '登入')}
           </Link>
-          <PilotCTA className="btn-primary px-4 py-2 text-[14px]" arrow={false} />
+          {/* Below `sm` the bar carries the mark and the menu only — the CTA
+              would otherwise leave the row with no breathing room, and the hero
+              repeats the same ask in full. */}
+          <span className="hidden sm:block">
+            <PilotCTA
+              className={`btn px-4 py-2 text-[14px] ${onDark ? 'btn-invert' : 'btn-primary'}`}
+              arrow={false}
+            />
+          </span>
           <button
             ref={toggleRef}
             type="button"
@@ -149,40 +146,35 @@ export default function SiteHeader() {
             aria-expanded={menuOpen}
             aria-controls={menuId}
             aria-label={menuOpen ? t('Close menu', '關閉選單') : t('Open menu', '開啟選單')}
-            className="flex h-9 w-9 items-center justify-center rounded-lg border lg:hidden"
-            style={{ borderColor: 'var(--hairline)', color: 'var(--ink)' }}
+            className="flex h-9 w-9 items-center justify-center rounded-[3px] border xl:hidden"
+            style={{ borderColor: onDark ? 'rgba(247,244,237,0.3)' : 'var(--hairline-2)', color: fg }}
           >
             {menuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile nav. The four section links and Log in were previously only
-          rendered inside `hidden lg:flex`, so a phone had no navigation to the
-          pricing, the setup steps or the FAQ at all. */}
+      {/* Mobile nav. */}
       {menuOpen && (
         <div
           id={menuId}
-          className="overflow-hidden border-t lg:hidden"
-          style={{
-            borderColor: 'var(--hairline)',
-            background: scrolled ? 'rgba(250,247,242,0.98)' : 'rgba(250,247,242,0.97)',
-          }}
+          className="overflow-hidden border-t xl:hidden"
+          style={{ borderColor: 'var(--hairline)', background: 'rgba(247,244,237,0.98)' }}
         >
-          <div className="mx-auto flex max-w-7xl flex-col px-5 py-2 sm:px-6">
+          <div className="shell flex flex-col py-1">
             {LINKS.map((l) => (
-              <a
+              <Link
                 key={l.href}
                 href={l.href}
-                onClick={(e) => scrollTo(e, l.href)}
+                onClick={() => setMenuOpen(false)}
                 className="border-b py-3 text-[15px] last:border-b-0"
                 style={{
                   borderColor: 'var(--hairline)',
-                  color: active === l.href ? 'var(--ink)' : 'var(--ink-2)',
+                  color: isActive(l.href) ? 'var(--ink)' : 'var(--ink-2)',
                 }}
               >
                 {t(l.label[0], l.label[1])}
-              </a>
+              </Link>
             ))}
             <Link
               href="/login"
@@ -192,8 +184,10 @@ export default function SiteHeader() {
             >
               {t('Log in', '登入')}
             </Link>
-            {/* The toggle's home below lg. The whole panel is lg:hidden, so this
-                row appears exactly where the bar could not carry it. */}
+            {/* The bar drops its CTA below `sm`, so the panel carries it there. */}
+            <div className="py-3 sm:hidden">
+              <PilotCTA className="btn btn-primary w-full" />
+            </div>
             <div
               className="flex items-center justify-between border-t py-3"
               style={{ borderColor: 'var(--hairline)' }}
@@ -201,7 +195,9 @@ export default function SiteHeader() {
               <span className="text-[15px]" style={{ color: 'var(--ink-2)' }}>
                 {t('Language', '語言')}
               </span>
-              <LangToggle variant="quiet" />
+              <span style={{ color: 'var(--ink)' }}>
+                <LangToggle variant="quiet" />
+              </span>
             </div>
           </div>
         </div>

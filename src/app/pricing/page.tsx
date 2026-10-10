@@ -3,12 +3,16 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ArrowRight, Check, CircleCheck, Lock, Trash2 } from 'lucide-react';
 import { useLang } from '@/lib/lang';
 import { supabaseBrowser } from '@/lib/auth';
-import { PLANS, currencySymbol, formatPrice } from '@/lib/billing-plans';
+import { PLANS, formatPrice } from '@/lib/billing-plans';
+import { HeroProduct } from '@/components/landing/ProductMocks';
+import { MockFrame } from '@/components/site/Section';
+import SiteHeader from '@/components/landing/SiteHeader';
+import SiteFooter from '@/components/site/SiteFooter';
 
 const SETUP_FEE = 1000;
-const PLAN_ORDER = ['starter', 'growth', 'enterprise'] as const;
 const PLAN_COPY: Record<string, { blurb: [string, string]; features: [string, string][] }> = {
   starter: {
     blurb: [
@@ -71,172 +75,217 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
-      {/* Header */}
-      <header className="flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid var(--border)' }}>
-        <Link href="/" className="flex items-center gap-2">
-          <img src="/brand/sailwise-mark.png" alt="Sailwise" className="h-8 rounded-lg" />
-        </Link>
-        <div className="flex items-center gap-4">
-          <a href="#pricing" className="text-[14px] font-medium" style={{ color: 'var(--text-muted)' }}>
-            {t('Pricing', '定價')}
-          </a>
-          <Link href="/login" className="text-[14px] font-medium" style={{ color: 'var(--text-muted)' }}>
-            {t('Log in', '登入')}
-          </Link>
-        </div>
-      </header>
+    <div className="landing min-h-screen">
+      <SiteHeader />
 
-      {/* Pricing */}
-      <section id="pricing" className="max-w-[1100px] mx-auto px-6 py-16 md:py-24">
-        <div className="text-center mb-10 md:mb-14">
-          <p className="text-[12px] font-medium uppercase tracking-[0.1em] mb-3" style={{ color: 'var(--accent)' }}>
-            {t('Pricing', '定價')}
-          </p>
-          <h1 className="text-[28px] md:text-[36px] font-semibold tracking-[-1px] mb-4">
-            {t('Simple pricing', '簡單定價')}
-          </h1>
-          <p className="text-[16px] max-w-[600px] mx-auto mb-8" style={{ color: 'var(--text-muted)' }}>
-            {t(
-              `Start free, pay ${formatPrice(PLANS.starter.monthly)}/month when ready. Self-serve setup is free (optional done-for-you setup +${formatPrice(SETUP_FEE)}).`,
-              `免費開始，準備好再按每月 ${formatPrice(PLANS.starter.monthly)} 付費。自行設定免費（可選 +${formatPrice(SETUP_FEE)} 專人設定）。`,
-            )}
-          </p>
+      {/* ── Hero ─────────────────────────────────────────────────────────── */}
+      <section className="band-dark band-glow">
+        <div className="shell pt-[116px] pb-16 lg:pt-[148px] lg:pb-20">
+        <p className="eyebrow" style={{ color: 'var(--accent)' }}>{t('Pricing', '定價')}</p>
+        <h1 className="display h-section mt-5 max-w-3xl text-balance">
+          {t('Simple, transparent pricing.', '簡單、透明的定價。')}
+        </h1>
+        <p className="lede mt-5 max-w-2xl">
+          {t(
+            `Start free, pay ${formatPrice(PLANS.starter.monthly)}/month when ready. Self-serve setup is free — optional done-for-you setup is ${formatPrice(SETUP_FEE)} one-time.`,
+            `免費開始，準備好再按每月 ${formatPrice(PLANS.starter.monthly)} 付費。自行設定免費——可選專人設定為 ${formatPrice(SETUP_FEE)} 一次性。`
+          )}
+        </p>
 
-          {/* Billing toggle */}
-          <div className="inline-flex items-center gap-3 p-1 rounded-full" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
-            <button
-              onClick={() => setAnnual(false)}
-              className="px-4 py-1.5 rounded-full text-[13px] font-medium transition-all"
-              style={{
-                background: !annual ? 'var(--accent)' : 'transparent',
-                color: !annual ? '#fff' : 'var(--text-muted)',
-              }}
+      </div>
+      </section>
+
+      {/* ── Plans ────────────────────────────────────────────────────────── */}
+      <section className="shell pt-16 pb-16">
+        {/* One plan. The tiers that used to sit here differed only on seats and
+            volume, which is a conversation, not a price list. */}
+        <div className="mx-auto max-w-[520px]">
+          <div className="mb-7 flex justify-center">
+            <div
+              className="inline-flex items-center gap-0.5 p-0.5"
+              style={{ border: '1px solid var(--hairline)' }}
             >
-              {t('Monthly', '月付')}
-            </button>
+              {([false, true] as const).map((isAnnual) => (
+                <button
+                  key={String(isAnnual)}
+                  type="button"
+                  onClick={() => setAnnual(isAnnual)}
+                  aria-pressed={annual === isAnnual}
+                  className="cursor-pointer px-4 py-2 text-[13px] font-medium transition-colors"
+                  style={
+                    annual === isAnnual
+                      ? { background: 'var(--ink)', color: 'var(--paper)' }
+                      : { color: 'var(--ink-2)' }
+                  }
+                >
+                  {isAnnual ? t('Annual · save 20%', '年付 · 省 20%') : t('Monthly', '月付')}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div
+            className="card flex flex-col p-7 md:p-9"
+            style={{
+              background: 'var(--paper)',
+              borderColor: 'var(--pine)',
+              boxShadow: '0 30px 60px -42px rgba(10,13,11,0.38)',
+            }}
+          >
+            <div className="flex items-baseline justify-between gap-4">
+              <h2 className="display text-[1.4rem]">{t('Sailwise Starter', 'Sailwise 入門')}</h2>
+              <span className="eyebrow" style={{ color: 'var(--pine)' }}>
+                {t('everything included', '全部包含')}
+              </span>
+            </div>
+            <p className="mt-2 text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-3)' }}>
+              {t('Google & Microsoft email inbox · one account', 'Google 或 Microsoft 電郵收件匣 · 一個帳戶')}
+            </p>
+
+            <div className="mt-7 flex items-baseline gap-1.5">
+              <span className="display text-[2.8rem] leading-none tabular-nums">
+                {formatPrice(annual ? PLANS.starter.annual : PLANS.starter.monthly)}
+              </span>
+              <span className="text-[14px]" style={{ color: 'var(--ink-3)' }}>/mo</span>
+            </div>
+            <p className="mt-2 text-[12.5px]" style={{ color: 'var(--ink-3)' }}>
+              {annual
+                ? t(`Billed annually · ${formatPrice(PLANS.starter.monthly * 12 - PLANS.starter.annual * 12)} saved a year`, `按年收費 · 每年省 ${formatPrice(PLANS.starter.monthly * 12 - PLANS.starter.annual * 12)}`)
+                : t('Billed monthly · cancel anytime', '按月收費 · 隨時取消')}
+            </p>
+
+            <div className="my-7 h-px" style={{ background: 'var(--hairline)' }} />
+
+            <ul className="space-y-3">
+              {PLAN_COPY.starter.features.map(([en, zh]) => (
+                <li key={en} className="flex items-start gap-2.5 text-[14.5px] leading-snug" style={{ color: 'var(--ink-2)' }}>
+                  <Check className="mt-[3px] h-3.5 w-3.5 shrink-0" style={{ color: 'var(--pine)' }} strokeWidth={2.5} />
+                  {t(en, zh)}
+                </li>
+              ))}
+            </ul>
+
             <button
-              onClick={() => setAnnual(true)}
-              className="px-4 py-1.5 rounded-full text-[13px] font-medium transition-all"
-              style={{
-                background: annual ? 'var(--accent)' : 'transparent',
-                color: annual ? '#fff' : 'var(--text-muted)',
-              }}
+              onClick={() => handleCheckout('starter')}
+              disabled={loadingTier === 'starter'}
+              className="btn btn-primary mt-8 w-full"
             >
-              {t('Annual (save 20%)', '年付（省 20%）')}
+              {loadingTier === 'starter'
+                ? t('Redirecting…', '跳轉中…')
+                : isLoggedIn
+                  ? t('Go to billing', '前往帳單')
+                  : t('Get started', '立即開始')}
             </button>
+
+            <p className="mt-3 text-center text-[12px]" style={{ color: 'var(--ink-3)' }}>
+              {t(
+                '14-day free trial · Card required · Cancel anytime',
+                '14 天免費試用 · 需要信用卡 · 隨時取消'
+              )}
+            </p>
+            <p className="mt-4 text-center text-[12.5px] leading-relaxed" style={{ color: 'var(--ink-3)' }}>
+              {t('Need multiple inboxes, more seats or custom work? ', '需要多個信箱、更多席位或自訂功能？')}
+              <a href="mailto:tradeflow.hk@gmail.com" className="link-quiet">{t('Talk to us', '聯絡我們')}</a>
+              {t('.', '。')}
+            </p>
           </div>
         </div>
-
-        <div className="max-w-[440px] mx-auto">
-          {PLAN_ORDER.map((planId) => {
-            const plan = PLANS[planId];
-            const copy = PLAN_COPY[planId];
-            return (
-              <div
-              key={planId}
-              className="border rounded-[8px] p-8 flex flex-col relative overflow-hidden"
-              style={{
-                borderColor: 'var(--accent)',
-                background: 'var(--surface)',
-                boxShadow: '0 24px 60px -24px rgba(10,110,92,0.25)',
-              }}
-            >
-
-              <div className="mb-3">
-                <h2 className="text-[18px] font-semibold">{plan.name}</h2>
-              </div>
-
-              <p className="text-[12px] mb-4" style={{ color: 'var(--text-muted)' }}>
-                {copy.blurb[0]}
-              </p>
-
-              <div className="mb-6 flex items-baseline gap-1">
-                <span className="text-[14px] font-medium" style={{ color: 'var(--text-muted)' }}>{currencySymbol()}</span>
-                <span className="text-[40px] font-semibold tracking-[-1.5px] leading-none">
-                  {(annual ? plan.annual : plan.monthly).toLocaleString('en-US')}
-                </span>
-                <span className="text-[14px]" style={{ color: 'var(--text-muted)' }}>/mo</span>
-              </div>
-
-              <p className="text-[12px] font-medium uppercase tracking-[0.08em] mb-3" style={{ color: 'var(--text-muted)' }}>
-                {t("What's included", '包含內容')}
-              </p>
-
-              <div className="space-y-3 mb-8 flex-1">
-                {copy.features.map(([en, zh]) => (
-                  <div key={en} className="flex items-center gap-3">
-                    <div className="mt-0.5 w-4 h-4 rounded-full flex items-center justify-center shrink-0" style={{ background: 'var(--accent-light)' }}>
-                      <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2.5 6L5 8.5L9.5 3.5" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                    </div>
-                    <span className="text-[13px]">{t(en, zh)}</span>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => handleCheckout(planId)}
-                disabled={loadingTier === planId}
-                className="w-full text-center text-[14px] font-medium py-3 rounded-[4px] transition-opacity"
-                style={{
-                  background: 'var(--accent)',
-                  color: '#fff',
-                  opacity: loadingTier === planId ? 0.7 : 1,
-                }}
-              >
-                {loadingTier === planId
-                  ? t('Redirecting…', '跳轉中…')
-                  : isLoggedIn
-                    ? t('Go to billing', '前往帳單')
-                    : t('Get started', '立即開始')}
-              </button>
-            </div>
-            );
-          })}
-        </div>
-
         {error && (
-          <p className="text-[13px] mt-4 text-center" style={{ color: 'var(--error)' }}>{error}</p>
+          <p className="mt-5 text-[13px]" style={{ color: 'var(--peach)' }}>
+            {error}
+          </p>
         )}
 
-        <p className="text-[13px] text-center mt-8" style={{ color: 'var(--text-muted)' }}>
-          {t('14-day free trial · Card required · 50 AI responses included · Cancel anytime.', '14 天免費試用 · 需要信用卡 · 包含 50 次 AI 回覆 · 隨時取消。')}
+        <p className="mt-8 text-[13px]" style={{ color: 'var(--ink-3)' }}>
+          {t(
+            '14-day free trial · Card required · Cancel anytime.',
+            '14 天免費試用 · 需要信用卡 · 隨時取消。'
+          )}
         </p>
       </section>
 
-      {/* Setup Service */}
-      <section className="border-y" style={{ borderColor: 'var(--border)', background: 'var(--surface)' }}>
-        <div className="max-w-[600px] mx-auto px-6 py-12 text-center">
-          <h2 className="text-[22px] font-semibold mb-3">{t('Need help getting started?', '需要幫助開始？')}</h2>
-          <p className="text-[14px] mb-6" style={{ color: 'var(--text-muted)' }}>
-            {t('Let our team set up Sailwise for you. We\'ll connect your inbox, upload your products, and configure the AI.', '讓我們的團隊為您設定 Sailwise。我們會連接您的電郵信箱、上傳產品並配置 AI。')}
+      {/* ── What you get ─────────────────────────────────────────────────── */}
+      <section
+        className="band"
+        style={{ background: 'var(--cyan)', borderTop: '1px solid var(--hairline)' }}
+      >
+        <div className="shell">
+          <p className="eyebrow">{t('What you get', '您會得到什麼')}</p>
+          <h2 className="display h-section mt-5 max-w-3xl text-balance">
+            {t('The whole desk, on one screen.', '整張工作桌，都在同一個畫面裡。')}
+          </h2>
+          <p className="lede mt-5 max-w-2xl">
+            {t(
+              'Every tier includes the full product — the inbox, the extraction, the quote draft and the alerts. Tiers differ on inboxes, seats and volume, not on the features you need to do the job.',
+              '每個方案都包含完整產品——收件匣、擷取、報價草稿與提示。方案差異在於信箱數、席位與用量，而不是您完成工作所需的功能。'
+            )}
           </p>
-          <div className="inline-block p-5 rounded-[4px] border" style={{ borderColor: 'var(--border)', background: 'var(--bg)' }}>
-            <p className="text-[14px] font-medium mb-1">{t('Done-for-you setup', '代客設定')}</p>
-            <p className="text-[24px] font-semibold mb-2">{formatPrice(SETUP_FEE)} <span className="text-[13px] font-normal" style={{ color: 'var(--text-muted)' }}>{t('one-time', '一次性')}</span></p>
-            <p className="text-[12px]" style={{ color: 'var(--text-muted)' }}>
-              {t('Contact us to arrange: tradeflow.hk@gmail.com', '聯繫我們安排：tradeflow.hk@gmail.com')}
+          {/* Full shell width, so the sidebar, thread and buyer rail all render. */}
+          <MockFrame
+            className="mt-12"
+            label="The Sailwise inbox: a buyer enquiry with the extracted spec rail and an AI-drafted reply awaiting approval."
+          >
+            <HeroProduct />
+          </MockFrame>
+        </div>
+      </section>
+
+      {/* ── Done-for-you setup ───────────────────────────────────────────── */}
+      <section
+        className="band"
+        style={{ background: 'var(--paper-2)', borderBlock: '1px solid var(--hairline)' }}
+      >
+        <div className="shell grid gap-10 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:gap-16">
+          <div>
+            <p className="eyebrow">{t('Optional', '可選')}</p>
+            <h2 className="display h-section mt-5 max-w-xl text-balance">
+              {t('Done-for-you setup.', '代客設定。')}
+            </h2>
+            <p className="lede mt-5 max-w-xl">
+              {t(
+                'Let our team connect your inbox, upload your products and configure the AI with you. Most teams are answering live inquiries the same day.',
+                '讓我們為您連接信箱、上傳產品，並與您一起配置 AI。大多數團隊當天就能開始回覆真實詢盤。'
+              )}
+            </p>
+          </div>
+          <div className="card p-7" style={{ background: 'var(--paper)' }}>
+            <p className="eyebrow">{t('One-time', '一次性')}</p>
+            <p className="display mt-3 text-[2.2rem] leading-none">{formatPrice(SETUP_FEE)}</p>
+            <div className="my-6 h-px" style={{ background: 'var(--hairline)' }} />
+            <a
+              href="mailto:tradeflow.hk@gmail.com?subject=Done-for-you%20setup"
+              className="btn btn-primary w-full"
+            >
+              {t('Arrange setup', '安排設定')}
+              <ArrowRight className="h-4 w-4" />
+            </a>
+            <p className="mt-3 text-center text-[12px]" style={{ color: 'var(--ink-3)' }}>
+              tradeflow.hk@gmail.com
             </p>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="px-6 py-8" style={{ borderTop: '1px solid var(--border)' }}>
-        <div className="max-w-[1100px] mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
-            © 2026 Sailwise
-          </p>
-          <div className="flex items-center gap-6">
-            <Link href="/" className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
-              {t('Home', '首頁')}
-            </Link>
-            <Link href="/login" className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
-              {t('Log in', '登入')}
-            </Link>
-          </div>
-        </div>
-      </footer>
+      {/* ── Reassurance ──────────────────────────────────────────────────── */}
+      <section className="shell py-12">
+        <ul className="flex flex-wrap gap-x-8 gap-y-3 text-[13.5px]" style={{ color: 'var(--ink-2)' }}>
+          {[
+            [t('Encrypted in transit and at rest', '傳輸與靜態皆加密'), Lock],
+            [t('Nothing sends without you', '未經您核准不會送出'), CircleCheck],
+            [t('Cancel any time', '隨時取消'), Trash2],
+          ].map(([label, Icon]) => {
+            const I = Icon as typeof Lock;
+            return (
+              <li key={label as string} className="inline-flex items-center gap-2">
+                <I className="h-3.5 w-3.5" style={{ color: 'var(--pine)' }} />
+                {label as string}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <SiteFooter />
     </div>
   );
 }

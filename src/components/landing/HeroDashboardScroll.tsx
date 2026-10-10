@@ -15,6 +15,11 @@ import { HeroProduct, OpportunitiesPageMock } from './ProductMocks';
 
 const clamp01 = (n: number) => Math.min(1, Math.max(0, n));
 
+/* One sentence for the whole animation — assistive tech gets this instead of
+   every intermediate frame's worth of demo copy. */
+const LABEL =
+  'A product walkthrough: an enquiry is read, the spec rail fills from the email and from prior records, the reply is drafted, and the thread resolves into a quote-ready opportunity.';
+
 // Keep the pinned preview clear of the fixed header (top) and the viewport
 // bottom. If the card is taller than the space between them we scale it down so
 // nothing is ever cut off.
@@ -71,12 +76,39 @@ export default function HeroDashboardScroll() {
   return (
     <>
       {/* Phones and tablets — the finished dashboard, static. */}
-      <div className="mx-auto mt-8 max-w-5xl px-6 md:mt-12 lg:hidden">
-        <HeroProduct />
+      <div className="mx-auto mt-10 max-w-5xl px-6 md:mt-12 lg:hidden">
+        {/* A phone gets a preview, not the whole screen. The mock stacks into a
+            single column down here and runs for four viewports, so it is cropped
+            to the part that tells the story — the thread and the drafted reply —
+            and faded out rather than cut, so it reads as continuing. */}
+        <div
+          className="relative overflow-hidden"
+          style={{ maxHeight: 460 }}
+          role="img"
+          aria-label="A product walkthrough: an enquiry is read, the spec rail fills from the email and from prior records, the reply is drafted, and the thread resolves into a quote-ready opportunity."
+          data-nosnippet
+          translate="no"
+        >
+          <HeroProduct />
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-28"
+            style={{ background: 'linear-gradient(180deg, rgba(10,13,11,0) 0%, rgba(10,13,11,0.92) 100%)' }}
+          />
+        </div>
       </div>
 
-      {/* Desktop — the preview is the motion. */}
-      <div ref={trackRef} className="relative hidden lg:block" style={{ height: '1020vh' }}>
+      {/* Desktop — the preview is the motion. Restored to the authored length:
+          this is the demo from the live site, and shortening the track only
+          speeds the same sequence up. */}
+      <div
+        ref={trackRef}
+        className="relative hidden lg:block"
+        style={{ height: '1020vh' }}
+        role="img"
+        aria-label={LABEL}
+        data-nosnippet
+        translate="no"
+      >
         <div className="sticky top-0 flex h-screen items-center justify-center overflow-hidden px-6 pb-4 pt-[80px]">
           <div
             ref={stageRef}

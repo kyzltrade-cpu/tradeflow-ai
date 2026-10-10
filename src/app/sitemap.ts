@@ -16,7 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   return [
     { url: `${siteUrl.origin}/`, lastModified, changeFrequency: 'weekly', priority: 1 },
+    { url: `${siteUrl.origin}/product`, lastModified, changeFrequency: 'weekly', priority: 0.9 },
+    { url: `${siteUrl.origin}/trust`, lastModified, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${siteUrl.origin}/pricing`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${siteUrl.origin}/faq`, lastModified, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${siteUrl.origin}/founders`, lastModified, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${siteUrl.origin}/book`, lastModified, changeFrequency: 'monthly', priority: 0.8 },
     { url: `${siteUrl.origin}/privacy`, lastModified, changeFrequency: 'yearly', priority: 0.3 },
   ];
 }

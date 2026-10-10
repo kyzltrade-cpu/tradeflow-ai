@@ -1,5 +1,7 @@
-export const SLOT_HOURS_MON_WED_FRI = [16.5, 17, 17.5, 18];
-export const SLOT_HOURS_TUE_THU = [17, 17.5, 18, 18.5, 19];
+/* Availability: Mon/Wed/Fri 4–10pm, Tue/Thu only after 7pm. Half-hour starts,
+   and the last one is 9:30 so a 30-minute call finishes by ten. */
+export const SLOT_HOURS_MON_WED_FRI = [16, 16.5, 17, 17.5, 18, 18.5, 19, 19.5, 20, 20.5, 21, 21.5];
+export const SLOT_HOURS_TUE_THU = [19, 19.5, 20, 20.5, 21, 21.5];
 export const HORIZON_DAYS = 60;
 
 export type Slot = { label: string; hour: number };
