@@ -295,11 +295,17 @@ body {
    with the site. `:not(.dashboard-mode *)` leaves that subtree alone. This has
    to stay `!important` and keep out-ranking the utilities, so nothing less
    specific than this will do. */
-*:not(.dashboard-mode):not(.dashboard-mode *),
-*:not(.dashboard-mode):not(.dashboard-mode *)::before,
-*:not(.dashboard-mode):not(.dashboard-mode *)::after {
+*:not(.dashboard-mode):not(.dashboard-mode *):not(.keep-radius):not(.keep-radius *),
+*:not(.dashboard-mode):not(.dashboard-mode *):not(.keep-radius):not(.keep-radius *)::before,
+*:not(.dashboard-mode):not(.dashboard-mode *):not(.keep-radius):not(.keep-radius *)::after {
   border-radius: 0 !important;
 }
+
+/* `.keep-radius` opts a subtree back out. The floating support chat lives in
+   the root layout, outside `.landing`, so it was being squared along with the
+   marketing chrome — its launcher rendered as a 56px square rather than a
+   bubble, and every message inside it as a box. It is app chrome rather than
+   page content, and the app's own radii are what make it read as a widget. */
 
 /* ── Scrollbars ───────────────────────────────────────────────────────────── */
 

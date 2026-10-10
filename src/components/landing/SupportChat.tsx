@@ -130,7 +130,9 @@ export default function SupportChat() {
   const hasUserMessages = messages.some((m) => m.role === 'user');
 
   return (
-    <>
+    /* `keep-radius` opts this widget out of the site-wide square-corner rule —
+       it is app chrome in the root layout, not page content. */
+    <div className="keep-radius">
       {open && (
         <div
           role="dialog"
@@ -299,21 +301,35 @@ export default function SupportChat() {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Close support chat' : 'Open support chat'}
         aria-expanded={open}
-        className="fixed flex items-center justify-center z-40 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+        /* A 58px black circle on a page that is itself near-black at the top and
+           cream at the bottom was easy to miss entirely. This is the brand accent
+           instead, and on anything wider than a phone it carries a label, so it
+           reads as "ask us something" rather than as an unlabelled icon. The
+           label is dropped on small screens, where the pill would sit over
+           content and the icon alone is enough. */
+        className="fixed z-40 flex h-14 items-center justify-center gap-2.5 rounded-full px-0 text-[14px] font-medium transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 sm:px-5"
         style={{
           right: 'max(1.25rem, env(safe-area-inset-right))',
           bottom: 'max(1.25rem, env(safe-area-inset-bottom))',
-          width: 58,
-          height: 58,
-          borderRadius: '999px',
-          background: 'linear-gradient(180deg, #1F1F1F, #000 60%, #000)',
-          boxShadow: 'inset 0 1px 0 0 rgba(255,255,255,0.15), inset 0 -3px 0 0 rgba(0,0,0,0.85), 0 20px 40px -16px rgba(0,0,0,0.55)',
+          minWidth: 56,
+          background: open
+            ? '#0A0D0B'
+            : 'linear-gradient(180deg, #0F8A70 0%, #0A6E5C 55%, #085A4B 100%)',
+          color: '#F7F4ED',
+          boxShadow: open
+            ? '0 18px 40px -16px rgba(10,13,11,0.55)'
+            : '0 18px 40px -12px rgba(10,110,92,0.7), 0 2px 8px -4px rgba(10,13,11,0.35), inset 0 1px 0 0 rgba(255,255,255,0.18)',
         }}
-        onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.06)'; }}
+        onMouseEnter={(e) => { e.currentTarget.style.filter = 'brightness(1.07)'; }}
         onMouseLeave={(e) => { e.currentTarget.style.filter = 'none'; }}
       >
-        {open ? <X className="w-6 h-6 text-white" /> : <MessageCircleQuestion className="w-6 h-6 text-white" />}
+        {open ? (
+          <X className="h-5 w-5" />
+        ) : (
+          <MessageCircleQuestion className="h-5 w-5" />
+        )}
+        <span className="hidden sm:inline">{open ? 'Close chat' : 'Chat with us'}</span>
       </button>
-    </>
+    </div>
   );
 }

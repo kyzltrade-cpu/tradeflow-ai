@@ -141,7 +141,20 @@ export default function BookPage() {
           tz,
         }),
       });
+      const data = await res.json().catch(() => null);
       if (!res.ok) throw new Error('failed');
+      // The API reports whether the booking was stored and whether the operator
+      // was actually notified. If neither happened the booking is gone, so say
+      // so and hand over the address instead of showing a success screen.
+      if (data && data.stored === false && data.notified === false) {
+        setFail(
+          t(
+            'We could not record that just now. Email tradeflow.hk@gmail.com and we will book it with you directly.',
+            '我們現在無法記錄這次預約。請電郵 tradeflow.hk@gmail.com，我們會直接為您安排。'
+          )
+        );
+        return;
+      }
       setSent(true);
     } catch {
       setFail(
@@ -191,8 +204,8 @@ export default function BookPage() {
               <h2 className="display text-[1.75rem] mt-5">{t('That is booked.', '已預約完成。')}</h2>
               <p className="mt-3 text-[15px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
                 {t(
-                  `We have you down for ${longDate(when as Date, locale)}${slotLabel ? ` at ${slotLabel}` : ''}. A confirmation is on its way to ${email}.`,
-                  `我們已為您保留 ${longDate(when as Date, locale)}${slotLabel ? ` ${slotLabel}` : ''}。確認信正寄往 ${email}。`
+                  `We have you down for ${longDate(when as Date, locale)}${slotLabel ? ` at ${slotLabel}` : ''}. We will confirm with you at ${email}.`,
+                  `我們已為您保留 ${longDate(when as Date, locale)}${slotLabel ? ` ${slotLabel}` : ''}。我們會透過 ${email} 與您確認。`
                 )}
               </p>
               <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
