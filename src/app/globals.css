@@ -561,24 +561,35 @@ body {
   filter: blur(28px);
 }
 
-/* ── The cyan calendar ────────────────────────────────────────────────────── */
+/* ── The booking calendar ─────────────────────────────────────────────────── */
 
-/* The booking month is the one surface on the site that carries cyan, and it
-   carries it dark: the panel is the accent mixed down into the band's near
-   black, so the month reads as its own object without turning into a bright
-   colour block, and every rule, control and marker is tinted from the same
-   `--cyan`. The digits stay on the band's ink — a cyan-ruled grid still reads
-   as a date picker, a grid of full-strength cyan would read as a swatch.
-   Every rule is the same weight and colour, so the outer edge of the diary is
-   drawn by the same line as the ones inside it. Declared here rather than
-   inline so the whole treatment is tunable in one place. */
-.cal-cyan {
-  --cal-surface: color-mix(in srgb, var(--cyan) 16%, var(--dark));
-  --cal-line: color-mix(in srgb, var(--cyan) 30%, transparent);
-  --cal-signal: var(--cyan);
-  --cal-dim: color-mix(in srgb, var(--cyan) 76%, transparent);
-  --cal-wash: color-mix(in srgb, var(--cyan) 16%, transparent);
+/* The band behind the month is what carries the cyan (see `.band-cyan`); the
+   calendar itself is a plain white card, so the one thing you actually have to
+   read and click stays the brightest object on the page.
+
+   It cannot use `--ink` / `--hairline` for that: those invert inside
+   `.band-dark`, which would put cream text on the white card. The light-surface
+   values are therefore re-declared here rather than inherited. Declared in one
+   place so the whole treatment stays tunable. */
+.cal {
+  --cal-surface: #ffffff;
+  --cal-line: rgba(10, 13, 11, 0.14);
+  --cal-signal: #0a6e5c;
+  --cal-on-signal: #ffffff;
+  --cal-dim: #7e847c;
+  --cal-wash: rgba(10, 110, 92, 0.10);
+  --cal-ink: #0a0d0b;
+  --cal-ink-off: #a3a8a0;
   background: var(--cal-surface);
+}
+
+/* ── The cyan band ────────────────────────────────────────────────────────── */
+
+/* One section on the site carries cyan: the booking band on /book. The accent
+   is mixed down into the band's near black so a full-width section reads as
+   dark cyan rather than as a bright colour block. */
+.landing .band-dark.band-cyan {
+  background: color-mix(in srgb, var(--cyan) 20%, var(--dark));
 }
 
 /* ── Forms ────────────────────────────────────────────────────────────────── */
@@ -802,7 +813,10 @@ body {
    every admin surface inherits it, and it uses the marketing palette so the
    product and the site read as one system. */
 .admin-light {
-  --bg: #f7f4ed;
+  /* The working area is plain white. It was briefly on the marketing cream —
+     the two surfaces read as one system, but a data screen wants the neutral
+     ground so the panels and rules carry the structure instead of the paper. */
+  --bg: #ffffff;
   --surface: #ffffff;
   --text: #0a0d0b;
   --text-muted: #4d534c;
@@ -812,6 +826,10 @@ body {
   --panel-bg: rgba(10, 13, 11, 0.03);
   --panel-border: rgba(10, 13, 11, 0.13);
   --panel-text: #4d534c;
+  /* Rows and quiet buttons used to hover to `--bg`, which read as a wash while
+     the working area was cream. On a white ground that would be white on white,
+     so the hover tint is its own token. */
+  --hover-bg: rgba(10, 13, 11, 0.045);
   background: var(--bg);
   color: var(--text);
 }

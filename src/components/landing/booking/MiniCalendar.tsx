@@ -16,14 +16,17 @@ const WEEKDAYS_ZH = ['日', '一', '二', '三', '四', '五', '六'];
    The wrapper draws the top and left edge and every cell draws its own right
    and bottom edge, so no two rules ever double up into a 2px line.
 
-   The whole block is tinted from `--cyan` (see `.cal-cyan` in globals.css). The
-   colour is deliberately kept on the rules, the controls and the one selected
-   day — the numbers themselves stay on the band's ink, because a grid of
-   full-strength cyan stops reading as a date picker. */
+   The card itself is white — the dark cyan band behind it carries the colour,
+   and the thing you have to read and click stays the brightest object on the
+   page. Its tokens live in `.cal` in globals.css; they cannot come from
+   `--ink` / `--hairline`, which invert inside the dark band. */
 const LINE = 'var(--cal-line)';
 const SIGNAL = 'var(--cal-signal)';
+const ON_SIGNAL = 'var(--cal-on-signal)';
 const DIM = 'var(--cal-dim)';
 const WASH = 'var(--cal-wash)';
+const INK = 'var(--cal-ink)';
+const INK_OFF = 'var(--cal-ink-off)';
 
 export default function MiniCalendar({
   month,
@@ -50,7 +53,7 @@ export default function MiniCalendar({
   const today = isoDate(new Date());
 
   return (
-    <div className="cal-cyan w-full border-t border-l" style={{ borderColor: LINE }}>
+    <div className="cal w-full border-t border-l" style={{ borderColor: LINE }}>
       <div className="flex items-center justify-between border-r border-b px-2 py-1.5" style={{ borderColor: LINE }}>
         <button
           type="button"
@@ -110,7 +113,7 @@ export default function MiniCalendar({
               style={{
                 borderColor: LINE,
                 background: on ? SIGNAL : undefined,
-                color: on ? 'var(--dark)' : ok ? 'var(--ink)' : 'var(--ink-3)',
+                color: on ? ON_SIGNAL : ok ? INK : INK_OFF,
                 fontWeight: on || isToday ? 600 : 400,
                 opacity: ok ? 1 : 0.45,
               }}

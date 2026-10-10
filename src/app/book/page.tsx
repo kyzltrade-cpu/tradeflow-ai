@@ -133,10 +133,11 @@ export default function BookPage() {
       </section>
 
       {/* ── Pick a time, then tell us about it ───────────────────────────── */}
-      {/* `band` carries the vertical rhythm; `band-dark` only flips the tokens.
-          Swapping one for the other left the step labels sitting directly on
-          the section's top edge. */}
-      <section className="band band-dark band-glow">
+      {/* `band` carries the vertical rhythm and `band-dark` flips the tokens;
+          `band-cyan` is the dark cyan surface, and it is the band that is
+          tinted rather than the calendar sitting on it. No `band-glow` here —
+          the ambience wash muddies the one colour on the page. */}
+      <section className="band band-dark band-cyan">
         <div className="shell">
           {sent ? (
             <div className="card mx-auto max-w-2xl p-8 text-center md:p-12" style={{ background: 'var(--paper-2)' }}>

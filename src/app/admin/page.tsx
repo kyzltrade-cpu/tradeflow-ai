@@ -174,7 +174,7 @@ export default function DashboardPage() {
           onClick={refresh}
           disabled={refreshing}
           aria-label={t('Refresh', '重新整理')}
-          className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-[4px] border transition-colors hover:bg-[var(--bg)] disabled:opacity-50 shrink-0"
+          className="flex items-center gap-1.5 text-[12px] px-3 py-1.5 rounded-[4px] border transition-colors hover:bg-[var(--hover-bg)] disabled:opacity-50 shrink-0"
           style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}
         >
           <RefreshCw aria-hidden className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -209,7 +209,7 @@ export default function DashboardPage() {
                 <Link
                   key={a.id}
                   href="/admin/inbox"
-                  className="flex items-center gap-3 px-3.5 py-2.5 min-h-[56px] border-b last:border-b-0 transition-colors hover:bg-[var(--bg)]"
+                  className="flex items-center gap-3 px-3.5 py-2.5 min-h-[56px] border-b last:border-b-0 transition-colors hover:bg-[var(--hover-bg)]"
                   style={{ borderColor: 'var(--border)' }}
                 >
                   <span
@@ -247,7 +247,7 @@ export default function DashboardPage() {
               <Link
                 key={w.id}
                 href="/admin/inbox"
-                className="flex items-center gap-3 px-3.5 py-2.5 min-h-[56px] border-b last:border-b-0 transition-colors hover:bg-[var(--bg)]"
+                className="flex items-center gap-3 px-3.5 py-2.5 min-h-[56px] border-b last:border-b-0 transition-colors hover:bg-[var(--hover-bg)]"
                 style={{ borderColor: 'var(--border)' }}
               >
                 <span
@@ -327,7 +327,7 @@ export default function DashboardPage() {
             type="button"
             onClick={() => setFiledOpen((v) => !v)}
             aria-expanded={filedOpen}
-            className="w-full h-10 px-3.5 flex items-center justify-between gap-3 text-left transition-colors hover:bg-[var(--bg)]"
+            className="w-full h-10 px-3.5 flex items-center justify-between gap-3 text-left transition-colors hover:bg-[var(--hover-bg)]"
           >
             <span className="flex items-center gap-2 min-w-0">
               <ChevronDown aria-hidden className="h-4 w-4 shrink-0 transition-transform" style={{ color: 'var(--text-muted)', transform: filedOpen ? 'rotate(0deg)' : 'rotate(-90deg)' }} />
