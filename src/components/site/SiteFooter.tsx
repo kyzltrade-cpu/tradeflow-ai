@@ -75,14 +75,12 @@ export default function SiteFooter({ wordmark = true }: { wordmark?: boolean } =
         </div>
       </div>
 
-      {/* Clipped on both axes. The wordmark is set at `line-height: 0.74` on a
-          259px face, so its line box is ~70px taller than the block it sits in;
-          that empty overflow was extending the document past the footer and
-          leaving a strip of the page background under the wordmark. Measured at
-          every width from 360 to 1920, no glyph ink reaches the wrapper's bottom
-          edge, so clipping costs nothing — the page now ends on the wordmark. */}
+      {/* `overflow-x: clip` rather than `overflow-hidden`: the wordmark is wider
+          than the viewport on wide screens, but the block also has to let the
+          glyphs' full height show — `hidden` clips both axes and was slicing the
+          letters off at the page bottom on phones. */}
       {wordmark && (
-        <div className="px-6 lg:px-10" style={{ overflow: 'clip' }} aria-hidden="true">
+        <div className="px-6 lg:px-10" style={{ overflowX: 'clip' }} aria-hidden="true">
           <div className="display wordmark-giant" style={{ color: 'var(--on-dark)' }}>
             Sailwise
           </div>
