@@ -386,9 +386,16 @@ body {
 
 /* The mocks ship with their own 16px radius, hairline and drop shadow. The
    frame already draws all three, so the child's are neutralised to stop the
-   borders doubling into a 2px line. */
+   borders doubling into a 2px line.
+
+   The radius is zeroed rather than matched to the frame's: this rule outranks
+   the global square-corner reset (`.mock-frame > *` is more specific than `*`,
+   and both are `!important`), so leaving the frame's old 6px here rounded the
+   white card inside a square frame. On light bands the notch was invisible —
+   white on the frame's own white — but on a dark band the card's antialiased
+   corner showed as a grey arc, i.e. the "rounded corner" on the demo. */
 .mock-frame > * {
-  border-radius: 6px !important;
+  border-radius: 0 !important;
   border-color: transparent !important;
   box-shadow: none !important;
 }
@@ -531,6 +538,26 @@ body {
     radial-gradient(42% 60% at 18% 40%, rgba(127, 209, 185, 0.10) 0%, transparent 70%),
     radial-gradient(38% 55% at 82% 12%, rgba(180, 85, 45, 0.09) 0%, transparent 72%);
   filter: blur(28px);
+}
+
+/* ── The cyan calendar ────────────────────────────────────────────────────── */
+
+/* The booking month is the one surface on the site that carries cyan, and it
+   carries it dark: the panel is the accent mixed down into the band's near
+   black, so the month reads as its own object without turning into a bright
+   colour block, and every rule, control and marker is tinted from the same
+   `--cyan`. The digits stay on the band's ink — a cyan-ruled grid still reads
+   as a date picker, a grid of full-strength cyan would read as a swatch.
+   Every rule is the same weight and colour, so the outer edge of the diary is
+   drawn by the same line as the ones inside it. Declared here rather than
+   inline so the whole treatment is tunable in one place. */
+.cal-cyan {
+  --cal-surface: color-mix(in srgb, var(--cyan) 16%, var(--dark));
+  --cal-line: color-mix(in srgb, var(--cyan) 30%, transparent);
+  --cal-signal: var(--cyan);
+  --cal-dim: color-mix(in srgb, var(--cyan) 76%, transparent);
+  --cal-wash: color-mix(in srgb, var(--cyan) 16%, transparent);
+  background: var(--cal-surface);
 }
 
 /* ── Forms ────────────────────────────────────────────────────────────────── */

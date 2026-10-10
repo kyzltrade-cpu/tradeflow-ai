@@ -133,7 +133,10 @@ export default function BookPage() {
       </section>
 
       {/* ── Pick a time, then tell us about it ───────────────────────────── */}
-      <section className="band-dark band-glow">
+      {/* `band` carries the vertical rhythm; `band-dark` only flips the tokens.
+          Swapping one for the other left the step labels sitting directly on
+          the section's top edge. */}
+      <section className="band band-dark band-glow">
         <div className="shell">
           {sent ? (
             <div className="card mx-auto max-w-2xl p-8 text-center md:p-12" style={{ background: 'var(--paper-2)' }}>
