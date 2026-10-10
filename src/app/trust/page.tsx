@@ -91,9 +91,13 @@ export default function TrustPage() {
           </div>
 
           {/* The handover surface itself — "take over any thread" is easier to
-              believe with the control in front of you. */}
+              believe with the control in front of you. This is the one mock on
+              the site that keeps rounded corners (`demo-round`). */}
           <div className="mt-14">
-            <MockFrame label="A thread flagged for human handover, showing the discount request that triggered it and the take-over control.">
+            <MockFrame
+              className="demo-round"
+              label="A thread flagged for human handover, showing the discount request that triggered it and the take-over control."
+            >
               <HandoffMock />
             </MockFrame>
             <p className="mt-4 text-[13px]" style={{ color: 'var(--on-dark-2)' }}>

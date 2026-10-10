@@ -454,6 +454,27 @@ body {
   display: none;
 }
 
+/* ── Rounded demo ─────────────────────────────────────────────────────────── */
+
+/* The site is square-cornered by default and the product mocks follow it. The
+   handover demo on /trust is the one deliberate exception: it is a floating
+   screenshot rather than a panel of the page. Both the frame and the card
+   inside it take the same radius, so the silhouette is a single rounded
+   rectangle — a rounded card peeking through a square frame is what produced
+   the grey arc this replaced.
+
+   The frame's border goes to zero rather than staying transparent: `overflow:
+   hidden` clips to the padding box, so a 1px border would shave the clip radius
+   down to 5px and the card would never quite look as round as it is. */
+.mock-frame.demo-round {
+  border-width: 0 !important;
+  border-radius: 6px !important;
+}
+
+.mock-frame.demo-round > * {
+  border-radius: 6px !important;
+}
+
 /* ── Cards ────────────────────────────────────────────────────────────────── */
 
 .card {
