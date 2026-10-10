@@ -206,8 +206,7 @@ export default function BookPage() {
               </div>
             </div>
           ) : (
-            <>
-              <div className="grid gap-12 lg:grid-cols-[0.94fr_1.06fr] lg:gap-16">
+            <div className="grid gap-12 lg:grid-cols-[0.94fr_1.06fr] lg:gap-16">
                 {/* ── Step 1 · the picker ──────────────────────────────── */}
                 <div>
                   <StepHead n="01" title={t('Pick a time', '選擇時間')} />
@@ -282,15 +281,65 @@ export default function BookPage() {
                     </div>
                   ) : (
                     /* The empty state says what to do rather than leaving the
-                       column trailing off after the calendar. */
+                       column trailing off after the calendar. It carries no rule
+                       of its own — the block below opens with one, and two
+                       hairlines a line apart read as a mistake. */
                     <p
-                      className="mt-9 flex items-center gap-3 border-t pt-6 text-[13.5px] leading-relaxed"
-                      style={{ borderColor: 'var(--hairline)', color: 'var(--ink-2)' }}
+                      className="mt-6 flex items-center gap-3 text-[13.5px] leading-relaxed"
+                      style={{ color: 'var(--ink-2)' }}
                     >
                       <CalendarDays className="h-4 w-4 shrink-0" style={{ color: 'var(--accent)' }} />
                       {t('Pick a day to see the times we have open.', '選擇日期以查看可預約時間。')}
                     </p>
                   )}
+
+                  {/* Answers the two questions a booking page always raises:
+                      what happens on the call, and who am I talking to. It sits
+                      under the calendar so it is read after a time is chosen,
+                      and answers the question you have at that point. */}
+                  <div className="mt-10 border-t pt-8" style={{ borderColor: 'var(--hairline)' }}>
+                    <p className="eyebrow" style={{ color: 'var(--accent)' }}>
+                      {t('What happens on the call', '通話會發生什麼')}
+                    </p>
+
+                    <ol className="mt-6 space-y-5">
+                      {CALL_STEPS.map(([en, zhh], i) => (
+                        <li key={en} className="grid grid-cols-[1.6rem_1fr] gap-x-4">
+                          <span
+                            className="pt-[3px] font-mono text-[11px] tabular-nums tracking-[0.14em]"
+                            style={{ color: 'var(--ink-3)' }}
+                          >
+                            {`0${i + 1}`}
+                          </span>
+                          <p className="text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+                            {t(en, zhh)}
+                          </p>
+                        </li>
+                      ))}
+                    </ol>
+
+                    <div className="mt-8 flex items-center gap-4">
+                      <span className="flex shrink-0 gap-2">
+                        {['/founders/kyle.jpg', '/founders/neel.jpg'].map((src) => (
+                          <img
+                            key={src}
+                            src={src}
+                            alt=""
+                            aria-hidden="true"
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 object-cover"
+                          />
+                        ))}
+                      </span>
+                      <p className="text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
+                        {t(
+                          'You will speak to Kyle or Neel — the two people who built it.',
+                          '與您通話的是 Kyle 或 Neel——打造這個產品的兩個人。'
+                        )}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* ── Step 2 · the form ────────────────────────────────── */}
@@ -441,60 +490,6 @@ export default function BookPage() {
                 </form>
               </div>
 
-              {/* ── What happens on the call ─────────────────────────────── */}
-              {/* Moved out of the left column: in the rail it competed with the
-                  calendar, and it is an answer to a question you ask after you
-                  have picked a time, not before. */}
-              <div
-                className="mt-16 border-t pt-10 lg:mt-20 lg:pt-12"
-                style={{ borderColor: 'var(--hairline)' }}
-              >
-                <div className="grid gap-10 lg:grid-cols-[0.75fr_2.25fr] lg:gap-16">
-                  <div>
-                    <p className="eyebrow" style={{ color: 'var(--accent)' }}>
-                      {t('What happens on the call', '通話會發生什麼')}
-                    </p>
-                    <div className="mt-6 flex items-center gap-4">
-                      <span className="flex shrink-0 gap-2">
-                        {['/founders/kyle.jpg', '/founders/neel.jpg'].map((src) => (
-                          <img
-                            key={src}
-                            src={src}
-                            alt=""
-                            aria-hidden="true"
-                            width={48}
-                            height={48}
-                            className="h-12 w-12 object-cover"
-                          />
-                        ))}
-                      </span>
-                      <p className="text-[13.5px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-                        {t(
-                          'You will speak to Kyle or Neel — the two people who built it.',
-                          '與您通話的是 Kyle 或 Neel——打造這個產品的兩個人。'
-                        )}
-                      </p>
-                    </div>
-                  </div>
-
-                  <ol className="grid gap-8 sm:grid-cols-3 sm:gap-6">
-                    {CALL_STEPS.map(([en, zhh], i) => (
-                      <li key={en}>
-                        <span
-                          className="font-mono text-[11px] tabular-nums tracking-[0.2em]"
-                          style={{ color: 'var(--ink-3)' }}
-                        >
-                          {`0${i + 1}`}
-                        </span>
-                        <p className="mt-3 text-[14px] leading-relaxed" style={{ color: 'var(--ink-2)' }}>
-                          {t(en, zhh)}
-                        </p>
-                      </li>
-                    ))}
-                  </ol>
-                </div>
-              </div>
-            </>
           )}
         </div>
       </section>
